@@ -1,0 +1,43 @@
+#if you edit me from the game the green text will disappear
+Ranks:
+  default: #rank path default
+    'A':
+      display: "&7[&1A&7]"
+      nextrank: B
+      cost: 0
+    'B':
+      display: "&7[&2B&7]"
+      nextrank: LASTRANK
+      cost: 5000.0
+      executecmds: #"[console] noicecommand", "[player] yourcommand", "[op] mycommand", "imconsolecommand"
+      - "[console] give %player% diamond 1"
+      - "[op] say i am executing this command as an operator"
+      - "[player] warp %rankup%"
+      - "say this is also a console command"
+      broadcast:
+      - "&7%player% &eranked up to &7%rankup%"
+      - "&7-----------------"
+      msg:
+      - "&9You got &b1 &9diamond."
+      actionbar:
+        interval: 10
+        text:
+        - "&aCongratulations!"
+        - "&2Congratulations!"
+        - "&3Congratulations!"
+        - "&bCongratulations!"
+      actions:
+      - "[MESSAGE] Hi, im being executed from actionutil plugin."
+      randomcmds:
+        '1':
+          chance: 70
+          commands:
+          - "say Random Command 1 with chance: 70%"
+        '2':
+          chance: 30
+          commands:
+          - "say Random Command 2 with chance: 30%"
+      addpermission:
+      - "essentials.warps.B"
+      delpermission:
+      - "essentials.warps.A"

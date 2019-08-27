@@ -1,0 +1,46 @@
+main: com.prisonranksx.Main
+version: 2.4.13
+name: PrisonRanksX
+author: TheGaming999 aka Al3rb
+softdepend: [Vault,PlaceholderAPI,MVdWPlaceholderAPI,HolographicDisplays,ActionUtil,PermissionsEX,GroupManager,LuckPerms]
+commands:
+  prx:
+    usage: /<command>
+    aliases: [prisonranksx,pranksx,pranks]
+    description: Main Command
+  rankup:
+    usage: /<command>
+    aliases: [ru]
+    description: RankUp Command
+  ranks:
+    usage: /<command>
+    aliases: [ranklist]
+    description: Lists the ranks you made
+  forcerankup:
+    usage: /<command>
+    aliases: [forceru, frankup]
+    description: Rankup a Player without losing money
+  prestige:
+    usage: /<command>
+    aliases: [prst]
+    description: Prestige to a high rank
+  rankupmax:
+    usage: /<command>
+    aliases: [rumax]
+    description: rankup to the highest rank you can reach
+  prestiges:
+    usage: /<command>
+    aliases: [prestigelist]
+    description: shows all prestige ranks
+  prxconvertnamestouuid:
+    usage: /<command>
+    aliases: [prxcntu, prxconvertuuid, prxconvertnametouuid, prxconvertnamestouuids, prxconvert]
+    description: converts ranked,prestiged yml file player names to uuids
+  autorankup:
+    usage: /<command>
+    aliases: [autoru]
+    description: automatically rankup while earning money
+  prxconvertperms:
+    usage: /<command>
+    aliases: [prxcp]
+    description: converts strings in executecmds that manage permissions to add,delpermission section for better performance when ranking up

@@ -1,0 +1,15 @@
+Rebirths:
+  R1:
+    display: "&c&l[R1]"
+    cost: 123456789.0
+    nextrebirth: R2
+    executecmds: []
+    broadcast: []
+    msg: []
+  R2:
+    display: "&4&l[R2]"
+    cost: 1234567899.0
+    nextrebirth: LASTREBIRTH
+    executecmds: []
+    broadcast: []
+    msg: []

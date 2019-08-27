@@ -1,0 +1,17 @@
+Prestiges:
+  'P1':
+    display: "&8[&9P1&8]"
+    cost: 5000000.0
+    nextprestige: P2
+    executecmds: []
+    broadcast: []
+    msg: []
+    rankup_cost_increase_percentage: 50
+  'P2':
+    display: "&8[&9P2&8]"
+    cost: 15000000.0
+    nextprestige: LASTPRESTIGE
+    executecmds: []
+    broadcast: []
+    msg: []
+    rankup_cost_increase_percentage: 100

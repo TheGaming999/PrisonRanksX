@@ -1,0 +1,33 @@
+# Here you can completely disable the commands from being registered in the server. You can also edit the aliases
+# [Requires server restart]
+commands:
+  rankup:
+    enable: true
+    aliases: [ru]
+  rankupmax:
+    enable: true
+    aliases: [rumax, maxrankup, maxru]
+  forcerankup:
+    enable: true
+    aliases: [forceru]
+  autorankup:
+    enable: true
+    aliases: [autoru, aru]
+  ranks:
+    enable: true
+    aliases: [ranklist, showranks]
+  prestige:
+    enable: true
+    aliases: [prst, prestigeup, pup]
+  prestiges:
+    enable: true
+    aliases: [prestigelist]
+  rebirth:
+    enable: true
+    aliases: [reborn]
+  rebirths:
+    enable: true
+    aliases: [rebirthlist, rblist]
+  prx:
+    enable: true
+    aliases: [prisonranksx, prisonrx, pranksx]

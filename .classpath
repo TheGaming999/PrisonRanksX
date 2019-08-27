@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="C:/Users/Abdulmohsen/Downloads/spigot.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Abdulmohsen/Downloads/Vault.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Abdulmohsen/Downloads/HolographicDisplays.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Abdulmohsen/Downloads/ActionUtil-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Abdulmohsen/Downloads/PlaceholderAPI-2.10.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Abdulmohsen/Downloads/PermissionsEx-1.23.4.jar"/>
+	<classpathentry kind="lib" path="E:/Programs/MC-TestServer/plugins/EssentialsGroupManager.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Abdulmohsen/Downloads/MINECRAFT ANTI-EXPLOIT PLUGINS/LuckPerms-Bukkit-4.4.1.jar"/>
+	<classpathentry kind="lib" path="E:/Programs/MC-TestServer/plugins/MVdWPlaceholderAPI.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
