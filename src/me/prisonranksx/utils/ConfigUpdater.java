@@ -1,11 +1,16 @@
 package me.prisonranksx.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.plugin.Plugin;
 import org.yaml.snakeyaml.Yaml;
+
+import com.google.common.io.Files;
+
+import me.prisonranksx.PrisonRanksX;
 
 import java.io.*;
 import java.util.*;
@@ -21,6 +26,9 @@ import java.util.stream.Collectors;
  */
 public class ConfigUpdater {
 
+	private static String version = Bukkit.getVersion();
+	private static PrisonRanksX plugin = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+	
     /**
      * Update a yaml file from a resource inside your plugin jar
      * @param plugin You plugin
@@ -30,10 +38,13 @@ public class ConfigUpdater {
      * @throws IOException If an IOException occurs
      */
     public static void update(Plugin plugin, String resourceName, File toUpdate, List<String> ignoredSections) throws IOException {
+    	if(version.contains("1.5") || version.contains("1.6") || version.contains("1.4") || version.contains("1.3") || version.contains("1.2")) {
+    		plugin.getLogger().info("(Ignore if not important to you) Config comment updater doesn't support (" + version +")");
+    		return;
+    	}
         BufferedReader newReader = new BufferedReader(new InputStreamReader(plugin.getResource(resourceName)));
         List<String> newLines = newReader.lines().collect(Collectors.toList());
         newReader.close();
-
         FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(toUpdate);
         FileConfiguration newConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(plugin.getResource(resourceName)));
         BufferedWriter writer = new BufferedWriter(new FileWriter(toUpdate));

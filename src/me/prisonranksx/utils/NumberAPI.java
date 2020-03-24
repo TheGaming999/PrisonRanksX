@@ -395,7 +395,6 @@ public class NumberAPI {
 		}
 		return number;
 	}
-	
     /**
      * 
      * @param number the number you want to limit
@@ -409,4 +408,5 @@ public class NumberAPI {
 		}
 		return number;
 	}
+	
 }

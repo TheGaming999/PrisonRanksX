@@ -150,6 +150,18 @@ PRXAPI prxAPI;
 		if((arg1.equalsIgnoreCase("money"))) {
 			return String.valueOf(prxAPI.getPluginMainClass().formatBalance(prxAPI.getPluginMainClass().econ.getBalance(p)));
 		}
+		if(arg1.equalsIgnoreCase("rebirth_name")) {
+			if(!prxAPI.hasRebirthed(p)) {
+			  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-notrebirthed"), arg0.getName());
+			}
+			return String.valueOf(prxAPI.getPlayerRebirth(p));
+		}
+		if(arg1.equalsIgnoreCase("rebirth_displayname")) {
+			if(!prxAPI.hasRebirthed(p)) {
+				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-notrebirthed"), arg0.getName());
+				}
+			return String.valueOf(prxAPI.getPlayerRebirthDisplay(p));
+		}
 		if(arg1.equalsIgnoreCase("prestige_name")) {
 			if(!prxAPI.hasPrestiged(p)) {
 			  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
@@ -181,6 +193,24 @@ PRXAPI prxAPI;
 			} else {
 				return String.valueOf(prxAPI.getPlayerPrestigeCostFormatted(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
+		}
+		if(arg1.equalsIgnoreCase("nextrebirth_name")) {
+			if(!prxAPI.hasRebirthed(p)) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.nextrebirth-notrebirthed"), arg0.getName());
+			}
+			if(!prxAPI.hasNextRebirth(p)) {
+				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
+			}
+			return String.valueOf(prxAPI.getPlayerNextRebirth(p));
+		}
+		if(arg1.equalsIgnoreCase("nextrebirth_displayname")) {
+			if(!prxAPI.hasRebirthed(p)) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.nextrebirth-notrebirthed"), arg0.getName());
+			}
+			if(!prxAPI.hasNextRebirth(p)) {
+				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
+			}
+			return String.valueOf(prxAPI.getPlayerNextRebirthDisplay(p));
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_name")) {
 			if(!prxAPI.hasPrestiged(p)) {

@@ -21,6 +21,9 @@ public class ForceRankupCommand extends BukkitCommand {
 	}
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
+		if(!main.isRankEnabled) {
+			return true;
+		}
         if(args.length == 0) {
         	return true;
         } else if (args.length == 1) {

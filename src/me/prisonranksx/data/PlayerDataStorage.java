@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.XUUID;
 
 public class PlayerDataStorage {
 	
@@ -42,6 +43,7 @@ public class PlayerDataStorage {
 			pdh.setUUID(xu.getUUID());
 			getPlayerData().put(str, pdh);
 		}
+
 	}
 	public void loadPlayerData(OfflinePlayer player) {
 		    XUser xu = XUser.getXUser(player);
@@ -59,7 +61,7 @@ public class PlayerDataStorage {
 	}
 	
 	public boolean isRegistered(OfflinePlayer player) {
-		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()) != null;
+		return getPlayerData().get(XUUID.getXUUID(player).toString()) != null;
 	}
 	
 	public boolean isRegistered(String uuid) {
@@ -116,6 +118,10 @@ public class PlayerDataStorage {
 		getPlayerData().get(XUser.getXUser(player).getUUID().toString()).setRankPath(rankPath);
 	}
 	
+	public void setPlayerRank(UUID uuid, RankPath rankPath) {
+		getPlayerData().get(uuid.toString()).setRankPath(rankPath);
+	}
+	
 	public String getPlayerPrestige(OfflinePlayer player) {
 		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getPrestige();
 	}
@@ -144,6 +150,11 @@ public class PlayerDataStorage {
 	public void setPlayerRankPath(OfflinePlayer player, RankPath rankPath) {
 		getPlayerData().get(XUser.getXUser(player).getUUID().toString()).setRankPath(rankPath);
 	}
+	
+	public void setPlayerRankPath(UUID uuid, RankPath rankPath) {
+		getPlayerData().get(uuid.toString()).setRankPath(rankPath);
+	}
+	
 	public RankPath getPlayerRankPath(OfflinePlayer player) {
 		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath();
 	}

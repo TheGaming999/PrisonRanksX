@@ -21,6 +21,9 @@ public class RankupMaxCommand extends BukkitCommand{
 
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
+		if(!main.isRankEnabled) {
+			return true;
+		}
 		if(args.length == 0) {
 	      if(!(sender instanceof Player)) {
 	    	  return true;

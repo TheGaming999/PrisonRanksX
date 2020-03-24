@@ -280,6 +280,9 @@ public class RebirthDataStorage {
 	 * Should only be used onDisable()
 	 */
 	public void saveRebirthsData() {
+		if(!main.isRebirthEnabled) {
+			return;
+		}
 			for(Entry<String, RebirthDataHandler> rebirth : rebirthData.entrySet()) {
 				String nextRebirth = rebirthData.get(rebirth.getKey()).getNextRebirthName();
                  setData("Rebirths." + rebirth.getKey() + ".nextrebirth", rebirth.getValue().getNextRebirthName());

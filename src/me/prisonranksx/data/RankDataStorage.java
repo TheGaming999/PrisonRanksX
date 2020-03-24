@@ -17,9 +17,11 @@ public class RankDataStorage {
 
 	private HashMap<String, RankDataHandler> rankData;
 	private PrisonRanksX main;
+	private Set<String> paths;
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
 	   this.rankData = new HashMap<String, RankDataHandler>();
+	   this.paths = new HashSet<>();
 	}
 	
 	public RankDataStorage getStorage() {
@@ -87,6 +89,7 @@ public class RankDataStorage {
                 rdh.setSendFirework(sendFirework);
                 rdh.setPathName(pathName);
                 rankData.put(rankPath.get(), rdh);
+                paths.add(pathName);
 			 }
 			}
 	}
@@ -140,6 +143,9 @@ public class RankDataStorage {
         rankData.put(rankPath.get(), rdh);
 	}
 	
+	public Set<String> getPaths() {
+		return paths;
+	}
 	/**
 	 * 
 	 * @param rankName
@@ -316,6 +322,9 @@ public class RankDataStorage {
 	 * Should only be used onDisable()
 	 */
 	public void saveRanksData() {
+		if(!main.isRankEnabled) {
+			return;
+		}
 			for(Entry<String, RankDataHandler> rank : rankData.entrySet()) {
 				String rankName = rank.getKey().split("#~#")[0];
 				String rankup = rankData.get(rank.getKey()).getRankupName();

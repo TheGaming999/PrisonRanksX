@@ -3,6 +3,8 @@ package me.prisonranksx.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -27,13 +29,29 @@ public class CustomItemsManager {
 		return ChatColor.translateAlternateColorCodes('&', stringValue);
 	}
 	
+	public boolean hasCustomLevelItem(LevelType levelType, LevelState levelState) {
+		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
+		String stateName = levelState.name().toLowerCase();
+		boolean sectionExists = plugin.globalStorage.getMap().containsKey(levelName + "list-gui." + stateName + "-format.custom");  
+		return sectionExists;
+	}
+	
+	public boolean hasCustomFormat(LevelType levelType, LevelState levelState, String name) {
+		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
+		String stateName = levelState.name().toLowerCase();
+		boolean sectionExists = plugin.globalStorage.getMap().get(levelName + "list-gui." + stateName + "-format.custom").containsKey(name);  
+		return sectionExists;
+	}
+	
+	@Nullable
 	public String readCustomLevelItemName(LevelType levelType, LevelState levelState,String name) {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
-		ConfigurationSection section = (ConfigurationSection)plugin.globalStorage.getMap().get(levelName + "list-gui." + stateName + "-format.custom").get(name);   
+		ConfigurationSection section = (ConfigurationSection) plugin.globalStorage.getMap().get(levelName + "list-gui." + stateName + "-format.custom").get(name);   
 		return section.getString("itemNAME");
 	}
 	
+	@Nullable
 	public int readCustomLevelItemAmount(LevelType levelType, LevelState levelState,String name) {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
@@ -41,6 +59,7 @@ public class CustomItemsManager {
 		return section.getInt("itemAMOUNT");
 	}
 	
+	@Nullable
 	public String readCustomLevelItemDisplayName(LevelType levelType, LevelState levelState,String name) {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
@@ -48,6 +67,7 @@ public class CustomItemsManager {
 		return section.getString("itemDISPLAYNAME");
 	}
 	
+	@Nullable
 	public List<String> readCustomLevelItemLore(LevelType levelType, LevelState levelState,String name) {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
@@ -55,6 +75,7 @@ public class CustomItemsManager {
 		return section.getStringList("itemLORE");
 	}
 	
+	@Nullable
 	public List<String> readCustomLevelItemEnchantments(LevelType levelType, LevelState levelState,String name) {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
@@ -62,6 +83,7 @@ public class CustomItemsManager {
 		return section.getStringList("itemENCHANTMENTS");
 	}
 	
+	@Nullable
 	public List<String> readCustomLevelItemFlags(LevelType levelType, LevelState levelState,String name) {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
@@ -69,6 +91,7 @@ public class CustomItemsManager {
 		return section.getStringList("itemFLAGS");
 	}
 	
+	@Nullable
 	public List<String> readCustomLevelItemCommands(LevelType levelType, LevelState levelState,String name) {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
@@ -133,7 +156,7 @@ public class CustomItemsManager {
 					stackMeta.addEnchant(EnchantmentReader.matchEnchantment(enchantment), lvl, true);
 				}
 			} //enchantments check
-			if(stringMeta.startsWith("flags=")) {
+			if(stringMeta.startsWith("flags=") && !plugin.isBefore1_7) {
 				String flagsList = stringMeta.substring(6);
 				if(flagsList.contains("@")) {
 					for(String singleFlag : flagsList.split("@")) {

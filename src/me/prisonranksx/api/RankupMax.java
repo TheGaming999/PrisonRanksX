@@ -249,6 +249,9 @@ public class RankupMax {
 		main.sendRankFirework(p);
 		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         rankupMaxPassedRanks.put(p, rankups);
+        if(main.globalStorage.getBooleanData("Options.rankupmax-with-prestige")) {
+        	prxAPI.prestige(p);
+        }
 		XRankupMaxEvent x = new XRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
 		Bukkit.getScheduler().runTask(main, () -> {
 		main.getServer().getPluginManager().callEvent(x);

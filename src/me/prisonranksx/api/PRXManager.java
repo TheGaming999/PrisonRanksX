@@ -19,6 +19,8 @@ import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.data.RebirthDataHandler;
 import me.prisonranksx.data.XUser;
+import me.prisonranksx.hooks.MVdWPapiHook;
+import me.prisonranksx.hooks.PapiHook;
 import me.prisonranksx.utils.OnlinePlayers;
 
 public class PRXManager {
@@ -437,12 +439,42 @@ public class PRXManager {
 	public void reload() {
 	  main.configManager.reloadMainConfig();
       main.configManager.reloadConfigs();
+      main.globalStorage.loadGlobalData();
+      main.rankStorage.loadRanksData();
+      main.prestigeStorage.loadPrestigesData();
+      main.rebirthStorage.loadRebirthsData();
+      if(main.ishooked) {
+      main.papi = new PapiHook(main);
+      }
+      if(main.isMvdw) {
+    	  main.mvdw = new MVdWPapiHook(main);
+    	  main.mvdw.registerPlaceholders();
+      }
+      main.messagesStorage.loadMessages();
+      main.prxAPI = new PRXAPI();
+      main.prxAPI.setup();
+      main.prxAPI.loadPermissions();
+      main.prxAPI.loadProgressBars();
 	}
 	
 	public void save() {
 		main.rankStorage.saveRanksData();
 		main.prestigeStorage.savePrestigesData();
 		main.rebirthStorage.saveRebirthsData();
+		main.playerStorage.savePlayersData();
+		main.configManager.saveMainConfig();
+		if(main.isRankEnabled) {
+		main.configManager.saveRanksConfig();
+		main.configManager.saveRankDataConfig();
+		}
+		if(main.isPrestigeEnabled) {
+		main.configManager.savePrestigesConfig();
+		main.configManager.savePrestigeDataConfig();
+		}
+		if(main.isRebirthEnabled) {
+		main.configManager.saveRebirthsConfig();
+		main.configManager.saveRebirthDataConfig();
+		}
 	}
 	
 	public void createPrestige(String name, double cost) {

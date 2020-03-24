@@ -20,9 +20,9 @@ import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RankRandomCommands;
-import me.prisonranksx.events.RankupAction;
+import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.XAutoRankupEvent;
-import me.prisonranksx.events.XRankupEvent;
+import me.prisonranksx.events.XRankUpdateEvent;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class Rankup {
@@ -102,7 +102,7 @@ public class Rankup {
 			if(player == null) {
 				return;
 			}
-			XRankupEvent e = new XRankupEvent(player, RankupAction.FORCE_RANKUP);
+			XRankUpdateEvent e = new XRankUpdateEvent(player, RankUpdateCause.FORCE_RANKUP);
 			
 			if(e.isCancelled()) {
 				return;
@@ -261,6 +261,7 @@ public class Rankup {
 				spawnHologram(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
 			}
 			main.sendRankFirework(p);
+			e.setRankup(main.rankStorage.getRankupName(rp));
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
 			main.getServer().getPluginManager().callEvent(e);
@@ -279,7 +280,7 @@ public class Rankup {
 			if(player == null) {
 				return;
 			}
-			XRankupEvent e = new XRankupEvent(player, RankupAction.NORMAL_RANKUP);
+			XRankUpdateEvent e = new XRankUpdateEvent(player, RankUpdateCause.NORMAL_RANKUP);
 			
 			if(e.isCancelled()) {
 				return;
@@ -444,6 +445,7 @@ public class Rankup {
 			}
 			main.sendRankFirework(p);
 			main.econ.withdrawPlayer(p, prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
+			e.setRankup(main.rankStorage.getRankupName(rp));
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
 			main.getServer().getPluginManager().callEvent(e);

@@ -23,6 +23,9 @@ public class GuiListManager {
 	public PaginatedGUI ranksGUI;
 	public PaginatedGUI prestigesGUI;
 	public PaginatedGUI rebirthsGUI;
+	public RankItem emptyRankItem;
+	public PrestigeItem emptyPrestigeItem;
+	public RebirthItem emptyRebirthItem;
 	public List<Integer> allowedRankSlots, allowedPrestigeSlots, allowedRebirthSlots;
 	public GuiListManager(PrisonRanksX main) {this.main = main;
 	ranksGUI = new PaginatedGUI(this.main.prxAPI.c(this.main.globalStorage.getStringData("Ranklist-gui.title")));
@@ -31,6 +34,30 @@ public class GuiListManager {
 	allowedRankSlots = new ArrayList<>();
 	allowedPrestigeSlots = new ArrayList<>();
 	allowedRebirthSlots = new ArrayList<>();
+	emptyRankItem = new RankItem();
+	emptyRankItem.setMaterial(null);
+	emptyRankItem.setAmount(0);
+	emptyRankItem.setDisplayName(null);
+	emptyRankItem.setLore(null);
+	emptyRankItem.setEnchantments(null);
+	emptyRankItem.setFlags(null);
+	emptyRankItem.setCommands(null);
+	emptyPrestigeItem = new PrestigeItem();
+	emptyPrestigeItem.setMaterial(null);
+	emptyPrestigeItem.setAmount(0);
+	emptyPrestigeItem.setDisplayName(null);
+	emptyPrestigeItem.setLore(null);
+	emptyPrestigeItem.setEnchantments(null);
+	emptyPrestigeItem.setFlags(null);
+	emptyPrestigeItem.setCommands(null);
+	emptyRebirthItem = new RebirthItem();
+	emptyRebirthItem.setMaterial(null);
+	emptyRebirthItem.setAmount(0);
+	emptyRebirthItem.setDisplayName(null);
+	emptyRebirthItem.setLore(null);
+	emptyRebirthItem.setEnchantments(null);
+	emptyRebirthItem.setFlags(null);
+	emptyRebirthItem.setCommands(null);
 	}
 	
 	public void setupConstantItems() {
@@ -50,6 +77,11 @@ public class GuiListManager {
 					allowedRankSlots.add(i1);
 				}
 			}
+			//if(ranksGUI.getFinalPage() != 1) {
+			//for(int slot : allowedRankSlots) {
+			//	allowedRankSlots.add(slot + 54);
+			//}
+			//}
 		}
 
 		if(!this.main.globalStorage.getStringListData("Prestigelist-gui.constant-items").isEmpty()) {
@@ -89,6 +121,18 @@ public class GuiListManager {
 		}
 	}
 	
+	public RankItem getCustomItem(RankState rankState) {
+		return main.cri.getCustomRankItems().containsKey(rankState) ? main.cri.getCustomRankItems().get(rankState) : emptyRankItem;
+	}
+	
+	public PrestigeItem getCustomItem(PrestigeState prestigeState) {
+		return main.cpi.getCustomPrestigeItems().containsKey(prestigeState) ? main.cpi.getCustomPrestigeItems().get(prestigeState) : emptyPrestigeItem;
+	}
+	
+	public RebirthItem getCustomItem(RebirthState rebirthState) {
+		return main.crri.getCustomRebirthItems().containsKey(rebirthState) ? main.crri.getCustomRebirthItems().get(rebirthState) : emptyRebirthItem;
+	}
+	
 	public void openRanksGUI(Player player) {
 		Player p = player;
 		RankPath rp = main.prxAPI.getPlayerRankPath(p);
@@ -97,6 +141,7 @@ public class GuiListManager {
 		List<String> ranksCollection = main.prxAPI.getRanksCollection(playerPath);
 		int playerRankIndex = ranksCollection.indexOf(playerRank);
 		String playerPrestige = main.prxAPI.getPlayerPrestige(p);
+		RankState rs = new RankState();
 		for(String rank : ranksCollection) {
 			int rankIndex = ranksCollection.indexOf(rank);
 			if(playerRankIndex > rankIndex) { // if completed
@@ -107,17 +152,24 @@ public class GuiListManager {
 				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostNB(playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
+				rs.setLevelState(LevelState.COMPLETED);
+				rs.setRankPath(xrp);
 				// }
-				String itemName = main.globalStorage.getStringData("Ranklist-gui.completed-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Ranklist-gui.completed-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Ranklist-gui.completed-format.itemDISPLAYNAME").replace("%completedrank%", rankName)
+				String itemName = getCustomItem(rs).getMaterial() != null ? getCustomItem(rs).getMaterial() : main.globalStorage.getStringData("Ranklist-gui.completed-format.itemNAME");
+				int itemAmount = getCustomItem(rs).getAmount() != 0 ? getCustomItem(rs).getAmount() : main.globalStorage.getIntegerData("Ranklist-gui.completed-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(rs).getDisplayName() != null ? getCustomItem(rs).getDisplayName()
+						.replace("%completedrank_display%", rankDisplayName)
+						.replace("%completedrank_cost%", rankCost)
+						.replace("%completedrank_cost_formatted%", formattedRankCost) 
+						: 
+							main.globalStorage.getStringData("Ranklist-gui.completed-format.itemDISPLAYNAME").replace("%completedrank%", rankName)
 						.replace("%completedrank_display%", rankDisplayName)
 						.replace("%completedrank_cost%", rankCost)
 						.replace("%completedrank_cost_formatted%", formattedRankCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack completedItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -134,7 +186,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					completedMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				completedItem.setItemMeta(completedMeta);
 				GUIButton completedButton = new GUIButton(completedItem);
 				completedButton.setListener(event -> {
@@ -168,17 +222,24 @@ public class GuiListManager {
 				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostNB(playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
+				rs.setLevelState(LevelState.CURRENT);
+				rs.setRankPath(xrp);
 				// }
-				String itemName = main.globalStorage.getStringData("Ranklist-gui.current-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Ranklist-gui.current-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Ranklist-gui.current-format.itemDISPLAYNAME").replace("%currentrank%", rankName)
+				String itemName = getCustomItem(rs).getMaterial() != null ? getCustomItem(rs).getMaterial() : main.globalStorage.getStringData("Ranklist-gui.current-format.itemNAME");
+				int itemAmount = getCustomItem(rs).getAmount() != 0 ? getCustomItem(rs).getAmount() : main.globalStorage.getIntegerData("Ranklist-gui.current-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(rs).getDisplayName() != null ? getCustomItem(rs).getDisplayName()	
+						.replace("%currentrank_display%", rankDisplayName)
+						.replace("%currentrank_cost%", rankCost)
+						.replace("%currentrank_cost_formatted%", formattedRankCost) 
+						: 
+							main.globalStorage.getStringData("Ranklist-gui.current-format.itemDISPLAYNAME").replace("%currentrank%", rankName)
 						.replace("%currentrank_display%", rankDisplayName)
 						.replace("%currentrank_cost%", rankCost)
 						.replace("%currentrank_cost_formatted%", formattedRankCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Ranklist-gui.current-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Ranklist-gui.current-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Ranklist-gui.current-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Ranklist-gui.current-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Ranklist-gui.current-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Ranklist-gui.current-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Ranklist-gui.current-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Ranklist-gui.current-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack currentItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -195,7 +256,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					currentMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				currentItem.setItemMeta(currentMeta);
 				GUIButton currentButton = new GUIButton(currentItem);
 				currentButton.setListener(event -> {
@@ -228,17 +291,24 @@ public class GuiListManager {
 				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostNB(playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
+				rs.setLevelState(LevelState.OTHER);
+				rs.setRankPath(xrp);
 				// }
-				String itemName = main.globalStorage.getStringData("Ranklist-gui.other-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Ranklist-gui.other-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Ranklist-gui.other-format.itemDISPLAYNAME").replace("%otherrank%", rankName)
+				String itemName = getCustomItem(rs).getMaterial() != null ? getCustomItem(rs).getMaterial() : main.globalStorage.getStringData("Ranklist-gui.other-format.itemNAME");
+				int itemAmount = getCustomItem(rs).getAmount() != 0 ? getCustomItem(rs).getAmount() : main.globalStorage.getIntegerData("Ranklist-gui.other-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(rs).getDisplayName() != null ? getCustomItem(rs).getDisplayName()
+						.replace("%otherrank_display%", rankDisplayName)
+						.replace("%otherrank_cost%", rankCost)
+						.replace("%otherrank_cost_formatted%", formattedRankCost) 
+						: 
+							main.globalStorage.getStringData("Ranklist-gui.other-format.itemDISPLAYNAME").replace("%otherrank%", rankName)
 						.replace("%otherrank_display%", rankDisplayName)
 						.replace("%otherrank_cost%", rankCost)
 						.replace("%otherrank_cost_formatted%", formattedRankCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Ranklist-gui.other-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Ranklist-gui.other-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Ranklist-gui.other-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Ranklist-gui.other-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Ranklist-gui.other-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Ranklist-gui.other-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Ranklist-gui.other-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Ranklist-gui.other-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack otherItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -255,7 +325,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					otherMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				otherItem.setItemMeta(otherMeta);
 				GUIButton otherButton = new GUIButton(otherItem);
 				otherButton.setListener(event -> {
@@ -289,6 +361,7 @@ public class GuiListManager {
 		String playerPrestige = main.prxAPI.getPlayerPrestige(p);
 		List<String> prestigesCollection = main.prxAPI.getPrestigesCollection();
 		int playerPrestigeIndex = prestigesCollection.indexOf(playerPrestige);
+		PrestigeState ps = new PrestigeState();
 		for(String prestige : prestigesCollection) {
 			int prestigeIndex = prestigesCollection.indexOf(prestige);
 			if(playerPrestigeIndex > prestigeIndex) { // if completed
@@ -298,17 +371,19 @@ public class GuiListManager {
 				double prestigeCostNumber = (main.prestigeStorage.getCost(prestigeName));
 				String prestigeCost = String.valueOf(prestigeCostNumber);
 				String formattedPrestigeCost = main.formatBalance(prestigeCostNumber);
+				ps.setLevelState(LevelState.COMPLETED);
+				ps.setPrestige(prestigeName);
 				// }
-				String itemName = main.globalStorage.getStringData("Prestigelist-gui.completed-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Prestigelist-gui.completed-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Prestigelist-gui.completed-format.itemDISPLAYNAME").replace("%completedprestige%", prestigeName)
+				String itemName = getCustomItem(ps).getMaterial() != null ? getCustomItem(ps).getMaterial() : main.globalStorage.getStringData("Prestigelist-gui.completed-format.itemNAME");
+				int itemAmount = getCustomItem(ps).getAmount() != 0 ? getCustomItem(ps).getAmount() : main.globalStorage.getIntegerData("Prestigelist-gui.completed-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(ps).getDisplayName() != null ? getCustomItem(ps).getDisplayName() : main.globalStorage.getStringData("Prestigelist-gui.completed-format.itemDISPLAYNAME").replace("%completedprestige%", prestigeName)
 						.replace("%completedprestige_display%", prestigeDisplayName)
 						.replace("%completedprestige_cost%", prestigeCost)
 						.replace("%completedprestige_cost_formatted%", formattedPrestigeCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(ps).getLore() != null ? getCustomItem(ps).getLore() : main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(ps).getEnchantments() != null ? getCustomItem(ps).getEnchantments() : main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(ps).getFlags() != null ? getCustomItem(ps).getFlags() : main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(ps).getCommands() != null ? getCustomItem(ps).getCommands() : main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack completedItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -325,7 +400,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					completedMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				completedItem.setItemMeta(completedMeta);
 				GUIButton completedButton = new GUIButton(completedItem);
 				completedButton.setListener(event -> {
@@ -357,17 +434,19 @@ public class GuiListManager {
 				double prestigeCostNumber = (main.prestigeStorage.getCost(prestigeName));
 				String prestigeCost = String.valueOf(prestigeCostNumber);
 				String formattedPrestigeCost = main.formatBalance(prestigeCostNumber);
+				ps.setLevelState(LevelState.CURRENT);
+				ps.setPrestige(prestigeName);
 				// }
-				String itemName = main.globalStorage.getStringData("Prestigelist-gui.current-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Prestigelist-gui.current-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Prestigelist-gui.current-format.itemDISPLAYNAME").replace("%currentprestige%", prestigeName)
+				String itemName = getCustomItem(ps).getMaterial() != null ? getCustomItem(ps).getMaterial() : main.globalStorage.getStringData("Prestigelist-gui.current-format.itemNAME");
+				int itemAmount = getCustomItem(ps).getAmount() != 0 ? getCustomItem(ps).getAmount() : main.globalStorage.getIntegerData("Prestigelist-gui.current-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(ps).getDisplayName() != null ? getCustomItem(ps).getDisplayName() : main.globalStorage.getStringData("Prestigelist-gui.current-format.itemDISPLAYNAME").replace("%currentprestige%", prestigeName)
 						.replace("%currentprestige_display%", prestigeDisplayName)
 						.replace("%currentprestige_cost%", prestigeCost)
 						.replace("%currentprestige_cost_formatted%", formattedPrestigeCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(ps).getLore() != null ? getCustomItem(ps).getLore() : main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(ps).getEnchantments() != null ? getCustomItem(ps).getEnchantments() : main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(ps).getFlags() != null ? getCustomItem(ps).getFlags() : main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(ps).getCommands() != null ? getCustomItem(ps).getCommands() : main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack currentItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -384,7 +463,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					currentMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				currentItem.setItemMeta(currentMeta);
 				GUIButton currentButton = new GUIButton(currentItem);
 				currentButton.setListener(event -> {
@@ -416,17 +497,19 @@ public class GuiListManager {
 				double prestigeCostNumber = (main.prestigeStorage.getCost(prestigeName));
 				String prestigeCost = String.valueOf(prestigeCostNumber);
 				String formattedPrestigeCost = main.formatBalance(prestigeCostNumber);
+				ps.setLevelState(LevelState.OTHER);
+				ps.setPrestige(prestigeName);
 				// }
-				String itemName = main.globalStorage.getStringData("Prestigelist-gui.other-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Prestigelist-gui.other-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Prestigelist-gui.other-format.itemDISPLAYNAME").replace("%otherprestige%", prestigeName)
+				String itemName = getCustomItem(ps).getMaterial() != null ? getCustomItem(ps).getMaterial() : main.globalStorage.getStringData("Prestigelist-gui.other-format.itemNAME");
+				int itemAmount = getCustomItem(ps).getAmount() != 0 ? getCustomItem(ps).getAmount() : main.globalStorage.getIntegerData("Prestigelist-gui.other-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(ps).getDisplayName() != null ? getCustomItem(ps).getDisplayName() : main.globalStorage.getStringData("Prestigelist-gui.other-format.itemDISPLAYNAME").replace("%otherprestige%", prestigeName)
 						.replace("%otherprestige_display%", prestigeDisplayName)
 						.replace("%otherprestige_cost%", prestigeCost)
 						.replace("%otherprestige_cost_formatted%", formattedPrestigeCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(ps).getLore() != null ? getCustomItem(ps).getLore() : main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(ps).getEnchantments() != null ? getCustomItem(ps).getEnchantments() : main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(ps).getFlags() != null ? getCustomItem(ps).getFlags() : main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(ps).getCommands() != null ? getCustomItem(ps).getCommands() : main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack otherItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -443,7 +526,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					otherMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				otherItem.setItemMeta(otherMeta);
 				GUIButton otherButton = new GUIButton(otherItem);
 				otherButton.setListener(event -> {
@@ -477,6 +562,7 @@ public class GuiListManager {
 		String playerRebirth = main.prxAPI.getPlayerRebirth(p);
 		List<String> rebirthsCollection = main.prxAPI.getRebirthsCollection();
 		int playerRebirthIndex = rebirthsCollection.indexOf(playerRebirth);
+		RebirthState rs = new RebirthState();
 		for(String rebirth : rebirthsCollection) {
 			int rebirthIndex = rebirthsCollection.indexOf(rebirth);
 			if(playerRebirthIndex > rebirthIndex) { // if completed
@@ -486,17 +572,19 @@ public class GuiListManager {
 				double rebirthCostNumber = (main.rebirthStorage.getCost(rebirthName));
 				String rebirthCost = String.valueOf(rebirthCostNumber);
 				String formattedRebirthCost = main.formatBalance(rebirthCostNumber);
+				rs.setLevelState(LevelState.COMPLETED);
+				rs.setRebirth(rebirth);
 				// }
-				String itemName = main.globalStorage.getStringData("Rebirthlist-gui.completed-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Rebirthlist-gui.completed-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Rebirthlist-gui.completed-format.itemDISPLAYNAME").replace("%completedrebirth%", rebirthName)
+				String itemName = getCustomItem(rs).getMaterial() != null ? getCustomItem(rs).getMaterial() : main.globalStorage.getStringData("Rebirthlist-gui.completed-format.itemNAME");
+				int itemAmount = getCustomItem(rs).getAmount() != 0 ? getCustomItem(rs).getAmount() : main.globalStorage.getIntegerData("Rebirthlist-gui.completed-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(rs).getDisplayName() != null ? getCustomItem(rs).getDisplayName() : main.globalStorage.getStringData("Rebirthlist-gui.completed-format.itemDISPLAYNAME").replace("%completedrebirth%", rebirthName)
 						.replace("%completedrebirth_display%", rebirthDisplayName)
 						.replace("%completedrebirth_cost%", rebirthCost)
 						.replace("%completedrebirth_cost_formatted%", formattedRebirthCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack completedItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -513,7 +601,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					completedMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				completedItem.setItemMeta(completedMeta);
 				GUIButton completedButton = new GUIButton(completedItem);
 				completedButton.setListener(event -> {
@@ -545,17 +635,19 @@ public class GuiListManager {
 				double rebirthCostNumber = (main.rebirthStorage.getCost(rebirthName));
 				String rebirthCost = String.valueOf(rebirthCostNumber);
 				String formattedRebirthCost = main.formatBalance(rebirthCostNumber);
+				rs.setLevelState(LevelState.CURRENT);
+				rs.setRebirth(rebirthName);
 				// }
-				String itemName = main.globalStorage.getStringData("Rebirthlist-gui.current-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Rebirthlist-gui.current-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Rebirthlist-gui.current-format.itemDISPLAYNAME").replace("%currentrebirth%", rebirthName)
+				String itemName = getCustomItem(rs).getMaterial() != null ? getCustomItem(rs).getMaterial() : main.globalStorage.getStringData("Rebirthlist-gui.current-format.itemNAME");
+				int itemAmount = getCustomItem(rs).getAmount() != 0 ? getCustomItem(rs).getAmount() : main.globalStorage.getIntegerData("Rebirthlist-gui.current-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(rs).getDisplayName() != null ? getCustomItem(rs).getDisplayName() : main.globalStorage.getStringData("Rebirthlist-gui.current-format.itemDISPLAYNAME").replace("%currentrebirth%", rebirthName)
 						.replace("%currentrebirth_display%", rebirthDisplayName)
 						.replace("%currentrebirth_cost%", rebirthCost)
 						.replace("%currentrebirth_cost_formatted%", formattedRebirthCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack currentItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -572,7 +664,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					currentMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				currentItem.setItemMeta(currentMeta);
 				GUIButton currentButton = new GUIButton(currentItem);
 				currentButton.setListener(event -> {
@@ -604,17 +698,19 @@ public class GuiListManager {
 				double rebirthCostNumber = (main.rebirthStorage.getCost(rebirthName));
 				String rebirthCost = String.valueOf(rebirthCostNumber);
 				String formattedRebirthCost = main.formatBalance(rebirthCostNumber);
+				rs.setLevelState(LevelState.OTHER);
+				rs.setRebirth(rebirthName);
 				// }
-				String itemName = main.globalStorage.getStringData("Rebirthlist-gui.other-format.itemNAME");
-				int itemAmount = main.globalStorage.getIntegerData("Rebirthlist-gui.other-format.itemAMOUNT");
-				String itemDisplayName = main.globalStorage.getStringData("Rebirthlist-gui.other-format.itemDISPLAYNAME").replace("%otherrebirth%", rebirthName)
+				String itemName = getCustomItem(rs).getMaterial() != null ? getCustomItem(rs).getMaterial() : main.globalStorage.getStringData("Rebirthlist-gui.other-format.itemNAME");
+				int itemAmount = getCustomItem(rs).getAmount() != 0 ? getCustomItem(rs).getAmount() : main.globalStorage.getIntegerData("Rebirthlist-gui.other-format.itemAMOUNT");
+				String itemDisplayName = getCustomItem(rs).getDisplayName() != null ? getCustomItem(rs).getDisplayName() : main.globalStorage.getStringData("Rebirthlist-gui.other-format.itemDISPLAYNAME").replace("%otherrebirth%", rebirthName)
 						.replace("%otherrebirth_display%", rebirthDisplayName)
 						.replace("%otherrebirth_cost%", rebirthCost)
 						.replace("%otherrebirth_cost_formatted%", formattedRebirthCost);
-				List<String> itemLore = main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemLORE");
-				List<String> itemEnchantments = main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemENCHANTMENTS");
-				List<String> itemFlags = main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemFLAGS");
-				List<String> itemCommands = main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemCOMMANDS");
+				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemLORE");
+				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemENCHANTMENTS");
+				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemFLAGS");
+				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
 				ItemStack otherItem = XMaterial.matchXMaterial(itemName).parseItem(true);
@@ -631,7 +727,9 @@ public class GuiListManager {
 					int lvl = Integer.valueOf(splittedLine[1]);
 					otherMeta.addEnchant(enchant, lvl, true);
 				});
+				if(!main.isBefore1_7) {
 				itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+				}
 				otherItem.setItemMeta(otherMeta);
 				GUIButton otherButton = new GUIButton(otherItem);
 				otherButton.setListener(event -> {

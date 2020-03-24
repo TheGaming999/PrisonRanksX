@@ -4,59 +4,45 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.LevelType;
 import me.prisonranksx.data.PercentageState;
-import me.prisonranksx.data.PrestigeRandomCommands;
 import me.prisonranksx.data.RankPath;
-import me.prisonranksx.data.RankRandomCommands;
-import me.prisonranksx.events.RankupAction;
-import me.prisonranksx.events.XPrestigeEvent;
-import me.prisonranksx.events.XRankupEvent;
 import me.prisonranksx.utils.MCProgressBar;
 import me.prisonranksx.utils.NumberAPI;
-import me.prisonranksx.utils.ProgressBarBuilder;
 
 public class PRXAPI {
 	public NumberAPI numberAPI;
-	public MCProgressBar rankupProgressBar;
-	public MCProgressBar rankupProgressBarExtended;
-	public MCProgressBar globalProgressBar_rank;
-	public MCProgressBar globalProgressBarExtended_rank;
-	public MCProgressBar globalProgressBar_prestige;
-	public MCProgressBar globalProgressBarExtended_prestige;
-	public MCProgressBar globalProgressBar_rebirth;
-	public MCProgressBar globalProgressBarExtended_rebirth;
-	public FileConfiguration rankDataConfig;
-	public FileConfiguration prestigeDataConfig;
-	public FileConfiguration rebirthDataConfig;
-	public FileConfiguration customConfig;
-	public FileConfiguration originalConfig;
-	public FileConfiguration ranksConfig;
-	public FileConfiguration prestigesConfig;
-	public FileConfiguration rebirthsConfig;
-	public FileConfiguration commandsConfig;
-	public FileConfiguration messagesConfig;
+	private MCProgressBar rankupProgressBar;
+	private MCProgressBar rankupProgressBarExtended;
+	private MCProgressBar globalProgressBar_rank;
+	private MCProgressBar globalProgressBarExtended_rank;
+	private MCProgressBar globalProgressBar_prestige;
+	private MCProgressBar globalProgressBarExtended_prestige;
+	private MCProgressBar globalProgressBar_rebirth;
+	private MCProgressBar globalProgressBarExtended_rebirth;
+	private FileConfiguration rankDataConfig;
+	private FileConfiguration prestigeDataConfig;
+	private FileConfiguration rebirthDataConfig;
+	private FileConfiguration customConfig;
+	private FileConfiguration originalConfig;
+	private FileConfiguration ranksConfig;
+	private FileConfiguration prestigesConfig;
+	private FileConfiguration rebirthsConfig;
+	private FileConfiguration commandsConfig;
+	private FileConfiguration messagesConfig;
     public PrisonRanksX main = null;
-	public  List<Player> autoRankupPlayers;
+	public List<Player> autoRankupPlayers;
 	public List<Player> taskedPlayers;
 	public Set<String> allRankAddPermissions, allRankDelPermissions, allPrestigeAddPermissions
 	, allPrestigeDelPermissions, allRebirthAddPermissions, allRebirthDelPermissions;
@@ -204,7 +190,7 @@ public class PRXAPI {
 	}
 	
 	@Deprecated
-	 public  void saveCustomYml(FileConfiguration ymlConfig, File ymlFile) {
+	 public void saveCustomYml(FileConfiguration ymlConfig, File ymlFile) {
 		    try {
 		      ymlConfig.save(ymlFile);
 		   } catch (IOException e) {
@@ -220,6 +206,7 @@ public class PRXAPI {
 	public boolean uuidOption() {
 		return main.globalStorage.getBooleanData("Options.USE-UUID");
 	}
+	
 	public PrisonRanksX getPluginMainClass() {
 		return main;
 	}
@@ -359,14 +346,19 @@ public class PRXAPI {
 		return rebirthName;
 	}
 	
+	@Deprecated
     public String getRankupProgressStyle() {
     	String s = getPluginMainClass().getStringWithoutPAPI(main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-style"));
 		return s;
     }
+	
+	@Deprecated
     public String getRankupProgressFilled() {
     	String f = getPluginMainClass().getStringWithoutPAPI(main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-filled"));
     	return f;
     }
+	
+	@Deprecated
     public String getRankupProgressNeeded() {
     	String n = getPluginMainClass().getStringWithoutPAPI(main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-needed"));
     	return n;
@@ -509,6 +501,11 @@ public class PRXAPI {
     	}
     }
     
+    /**
+     * 
+     * @param offlinePlayer
+     * @return next stage progress bar | stage => {rank,prestige,rebirth}
+     */
     public String getPlayerNextProgress(OfflinePlayer offlinePlayer) {
     	OfflinePlayer p = offlinePlayer;
     	if(getPlayerNextPercentage(p).getLevelType() == LevelType.RANK ) {
@@ -760,7 +757,7 @@ public class PRXAPI {
 	    * PrisonRanksX API
 	    * 
 	    *  @param offlinePlayer
-	    *  @return double player rank up cost with prestige increase applied
+	    *  @return double player rank up cost with prestige increase applied | returns 0.0 if not prestiged
 	    */
 	public Double getPlayerRankupCostWithIncrease(OfflinePlayer offlinePlayer) {
               if(hasPrestiged(offlinePlayer)) {
@@ -782,7 +779,7 @@ public class PRXAPI {
 	   /**
 	    * PrisonRanksX API
 	    * 
-	    *  @param text
+	    *  @param string
 	    *  @param player
 	    *  @return PlaceholderAPI parsed string with symbols
 	    */
@@ -813,10 +810,18 @@ public class PRXAPI {
 		return main.rankStorage.getRanksCollection(pathName);
 	}
 	
+	/**
+	 * 
+	 * @return a list of  available prestige names
+	 */
 	public List<String> getPrestigesCollection() {
 		return main.prestigeStorage.getPrestigesCollection();
 	}
 	
+	/**
+	 * 
+	 * @return a list of available rebirth names
+	 */
 	public List<String> getRebirthsCollection() {
 		return main.rebirthStorage.getRebirthsCollection();
 	}
@@ -1246,8 +1251,6 @@ public class PRXAPI {
 		if(!hasPrestiged(offlinePlayer)) {
 			return main.prestigeStorage.getCost(getFirstPrestige());
 		}
-		main.debug("Your prestige: " + getPlayerPrestige(offlinePlayer));
-		main.debug("Your next prestige: " + getPlayerNextPrestige(offlinePlayer));
 	    double nextPrestigeCost = main.prestigeStorage.getNextPrestigeCost(getPlayerPrestige(offlinePlayer));
 		return nextPrestigeCost;
 	}
@@ -1260,7 +1263,7 @@ public class PRXAPI {
 		return nextRebirthCost;
 	}
 	
-	public  String getPlayerNextPrestigeCostFormatted(OfflinePlayer offlinePlayer) {
+	public String getPlayerNextPrestigeCostFormatted(OfflinePlayer offlinePlayer) {
 		return getPluginMainClass().formatBalance(getPlayerNextPrestigeCost(offlinePlayer));
 	}
 	
@@ -1357,6 +1360,12 @@ public class PRXAPI {
 		return afterinc;
 	}
 	
+	/**
+	 * 
+	 * @param prestigeName
+	 * @param rankPath
+	 * @return rankup cost with prestige increase applied | returns only rankup cost if no prestige
+	 */
 	public double getIncreasedRankupCostNB(String prestigeName, RankPath rankPath) {
 		double eff = getRankCostMethodII(rankPath);
 		if(prestigeName == null || prestigeName.equalsIgnoreCase("null")) {
@@ -1368,6 +1377,12 @@ public class PRXAPI {
 		return afterinc;
 	}
 	
+	/**
+	 * 
+	 * @param prestigeName
+	 * @param rankCost
+	 * @return rankup cost with prestige increase applied | returns only rankup cost if no prestige
+	 */
 	public double getIncreasedRankupCost(String prestigeName, Double rankCost) {
 		if(prestigeName == null || prestigeName.equalsIgnoreCase("null")) {
 			return rankCost;
@@ -1534,7 +1549,7 @@ public class PRXAPI {
 	/**
 	 * 
 	 * @param player
-	 * @return -0 if player leaderboard position is less than 10
+	 * @return -0 if player leaderboard position is more than 10
 	 */
 	public Integer getPlayerLeaderboardPosition(OfflinePlayer player) {
 		return 0;
@@ -1543,7 +1558,7 @@ public class PRXAPI {
 	/**
 	 * 
 	 * @param intValue
-	 * @return null if player leaderboard position is less than 10
+	 * @return null if player leaderboard position is more than 10
 	 */
     public OfflinePlayer getLeaderboardPosition(Integer intValue) {
     	return null;

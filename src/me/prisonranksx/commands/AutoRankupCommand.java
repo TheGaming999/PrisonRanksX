@@ -20,6 +20,9 @@ public class AutoRankupCommand extends BukkitCommand
 	}
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
+		if(!main.isRankEnabled) {
+			return true;
+		}
 		if(!(sender instanceof Player)) {
 			return true;
 		}

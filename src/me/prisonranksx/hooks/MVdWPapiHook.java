@@ -265,6 +265,32 @@ public class MVdWPapiHook {
 				return String.valueOf(prxAPI.getPluginMainClass().formatBalance(prxAPI.getPluginMainClass().econ.getBalance(p)));
 			}
 	    });
+	    PlaceholderAPI.registerPlaceholder(main, "prisonranksx_rebirth_name", new PlaceholderReplacer() {
+			@Override
+			public String onPlaceholderReplace(PlaceholderReplaceEvent e) {
+				if(!e.isOnline()) {
+					return "Offline";
+				}
+				OfflinePlayer p = e.getOfflinePlayer();
+				if(!prxAPI.hasRebirthed(p)) {
+				 return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rebirth-notrebirthed"), e.getPlayer().getName());
+				}
+				return String.valueOf(prxAPI.getPlayerRebirth(p));
+			}
+	    });
+	    PlaceholderAPI.registerPlaceholder(main, "prisonranksx_rebirth_displayname", new PlaceholderReplacer() {
+			@Override
+			public String onPlaceholderReplace(PlaceholderReplaceEvent e) {
+				if(!e.isOnline()) {
+					return "Offline";
+				}
+				OfflinePlayer p = e.getOfflinePlayer();
+				if(!prxAPI.hasRebirthed(p)) {
+			     return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rebirth-notrebirthed"), e.getPlayer().getName());
+				}
+				 return String.valueOf(prxAPI.getPlayerRebirthDisplay(p));
+			}
+	    });
 	    PlaceholderAPI.registerPlaceholder(main, "prisonranksx_prestige_name", new PlaceholderReplacer() {
 			@Override
 			public String onPlaceholderReplace(PlaceholderReplaceEvent e) {

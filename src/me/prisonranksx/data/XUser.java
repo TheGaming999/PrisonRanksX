@@ -7,6 +7,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.XUUID;
 
 public class XUser {
 
@@ -16,9 +17,8 @@ public class XUser {
         this.uuid = uuid;
 	}
 	
-	@Deprecated
 	public static XUser getXUser(OfflinePlayer offlinePlayer) {
-		return new XUser(offlinePlayer.getUniqueId());
+       return  new XUser(XUUID.getXUUID(offlinePlayer));
 	}
 	
 	@Deprecated

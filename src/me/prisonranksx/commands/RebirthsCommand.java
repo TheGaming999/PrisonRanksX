@@ -21,6 +21,9 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
+		if(!main.isRebirthEnabled) {
+			return true;
+		}
 		if(!(sender instanceof Player)) {
 			try {
 			sender.sendMessage(main.prxAPI.c(main.rebirthsAPI.rebirthListConsole));

@@ -63,7 +63,7 @@ public class PRXCommand extends BukkitCommand {
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
         if(args.length == 0) {
-        	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &dv2.5 BETA"));
+        	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
         	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
             sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         	sender.sendMessage(main.prxAPI.c("&c/&6prx help [page] &7⎟ &3show the available commands"));
@@ -83,7 +83,7 @@ public class PRXCommand extends BukkitCommand {
             sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         } else if (args.length == 1) {
         	if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
-            	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &dv2.5 BETA"));
+            	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
             	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
                 sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
             	sender.sendMessage(main.prxAPI.c("&c/&6prx help [page] &7⎟ &3type member in the page for members help"));
@@ -101,13 +101,19 @@ public class PRXCommand extends BukkitCommand {
                 sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3)"));
                 sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         	} else if (args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("rl")) {
+        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        		sender.sendMessage(main.prxAPI.c("&eReloading..."));
         		main.manager.reload();
         		sender.sendMessage(main.prxAPI.g("reload"));
+        		});
         	} else if (args[0].equalsIgnoreCase("cleartask")) {
         		main.prxAPI.taskedPlayers.clear();
         	} else if (args[0].equalsIgnoreCase("save")) {
+        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        		sender.sendMessage(main.prxAPI.c("&eSaving data..."));
         		main.manager.save();
         		sender.sendMessage(main.prxAPI.g("save"));
+        		});
         	} else if (args[0].equalsIgnoreCase("createrank")) {
         		sender.sendMessage(main.prxAPI.c("&c/&6prx createrank &4<name> <cost> &c[displayname]"));
         	} else if (args[0].equalsIgnoreCase("createprestige")) {
@@ -165,7 +171,7 @@ public class PRXCommand extends BukkitCommand {
         } else if(args.length == 2) {
         	if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
         		if(args[1].equalsIgnoreCase("1")) {
-                	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &dv2.5 BETA"));
+                	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
                 	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
                 	sender.sendMessage(main.prxAPI.c("&c/&6prx help [page] &7⎟ &3shows the available commands"));
@@ -183,7 +189,7 @@ public class PRXCommand extends BukkitCommand {
                     sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3)"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         		} else if (args[1].equalsIgnoreCase("2")) {
-                   	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &dv2.5 BETA"));
+                   	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
                 	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
                 	sender.sendMessage(main.prxAPI.c("&c/&6prx createprestige <name> <cost> [displayname]"));
@@ -198,7 +204,7 @@ public class PRXCommand extends BukkitCommand {
                     sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f2&7/&f3)"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         		} else if (args[1].equalsIgnoreCase("3")) {
-                   	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &dv2.5 BETA"));
+                   	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
                 	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
                 	sender.sendMessage(main.prxAPI.c("&c/&6prx createrebirth <name> <cost> [displayname]"));
@@ -223,6 +229,18 @@ public class PRXCommand extends BukkitCommand {
         			sender.sendMessage(main.prxAPI.c("&6/rebirths"));
         			sender.sendMessage(main.prxAPI.c("&6/autorankup"));
         		}
+        	} else if (args[0].equalsIgnoreCase("createrank")) {
+        		sender.sendMessage(main.prxAPI.c("&c/&6prx createrank <name> &4<cost> &c[displayname]"));
+        	} else if (args[0].equalsIgnoreCase("createprestige")) {
+        		sender.sendMessage(main.prxAPI.c("&c/&6prx createprestige <name> &4<cost> &c[displayname]"));
+        	} else if (args[0].equalsIgnoreCase("createrebirth")) {
+        		sender.sendMessage(main.prxAPI.c("&c/&6prx createrebirth <name> &4<cost> &c[displayname]"));
+        	} else if (args[0].equalsIgnoreCase("setrank")) {
+        		sender.sendMessage(main.prxAPI.c("&c/&6prx setrank <player> &4<rank>"));
+        	} else if (args[0].equalsIgnoreCase("setprestige")) {
+        		sender.sendMessage(main.prxAPI.c("&c/&6prx setprestige <player> &4<prestige>"));
+        	} else if (args[0].equalsIgnoreCase("setrebirth")) {
+        		sender.sendMessage(main.prxAPI.c("&c/&6prx setrebirth <player> &4<rebirth>"));
         	}
         	else if(args[0].equalsIgnoreCase("delrank")) {
         		String matchedRank = main.manager.matchRank(args[1]);
@@ -538,6 +556,44 @@ public class PRXCommand extends BukkitCommand {
             	sender.sendMessage(main.prxAPI.g("setrankpath").replace("%args1%", rank)
             			.replace("%args2%", newPath));
             }
+        } else if (args.length >= 4) {
+        	if(args[0].equalsIgnoreCase("createrank")) {
+        		double costy;
+        		if(!main.prxAPI.numberAPI.isNumber(args[2])) {
+        			costy = main.prxAPI.numberAPI.parseBalance(args[2]);
+        		} else {
+        			costy = Double.valueOf(args[2]);
+        		}
+        		String displayName = main.getArgs(args, 3);
+        		main.manager.createRank(args[1], Double.valueOf(costy), displayName);
+        		sender.sendMessage(main.prxAPI.g("createrank").replace("%createdrank%", args[1])
+        				.replace("%rankcost%", args[2]));
+        		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(displayName)));
+        	} else if (args[0].equalsIgnoreCase("createprestige")) {
+        		double costy;
+        		if(!main.prxAPI.numberAPI.isNumber(args[2])) {
+        			costy = main.prxAPI.numberAPI.parseBalance(args[2]);
+        		} else {
+        			costy = Double.valueOf(args[2]);
+        		}
+        		String displayName = main.getArgs(args, 3);
+        		main.manager.createPrestige(args[1], Double.valueOf(costy), displayName);
+        		sender.sendMessage(main.prxAPI.g("createprestige").replace("%createdprestige", args[1])
+        				.replace("%prestigecost%", args[2]));
+        		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(displayName)));
+        	} else if (args[0].equalsIgnoreCase("createrebirth")) {
+        		double costy;
+        		if(!main.prxAPI.numberAPI.isNumber(args[2])) {
+        			costy = main.prxAPI.numberAPI.parseBalance(args[2]);
+        		} else {
+        			costy = Double.valueOf(args[2]);
+        		}
+        		String displayName = main.getArgs(args, 3);
+        		main.manager.createRebirth(args[1], Double.valueOf(costy), displayName);
+        		sender.sendMessage(main.prxAPI.g("createrebirth").replace("%createdrebirth%", args[1])
+        		        .replace("%rebirthcost%", args[2]));
+        		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(displayName)));
+        	}
         }
 		return true;
 	}

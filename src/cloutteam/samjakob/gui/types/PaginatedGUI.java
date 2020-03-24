@@ -29,6 +29,7 @@ import cloutteam.samjakob.gui.ItemBuilder;
 import cloutteam.samjakob.gui.buttons.GUIButton;
 import cloutteam.samjakob.gui.buttons.InventoryListenerGUI;
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.XMaterial;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -309,7 +310,7 @@ public class PaginatedGUI implements InventoryHolder {
         //List<String> zz = pluginx.globalStorage.getStringListData(mainguioptions + "nextpage-itemFLAGS");
         /* BEGIN PAGINATION */
         GUIButton backButton = new GUIButton(ItemBuilder.start(Material.matchMaterial(pluginx.globalStorage.getStringData(mainguioptions + "previouspage-itemNAME"))).durability((short) config.getInt(mainguioptions + "previouspage-itemDATA")).Xlore(pluginx.globalStorage.getStringListData("previouspage-itemLORE")).setenchantmentsfromlist(pluginx.globalStorage.getStringListData(mainguioptions + "previouspage-itemENCHANTMENTS")).name(PREVIOUS_PAGE).build());
-        GUIButton pageIndicator = new GUIButton(ItemBuilder.start(Material.NAME_TAG)
+        GUIButton pageIndicator = new GUIButton(ItemBuilder.start(XMaterial.matchXMaterial(pluginx.globalStorage.getStringData(mainguioptions + "currentpage-itemNAME")).parseMaterial(true))
                 .name(
                         CURRENT_PAGE
                                 .replaceAll(Pattern.quote("{currentpage}"), String.valueOf(currentPage + 1))

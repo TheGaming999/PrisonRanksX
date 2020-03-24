@@ -306,6 +306,9 @@ public class PrestigeDataStorage {
 	 * Should only be used onDisable()
 	 */
 	public void savePrestigesData() {
+		if(!main.isPrestigeEnabled) {
+			return;
+		}
 			for(Entry<String, PrestigeDataHandler> prestige : prestigeData.entrySet()) {
 				String nextPrestige = getPrestigeData().get(prestige.getKey()).getNextPrestigeName();
                  setData("Prestiges." + prestige.getKey() + ".nextprestige", prestige.getValue().getNextPrestigeName());

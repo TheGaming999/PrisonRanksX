@@ -21,6 +21,9 @@ public class RankupCommand extends BukkitCommand {
 
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
+		if(!main.isRankEnabled) {
+			return true;
+		}
 		if(args.length == 0) {
 	      if(!(sender instanceof Player)) {
 	    	  String runFromConsole = main.messagesStorage.getStringMessage("Messages.runfromconsole");

@@ -146,9 +146,13 @@ public class GlobalDataStorage {
 	}
 	
 	public Map<String, Object> registerMapData(String configNode, boolean withKeys) {
+		if(main.getConfig().getConfigurationSection(configNode) != null) {
 		getMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
 		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
 		return main.getConfig().getConfigurationSection(configNode).getValues(withKeys);
+		} else {
+			return null;
+		}
 	}
 	
 	/**
@@ -168,7 +172,9 @@ public class GlobalDataStorage {
 	public void loadGlobalData() {
 		List<String> worlds = registerStringListData("worlds");
 		//Under Options
+		boolean isRankEnabled = registerBooleanData("Options.rank-enabled");
 		boolean isPrestigeEnabled = registerBooleanData("Options.prestige-enabled");
+		boolean isRebirthEnabled = registerBooleanData("Options.rebirth-enabled");
 		String forceDisplayOrder = registerStringData("Options.force-display-order");
 		boolean isForceRankDisplay = registerBooleanData("Options.force-rank-display");
 		boolean isForcePrestigeDisplay = registerBooleanData("Options.force-prestige-display");
@@ -246,6 +252,8 @@ public class GlobalDataStorage {
 		String mySqltable = registerStringData("MySQL.table");
 		String mySqlUsername = registerStringData("MySQL.username");
 		String mySqlPassword = registerStringData("MySQL.password");
+		boolean mySqlUseSSL = registerBooleanData("MySQL.useSSL");
+		boolean mySqlAutoReconnect = registerBooleanData("MySQL.autoReconnect");
 		//Under Main-GUIOptions
 		String previousPageItemName = registerStringData("Main-GUIOptions.previouspage-itemNAME");
 		String previousPageItemDisplayName = registerStringData("Main-GUIOptions.previouspage-itemDISPLAYNAME");

@@ -23,6 +23,9 @@ public class RanksCommand extends BukkitCommand {
 
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
+		if(!main.isRankEnabled) {
+			return true;
+		}
 		if(!(sender instanceof Player)) {
 			try {
 			sender.sendMessage(main.prxAPI.c(main.ranksAPI.rankListConsole));
