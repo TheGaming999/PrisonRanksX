@@ -6,6 +6,7 @@ Rebirths:
     executecmds: []
     broadcast: []
     msg: []
+    prestige_cost_increase_percentage: 10000
   R2:
     display: "&4&l[R2]"
     cost: 1234567899.0

@@ -1,57 +1,88 @@
 # You can disable any message by making it empty or removing it from the config
+# use "\n" if you want multi lines in single-lined messages {the message must be between double quotes => "&fHi \n&6test"}, look at the prestige message for example
 Messages:
   # placeholders: %rankup% %rankup_display% %rankup_cost% %rankup_cost_formatted%
   notenoughmoney:
   - "&7&m                                                                &7&m"
   - ""
-  - "&eYou need &f$%rankup_cost_formatted% &eto rankup to &a%rank_up%"
+  - "&eYou need &f$%rankup_cost_formatted% &eto rankup to &a%rankup%"
   - ""
   - "&7&m                                                                &7&m"
+  # placeholders: %rankup% %rankup_display% %rankup_cost% %rankup_cost_formatted%
   notenoughmoney-other:
   - "&7&m                                                                &7&m"
   - ""
-  - "&eYou need &f$%rankupcost_formatted% &eto rankup %player% to &a%rankup%"
+  - "&eYou need &f$%rankup_cost_formatted% &eto rankup %player% to &a%rankup%"
   - ""
   - "&7&m                                                                &7&m"
   nopermission: "&cInsufficent Permission!"
+  # placeholders: %player%
   playernotfound: "&cThere's no player with that name."
-  delrank: "&e%args1% &cRank has been deleted"
-  setrank: "&cChanged &e%target% &cRank to &e%settedrank% &crank."
-  resetrank: "&cRestored &e%target% &cRank to %firstrank%"
-  createrank: "&cCreated rank &e%createdrank% &cwith price:&a%rankcost%"
-  setnextrank: "&cChanged &e%args1% &cnextrank to &a%args2%"
-  setrankdisplay: "&cChanged &e%args1% &cdisplay to &r%args2%"
-  setrankcost: "&cChanged &e%args1% &cRank Cost to &a%args2%"
-  delplayerrank: "&cDeleted &e%player% &cRank"
-  addrankcmd: "&c%args1% &eUpdated with: &7%args2%"
-  addrankbroadcast: "&c%args1% &eUpdated! with: &7%args2%"
-  addrankmsg: "&c%args1% &eUpdated! with: &7%args2%"
-  setdefaultrank: "&cDefault rank changed to &e%args1%"
-  setlastrank: "&cLast rank changed to &e%args1%"
-  setplayerpath: "&cChanged &e%target% &cpath to &e%rankpath%"
-  reload: "&eConfig Successfully reloaded."
+  delrank: "&e%args1% &cRank has been deleted."
+  setrank: "&cChanged &e%target%''s &cRank to &e%settedrank% &crank."
+  resetrank: "&cRestored &e%target%''s &cRank to &e%firstrank%&c."
+  createrank: "&cCreated rank &e%createdrank% &cwith price:&a%rankcost%&c."
+  setnextrank: "&cChanged &e%args1% &cnextrank to &a%args2%&c."
+  setrankdisplay: "&cChanged &e%args1% &cdisplay to &r%args2%&c."
+  setrankcost: "&cChanged &e%args1% &cRank Cost to &a%args2%&c."
+  # no longer used.
+  delplayerrank: "&cDeleted &e%player%''s &cRank."
+  # no longer used.
+  addrankcmd: "&c%args1% &eUpdated with: &7%args2%&c."
+  # no longer used.
+  addrankbroadcast: "&c%args1% &eUpdated! with: &7%args2%&c."
+  # no longer used.
+  addrankmsg: "&c%args1% &eUpdated! with: &7%args2%&c."
+  setdefaultrank: "&cDefault rank changed to &e%args1%&c."
+  setlastrank: "&cLast rank changed to &e%args1%&c."
+  setplayerpath: "&cChanged &e%target% &cpath to &e%rankpath%&c."
+  setdefaultpath: "&cDefault rank path changed to &e%args1%&c."
+  setrankpath: "&e%args1%'s &cpath has been changed to &e%args2%&c."
+  reload: "&ePlugin successfully reloaded."
+  save: "&eData successfully saved."
+  # placeholders: %path%
+  path-notfound: "&cThe path &e%path% &cis not available."
+  # placeholders: %rank%
+  rank-notfound: '&cThe rank &e%rank% &cdoesn''t exist.'
+  # placeholders: %prestige%
+  prestige-notfound: "&cCould not find a prestige with that name."
+  # placeholders: %rebirth%
+  rebirth-notfound: "&cUnable to find the rebirth &e%rebirth%&c."
+  setfirstrebirth: "&cFirst rebirth changed to &e%args1%"
+  setlastrebirth: "&cLast rebirth changed to &e%args1%"
+  setrebirth: '&cChanged &e%target%''s &crebirth to &e%settedrebirth% &crebirth.'
+  resetrebirth: "&cRestored &e%target%''s &crebirth to &e%firstrebirth%&c."
+  createrebirth: "&cCreated rebirth &e%createdrebirth% &cwith price:&a%rebirthcost%&c."
+  setrebirthdisplay: "&cChanged &e%rebirth% &cdisplay to &e%changeddisplay&&c."
+  setrebirthcost: "&cChanged rebirth &e%rebirth% &ccost to &e%rebirthcost%&c."
+  # placeholders: %player%
   runfromconsole: "&6You should run this in game or do /forcerankup %player% if you want to rankup a player"
   notcorrectworld: "&cYou cannot run this command here."
   # placeholders: %rankup% %rankup_display%
-  rankup: "&9You have ranked up to %rankup_display%"
+  rankup: "&9You have ranked up to &r%rankup_display%"
+  rankup-other: "&9You ranked up &f%target% &9to &r%rankup_display%"
   delprestige: "&e%args1% &cPrestige has been deleted"
   setfirstprestige: "&cFirst prestige changed to &e%args1%"
   setlastprestige: "&cLast prestige changed to &e%args1%"
-  setprestige: "&cChanged &e%target% &cPrestige to &e%settedprestige% &cprestige."
-  resetprestige: "&cRestored &e%target% &cPrestige to &e%firstprestige%"
-  createprestige: "&cCreated prestige &e%createdprestige% &cwith price:&a%prestigecost%"
-  setnextprestige: "&cChanged &e%previousprestige% &cnext prestige to &a%nextprestige%"
-  setprestigedisplay: "&cChanged &e%prestige% &cdisplay to &e%changeddisplay%"
-  setprestigecost: "&cChanged Prestige &e%prestige% &ccost to %prestigecost%"
-  prestige: "&aYou have prestiged to &r%prestigenextdisplay%"
+  setprestige: '&cChanged &e%target%''s &cPrestige to &e%settedprestige% &cprestige.'
+  resetprestige: "&cRestored &e%target%''s &cPrestige to &e%firstprestige%&c."
+  createprestige: "&cCreated prestige &e%createdprestige% &cwith price:&a%prestigecost%&c."
+  setnextprestige: "&cChanged &e%previousprestige% &cnext prestige to &a%nextprestige%&c."
+  setprestigedisplay: "&cChanged &e%prestige% &cdisplay to &e%changeddisplay%&c."
+  setprestigecost: "&cChanged Prestige &e%prestige% &ccost to %prestigecost%&c."
+  # placeholders: %nextprestige% %nextprestige_display%
+  prestige: "&aYou have prestiged to \n&r%nextprestige_display%"
+  forceprestige: "&aYou forced a prestige promotion to &f%target%"
   noprestige: "&aYou can't prestige at this rank."
-  delplayerprestige: "&cDeleted &e%player% &cPrestige"
+  # placeholders: %player%
+  delplayerprestige: "&cDeleted &e%player%''s &cPrestige"
+  # placeholders: %nextprestige% %nextprestige_display% %nextprestige_cost% %nextprestige_cost_formatted%
   prestige-notenoughmoney:
-  - "&7&m                                       &7&m"
+  - "&7&m                                               &7&m"
   - ""
-  - "&eYou need &f$%prestigenextcost_formatted% &eto prestige to &a%prestigenext%"
+  - "&eYou need &f$%nextprestige_cost_formatted% &eto prestige to &a%nextprestige%"
   - ""
-  - "&7&m                                       &7&m"
+  - "&7&m                                               &7&m"
   lastprestige:
   - "&7&m                                       &7&m"
   - "&cYou are at the latest prestige"
@@ -64,25 +95,51 @@ Messages:
   - "&7&m                                       &7&m"
   - "&aYou are at the latest rank"
   - "&7&m                                       &7&m"
-  forcerankup-msg: "&a%player% &cranked up to &e%nextrank%"
+  # placeholders: %player% %rankup% %rankup_display%
+  forcerankup-msg: "&a%player% &cranked up to &e%rankup%"
+  # placeholders: %player%
   forcerankup-lastrank: "&a%player% &6is already at the latest rank."
+  # placeholders: %player%
+  forcerankup-nopermission: "&a%player% &cdoesn't have the permission to rankup"
   # placeholders: %rankup% %rankup_display%
   rankup-nopermission: "&cYou don't have permission to rankup to %rankup%"
-  rankup-other-nopermission: "&cYou don't have permission to force a rankup for %target% to %nextrank%"
+  # placeholders: %target% %rankup% %rankup_display%
+  rankup-other-nopermission: "&cYou don't have permission to force a rankup for %target% to %rankup%"
   ranksgui-open: "&aOpening ranks gui..."
   prestigesgui-open: "&cOpening prestige list gui..."
   autorankup-enabled: "&eAuto Rankup &aEnabled"
   autorankup-disabled: "&eAuto Rankup &cDisabled"
   autorankup-nopermission: "&cYou don't have permission to use auto rankup"
   autorankup-lastrank: "&eAuto Rankup &7automatically &cdisabled &7because you are at the latest rank"
-  rebirth: "&eRebirth to %nextrebirth% successs."
+  autoprestige-enabled: "&3Auto Prestige &aEnabled"
+  autoprestige-disabled: "&3Auto Prestige &cDisabled"
+  autorebirth-enabled: "&6Auto Rebirth &aEnabled"
+  autorebirth-disabled: "&6Auto Rebirth &cDisabled"
+  # placeholders: %nextrebirth% %nextrebirth_display%
+  rebirth: "&eYou have been reborn to %nextrebirth_display%."
+  # placeholders: %nextrebirth% %nextrebirth_display% %nextrebirth_cost% %nextrebirth_cost_formatted%
   rebirth-notenoughmoney:
-  - "&4&m                                       &4&m"
+  - "&4&m                                             &4&m"
   - ""
-  - "&cYou need &f$%nextrebirthcost_formatted% &cto rebirth to &a%nextrebirth%"
+  - "&cYou need &f$%nextrebirth_cost_formatted% &cto rebirth to &a%nextrebirth%"
   - ""
-  - "&4&m                                       &4&m"
+  - "&4&m                                             &4&m"
   lastrebirth:
   - "&7&m                                       &7&m"
   - "&4&lYou are at the latest rebirth"
   - "&7&m                                       &7&m"
+  # added to prevent players from rankup, prestige and rebirth commands spam which causes lag
+  commandspam: "&cPlease wait before executing another command."
+  # this message shows up when a player tries to use the rankupmax command while he is ranking up
+  rankupmax-is-on: "&cYour Max rankup process is already running."
+  # placeholders: %page%
+  ranklist-last-page-reached: "&eThere are only &f%page% &epage(s)."
+  ranklist-invalid-page: "&cThis page is invalid!"
+  prestigelist-last-page-reached: "&cThere are only &f%page% &cpage(s)."
+  prestigelist-invalid-page: "&cThis page is invalid!"
+  rebirthlist-last-page-reached: "&4There are only &f%page% &4page(s)."
+  rebirthlist-invalid-page: "&cThis page is invalid!"
+  ranklist-console: "&cYou can't view the ranks format list in console. sending a plain list instead..."
+  prestigelist-console: "&3You can't view the prestiges format list in console. sending a plain list instead..."
+  rebirthlist-console: "&4You can't view the rebirths format list in console. sending a plain list instead..."
+  forcerankup-noargs: "&cUsage: /forcerankup <player>"

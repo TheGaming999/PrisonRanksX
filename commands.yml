@@ -1,33 +1,87 @@
-# Here you can completely disable the commands from being registered in the server. You can also edit the aliases
+# Here you can completely disable the commands from being registered in the server. You can also edit the aliases,description,permission,permission-message
 # [Requires server restart]
 commands:
   rankup:
     enable: true
+    description: "get promoted to the next rank"
+    permission: "prisonranksx.rankup"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command> [player]"
     aliases: [ru]
   rankupmax:
     enable: true
+    description: "rankup to the latest rank you can reach"
+    permission: "prisonranksx.rankupmax"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
     aliases: [rumax, maxrankup, maxru]
   forcerankup:
     enable: true
+    description: "force promote other players without losing anything"
+    permission: "prisonranksx.forcerankup"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command> <player>"
     aliases: [forceru]
   autorankup:
     enable: true
+    description: "automatically rankup when you have enough money"
+    permission: "prisonranksx.autorankup"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
     aliases: [autoru, aru]
+  autoprestige:
+    enable: true
+    description: "automatically prestige as long as you have enough money"
+    permission: "prisonranksx.autoprestige"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
+    aliases: [autop, aprestige]
+  autorebirth:
+    enable: true
+    description: "automatically prestige as long as you have enough money"
+    permission: "prisonranksx.autoprestige"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
+    aliases: [autop, aprestige]
   ranks:
     enable: true
+    description: "shows a list of prison ranks"
+    permission: "prisonranksx.ranks"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
     aliases: [ranklist, showranks]
   prestige:
     enable: true
+    description: "get promoted to a higher level of ranks"
+    permission: "prisonranksx.prestige"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
     aliases: [prst, prestigeup, pup]
   prestiges:
     enable: true
+    description: "shows a list of prison prestiges"
+    permission: "prisonranksx.prestiges"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
     aliases: [prestigelist]
   rebirth:
     enable: true
+    description: "reborn again but with amazing stuff"
+    permission: "prisonranksx.rebirth"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
     aliases: [reborn]
   rebirths:
     enable: true
+    description: "shows a list of prison rebirths"
+    permission: "prisonranksx.rebirths"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
     aliases: [rebirthlist, rblist]
   prx:
     enable: true
+    description: "manage players or ranks,prestiges and rebirths settings"
+    permission: "prisonranksx.admin"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
     aliases: [prisonranksx, prisonrx, pranksx]

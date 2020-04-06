@@ -1,3 +1,4 @@
+# Everything you can put in ranks.yml, you can put it here too such as (randomcmds,actionbar,etc..).
 Prestiges:
   'P1':
     display: "&8[&9P1&8]"

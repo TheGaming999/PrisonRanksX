@@ -21,81 +21,107 @@
 # [you will not see messages of other worlds if allworlds-broadcast is false]
 # [you can't rankup]
 # [you can't prestige]
+# [you can't rebirth]
 # [you can't use /prx commands]
 worlds:
 - "i_am_a_disabled_world"
 - "i_should_not_be_messing_with_prisonranksx"
 - "not_even_the_op_can_bypass_me"
 Options:
-  # Wanna disable the prestige command? set this to false.
+  # Wanna disable ranks? set it to false.
+  rank-enabled: true
+  # Wanna disable prestiges? set it to false.
   prestige-enabled: true
+  # Wanna disable rebirths? set it to false.
+  rebirth-enabled: true
+  # force display order default: "{rebirth}{prestige}{rank}"
+  force-display-order: "{rebirth}{prestige}{rank}"
   # Forces any chat plugin to place the rank display name aka prefix before the chat format without using a variable/placeholder.
-  forcedisplay: true
+  force-rank-display: true
   # Does the same as above but shows the prestige prefix/display name with the rank ofc.
-  forceprestigedisplay: true
+  force-prestige-display: true
+  # -
+  force-rebirth-display: true
+  # empty prestige display
+  no-prestige-display: ""
+  # empty rebirth display
+  no-rebirth-display: ""
   # Don't want rank's 'broadcast:' section to be shown in every world? set this to false . this uses the worlds list above.
   allworlds-broadcast: false
-  # Automatically put a space between the rank display name/prefix and the chat format.
-  autoforcedisplay-space: true
   # If you want to send the rankup msg that one in the messages.yml file.
   send-rankupmsg: true
-  # You better use this if you server is premium so players don't lose their ranks & their prestiges when they change user names in mojang website.
-  USE-UUID: true
-  # Don't like the text rank list then try this one [set it to true].
-  GUI-RANKLIST: true
+  # If you want to send the prestige msg /\
+  send-prestigemsg: true
+  # -
+  send-rebirthmsg: true
+  # Don't like the text rank list then try this setting [set it to true].
+  GUI-RANKLIST: false
   # You want a cool gui prestige list? use this [change it to true].
-  GUI-PRESTIGELIST: true
+  GUI-PRESTIGELIST: false
+  # yep
+  GUI-REBIRTHLIST: false
   # Want your players to dance when they prestige? put a sound name here otherwise make it like this "" to disable.
   prestigesound-name: "LEVEL_UP"
   # Sound volume if you make it higher other players will hear it.
   prestigesound-volume: 1.0
   # Sound pitch you will hear the sound similar to the original one but with little changes like it's made with demon's mouth when it's high.
   prestigesound-pitch: 1.0
-  # Good thing that this sound will not play when you rankup max. you can disable this by making it empty as you see "".
+  # You can disable this by making it empty as you see "".
   rankupsound-name: "LEVEL_UP"
-  # Already explained above.
+  # -
   rankupsound-volume: 1.0
-  # Already explained above.
+  # -
   rankupsound-pitch: 1.0
+  # -
+  rebirthsound-name: "GHAST_SCREAM"
+  # -
+  rebirthsound-volume: 1.0
+  # -
+  rebirthsound-pitch: 1.0
   # if you want every rank to have a restricted permission. the permission is: "prisonranksx.rankup.<the_rank_that_you_will_go_to>" without the quotes.
   per-rank-permission: false
-  # if you don't want the server to be a text garbage when the players rankup max then disable this by setting it to false.
+  # if you don't want the server to be a text garbage when the players rankup max then disable this by setting it to true.
   rankupmax-broadcastlastrankonly: true
-  # if you disable this the player may miss an important message you put in one of the ranks.
+  # if you enable this the player may miss an important message you put in one of the ranks.
   rankupmax-msglastrankonly: true
-  # this is literally useless just disable it. except if you want the players to show their coolness when they rankup max.
+  # this is literally useless just disable it by making it true. except if you want the players to show their coolness when they rankup max.
   rankupmax-rankupmsglastrankonly: true
-  # Want vault plugin to handle the rankups instead of prisonranksx? then use this, infact this destroy the purpose of this plugin. but i added it because why not.
+  # Want vault plugin to handle the ranks instead of prisonranksx? then use this.
   rankup-vault-groups: false
-  # You can write here "GroupManager" or "PermissionsEX" otherwise you can write the command using the placeholders %player% and %rank%.
-  rankup-vault-groups-plugin: "manuadd %player% %rank%"
-  # Enable /autorankup command by setting this to true
+  # You can write here "GroupManager" or "PermissionsEX" or "LuckPerms" or "Vault" otherwise you can write the command using these placeholders %player% and %rank%.
+  rankup-vault-groups-plugin: "Vault"
+  # enable autorankup task.
   autorankup: true
-Ranklist-text: # remake of text based ranks list under development
-  # placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted% %nextrank_percentage%
-  # %nextrank_percentage_decimal% %nextrank_percentage_nolimit% %nextrank_percentage_decimal_nolimit% %nextrank_progress% %nextrank_progress_double%
-  # don't forget that placeholderapi placeholders are also supported.
+  # if you want the player to prestige up when he gets enough money to prestige while ranking up using "/rankupmax" command
+  rankupmax-with-prestige: false
+  # time between auto rankups in ticks
+  autorankup-delay: 20
+  autoprestige-delay: 20
+  autorebirth-delay: 20
+Ranklist-text: # text based ranks list
+  # placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted%
   rank-current-format: "%rank_displayname% &a> %nextrank_displayname% &a| &2$&e%nextrank_cost_formatted% &a<&m---"
-  rank-completed-format: "&7&m%rank_name% &7> &7&m%nextrank_name% &8| &a&lCOMPLETED"
+  rank-completed-format: "&7&m%rank_name%&r &7> &7&m%nextrank_name%&r &8| &a&lCOMPLETED"
   rank-other-format: "%rank_displayname% &7> &a%nextrank_displayname% &7| &f$&e%nextrank_cost_formatted%"
-  # You have a big collection of ranks? then use this to make you ranks list fancier.
+  # You have a big collection of ranks? then use this to make your ranks list fancier.
   enable-pages: true
   # How many ranks per page? 8 9 10 20..
   rank-per-page: 9
   # This is how the players will see the ranks list in the game customize it to your liking.
+  # If you want a custom list just remove [rankslist] placeholder and put your thing
+  # however rank per page will count the text lines (header+footer) as ranks if you removed [rankslist] so you may increase it
+  # you can use PlaceholderAPI placeholders here.
   rank-with-pages-list-format:
   - "&7&m                           &7"
-  - "{rankslist}"
+  - "[rankslist]"
   - "&aRanks &7[<<] &e%currentpage% &9of &e%totalpages% &7[>>]"
   - "&7&m                           &7"
   rank-list-format:
   - "&7&m                           &7"
-  - "{rankslist}"
+  - "[rankslist]"
   - "&7&m                           &7"
-Prestigelist-text: # remake of text based prestiges list under development
-  # placeholders: %prestige_name% %prestige_displayname% %nextprestige_name% %nextprestige_displayname% %nextprestige_cost% %nextprestige_cost_formatted% %nextprestige_percentage%
-  # %nextprestige_percentage_decimal% %nextprestige_percentage_nolimit% %nextprestige_percentage_decimal_nolimit% %nextprestige_progress% %nextprestige_progress_double%
-  # don't forget that placeholderapi placeholders are also supported.
+Prestigelist-text: # text based prestiges list
+  # placeholders: %prestige_name% %prestige_displayname% %nextprestige_name% %nextprestige_displayname% %nextprestige_cost% %nextprestige_cost_formatted%
   prestige-current-format: "%prestige_displayname% &a> %nextprestige_displayname% &a| &2$&e%nextprestige_cost_formatted% &a<&m---"
   prestige-completed-format: "&7&m%prestige_name% &7> &7&m%nextprestige_name% &8| &a&lCOMPLETED"
   prestige-other-format: "%prestige_displayname% &7> &a%nextprestige_displayname% &7| &f$&e%nextprestige_cost_formatted%"
@@ -103,19 +129,36 @@ Prestigelist-text: # remake of text based prestiges list under development
   prestige-per-page: 9
   prestige-with-pages-list-format:
   - "&7&m                           &7"
-  - "{prestigeslist}"
-  - "&aRanks &7[<<] &e%currentpage% &9of &e%totalpages% &7[>>]"
+  - "[prestigeslist]"
+  - "&aPrestiges &7[<<] &e%currentpage% &9of &e%totalpages% &7[>>]"
   - "&7&m                           &7"
   prestige-list-format:
   - "&7&m                           &7"
-  - "{prestigeslist}"
+  - "[prestigeslist]"
   - "&7&m                           &7"
+Rebirthlist-text: # text based rebirths list
+  # placeholders: %rebirth_name% %rebirth_displayname% %nextrebirth_name% %nextrebirth_displayname% %nextrebirth_cost% %nextrebirth_cost_formatted% 
+  rebirth-current-format: "%rebirth_displayname% &a> %nextrebirth_displayname% &a| &2$&e%nextrebirth_cost_formatted% &a<&m---"
+  rebirth-completed-format: "&7&m%rebirth_name% &7> &7&m%nextrebirth_name% &8| &a&lCOMPLETED"
+  rebirth-other-format: "%rebirth_displayname% &7> &a%nextrebirth_displayname% &7| &f$&e%nextrebirth_cost_formatted%"
+  enable-pages: true
+  rebirth-per-page: 9
+  rebirth-with-pages-list-format:
+  - "&7&m                           &7"
+  - "[rebirthslist]"
+  - "&aRebirths &7[<<] &e%currentpage% &9of &e%totalpages% &7[>>]"
+  - "&7&m                           &7"
+  rebirth-list-format:
+  - "&7&m                           &7"
+  - "[rebirthslist]"
+  - "&7&m                           &7"
+# You must have HolographicDisplays plugin installed on your server in order for this to work.
 Holograms:
   rankup:
     enable: true
     remove-time: 3
     height: 4
-    format:
+    format: # placeholders: %player% %nextrank% %nextrank_display%
     - "&6%player%"
     - "&b&kii&3Ranked Up To&b&kii"
     - "&e&l%nextrank%"
@@ -127,7 +170,15 @@ Holograms:
     - "&c%player%"
     - "&9&kii&6Prestiged Up To&9&kii"
     - "&4&l%nextprestige%"
-MySQL:
+  rebirth:
+    enable: true
+    remove-time: 5
+    height: 4
+    format:
+    - "&c%player%"
+    - "&c&kii&4Reborn To&c&kii"
+    - "&e&l%nextrebirth%"
+MySQL: # wanna store players data in a database? enable this. but keep in mind this is only for reading (showing the rank in a website, prestige etc....)
   enable: false
   host: localhost
   port: 3306
@@ -135,40 +186,64 @@ MySQL:
   table: prisonranksx
   username: root
   password: "123"
+  useSSL: false
+  autoReconnect: true
 Main-GUIOptions:
   previouspage-itemNAME: "ARROW"
   previouspage-itemDISPLAYNAME: "&c<< Previous page"
+  previouspage-itemLORE:
+  - "&f"
+  previouspage-itemENCHANTMENTS: []
+  previouspage-itemDATA: 0
   nextpage-itemNAME: "ARROW"
   nextpage-itemDISPLAYNAME: "&6Next Page >>"
+  nextpage-itemLORE:
+  - "&f"
+  nextpage-itemENCHANTMENTS: []
+  nextpage-itemDATA: 0
   no-previous-pages: "&eThere are no previous pages."
   no-additional-pages: "&eThere are no additional pages."
-  currentpage: "&cPage &4{currentpage} &cof &4{maxpages}"
+  currentpage-itemNAME: "GLASS"
+  currentpage-itemDISPLAYNAME: "&cPage &4{currentpage} &cof &4{maxpages}"
+  currentpage-itemLORE:
+  - "&f"
+  currentpage-itemENCHANTMENTS: []
+  currentpage-itemDATA: 0
 Ranklist-gui:
   title: "&6Ranks"
-  constant-items:
-  - "slot=0 item=DIAMOND amount=1 name=&6Spaces_Of_Course&6 lore=&eRanks_Space|&7List|&6Underscores:%underscore%%underscore%%underscore% enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=1 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks|&7List|&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=2 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks|&7List|&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=3 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks|&7List|&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=4 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks|&7List|&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=5 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks|&7List|&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=6 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks|&7List|&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=7 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks|&7List|&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=8 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks|&7List|&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  current-format:
+  # to disable keep it like this => constant-items: []
+  constant-items: # placeholders: [_ = space] [@ = new line/new enchantment/new flag] [%at% = @ symbol] [%us% = _ symbol] [: = split enchantment name and the level]
+  - "slot=0 item=DIAMOND amount=1 name=&6Spaces_Of_Course lore=&eRanks_Space@&7List enchantments=durability:1 flags=HIDE_ENCHANTS"
+  - "slot=1 item=DIAMOND amount=1 name=&6Illegal_Enchantments lore=&eRanks@&7List@&6GUI enchantments=durability:1@sharpness:7 flags=HIDE_ENCHANTS"
+  - "slot=2 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks@&7List@&6GUI enchantments=durability:1"
+  - "slot=3 item=DIRT amount=1 name=&3&lCustomName enchantments=durability:1 flags=HIDE_ENCHANTS"
+  - "slot=4 item=STONE amount=1"
+  - "slot=5 item=GLASS amount=1 name=&9Glass"
+  - "slot=6 item=DIAMOND amount=1 name=&4Same_Enchantment lore=&f&lDifferent_name enchantments=unbreaking:1 flags=HIDE_ENCHANTS"
+  - "slot=7 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks@&7List@&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
+  - "slot=8 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks@&7List@&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
+  # ranks item slots if it's above 44 it will be added to the next page.
+  allowed-slots: "9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55"
+  current-format: # placeholders: %currentrank% %currentrank_display% %currentrank_cost% %currentrank_cost_formatted%
+    # format: <itemname>:[data] | example: WOOL:1 | data is optional || <itemname>#[data] | example: DIAMOND_SWORD:42 | sets a damaged sword.
     itemNAME: EMERALD_BLOCK
     itemAMOUNT: 1
     itemDISPLAYNAME: "&a%currentrank_display%"
-    itemLORE:
+    itemLORE: # placeholder api supported
     - "&6Your current rank!"
     itemENCHANTMENTS:
     - DURABILITY 10
     itemFLAGS:
     - HIDE_ENCHANTS
-    itemCOMMANDS: # placeholder api supported.
+    itemCOMMANDS: # placeholder api supported. possible prefixes { (cancel-item_move),(closeinv),[op] <command>,[console] <command>,[player] <command>}
     - "(cancel-item_move)"
     - "[console] warp %currentrank%"
-  completed-format:
+    # bypass the default format and replace it with a custom one for a specific rank (remove # and a space behind to enable)
+    # custom:
+    #   B:
+    #     itemLORE:
+    #     - "&4Your rank is B!"
+  completed-format: # placeholders: %completedrank% %completedrank_display% %completedrank_cost% %completedrank_cost_formatted%
     itemNAME: EMERALD_BLOCK
     itemAMOUNT: 1
     itemDISPLAYNAME: "&a%completedrank_display%"
@@ -178,7 +253,7 @@ Ranklist-gui:
     itemFLAGS: []
     itemCOMMANDS:
     - "(cancel-item_move)"
-  other-format:
+  other-format: # placeholders: %otherrank% %otherrank_display% %otherrank_cost% %otherrank_cost_formatted%
     itemNAME: REDSTONE_BLOCK
     itemAMOUNT: 1
     itemDISPLAYNAME: "&a%otherrank_display%"
@@ -190,6 +265,9 @@ Ranklist-gui:
     - "(cancel-item_move)"
 Prestigelist-gui:
   title: "&3Prestiges"
+  constant-items: []
+  # prestiges item slots if it's above 44 it will be added to the next page.
+  allowed-slots: "9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55"
   current-format:
     itemNAME: EMERALD_BLOCK
     itemAMOUNT: 1
@@ -221,39 +299,93 @@ Prestigelist-gui:
     itemENCHANTMENTS: []
     itemFLAGS: []
     itemCOMMANDS:
+    - "(cancel-item_move)"
+Rebirthlist-gui:
+  title: "&4Rebirths"
+  constant-items: []
+  # rebirths item slots if it's above 44 it will be added to the next page.
+  allowed-slots: "9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55"
+  current-format:
+    itemNAME: GOLD_BLOCK
+    itemAMOUNT: 1
+    itemDISPLAYNAME: "&a%currentrebirth_display%"
+    itemLORE:
+    - "&cYour current rebirth!"
+    itemENCHANTMENTS:
+    - DURABILITY 10
+    itemFLAGS:
+    - HIDE_ENCHANTS
+    itemCOMMANDS:
+    - "(cancel-item_move)"
+  completed-format:
+    itemNAME: DIAMOND_BLOCK
+    itemAMOUNT: 1
+    itemDISPLAYNAME: "&a%completedrebirth_display%"
+    itemLORE:
+    - "&9COMPLETED"
+    itemENCHANTMENTS: []
+    itemFLAGS: []
+    itemCOMMANDS:
+    - "(cancel-item_move)" 
+  other-format:
+    itemNAME: REDSTONE_BLOCK
+    itemAMOUNT: 1
+    itemDISPLAYNAME: "&a%otherrebirth_display%"
+    itemLORE:
+    - "&cCost: &e%otherrebirth_cost_formatted%"
+    itemENCHANTMENTS: []
+    itemFLAGS: []
+    itemCOMMANDS:
     - "(cancel-item_move)" 
 # autocommands:
 # '[rankpermissions] remove' = removes every permission that player got from ranking up <!> Of course Vault Must be installed
 # '[prestigepermissions] remove' = removes every permission that player got from prestiging up <!> Of course Vault Must be installed
+# '[rebirthpermissions] remove' = removes every permission that player got from rebirthing up <!> Of course Vault Must be installed
 PrestigeOptions:
-  ResetMoney: true
+  ResetMoney: false
   ResetRank: true
-  # global rankup_cost_increase, if you want to disable this set it to 0
+  # global rankup_cost_increase, if you want to disable this set it to 0 default: (prestigenumber * rankup_cost_increase_percentage)
   rankup_cost_increase_percentage: 0
+  # types: DEFAULT=>{prestigeNumber * cost_increase}, POWER=>{prestigeNumber+1 ^ cost_increase}, EXTRA=>{(prestigeNumber * cost_increase) * 2} || + rankCost
+  cost_increase_type: DEFAULT
   # executed when you prestige
   prestige-cmds:
   - "[rankpermissions] remove"
-  # executed when you do /pex delplayerprestige
+  # executed when you do /prx delplayerprestige
   prestige-delete-cmds:
   - "[prestigepermissions] remove"
   - "say Hi %player%"
-  # executed when you do /pex resetplayerprestige
+  # executed when you do /prx resetplayerprestige
+  # '[prestigepermissions$1] remove' = removes every permission that player got from prestiging up except the first prestige, it only works here
   prestige-reset-cmds:
-  - "[prestigepermissions] remove"
+  - "[prestigepermissions$1] remove"
 RankOptions:
-  # executed when you type /pex delplayerrank
+  # executed when you type /prx delplayerrank
   rank-delete-cmds:
   - "[rankpermissions] remove"
-  # executed when you do /pex resetplayerrank
+  # executed when you do /prx resetplayerrank
   rank-reset-cmds:
   - "[rankpermissions] remove"
+RebirthOptions:
+  ResetMoney: false
+  ResetRank: true
+  ResetPrestige: true
+  prestige_cost_increase_percentage: 0
+  cost_increase_type: DEFAULT
+  rebirth-cmds:
+  - "[rankpermissions] remove"
+  - "[prestigepermissions] remove"
+  rebirth-delete-cmds:
+  - "[rebirthpermissions] remove"
+  rebirth-reset-cmds:
+  - "[rebirthpermissions$1] remove"
 PlaceholderAPI:
   rankup-progress-style: '[squaredot]'
   rankup-progress-filled: '&a'
   rankup-progress-needed: '&c'
   rankup-progress-full-enabled: false
   rankup-progress-full: "&aType &e/rankup &3!"
-  rankup-progress-lastrank: "Prestige now by writing &e/prestige"
+  rankup-progress-lastrank: "Prestige now by typing &e/prestige"
   rankup-percentage-lastrank: "&c/prestige"
   rankup-cost-lastrank: "&cHighest Rank"
   rankup-lastrank: "&cType /prestige"
@@ -266,9 +398,21 @@ PlaceholderAPI:
   currency-symbol-behind: true
   percent-sign: "%"
   percent-sign-behind: false
-  next-progress-style: '[|]'
-  next-progress-filled: '&b'
-  next-progress-needed: '&7'
+  rebirth-notrebirthed: "&fNone"
+  nextrebirth-notrebirthed: "&fN/A"
+  rebirth-lastrebirth: "&4Last Rebirth"
+  next-progress-style: # global progress bar for every level. changes according to your level position (rank,prestige,rebirth) [configurable]
+    rankup: '[|]'
+    prestige: '[squaredot]'
+    rebirth: '[>>]'
+  next-progress-filled:
+    rankup: '&a'
+    prestige: '&b'
+    rebirth: '&6'
+  next-progress-needed:
+    rankup: '&c'
+    prestige: '&7'
+    rebirth: '&8'
   next-progress-full-isrankup-enabled: false
   next-progress-full-isprestige-enabled: false
   next-progress-full-isrebirth-enabled: false
@@ -276,7 +420,7 @@ PlaceholderAPI:
   next-progress-full-isrankup: "&7Type &a/rankup&7!"
   next-progress-full-isprestige: "&7Type &c/prestige&7!"
   next-progress-full-isrebirth: "&7Type &c/rebirth&7!"
-  next-progress-full-islast: "&7You are at the latest level."
+  next-progress-full-islast: "&7You are at the latest stage."
 MoneyFormatter:
   thousand: 'K'
   million: 'M'
@@ -300,5 +444,5 @@ lastrank: D
 defaultpath: "default"
 firstprestige: P1
 lastprestige: P2
-firstrebirth: r1
-lastrebirth: r2
+firstrebirth: R1
+lastrebirth: R2
