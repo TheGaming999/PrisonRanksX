@@ -30,6 +30,10 @@ public class RankupCommand extends BukkitCommand {
 	    	  sender.sendMessage(main.prxAPI.c(runFromConsole));
 	    	  return true;
 	      } 
+	      if(main.isBefore1_7) {
+	    	  main.prxAPI.rankupLegacy((Player)sender);
+	    	  return true;
+	      }
        main.prxAPI.rankup((Player)sender);
 		} else if (args.length == 1) {
 			// do rankup other

@@ -1,9 +1,11 @@
 package me.prisonranksx.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +21,7 @@ public class PrestigeDataStorage {
 	private PrisonRanksX main;
 	public PrestigeDataStorage(PrisonRanksX main) {
 		this.main = main;
-		this.prestigeData = new HashMap<String, PrestigeDataHandler>();
+		this.prestigeData = new LinkedHashMap<String, PrestigeDataHandler>();
 	}
 	
 	public void putData(String name, PrestigeDataHandler prestigeDataHandler) {
@@ -51,7 +53,7 @@ public class PrestigeDataStorage {
 				List<String> actions = loadStringList("Prestiges." + prestigeName + ".actions");
 				List<String> addPermissionList = loadStringList("Prestiges." + prestigeName + ".addpermission");
 				List<String> delPermissionList = loadStringList("Prestiges." + prestigeName + ".delpermission");
-				PrestigeRandomCommands randomCommandsManager = new PrestigeRandomCommands(prestigeName, true, true);
+				PrestigeRandomCommands randomCommandsManager = new PrestigeRandomCommands(prestigeName, false, true);
 				FireworkManager fireworkManager = new FireworkManager(prestigeName, LevelType.PRESTIGE, "prestige");
 				Boolean sendFirework = loadBoolean("Prestiges." + prestigeName + ".send-firework");
 				PrestigeDataHandler pdh = new PrestigeDataHandler(prestigeName);
@@ -88,7 +90,7 @@ public class PrestigeDataStorage {
 		if(main.configManager.prestigesConfig.getStringList(node) == null || main.configManager.prestigesConfig.getStringList(node).isEmpty()) {
 			return new ArrayList<String>();
 		}
-		return loadStringList(node);
+		return main.configManager.prestigesConfig.getStringList(node);
 	}
 	
 	public Integer loadInt(String node) {
@@ -150,7 +152,7 @@ public class PrestigeDataStorage {
 	}
 	
 	public void initPrestigeData() {
-		this.prestigeData = new HashMap<String, PrestigeDataHandler>();
+		this.prestigeData = new LinkedHashMap<String, PrestigeDataHandler>();
 	}
 	
 	public Map<String, PrestigeDataHandler> getPrestigeData() {
@@ -162,12 +164,7 @@ public class PrestigeDataStorage {
 	 * @return prestiges collection
 	 */
 	public List<String> getPrestigesCollection() {
-		List<String> prestigesCollection = new ArrayList<>();
-				prestigeData.keySet().forEach(prestigeName -> {
-					prestigesCollection.add(prestigeName);
-				});
-				Collections.sort(prestigesCollection);
-		return prestigesCollection;
+		return Arrays.asList(prestigeData.keySet().toArray(new String[0]));
 	}
 	
 	public String getNextPrestigeName(String prestigeName) {
@@ -253,23 +250,22 @@ public class PrestigeDataStorage {
 	 */
 	public void savePrestigeData(String prestigeName) {
 			String nextPrestige = getPrestigeData().get(prestigeName).getNextPrestigeName();
-            setData("Prestiges." + getPrestigeData().get(prestigeName) + ".nextprestige", getPrestigeData().get(prestigeName).getNextPrestigeName());
-            setData("Prestiges." + getPrestigeData().get(prestigeName) + ".cost", getPrestigeData().get(prestigeName).getCost());
-            setData("Prestiges." + getPrestigeData().get(prestigeName) + ".display", getPrestigeData().get(prestigeName).getDisplayName());
-            setData("Prestiges." + getPrestigeData().get(prestigeName) + ".rankup_cost_increase_percentage", getPrestigeData().get(prestigeName).getRankupCostIncreasePercentage());
-            setData("Prestiges." + nextPrestige + ".cost", getPrestigeData().get(prestigeName).getNextPrestigeCost());
-            setData("Prestiges." + nextPrestige + ".display", getPrestigeData().get(prestigeName).getNextPrestigeDisplayName());
-            setData("Prestiges." + nextPrestige + ".executecmds", getPrestigeData().get(prestigeName).getPrestigeCommands());
-            setData("Prestiges." + nextPrestige + ".actionbar.interval", getPrestigeData().get(prestigeName).getActionbarInterval());
-            setData("Prestiges." + nextPrestige + ".actionbar.text", getPrestigeData().get(prestigeName).getActionbarMessages());
-            setData("Prestiges." + nextPrestige + ".broadcast", getPrestigeData().get(prestigeName).getBroadcast());
-            setData("Prestiges." + nextPrestige + ".msg", getPrestigeData().get(prestigeName).getMsg());
-            setData("Prestiges." + nextPrestige + ".actions", getPrestigeData().get(prestigeName).getActions());
-            setData("Prestiges." + nextPrestige + ".addpermission", getPrestigeData().get(prestigeName).getAddPermissionList());
-            setData("Prestiges." + nextPrestige + ".delpermission", getPrestigeData().get(prestigeName).getDelPermissionList());
-            setData("Prestiges." + nextPrestige + ".randomcmds", getPrestigeData().get(prestigeName).getRandomCommandsManager().getRandomCommandsMap());
-            setData("Prestiges." + nextPrestige + ".firework", getPrestigeData().get(prestigeName).getFireworkManager());
-            setData("Prestiges." + nextPrestige + ".send-firework", getPrestigeData().get(prestigeName).getSendFirework());
+			String prestige = prestigeName;
+            setData("Prestiges." + prestige + ".nextprestige", nextPrestige);
+            setData("Prestiges." + prestige + ".cost", getPrestigeData().get(prestigeName).getCost());
+            setData("Prestiges." + prestige + ".display", getPrestigeData().get(prestigeName).getDisplayName());
+            setData("Prestiges." + prestige + ".rankup_cost_increase_percentage", getPrestigeData().get(prestigeName).getRankupCostIncreasePercentage());
+           // setData("Prestiges." + prestige + ".executecmds", getPrestigeData().get(prestigeName).getPrestigeCommands());
+           // setData("Prestiges." + prestige + ".actionbar.interval", getPrestigeData().get(prestigeName).getActionbarInterval());
+           // setData("Prestiges." + prestige + ".actionbar.text", getPrestigeData().get(prestigeName).getActionbarMessages());
+           // setData("Prestiges." + prestige + ".broadcast", getPrestigeData().get(prestigeName).getBroadcast());
+           // setData("Prestiges." + prestige + ".msg", getPrestigeData().get(prestigeName).getMsg());
+           // setData("Prestiges." + prestige + ".actions", getPrestigeData().get(prestigeName).getActions());
+           // setData("Prestiges." + prestige + ".addpermission", getPrestigeData().get(prestigeName).getAddPermissionList());
+           // setData("Prestiges." + prestige + ".delpermission", getPrestigeData().get(prestigeName).getDelPermissionList());
+           // setData("Prestiges." + prestige + ".randomcmds", getPrestigeData().get(prestigeName).getRandomCommandsManager().getRandomCommandsMap());
+           // setData("Prestiges." + prestige + ".firework", getPrestigeData().get(prestigeName).getFireworkManager());
+           // setData("Prestiges." + prestige + ".send-firework", getPrestigeData().get(prestigeName).getSendFirework());
 	}
 	public void setData(String node, Object value) {
 		if(value == null || node.contains("LASTPRESTIGE")) {
@@ -324,10 +320,10 @@ public class PrestigeDataStorage {
                  setData("Prestiges." + prestige.getKey() + ".addpermission", prestige.getValue().getAddPermissionList());
                  setData("Prestiges." + prestige.getKey() + ".delpermission", prestige.getValue().getDelPermissionList());
                  if(prestige.getValue().getRandomCommandsManager() != null) {
-                 setData("Prestiges." + prestige.getKey() + ".randomcmds", prestige.getValue().getRandomCommandsManager().getRandomCommandsMap());
+                // setData("Prestiges." + prestige.getKey() + ".randomcmds", prestige.getValue().getRandomCommandsManager().getRandomCommandsMap());
                  }
                  if(prestige.getValue().getFireworkManager() != null) {
-                 setData("Prestiges." + prestige.getKey() + ".firework", prestige.getValue().getFireworkManager());
+                // setData("Prestiges." + prestige.getKey() + ".firework", prestige.getValue().getFireworkManager());
                  }
                  if(prestige.getValue().getSendFirework()) {
                  setData("Prestiges." + prestige.getKey() + ".send-firework", prestige.getValue().getSendFirework());

@@ -205,6 +205,9 @@ public class GlobalDataStorage {
 		String rankupVaultGroupsPlugin = registerStringData("Options.rankup-vault-groups-plugin");
 		boolean isAutoRankup = registerBooleanData("Options.autorankup");
 		boolean rankupMaxWithPrestige = registerBooleanData("Options.rankupmax-with-prestige");
+	    int autoRankupDelay = registerIntegerData("Options.autorankup-delay");
+	    int autoPrestigeDelay = registerIntegerData("Options.autoprestige-delay");
+	    int autoRebirthDelay = registerIntegerData("Options.autorebirth-delay");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");
@@ -275,6 +278,7 @@ public class GlobalDataStorage {
 		//Under Ranklist-gui.current-format
 		String rankListGuiTitle = registerStringData("Ranklist-gui.title");
 		List<String> rankListGuiConstantItems = registerStringListData("Ranklist-gui.constant-items");
+		String rankListGUIAllowedSlots = registerStringData("Ranklist-gui.allowed-slots");
 		String rankListGuiCurrentItemName = registerStringData("Ranklist-gui.current-format.itemNAME");
 		int rankListGuiCurrentItemAmount = registerIntegerData("Ranklist-gui.current-format.itemAMOUNT");
 		String rankListGuiCurrentItemDisplayName = registerStringData("Ranklist-gui.current-format.itemDISPLAYNAME");
@@ -304,6 +308,7 @@ public class GlobalDataStorage {
 		//Under Prestigelist-gui.current-format
 		String prestigeListGuiTitle = registerStringData("Prestigelist-gui.title");
 		List<String> prestigeListGuiConstantItems = registerStringListData("Prestigelist-gui.constant-items");
+		String prestigeListGUIAllowedSlots = registerStringData("Prestigelist-gui.allowed-slots");
 		String prestigeListGuiCurrentItemName = registerStringData("Prestigelist-gui.current-format.itemNAME");
 		int prestigeListGuiCurrentItemAmount = registerIntegerData("Prestigelist-gui.current-format.itemAMOUNT");
 		String prestigeListGuiCurrentItemDisplayName = registerStringData("Prestigelist-gui.current-format.itemDISPLAYNAME");
@@ -333,6 +338,7 @@ public class GlobalDataStorage {
 		//Under Rebirthlist-gui.current-format
 		String rebirthListGuiTitle = registerStringData("Rebirthlist-gui.title");
 		List<String> rebirthListGuiConstantItems = registerStringListData("Rebirthlist-gui.constant-items");
+		String rebirthListGUIAllowedSlots = registerStringData("Rebirthlist-gui.allowed-slots");
 		String rebirthListGuiCurrentItemName = registerStringData("Rebirthlist-gui.current-format.itemNAME");
 		int rebirthListGuiCurrentItemAmount = registerIntegerData("Rebirthlist-gui.current-format.itemAMOUNT");
 		String rebirthListGuiCurrentItemDisplayName = registerStringData("Rebirthlist-gui.current-format.itemDISPLAYNAME");
@@ -363,6 +369,7 @@ public class GlobalDataStorage {
 		boolean prestigeOptionResetMoney = registerBooleanData("PrestigeOptions.ResetMoney");
 		boolean prestigeOptionResetRank = registerBooleanData("PrestigeOptions.ResetRank");
 		double prestigeOptionRankupCostIncreasePercentage = registerDoubleData("PrestigeOptions.rankup_cost_increase_percentage");
+		String prestigeOptionCostIncreaseType = registerStringData("PrestigeOptions.cost_increase_type");
 		List<String> prestigeOptionPrestigeCMDS = registerStringListData("PrestigeOptions.prestige-cmds");
 		List<String> prestigeOptionPrestigeDeleteCMDS = registerStringListData("PrestigeOptions.prestige-delete-cmds");
 		List<String> prestigeOptionPrestigeResetCMDS = registerStringListData("PrestigeOptions.prestige-reset-cmds");
@@ -370,6 +377,8 @@ public class GlobalDataStorage {
 		boolean rebirthOptionResetMoney = registerBooleanData("RebirthOptions.ResetMoney");
 		boolean rebirthOptionResetRank = registerBooleanData("RebirthOptions.ResetRank");
 		boolean rebirthOptionResetPrestige = registerBooleanData("RebirthOptions.ResetPrestige");
+		double rebirthOptionPrestigeCostIncreasePercentage = registerDoubleData("RebirthOptions.prestige_cost_increase_percentage");
+		String rebirthOptionCostIncreaseType = registerStringData("RebirthOptions.cost_increase_type");
 		List<String> rebirthOptionRebirthCMDS = registerStringListData("RebirthOptions.rebirth-cmds");
 		List<String> rebirthOptionRebirthDeleteCMDS = registerStringListData("RebirthOptions.rebirth-delete-cmds");
 		List<String> rebirthOptionRebirthResetCMDS = registerStringListData("RebirthOptions.rebirth-reset-cmds");

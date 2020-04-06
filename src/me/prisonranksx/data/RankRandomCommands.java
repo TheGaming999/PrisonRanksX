@@ -39,13 +39,13 @@ public class RankRandomCommands {
 	}
 	
 	public void loadSections(RankPath rankPath) {
-		if(main.debug) {
-		main.getLogger().info("[RandomCommandSetup] path: " + pathName + " -> " + "rank: " + rankName);
-		}
+        String pathName = rankPath.getPathName();
+        String rankName = rankPath.getRankName();
 		Map<String, Object> randomCommandsMap = new HashMap<String, Object>();
 		if(main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds") != null &&
 				!main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getKeys(false).isEmpty()) {
 		randomCommandsMap = main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getValues(withKeys);
+		main.getLogger().info("[RandomCommandSetup] path: " + pathName + " -> " + "rank: " + rankName);
 		}
 		List<List<String>> commandsList = new ArrayList<>();
 		List<Double> chances = new ArrayList<>();
@@ -58,9 +58,6 @@ public class RankRandomCommands {
 		setRandomCommandsMap(randomCommandsMap);
 		setCommandsList(commandsList);
 		setChances(chances);
-		if(main.debug) {
-		main.getLogger().info("[RandomCommandSetup] DONE! path: " + pathName + " -> " + "rank: " + rankName);
-		}
 	}
 	//public Map<String, Object> getCommandSections() {
 		//return main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getValues(false);

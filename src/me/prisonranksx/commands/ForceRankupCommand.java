@@ -24,7 +24,27 @@ public class ForceRankupCommand extends BukkitCommand {
 		if(!main.isRankEnabled) {
 			return true;
 		}
+		if(main.isBefore1_7) {
+	        if(args.length == 0) {
+	        	sender.sendMessage(main.prxAPI.g("forcerankup-noargs"));
+	        	return true;
+	        } else if (args.length == 1) {
+	        	if(args[0].equalsIgnoreCase("*")) {
+	        		for(Player player : OnlinePlayers.getEveryPlayer()) {
+	        			main.rankupLegacy.forceRankup(player, sender);
+	        		}
+	        		return true;
+	        	}
+	        	if(Bukkit.getPlayer(args[0]) == null) {
+	        		sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[0]));
+	        		return true;
+	        	}
+	        	main.rankupLegacy.forceRankup(Bukkit.getPlayer(args[0]), sender);
+	        }
+			return true;
+		}
         if(args.length == 0) {
+        	sender.sendMessage(main.prxAPI.g("forcerankup-noargs"));
         	return true;
         } else if (args.length == 1) {
         	if(args[0].equalsIgnoreCase("*")) {
@@ -34,6 +54,7 @@ public class ForceRankupCommand extends BukkitCommand {
         		return true;
         	}
         	if(Bukkit.getPlayer(args[0]) == null) {
+        		sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[0]));
         		return true;
         	}
         	main.rankupAPI.forceRankup(Bukkit.getPlayer(args[0]), sender);

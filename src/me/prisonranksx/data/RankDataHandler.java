@@ -192,7 +192,7 @@ public class RankDataHandler {
 	}
 	
 	public void setRandomCommandsManager(RankRandomCommands randomCommandsSet) {
-		if(randomCommandsSet != null && randomCommandsSet.getRandomCommandsMap() == null
+		if(randomCommandsSet != null && randomCommandsSet.getRandomCommandsMap() != null
 				&& !randomCommandsSet.getRandomCommandsMap().isEmpty()) {
 		this.randomCommandsManager = randomCommandsSet;
 		}

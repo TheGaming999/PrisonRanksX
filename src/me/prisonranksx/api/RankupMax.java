@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import io.samdev.actionutil.ActionUtil;
@@ -35,6 +32,7 @@ public class RankupMax {
 		this.prxAPI = main.prxAPI;
 	}
 	
+	@SuppressWarnings("unused")
 	public void rankupMax(Player player) {
         Player p = player;
         String rankupFrom = null;
@@ -46,13 +44,14 @@ public class RankupMax {
         rankupMaxProcess.add(p);
         //clear old data
         //player checking values
+        RankPath rp1 = prxAPI.getPlayerRankPath(p);
         String currentRank = prxAPI.getPlayerRank(p);
         rankupFrom = currentRank;
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(p);
         Double playerBalance = main.econ.getBalance(player);
         //other values
-        List<String> ranksConfigList = prxAPI.getRanksCollection("default");
+        List<String> ranksConfigList = prxAPI.getRanksCollection(rp1.getPathName());
         List<String> lastRankMessage = main.messagesStorage.getStringListMessage("lastrank");
         List<String> notEnoughMoneyMessage = main.messagesStorage.getStringListMessage("notenoughmoney");
         //if the player is at the latest rank
@@ -177,13 +176,13 @@ public class RankupMax {
   	        	}
   	        }
                loopNextRankBroadcast = main.rankStorage.getBroadcast(rp);
-               if(!isBroadcastLastRankOnly) {
+               if(loopNextRankBroadcast != null && !isBroadcastLastRankOnly) {
                  for(String broadcast :  loopNextRankBroadcast) {
-            	     Bukkit.broadcastMessage(main.getString(broadcast, p.getName()).replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay));   
+            	     Bukkit.broadcastMessage(main.getString(broadcast, p.getName()).replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rankupdisplay%", loopNextRankDisplay));   
                  }
                }
                loopNextRankMsg = main.rankStorage.getMsg(rp);
-               if(!isMsgLastRankOnly) {
+               if(loopNextRankMsg != null && !isMsgLastRankOnly) {
                  for(String msg : loopNextRankMsg) {
             	     p.sendMessage(main.getString(msg, p.getName()).replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay));   
                  }
@@ -245,13 +244,10 @@ public class RankupMax {
         
         endNextRankActionbarMessage = main.rankStorage.getActionbarMessages(rp);
         endNextRankActionbarInterval = main.rankStorage.getActionbarInterval(rp);
+		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
 		main.sendRankFirework(p);
-		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         rankupMaxPassedRanks.put(p, rankups);
-        if(main.globalStorage.getBooleanData("Options.rankupmax-with-prestige")) {
-        	prxAPI.prestige(p);
-        }
 		XRankupMaxEvent x = new XRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
 		Bukkit.getScheduler().runTask(main, () -> {
 		main.getServer().getPluginManager().callEvent(x);

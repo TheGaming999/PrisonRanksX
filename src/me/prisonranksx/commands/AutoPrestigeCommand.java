@@ -7,20 +7,21 @@ import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
 
-public class AutoRankupCommand extends BukkitCommand 
+public class AutoPrestigeCommand extends BukkitCommand 
 {
+	
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
-	public AutoRankupCommand(String commandName) {
+	public AutoPrestigeCommand(String commandName) {
 		super(commandName);
-		this.setDescription(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".description", "automatically rankup while having enough money to rankup")));
-		this.setUsage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".usage", "/autorankup")));
-		this.setPermission(main.configManager.commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.autorankup"));
+		this.setDescription(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".description", "automatically prestige while having enough money to rankup")));
+		this.setUsage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".usage", "/autoprestige")));
+		this.setPermission(main.configManager.commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.autoprestige"));
 		this.setPermissionMessage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
 		this.setAliases(main.configManager.commandsConfig.getStringList("commands." + commandName + ".aliases"));
 	}
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
-		if(!main.isRankEnabled) {
+		if(!main.isPrestigeEnabled) {
 			return true;
 		}
 		if(!(sender instanceof Player)) {
@@ -29,23 +30,23 @@ public class AutoRankupCommand extends BukkitCommand
 		Player p = (Player)sender;
 		if(main.isBefore1_7) {
 	        if(args.length == 0) {
-	            main.rankupLegacy.autoRankup(p);
+	            main.prestigeLegacy.autoPrestige(p);
 	        } else if (args.length == 1) {
 	        	if(args[0].equalsIgnoreCase("on") || args[0].equalsIgnoreCase("enable") || args[0].equalsIgnoreCase("true")) {
-	        		main.rankupLegacy.autoRankup(p, true);
+	        		main.prestigeLegacy.autoPrestige(p, true);
 	        	} else if (args[0].equalsIgnoreCase("off") || args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("false")) {
-	        		main.rankupLegacy.autoRankup(p, false);
+	        		main.prestigeLegacy.autoPrestige(p, false);
 	        	}
 	        }
 			return true;
 		}
         if(args.length == 0) {
-            main.rankupAPI.autoRankup(p);
+            main.prestigeAPI.autoPrestige(p);
         } else if (args.length == 1) {
         	if(args[0].equalsIgnoreCase("on") || args[0].equalsIgnoreCase("enable") || args[0].equalsIgnoreCase("true")) {
-        		main.rankupAPI.autoRankup(p, true);
+        		main.prestigeAPI.autoPrestige(p, true);
         	} else if (args[0].equalsIgnoreCase("off") || args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("false")) {
-        		main.rankupAPI.autoRankup(p, false);
+        		main.prestigeAPI.autoPrestige(p, false);
         	}
         }
 		return true;

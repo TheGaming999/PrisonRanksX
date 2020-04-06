@@ -3,6 +3,7 @@ package me.prisonranksx.utils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -10,13 +11,21 @@ import java.util.Random;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.bukkit.Bukkit;
 
 import javafx.util.converter.BigIntegerStringConverter;
 
 public class NumberAPI {
 	Random rd;
+	List<String> bracketedNumbers;
+	List<String> firstOrdered;
 	public NumberAPI() {
 		rd = new Random();
+		bracketedNumbers = new ArrayList<String>();
+		firstOrdered = new ArrayList<String>();
 	}
 	public double decimalize(Double value, int numbersAfterDot) {
 		try {
@@ -407,6 +416,33 @@ public class NumberAPI {
 			return number - (number - limit);
 		}
 		return number;
+	}
+	
+	/**
+	 * calculate simple mafs
+	 * @param value example: (2 * 5) + 1, (1+2)*4, 2*2*2+5
+	 * @return result
+	 */
+	public double calculateSimple(String value) {
+		String key = value.replace(" ", "").replace("(", "[").replace(")", "]");
+		if(key.contains("(") && key.contains(")")) {
+		        Pattern worldName = Pattern.compile("\\[(.*?)\\]");
+		        Matcher m3 = worldName.matcher(key);
+		        while (m3.find()) {
+		        	firstOrdered.add(m3.group());
+		        }
+		}
+		for(String ordered : firstOrdered) {
+			key = key.replace(ordered, "");
+		}
+	    for(char operation : key.toCharArray()) {
+	    	if(operation == '*') {
+	    	  int index = key.indexOf(String.valueOf(operation));
+	    	} else if (operation == '/') {
+	    		int index = key.indexOf(String.valueOf(operation));
+	    	}
+	    }
+	    return Double.valueOf(key);
 	}
 	
 }

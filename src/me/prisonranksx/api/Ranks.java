@@ -1,10 +1,7 @@
 package me.prisonranksx.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,8 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
-import me.prisonranksx.data.RankDataHandler;
-import me.prisonranksx.data.RankDataStorage;
 import me.prisonranksx.data.RankPath;
 
 public class Ranks {
@@ -38,7 +33,7 @@ public class Ranks {
 	List<String> nonPagedRanks;
 	String lastPageReached;
 	public String rankListConsole;
-	private RankDataStorage rankStorage;
+	public String rankListInvalidPage;
 	/**
 	    *
 	    * @param sender The sender to send the list to
@@ -122,7 +117,6 @@ public class Ranks {
 			nonPagedRanks = new ArrayList<>();
 			lastPageReached = main.messagesStorage.getStringMessage("ranklist-last-page-reached");
 			rankListConsole = main.messagesStorage.getStringMessage("ranklist-console");
-			rankStorage = main.rankStorage;
 			if(enablePages) {
 				if(rankWithPagesListFormat.contains("[rankslist]")) {
 					isCustomList = false;
@@ -136,13 +130,11 @@ public class Ranks {
 					isCustomList = true;
 				}
 			}
+			rankListInvalidPage = main.messagesStorage.getStringMessage("ranklist-invalid-page");
 		}
 	  
 	public Ranks() {}
 	
-	public void updateStorage() {
-		this.rankStorage = main.rankStorage;
-	}
 	/**
 	 * 
 	 * @param pageNumber put null if you want to send a normal list
@@ -152,6 +144,10 @@ public class Ranks {
 		if(!enablePages || pageNumber == null) {
 			sendList(sender);
 		} else {
+			if(!main.prxAPI.numberAPI.isNumber(pageNumber) || Integer.valueOf(pageNumber) < 1) {
+				sender.sendMessage(main.prxAPI.c(rankListInvalidPage).replace("%page%", pageNumber));
+				return;
+			}
 			sendPagedList(pageNumber, sender);
 		}
 	}
@@ -267,13 +263,7 @@ public class Ranks {
 			String rankName = rp.getRankName();
 			String prestige = main.prxAPI.getPlayerPrestige(p);
 			List<String> newRanksCollection = main.rankStorage.getRanksCollection(pathName);
-			if(ranksCollection.isEmpty()) {
-                ranksCollection = newRanksCollection;
-			}
-			
-			if(ranksCollection.size() != newRanksCollection.size()) {
-				ranksCollection = newRanksCollection;
-			}
+			ranksCollection = newRanksCollection;
 			//int finalPage = ranksCollection.size() / rankPerPage < 1 ? 1 : ranksCollection.size() / rankPerPage;
 			//if(Integer.valueOf(pageNumber) > finalPage) {
 				//main.debug(sender.getName() + " executed '/ranks' ,Max Pages Reached (?:" + finalPage + ")");

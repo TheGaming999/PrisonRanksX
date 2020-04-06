@@ -45,14 +45,30 @@ public class ConfigManager {
 		createPrestigesConfig();
 		createRebirthDataConfig();
 		createRebirthsConfig();
-		messagesConfig.options().copyDefaults();
-		commandsConfig.options().copyDefaults();
-		rankDataConfig.options().copyDefaults();
-		ranksConfig.options().copyDefaults();
-		prestigeDataConfig.options().copyDefaults();
-		prestigesConfig.options().copyDefaults();
+		if(!messagesConfig.contains("Messages")) {
+		messagesConfig.options().copyDefaults(true);
+		}
+		if(!commandsConfig.contains("commands")) {
+			commandsConfig.options().copyDefaults(true);
+		}
+		if(!rankDataConfig.contains("players")) {
+		rankDataConfig.options().copyDefaults(true);
+		}
+		if(!ranksConfig.contains("Ranks")) {
+		ranksConfig.options().copyDefaults(true);
+		}
+		if(!prestigeDataConfig.contains("players")) {
+		prestigeDataConfig.options().copyDefaults(true);
+		}
+		if(!prestigesConfig.contains("Prestiges")) {
+		prestigesConfig.options().copyDefaults(true);
+		}
+		if(!rebirthDataConfig.contains("players")) {
 		rebirthDataConfig.options().copyDefaults();
-		rebirthsConfig.options().copyDefaults();
+		}
+		if(!rebirthsConfig.contains("Rebirths")) {
+		rebirthsConfig.options().copyDefaults(true);
+		}
 	}
 	public void saveConfigs() {
 		saveCustomYml(messagesConfig, messagesFile);
@@ -231,7 +247,7 @@ public class ConfigManager {
 	 
     public void reloadConfigs() {
     	try {
-			ConfigUpdater.update(main, "messages.yml", new File("plugins/PrisonRanksX/messages.yml"), new ArrayList<String>());
+			ConfigUpdater.update(main, "messages.yml", new File(main.getDataFolder() + "/messages.yml"), new ArrayList<String>());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

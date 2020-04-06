@@ -51,6 +51,7 @@ public class MessagesDataStorage {
 		String setRankPath = registerStringMessage("setrankpath");
 		String reload = registerStringMessage("reload");
 		String save = registerStringMessage("save");
+		String pathNotFound = registerStringMessage("path-notfound");
 		String rankNotFound = registerStringMessage("rank-notfound");
 		String prestigeNotFound = registerStringMessage("prestige-notfound");
 		String rebirthNotFound = registerStringMessage("rebirth-notfound");
@@ -91,17 +92,25 @@ public class MessagesDataStorage {
 		String autoRankupDisabled = registerStringMessage("autorankup-disabled");
 		String autoRankupNoPermission = registerStringMessage("autorankup-nopermission");
 		String autoRankupLastRank = registerStringMessage("autorankup-lastrank");
+		String autoPrestigeEnabled = registerStringMessage("autoprestige-enabled");
+		String autoPrestigeDisabled = registerStringMessage("autoprestige-disabled");
+		String autoRebirthEnabled = registerStringMessage("autorebirth-enabled");
+		String autoRebirthDisabled = registerStringMessage("autorebirth-disabled");
 		String rebirth = registerStringMessage("rebirth");
 		List<String> rebirthNotEnoughMoney = registerStringListMessage("rebirth-notenoughmoney");
 		List<String> lastRebirth = registerStringListMessage("lastrebirth");
 		String commandSpam = registerStringMessage("commandspam");
 		String rankupMaxIsOn = registerStringMessage("rankupmax-is-on");
 		String rankListLastPageReached = registerStringMessage("ranklist-last-page-reached");
+		String rankListInvalidPage = registerStringMessage("ranklist-invalid-page");
 		String prestigeListLastPageReached = registerStringMessage("prestigelist-last-page-reached");
+		String prestigeListInvalidPage = registerStringMessage("prestigelist-invalid-page");
 		String rebirthListLastPageReached = registerStringMessage("rebirthlist-last-page-reached");
+		String rebirthListInvalidPage = registerStringMessage("rebirthlist-invalid-page");
 		String rankListConsole = registerStringMessage("ranklist-console");
 		String prestigeListConsole = registerStringMessage("prestigelist-console");
 		String rebirthListConsole = registerStringMessage("rebirthlist-console");
+		String forceRankupNoArgs = registerStringMessage("forcerankup-noargs");
 	}
 	
 	public String getStringMessage(String configMessage) {

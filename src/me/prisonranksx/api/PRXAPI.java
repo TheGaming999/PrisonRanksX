@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -22,30 +23,27 @@ import me.prisonranksx.utils.MCProgressBar;
 import me.prisonranksx.utils.NumberAPI;
 
 public class PRXAPI {
-	public NumberAPI numberAPI;
-	private MCProgressBar rankupProgressBar;
-	private MCProgressBar rankupProgressBarExtended;
-	private MCProgressBar globalProgressBar_rank;
-	private MCProgressBar globalProgressBarExtended_rank;
-	private MCProgressBar globalProgressBar_prestige;
-	private MCProgressBar globalProgressBarExtended_prestige;
-	private MCProgressBar globalProgressBar_rebirth;
-	private MCProgressBar globalProgressBarExtended_rebirth;
-	private FileConfiguration rankDataConfig;
-	private FileConfiguration prestigeDataConfig;
-	private FileConfiguration rebirthDataConfig;
-	private FileConfiguration customConfig;
-	private FileConfiguration originalConfig;
-	private FileConfiguration ranksConfig;
-	private FileConfiguration prestigesConfig;
-	private FileConfiguration rebirthsConfig;
-	private FileConfiguration commandsConfig;
-	private FileConfiguration messagesConfig;
+	public final NumberAPI numberAPI;
+	private final MCProgressBar rankupProgressBar;
+	private final MCProgressBar rankupProgressBarExtended;
+	private final MCProgressBar globalProgressBar_rank;
+	private final MCProgressBar globalProgressBarExtended_rank;
+	private final MCProgressBar globalProgressBar_prestige;
+	private final MCProgressBar globalProgressBarExtended_prestige;
+	private final MCProgressBar globalProgressBar_rebirth;
+	private final MCProgressBar globalProgressBarExtended_rebirth;
+	@SuppressWarnings("unused")
+	private final FileConfiguration rankDataConfig, prestigeDataConfig, rebirthDataConfig, customConfig
+	, originalConfig, ranksConfig, prestigesConfig, rebirthsConfig, commandsConfig, messagesConfig;
     public PrisonRanksX main = null;
-	public List<Player> autoRankupPlayers;
-	public List<Player> taskedPlayers;
-	public Set<String> allRankAddPermissions, allRankDelPermissions, allPrestigeAddPermissions
+	public final List<Player> autoRankupPlayers = new ArrayList<>();
+	public final List<Player> autoPrestigePlayers = new ArrayList<>();
+	public final List<Player> autoRebirthPlayers = new ArrayList<>();
+	public final List<Player> taskedPlayers;
+	public final Set<String> allRankAddPermissions, allRankDelPermissions, allPrestigeAddPermissions
 	, allPrestigeDelPermissions, allRebirthAddPermissions, allRebirthDelPermissions;
+	private final String increaseType;
+	private final String rebirthIncreaseType;
 	
 	public void loadMain() {
 		if(main == null) {
@@ -56,18 +54,16 @@ public class PRXAPI {
 		  }
 		}
 	}
-	public PRXAPI() {}
-	
-	public void setup() {
-        loadMain();
-        rankupProgressBar = new MCProgressBar();
-        rankupProgressBarExtended = new MCProgressBar();
-        globalProgressBar_rank = new MCProgressBar();
-        globalProgressBarExtended_rank = new MCProgressBar();
-        globalProgressBar_prestige = new MCProgressBar();
-        globalProgressBarExtended_prestige = new MCProgressBar();
-        globalProgressBar_rebirth = new MCProgressBar();
-        globalProgressBarExtended_rebirth = new MCProgressBar();
+	public PRXAPI() {
+	    loadMain();
+		increaseType = main.globalStorage.getStringData("PrestigeOptions.cost_increase_type");
+		rebirthIncreaseType = main.globalStorage.getStringData("RebirthOptions.cost_increase_type");
+		allRankAddPermissions = new LinkedHashSet<String>();
+		allRankDelPermissions = new LinkedHashSet<String>();
+		allPrestigeAddPermissions = new LinkedHashSet<String>();
+		allPrestigeDelPermissions = new LinkedHashSet<String>();
+		allRebirthAddPermissions = new LinkedHashSet<String>();
+		allRebirthDelPermissions = new LinkedHashSet<String>();
         messagesConfig = main.configManager.messagesConfig;
 		rankDataConfig = main.configManager.rankDataConfig;
 		prestigeDataConfig = main.configManager.prestigeDataConfig;
@@ -78,16 +74,19 @@ public class PRXAPI {
 		rebirthDataConfig = main.configManager.rebirthDataConfig;
 		rebirthsConfig = main.configManager.rebirthsConfig;
 		commandsConfig = main.configManager.commandsConfig;
-		numberAPI = new NumberAPI();
-		autoRankupPlayers = new ArrayList<>();
 		taskedPlayers = new ArrayList<>();
-		allRankAddPermissions = new LinkedHashSet<String>();
-		allRankDelPermissions = new LinkedHashSet<String>();
-		allPrestigeAddPermissions = new LinkedHashSet<String>();
-		allPrestigeDelPermissions = new LinkedHashSet<String>();
-		allRebirthAddPermissions = new LinkedHashSet<String>();
-		allRebirthDelPermissions = new LinkedHashSet<String>();
+        rankupProgressBar = new MCProgressBar();
+        rankupProgressBarExtended = new MCProgressBar();
+        globalProgressBar_rank = new MCProgressBar();
+        globalProgressBarExtended_rank = new MCProgressBar();
+        globalProgressBar_prestige = new MCProgressBar();
+        globalProgressBarExtended_prestige = new MCProgressBar();
+        globalProgressBar_rebirth = new MCProgressBar();
+        globalProgressBarExtended_rebirth = new MCProgressBar();
+		numberAPI = new NumberAPI();
 	}
+	
+	public void setup() {loadMain();}
 	
 	public void loadProgressBars() {
 		// old progress bars
@@ -202,9 +201,14 @@ public class PRXAPI {
      return main.formatBalance(y);
     }
 	
+	
+	/**
+	 *
+	 * @return always true
+	 */
 	@Deprecated
 	public boolean uuidOption() {
-		return main.globalStorage.getBooleanData("Options.USE-UUID");
+		return true;
 	}
 	
 	public PrisonRanksX getPluginMainClass() {
@@ -219,6 +223,9 @@ public class PRXAPI {
 		return main.prestigeStorage.getPrestigeData().get(prestige) != null;
 	}
 	
+	/**
+	 * @return true if rank exists within the default path.
+	 */
 	public boolean rankExists(String rank) {
 		return main.rankStorage.getEntireData().get(rank + "#~#default") != null;
 	}
@@ -230,6 +237,10 @@ public class PRXAPI {
 	public boolean rankPathExists(RankPath rankPath) {
 		return main.rankStorage.getEntireData().get(rankPath.get()) != null;
 	}
+	
+	public boolean pathExists(String path) {
+		return main.rankStorage.getPaths().contains(path);
+	}
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -238,6 +249,10 @@ public class PRXAPI {
 	    */
 	public String getPlayerRank(OfflinePlayer offlinePlayer) {
 		return main.playerStorage.getPlayerRank(offlinePlayer);
+	}
+	
+	public String getPlayerRank(UUID uuid) {
+		return main.playerStorage.getPlayerData().get(uuid.toString()).getRankPath().getRankName();
 	}
 	
 	/**
@@ -249,6 +264,10 @@ public class PRXAPI {
 		return main.playerStorage.getPlayerRankPath(offlinePlayer);
 	}
 	
+	public RankPath getPlayerRankPath(UUID uuid) {
+		return main.playerStorage.getPlayerData().get(uuid.toString()).getRankPath();
+	}
+	
 	/**
 	 * 
 	 * @param rankPath
@@ -256,6 +275,10 @@ public class PRXAPI {
 	 */
 	public double getRankCostMethodII(RankPath rankPath) {
 		return main.rankStorage.getCost(rankPath);
+	}
+	
+	public double getPrestigeCost(String prestigeName) {
+		return main.prestigeStorage.getCost(prestigeName);
 	}
 	
 	public double getRebirthCost(String rebirthName) {
@@ -275,9 +298,21 @@ public class PRXAPI {
 		return String.valueOf(main.rankStorage.getDisplayName(getPlayerRankPath(offlinePlayer)));
 	}
 	
+	public String getPlayerRankDisplay(UUID uuid) {
+		if(main.rankStorage.getDisplayName(getPlayerRankPath(uuid)) == null) {
+			setPlayerRank(uuid, main.globalStorage.getStringData("defaultrank"));
+		}
+		return String.valueOf(main.rankStorage.getDisplayName(getPlayerRankPath(uuid)));
+	}
+	
 	public String getPlayerRebirthDisplay(OfflinePlayer offlinePlayer) {
 		return String.valueOf(main.rebirthStorage.getDisplayName(getPlayerRebirth(offlinePlayer)));
 	}
+	
+	public String getPlayerRebirthDisplay(UUID uuid) {
+		return String.valueOf(main.rebirthStorage.getDisplayName(getPlayerRebirth(uuid)));
+	}
+	
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -288,23 +323,36 @@ public class PRXAPI {
 		return (main.rankStorage.getCost(getPlayerRankPath(offlinePlayer)));
 	}
 	
+	public double getPlayerRankCost(UUID uuid) {
+		return (main.rankStorage.getCost(getPlayerRankPath(uuid)));
+	}
+	
+	/**
+	 * 
+	 * @param offlinePlayer
+	 * @return current player rebirth's cost (not next)
+	 */
 	public double getPlayerRebirthCost(OfflinePlayer offlinePlayer) {
 		return (main.rebirthStorage.getCost(getPlayerRebirth(offlinePlayer)));
+	}
+	
+	public double getPlayerRebirthCost(UUID uuid) {
+		return (main.rebirthStorage.getCost(getPlayerRebirth(uuid)));
 	}
 	/**
 	 * 
 	 * @param player
-	 * @return boolean also checks if Options.autorankup is true or false so this one time check
+	 * @return boolean also checks if "Options.autorankup" is true or false so this one time check
 	 */
 	public boolean isAutoRankupEnabled(Player player) {
 		if(main.globalStorage.getBooleanData("Options.autorankup") == false) {
 			return false;
 		}
-			if(autoRankupPlayers.contains(player)) {
-				return true;
-			} else {
-				return false;
-			}
+		return autoRankupPlayers.contains(player);
+	}
+	
+	public boolean isAutoPrestigeEnabled(Player player) {
+		return autoPrestigePlayers.contains(player);
 	}
 	   /**
 	    * PrisonRanksX API
@@ -314,6 +362,10 @@ public class PRXAPI {
 	    */
 	public String getPlayerRankCostFormatted(OfflinePlayer offlinePlayer) {
 		return formatBalance(main.rankStorage.getCost(getPlayerRankPath(offlinePlayer)));
+	}
+	
+	public String getPlayerRankCostFormatted(UUID uuid) {
+		return formatBalance(main.rankStorage.getCost(getPlayerRankPath(uuid)));
 	}
 	   /**
 	    * PrisonRanksX API
@@ -330,19 +382,42 @@ public class PRXAPI {
 		}
 	}
 	
+	public String getPlayerNextRank(UUID uuid) {
+		String nextRank = main.rankStorage.getRankupName(getPlayerRankPath(uuid));
+		if(nextRank.equalsIgnoreCase("lastrank")) {
+			return null;
+		} else {
+			return nextRank;
+		}
+	}
 	   /**
 	    * PrisonRanksX API
 	    * 
 	    *  @param offlinePlayer
-	    *  @return String player rank up name | doesn't return null if the player is at the latest rank
+	    *  @return String player rank up name | doesn't return null if the player is at the latest rank, will return "LASTRANK" instead
 	    */
 	public String getPlayerNextRankN(OfflinePlayer offlinePlayer) {
 		String nextRank = main.rankStorage.getRankupName(getPlayerRankPath(offlinePlayer));
 		return nextRank;
 	}
 	
+	public String getPlayerNextRankN(UUID uuid) {
+		String nextRank = main.rankStorage.getRankupName(getPlayerRankPath(uuid));
+		return nextRank;
+	}
+	
+	/**
+	 * 
+	 * @param offlinePlayer
+	 * @return player's current rebirth
+	 */
 	public String getPlayerRebirth(OfflinePlayer offlinePlayer) {
 		String rebirthName = main.playerStorage.getPlayerRebirth(offlinePlayer);
+		return rebirthName;
+	}
+	
+	public String getPlayerRebirth(UUID uuid) {
+		String rebirthName = main.playerStorage.getPlayerRebirth(uuid);
 		return rebirthName;
 	}
 	
@@ -414,6 +489,52 @@ public class PRXAPI {
     	}
     }
     
+    public PercentageState getPlayerNextPercentageOnline(UUID uuid, String name) {
+    	UUID p = uuid;
+    	PercentageState ps = new PercentageState();
+    	if(!this.isLastRank(p)) { // is not last rank
+       		double percent = (getPlayerMoney(name) / getPlayerRankupCostWithIncreaseDirect(p)) * 100;
+       		if(percent >= 100) {
+       			ps.setPercentage("100");
+       			ps.setLevelType(LevelType.RANK);
+       			return ps;
+       		}
+       		String intConverted = numberAPI.toFakeInteger(percent);
+       		ps.setPercentage(intConverted);
+       		ps.setLevelType(LevelType.RANK);
+       		return ps;
+    	} else { // is last rank
+    		if(this.hasNextPrestige(p)) {
+    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCost(p)) * 100;
+           		if(percent >= 100) {
+           			ps.setPercentage("100");
+           			ps.setLevelType(LevelType.PRESTIGE);
+           			return ps;
+           		}
+    			String intConverted = numberAPI.toFakeInteger(percent);
+    			ps.setPercentage(intConverted);
+    			ps.setLevelType(LevelType.PRESTIGE);
+    			return ps;
+    		} else {
+    			if(this.hasNextRebirth(p)) {
+        			double percent = (getPlayerMoney(name) / getPlayerNextRebirthCost(p)) * 100;
+               		if(percent >= 100) {
+               			ps.setPercentage("100");
+               			ps.setLevelType(LevelType.REBIRTH);
+               			return ps;
+               		}
+        			String intConverted = numberAPI.toFakeInteger(percent);
+        			ps.setPercentage(intConverted);
+        			ps.setLevelType(LevelType.REBIRTH);
+        			return ps;
+    			} else {
+    				ps.setPercentage("100");
+    				ps.setLevelType(LevelType.UNKNOWN);
+    			    return ps;
+    			}
+    		}
+    	}
+    }
     /**
      * @return integer next rank,prestige or rebirth percentage depending on your state (can go beyond 100).
      */
@@ -440,6 +561,29 @@ public class PRXAPI {
     	}
     }
     
+    
+    public String getPlayerNextPercentageNoLimitOnline(UUID uuid, String name) {
+    	UUID p = uuid;
+    	if(!this.isLastRank(p)) { // is not last rank
+       		double percent = (getPlayerMoney(name) / getPlayerRankupCostWithIncreaseDirect(p)) * 100;
+       		String intConverted = numberAPI.toFakeInteger(percent);
+       		return intConverted;
+    	} else { // is last rank
+    		if(this.hasNextPrestige(p)) {
+    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCost(p)) * 100;
+    			String intConverted = numberAPI.toFakeInteger(percent);
+    			return intConverted;
+    		} else {
+    			if(this.hasNextRebirth(p)) {
+        			double percent = (getPlayerMoney(name) / getPlayerNextRebirthCost(p)) * 100;
+        			String intConverted = numberAPI.toFakeInteger(percent);
+        			return intConverted;
+    			} else {
+    			    return "100";
+    			}
+    		}
+    	}
+    }
     /**
      * @return double next rank,prestige or rebirth percentage depending on your state (max=100.0).
      */
@@ -475,6 +619,37 @@ public class PRXAPI {
     	}
     }
     
+    public String getPlayerNextPercentageDecimalOnline(UUID uuid, String name) {
+    	UUID p = uuid;
+    	if(!this.isLastRank(p)) { // is not last rank
+       		double percent = (getPlayerMoney(name) / getPlayerRankupCostWithIncreaseDirect(p)) * 100;
+       		if(percent >= 100) {
+       			return "100.0";
+       		}
+       		String intConverted = String.valueOf(numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2));
+       		return intConverted;
+    	} else { // is last rank
+    		if(this.hasNextPrestige(p)) {
+    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCost(p)) * 100;
+           		if(percent >= 100) {
+           			return "100.0";
+           		}
+    			String intConverted = String.valueOf(numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2));
+    			return intConverted;
+    		} else {
+    			if(this.hasNextRebirth(p)) {
+        			double percent = (getPlayerMoney(name) / getPlayerNextRebirthCost(p)) * 100;
+               		if(percent >= 100) {
+               			return "100.0";
+               		}
+        			String intConverted = String.valueOf(numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2));
+        			return intConverted;
+    			} else {
+    			    return "100.0";
+    			}
+    		}
+    	}
+    }
     /**
      * @return double next rank,prestige or rebirth percentage depending on your state (can go beyond 100.0).
      */
@@ -501,6 +676,28 @@ public class PRXAPI {
     	}
     }
     
+    public String getPlayerNextPercentageDecimalNoLimitOnline(UUID uuid, String name) {
+    	UUID p = uuid;
+    	if(!this.isLastRank(p)) { // is not last rank
+       		double percent = (getPlayerMoney(name) / getPlayerRankupCostWithIncreaseDirect(p)) * 100;
+       		String intConverted = String.valueOf(numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2));
+       		return intConverted;
+    	} else { // is last rank
+    		if(this.hasNextPrestige(p)) {
+    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCost(p)) * 100;
+    			String intConverted = String.valueOf(numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2));
+    			return intConverted;
+    		} else {
+    			if(this.hasNextRebirth(p)) {
+        			double percent = (getPlayerMoney(name) / getPlayerNextRebirthCost(p)) * 100;
+        			String intConverted = String.valueOf(numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2));
+        			return intConverted;
+    			} else {
+    			    return "100.0";
+    			}
+    		}
+    	}
+    }
     /**
      * 
      * @param offlinePlayer
@@ -545,6 +742,50 @@ public class PRXAPI {
 		return globalProgressBar_rank.getPlainProgressBar();
     }
     
+    public String getPlayerNextProgress(UUID uuid, String name) {
+    	UUID p = uuid;
+    	if(getPlayerNextPercentageOnline(p, name).getLevelType() == LevelType.RANK ) {
+    		if(main.globalStorage.getBooleanData("PlaceholderAPI.next-progress-full-isrankup-enabled")
+    			&& getPlayerNextPercentageOnline(p, name).getPercentage().equals("100")) {
+    		return main.globalStorage.getStringData("PlaceholderAPI.next-progress-full-isrankup");
+    		} else {
+    			int converted = Integer.valueOf(getPlayerNextPercentageOnline(p, name).getPercentage()) / 10;
+    			globalProgressBar_rank.setValue(converted);
+    			return globalProgressBar_rank.getProgressBar();
+    		}
+    	}
+    	if(getPlayerNextPercentageOnline(p, name).getLevelType() == LevelType.PRESTIGE) {
+    		if(main.globalStorage.getBooleanData("PlaceholderAPI.next-progress-full-isprestige-enabled")
+        			&& getPlayerNextPercentageOnline(p, name).getPercentage().equals("100")) {
+        		return main.globalStorage.getStringData("PlaceholderAPI.next-progress-full-isprestige");
+        		} else {
+        			int converted = Integer.valueOf(getPlayerNextPercentageOnline(p, name).getPercentage()) / 10;
+        			globalProgressBar_prestige.setValue(converted);
+        			return globalProgressBar_prestige.getProgressBar();
+        		}
+    	}
+    	if(getPlayerNextPercentageOnline(p, name).getLevelType() == LevelType.REBIRTH) {
+    		if(main.globalStorage.getBooleanData("PlaceholderAPI.next-progress-full-isrebirth-enabled")
+        			&& getPlayerNextPercentageOnline(p, name).getPercentage().equals("100")) {
+        		return main.globalStorage.getStringData("PlaceholderAPI.next-progress-full-isrebirth");
+        		} else {
+        			int converted = Integer.valueOf(getPlayerNextPercentageOnline(p, name).getPercentage()) / 10;
+        			globalProgressBar_rebirth.setValue(converted);
+        			return globalProgressBar_rebirth.getProgressBar();
+        		}
+    	}
+    	if(getPlayerNextPercentageOnline(p, name).getLevelType() == LevelType.UNKNOWN && main.globalStorage.getBooleanData("PlaceholderAPI.next-progress-full-islast-enabled")
+    			&& getPlayerNextPercentageOnline(p, name).getPercentage().equals("100")) {
+    		return main.globalStorage.getStringData("PlaceholderAPI.next-progress-full-islast");
+    	}
+		return globalProgressBar_rank.getPlainProgressBar();
+    }
+    
+    /**
+     * 
+     * @param offlinePlayer
+     * @return next stage progress bar extended to 20 chars
+     */
     public String getPlayerNextProgressExtended(OfflinePlayer offlinePlayer) {
     	OfflinePlayer p = offlinePlayer;
     	if(getPlayerNextPercentage(p).getLevelType() == LevelType.RANK ) {
@@ -584,6 +825,45 @@ public class PRXAPI {
 		return globalProgressBar_rank.getPlainProgressBar();
     }
     
+    public String getPlayerNextProgressExtended(UUID uuid, String name) {
+    	UUID p = uuid;
+    	if(getPlayerNextPercentageOnline(p, name).getLevelType() == LevelType.RANK ) {
+    		if(main.globalStorage.getBooleanData("PlaceholderAPI.next-progress-full-isrankup-enabled")
+    			&& getPlayerNextPercentageOnline(p, name).getPercentage().equals("100")) {
+    		return main.globalStorage.getStringData("PlaceholderAPI.next-progress-full-isrankup");
+    		} else {
+    			int converted = Integer.valueOf(getPlayerNextPercentageOnline(p, name).getPercentage()) / 5;
+    			globalProgressBarExtended_rank.setValue(converted);
+    			return globalProgressBarExtended_rank.getProgressBar();
+    		}
+    	}
+    	if(getPlayerNextPercentageOnline(p, name).getLevelType() == LevelType.PRESTIGE) {
+    		if(main.globalStorage.getBooleanData("PlaceholderAPI.next-progress-full-isprestige-enabled")
+        			&& getPlayerNextPercentageOnline(p, name).getPercentage().equals("100")) {
+        		return main.globalStorage.getStringData("PlaceholderAPI.next-progress-full-isprestige");
+        		} else {
+        			int converted = Integer.valueOf(getPlayerNextPercentageOnline(p, name).getPercentage()) / 5;
+        			globalProgressBarExtended_prestige.setValue(converted);
+        			return globalProgressBarExtended_prestige.getProgressBar();
+        		}
+    	}
+    	if(getPlayerNextPercentageOnline(p, name).getLevelType() == LevelType.REBIRTH) {
+    		if(main.globalStorage.getBooleanData("PlaceholderAPI.next-progress-full-isrebirth-enabled")
+        			&& getPlayerNextPercentageOnline(p, name).getPercentage().equals("100")) {
+        		return main.globalStorage.getStringData("PlaceholderAPI.next-progress-full-isrebirth");
+        		} else {
+        			int converted = Integer.valueOf(getPlayerNextPercentageOnline(p, name).getPercentage()) / 5;
+        			globalProgressBarExtended_rebirth.setValue(converted);
+        			return globalProgressBarExtended_rebirth.getProgressBar();
+        		}
+    	}
+    	if(getPlayerNextPercentageOnline(p, name).getLevelType() == LevelType.UNKNOWN && main.globalStorage.getBooleanData("PlaceholderAPI.next-progress-full-islast-enabled")
+    			&& getPlayerNextPercentageOnline(p, name).getPercentage().equals("100")) {
+    		return main.globalStorage.getStringData("PlaceholderAPI.next-progress-full-islast");
+    	}
+		return globalProgressBar_rank.getPlainProgressBar();
+    }
+    
     public String getPlayerRankupProgressBar(OfflinePlayer offlinePlayer) {
     	OfflinePlayer p = offlinePlayer;
     	if(isLastRank(p)) {
@@ -597,12 +877,38 @@ public class PRXAPI {
     	return rankupProgressBar.getProgressBar();
     }
     
+    public String getPlayerRankupProgressBar(UUID uuid, String name) {
+    	UUID p = uuid;
+    	if(isLastRank(p)) {
+    		return main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-lastrank");
+    	}
+    	int convertedPercentage = Integer.valueOf(getPlayerRankupPercentageDirectOnline(p, name)) / 10;
+    	if(convertedPercentage >= 10 && main.globalStorage.getBooleanData("PlaceholderAPI.rankup-progress-full-enabled")) {
+    		return main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-full");
+    	}
+    	rankupProgressBar.setValue(convertedPercentage);
+    	return rankupProgressBar.getProgressBar();
+    }
+    
     public String getPlayerRankupProgressBarExtended(OfflinePlayer offlinePlayer) {
     	OfflinePlayer p = offlinePlayer;
     	if(isLastRank(p)) {
     		return main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-lastrank");
     	}
     	int convertedPercentage = Integer.valueOf(getPlayerRankupPercentageDirect(p)) / 5;
+    	if(convertedPercentage >= 5 && main.globalStorage.getBooleanData("PlaceholderAPI.rankup-progress-full-enabled")) {
+    		return main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-full");
+    	}
+    	rankupProgressBarExtended.setValue(convertedPercentage);
+    	return rankupProgressBarExtended.getProgressBar();
+    }
+    
+    public String getPlayerRankupProgressBarExtended(UUID uuid, String name) {
+    	UUID p = uuid;
+    	if(isLastRank(p)) {
+    		return main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-lastrank");
+    	}
+    	int convertedPercentage = Integer.valueOf(getPlayerRankupPercentageDirectOnline(p, name)) / 5;
     	if(convertedPercentage >= 5 && main.globalStorage.getBooleanData("PlaceholderAPI.rankup-progress-full-enabled")) {
     		return main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-full");
     	}
@@ -753,6 +1059,16 @@ public class PRXAPI {
 	public double getPlayerMoney(OfflinePlayer offlinePlayer) {
 		return main.econ.getBalance(offlinePlayer);
 	}
+	
+	@SuppressWarnings("deprecation")
+	public double getPlayerMoney(String name) {
+		return main.econ.getBalance(name);
+	}
+	
+	@SuppressWarnings("deprecation")
+	public double getPlayerMoneyOnline(Player p) {
+		return main.econ.getBalance(p.getName());
+	}
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -766,6 +1082,7 @@ public class PRXAPI {
               }
 		return 0.0;
 	}
+	
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -786,12 +1103,16 @@ public class PRXAPI {
 	public String cp(String string, OfflinePlayer player) {
 		return main.getString(string, player.getName());
 	}
+	
+	public String cp(String string, Player player) {
+		return main.getString(string, player.getName());
+	}
 	   /**
 	    * PrisonRanksX API
 	    * 
 	    *  @param offlinePlayer
 	    *  @return String player rank number in ranks list
-	    *  @deprecated will read the number from the disk which slows down the server a bit | use getRankNumber(String pathName, String rankName); instead
+	    *  @deprecated use getRankNumber(String pathName, String rankName); instead
 	    */
 	@Deprecated
 	public String getPlayerRankNumber(OfflinePlayer offlinePlayer) {
@@ -804,7 +1125,7 @@ public class PRXAPI {
 	    * PrisonRanksX API
 	    * 
 	    *  @param pathName the rank path
-	    *  @return Set<String> a collection of the ranks
+	    *  @return List<String> a collection of the ranks
 	    */
 	public List<String> getRanksCollection(String pathName) {
 		return main.rankStorage.getRanksCollection(pathName);
@@ -831,11 +1152,11 @@ public class PRXAPI {
 	    * 
 	    *  @param rankName
 	    *  @return String rank number in ranks list
-	    *  @deprecated will read the number from the disk which slows down the server a bit | use getRankNumber(String pathName, String rankName); instead
+	    *  @deprecated use getRankNumber(String pathName, String rankName); instead
 	    */
 	@Deprecated
 	public String getRankNumber(String rankName) {
-		ArrayList<String> xo = new ArrayList<String>(rankDataConfig.getConfigurationSection("Ranks").getKeys(false));
+		ArrayList<String> xo = new ArrayList<String>(rankDataConfig.getConfigurationSection("Ranks.default").getKeys(false));
 		String rankNumber = String.valueOf(xo.indexOf(rankName) + 1);
 		return rankNumber;
 	}
@@ -844,7 +1165,7 @@ public class PRXAPI {
 	    * PrisonRanksX API
 	    * 
 	    *  @param pathName rank's path name in rankdata.yml
-	    *  @param rankName rank name ofc
+	    *  @param rankName rank name
 	    *  @return String rank number in ranks list
 	    */
 	public String getRankNumber(String pathName, String rankName) {
@@ -855,29 +1176,19 @@ public class PRXAPI {
 	   /**
 	    * PrisonRanksX API
 	    * 
-	    *  @param offlinePlayer
-	    *  @return player prestige number in prestiges list
-	    *  @deprecated dead.
-	    */
-	@Deprecated
-	public String getPlayerPrestigeNumber(OfflinePlayer offlinePlayer) {
-		ArrayList<String> xo = new ArrayList<String>(getConfig().getConfigurationSection("Prestiges").getKeys(false));
-		String prestigeNumber = String.valueOf(xo.indexOf(getPlayerPrestige(offlinePlayer)) + 1);
-		return prestigeNumber;
-		
-	}
-	   /**
-	    * PrisonRanksX API
-	    * 
-	    *  @param offlinePlayer
+	    *  @param prestigeName
 	    *  @return prestige number in prestiges list
-	    *  @deprecated dead.
 	    */
-	@Deprecated
 	public String getPrestigeNumber(String prestigeName) {
-		ArrayList<String> xo = new ArrayList<String>(getConfig().getConfigurationSection("Prestiges").getKeys(false));
-		String prestigeNumber = String.valueOf(xo.indexOf(prestigeName) + 1);
+		List<String> collection = getPrestigesCollection();
+		String prestigeNumber = String.valueOf(collection.indexOf(prestigeName) + 1);
 		return prestigeNumber;
+	}
+	
+	public String getRebirthNumber(String rebirthName) {
+		List<String> collection = getRebirthsCollection();
+		String rebirthNumber = String.valueOf(collection.indexOf(rebirthName) + 1);
+		return rebirthNumber;
 	}
 	   /**
 	    * PrisonRanksX API
@@ -890,8 +1201,18 @@ public class PRXAPI {
 		return nextRankCommands;
 	}
 	
+	public List<String> getPlayerRankupCommands(UUID uuid) {
+		List<String> nextRankCommands = main.rankStorage.getRankupCommands(getPlayerRankPath(uuid));
+		return nextRankCommands;
+	}
+	
 	public List<String> getPlayerNextRebirthCommands(OfflinePlayer offlinePlayer) {
 		List<String> nextRebirthCommands = main.rebirthStorage.getRebirthCommands(getPlayerRebirth(offlinePlayer));
+		return nextRebirthCommands;
+	}
+	
+	public List<String> getPlayerNextRebirthCommands(UUID uuid) {
+		List<String> nextRebirthCommands = main.rebirthStorage.getRebirthCommands(getPlayerRebirth(uuid));
 		return nextRebirthCommands;
 	}
 	   /**
@@ -1032,6 +1353,10 @@ public class PRXAPI {
 		return main.playerStorage.getPlayerPrestige(offlinePlayer);
 	}
 
+	public String getPlayerPrestige(UUID uuid) {
+		return main.playerStorage.getPlayerPrestige(uuid);
+	}
+	
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1043,6 +1368,13 @@ public class PRXAPI {
 			return null;
 		}
 		return main.prestigeStorage.getCost(getPlayerPrestige(offlinePlayer));
+	}
+	
+	public Double getPlayerPrestigeCost(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return null;
+		}
+		return main.prestigeStorage.getCost(getPlayerPrestige(uuid));
 	}
 	   /**
 	    * PrisonRanksX API
@@ -1057,6 +1389,13 @@ public class PRXAPI {
 		return String.valueOf(main.prestigeStorage.getCost(getPlayerPrestige(offlinePlayer)));
 	}
 	
+	public String getPlayerPrestigeCostInString(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return null;
+		}
+		return String.valueOf(main.prestigeStorage.getCost(getPlayerPrestige(uuid)));
+	}
+	
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1068,6 +1407,13 @@ public class PRXAPI {
 			return null;
 		}
 		return formatBalance(main.prestigeStorage.getCost(getPlayerPrestige(offlinePlayer)));
+	}
+	
+	public String getPlayerPrestigeCostFormatted(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return null;
+		}
+		return formatBalance(main.prestigeStorage.getCost(getPlayerPrestige(uuid)));
 	}
 	
 	   /**
@@ -1123,8 +1469,25 @@ public class PRXAPI {
 	    return true;
 	}
 	
+	public boolean hasNextPrestige(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return true;
+		}
+		String currentPrestige = main.playerStorage.getPlayerPrestige(uuid);
+		String nextPrestige = main.prestigeStorage.getNextPrestigeName(currentPrestige);
+		if(nextPrestige.equalsIgnoreCase("LASTPRESTIGE")) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 	public boolean hasRebirthed(OfflinePlayer offlinePlayer) {
 		return main.playerStorage.getPlayerRebirth(offlinePlayer) != null;
+	}
+	
+	public boolean hasRebirthed(UUID uuid) {
+		return main.playerStorage.getPlayerRebirth(uuid) != null;
 	}
 	
 	public boolean hasNextRebirth(OfflinePlayer offlinePlayer) {
@@ -1132,6 +1495,15 @@ public class PRXAPI {
 			return true;
 		}
 		String currentRebirth = main.playerStorage.getPlayerRebirth(offlinePlayer);
+		String nextRebirth = main.rebirthStorage.getNextRebirthName(currentRebirth);
+		return !nextRebirth.equalsIgnoreCase("LASTREBIRTH");
+	}
+	
+	public boolean hasNextRebirth(UUID uuid) {
+		if(!hasRebirthed(uuid)) {
+			return true;
+		}
+		String currentRebirth = main.playerStorage.getPlayerRebirth(uuid);
 		String nextRebirth = main.rebirthStorage.getNextRebirthName(currentRebirth);
 		return !nextRebirth.equalsIgnoreCase("LASTREBIRTH");
 	}
@@ -1150,6 +1522,14 @@ public class PRXAPI {
 		return nextPrestige;
 	}
 	
+	public String getPlayerNextPrestige(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return main.globalStorage.getStringData("firstprestige");
+		}
+		String currentPrestige = main.playerStorage.getPlayerPrestige(uuid);
+	    String nextPrestige = main.prestigeStorage.getNextPrestigeName(currentPrestige);
+		return nextPrestige;
+	}
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1165,6 +1545,14 @@ public class PRXAPI {
 		return nextRebirth;
 	}
 	
+	public String getPlayerNextRebirth(UUID uuid) {
+		if(!hasRebirthed(uuid)) {
+			return main.globalStorage.getStringData("firstrebirth");
+		}
+		String currentRebirth = main.playerStorage.getPlayerRebirth(uuid);
+		String nextRebirth = main.rebirthStorage.getNextRebirthName(currentRebirth);
+		return nextRebirth;
+	}
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1196,6 +1584,18 @@ public class PRXAPI {
 		return nextPrestigeDisplay;
 	}
 	
+	public String getPlayerNextPrestigeDisplay(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return main.globalStorage.getStringData("PlaceholderAPI.nextprestige-notprestiged");
+		}
+		if(!hasNextPrestige(uuid)) {
+			return c(main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"));
+		}
+
+	    String nextPrestigeDisplay = main.prestigeStorage.getNextPrestigeDisplayName(getPlayerPrestige(uuid));
+		return nextPrestigeDisplay;
+	}
+	
 	public String getPlayerNextRebirthDisplay(OfflinePlayer offlinePlayer) {
 		if(!hasRebirthed(offlinePlayer)) {
 			return main.globalStorage.getStringData("PlaceholderAPI.nextrebirth-notrebirthed");
@@ -1204,6 +1604,17 @@ public class PRXAPI {
 			return c(main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"));
 		}
 		String nextRebirthDisplay = main.rebirthStorage.getNextRebirthDisplayName(getPlayerRebirth(offlinePlayer));
+		return nextRebirthDisplay;
+	}
+	
+	public String getPlayerNextRebirthDisplay(UUID uuid) {
+		if(!hasRebirthed(uuid)) {
+			return main.globalStorage.getStringData("PlaceholderAPI.nextrebirth-notrebirthed");
+		}
+		if(!hasNextRebirth(uuid)) {
+			return c(main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"));
+		}
+		String nextRebirthDisplay = main.rebirthStorage.getNextRebirthDisplayName(getPlayerRebirth(uuid));
 		return nextRebirthDisplay;
 	}
 	
@@ -1217,6 +1628,16 @@ public class PRXAPI {
 		return main.prestigeStorage.getNextPrestigeDisplayName(getPlayerPrestige(offlinePlayer));
 	}
 	
+	public String getPlayerNextPrestigeDisplayNoFallback(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return main.prestigeStorage.getDisplayName(getFirstPrestige());
+		}
+		if(!hasNextPrestige(uuid)) {
+			return null;
+		}
+		return main.prestigeStorage.getNextPrestigeDisplayName(getPlayerPrestige(uuid));
+	}
+	
 	public String getPlayerNextRebirthDisplayNoFallback(OfflinePlayer offlinePlayer) {
 		if(!hasRebirthed(offlinePlayer)) {
 			return main.rebirthStorage.getDisplayName(getFirstRebirth());
@@ -1225,6 +1646,16 @@ public class PRXAPI {
 			return null;
 		}
 		return main.rebirthStorage.getNextRebirthDisplayName(getPlayerRebirth(offlinePlayer));
+	}
+	
+	public String getPlayerNextRebirthDisplayNoFallback(UUID uuid) {
+		if(!hasRebirthed(uuid)) {
+			return main.rebirthStorage.getDisplayName(getFirstRebirth());
+		}
+		if(!hasNextRebirth(uuid)) {
+			return null;
+		}
+		return main.rebirthStorage.getNextRebirthDisplayName(getPlayerRebirth(uuid));
 	}
 	
 	public String getPlayerNextPrestigeDisplayNoFallbackR(OfflinePlayer offlinePlayer) {
@@ -1237,6 +1668,16 @@ public class PRXAPI {
 		return c(main.prestigeStorage.getNextPrestigeDisplayName(getPlayerPrestige(offlinePlayer)));
 	}
 	
+	public String getPlayerNextPrestigeDisplayNoFallbackR(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return main.prestigeStorage.getDisplayName(getFirstPrestige());
+		}
+		if(!hasNextPrestige(uuid)) {
+			return null;
+		}
+		return c(main.prestigeStorage.getNextPrestigeDisplayName(getPlayerPrestige(uuid)));
+	}
+	
 	public String getPlayerNextRebirthDisplayNoFallbackR(OfflinePlayer offlinePlayer) {
 		if(!hasRebirthed(offlinePlayer)) {
 			return main.rebirthStorage.getDisplayName(getFirstRebirth());
@@ -1247,11 +1688,29 @@ public class PRXAPI {
 		return c(main.rebirthStorage.getNextRebirthDisplayName(getPlayerRebirth(offlinePlayer)));
 	}
 	
+	public String getPlayerNextRebirthDisplayNoFallbackR(UUID uuid) {
+		if(!hasRebirthed(uuid)) {
+			return main.rebirthStorage.getDisplayName(getFirstRebirth());
+		}
+		if(!hasNextRebirth(uuid)) {
+			return null;
+		}
+		return c(main.rebirthStorage.getNextRebirthDisplayName(getPlayerRebirth(uuid)));
+	}
+	
 	public double getPlayerNextPrestigeCost(OfflinePlayer offlinePlayer) {
 		if(!hasPrestiged(offlinePlayer)) {
 			return main.prestigeStorage.getCost(getFirstPrestige());
 		}
 	    double nextPrestigeCost = main.prestigeStorage.getNextPrestigeCost(getPlayerPrestige(offlinePlayer));
+		return nextPrestigeCost;
+	}
+	
+	public double getPlayerNextPrestigeCost(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return main.prestigeStorage.getCost(getFirstPrestige());
+		}
+	    double nextPrestigeCost = main.prestigeStorage.getNextPrestigeCost(getPlayerPrestige(uuid));
 		return nextPrestigeCost;
 	}
 	
@@ -1263,12 +1722,28 @@ public class PRXAPI {
 		return nextRebirthCost;
 	}
 	
+	public double getPlayerNextRebirthCost(UUID uuid) {
+		if(!hasRebirthed(uuid)) {
+			return main.rebirthStorage.getCost(getFirstRebirth());
+		}
+		double nextRebirthCost = main.rebirthStorage.getNextRebirthCost(getPlayerRebirth(uuid));
+		return nextRebirthCost;
+	}
+	
 	public String getPlayerNextPrestigeCostFormatted(OfflinePlayer offlinePlayer) {
 		return getPluginMainClass().formatBalance(getPlayerNextPrestigeCost(offlinePlayer));
 	}
 	
+	public String getPlayerNextPrestigeCostFormatted(UUID uuid) {
+		return getPluginMainClass().formatBalance(getPlayerNextPrestigeCost(uuid));
+	}
+	
 	public String getPlayerNextRebirthCostFormatted(OfflinePlayer offlinePlayer) {
 		return getPluginMainClass().formatBalance(getPlayerNextRebirthCost(offlinePlayer));
+	}
+	
+	public String getPlayerNextRebirthCostFormatted(UUID uuid) {
+		return getPluginMainClass().formatBalance(getPlayerNextRebirthCost(uuid));
 	}
 	
 	public  String getPlayerNextPrestigeCostInString(OfflinePlayer offlinePlayer) {
@@ -1278,6 +1753,15 @@ public class PRXAPI {
 	    Double nextPrestigeCost = main.prestigeStorage.getNextPrestigeCost(getPlayerPrestige(offlinePlayer));
 		return String.valueOf(nextPrestigeCost);
 	}
+	
+	public  String getPlayerNextPrestigeCostInString(UUID uuid) {
+		if(!hasPrestiged(uuid)) {
+			return String.valueOf(main.prestigeStorage.getCost(getFirstPrestige()));
+		}
+	    Double nextPrestigeCost = main.prestigeStorage.getNextPrestigeCost(getPlayerPrestige(uuid));
+		return String.valueOf(nextPrestigeCost);
+	}
+	
 	public  boolean hasPrestigeFirework(OfflinePlayer offlinePlayer) {
 		if(main.prestigeStorage.isSendFirework(getPlayerPrestige(offlinePlayer))) {
 			return true;
@@ -1285,12 +1769,27 @@ public class PRXAPI {
 		return false;
 	}
 
-	public  String getPlayerPrestigeDisplay(OfflinePlayer offlinePlayer) {
+	public  boolean hasPrestigeFirework(UUID uuid) {
+		if(main.prestigeStorage.isSendFirework(getPlayerPrestige(uuid))) {
+			return true;
+		}
+		return false;
+	}
+	
+	public String getPlayerPrestigeDisplay(OfflinePlayer offlinePlayer) {
 		return main.prestigeStorage.getDisplayName(getPlayerPrestige(offlinePlayer));
 	}
 
-	public  String getPlayerPrestigeDisplayR(OfflinePlayer offlinePlayer) {
+	public String getPlayerPrestigeDisplay(UUID uuid) {
+		return main.prestigeStorage.getDisplayName(getPlayerPrestige(uuid));
+	}
+	
+	public String getPlayerPrestigeDisplayR(OfflinePlayer offlinePlayer) {
 		return c(main.prestigeStorage.getDisplayName(getPlayerPrestige(offlinePlayer)));
+	}
+	
+	public String getPlayerPrestigeDisplayR(UUID uuid) {
+		return c(main.prestigeStorage.getDisplayName(getPlayerPrestige(uuid)));
 	}
 	
 	public boolean hasPrestiged(OfflinePlayer offlinePlayer) {
@@ -1300,30 +1799,66 @@ public class PRXAPI {
 		return true;
 	}
 
+	public boolean hasPrestiged(UUID uuid) {
+		if(main.playerStorage.getPlayerPrestige(uuid) == null) {
+			return false;
+		}
+		return true;
+	}
+	
 
 	public  void setPlayerRank(OfflinePlayer offlinePlayer, String rankName) {
         main.playerStorage.setPlayerRank(offlinePlayer, rankName);
+	}
+	
+	public void setPlayerRank(UUID uuid, String rankName) {
+		main.playerStorage.setPlayerRank(uuid, rankName);
 	}
 	
 	public  void setPlayerPrestige(OfflinePlayer offlinePlayer, String prestigeName) {
        main.playerStorage.setPlayerPrestige(offlinePlayer, prestigeName);
 	}
 	
+	public void setPlayerPrestige(UUID uuid, String prestigeName) {
+		main.playerStorage.setPlayerPrestige(uuid, prestigeName);
+	}
+	
 	public void setPlayerRebirth(OfflinePlayer offlinePlayer, String rebirthName) {
 		main.playerStorage.setPlayerRebirth(offlinePlayer, rebirthName);
+	}
+	
+	public void setPlayerRebirth(UUID uuid, String rebirthName) {
+		main.playerStorage.setPlayerRebirth(uuid, rebirthName);
 	}
 	
 	public void setPlayerPath(OfflinePlayer offlinePlayer, String pathName) {
 		main.playerStorage.setPlayerPath(offlinePlayer, pathName);
 	}
 	
+	public void setPlayerPath(UUID uuid, String pathName) {
+		main.playerStorage.setPlayerPath(uuid, pathName);
+	}
+	
 	public void setPlayerRankPath(OfflinePlayer offlinePlayer, RankPath rankPath) {
 		main.playerStorage.setPlayerRank(offlinePlayer, rankPath);
 	}
 	
-	public Double getRankupCostIncreasePercentage(String prestigeName) {
-		if(main.globalStorage.getDoubleData("PrestigeOptions.rankup_cost_increase_percentage") > 0) {
-			return main.globalStorage.getDoubleData("PrestigeOptions.rankup_cost_increase_percentage") * Integer.valueOf(getPrestigeNumber(prestigeName));
+	public void setPlayerRankPath(UUID uuid, RankPath rankPath) {
+		main.playerStorage.setPlayerRankPath(uuid, rankPath);
+	}
+	
+	public double getRankupCostIncreasePercentage(String prestigeName) {
+		int prestigeNumber = Integer.valueOf(getPrestigeNumber(prestigeName));
+		double rankupCostIncrease = main.globalStorage.getDoubleData("PrestigeOptions.rankup_cost_increase_percentage");
+		if(rankupCostIncrease > 0) {
+			if(increaseType.equalsIgnoreCase("DEFAULT")) {
+				return rankupCostIncrease * prestigeNumber;
+			} else if (increaseType.equalsIgnoreCase("POWER")) {
+				return Math.pow(rankupCostIncrease, prestigeNumber + 1);
+			} else if (increaseType.equalsIgnoreCase("EXTRA")) {
+				return (rankupCostIncrease * prestigeNumber) * 2;
+			}
+			return rankupCostIncrease * prestigeNumber;
 		}
 		if(main.prestigeStorage.getRankupCostIncreasePercentage(prestigeName) <= 0) {
 			return 0.0;
@@ -1331,6 +1866,27 @@ public class PRXAPI {
 			return main.prestigeStorage.getRankupCostIncreasePercentage(prestigeName);
 		}
 	}
+	
+	public double getPrestigeCostIncreasePercentage(String rebirthName) {
+		int rebirthNumber = Integer.valueOf(getRebirthNumber(rebirthName));
+		double prestigeCostIncrease = main.globalStorage.getDoubleData("RebirthOptions.prestige_cost_increase_percentage");
+		if(prestigeCostIncrease > 0) {
+			if(rebirthIncreaseType.equalsIgnoreCase("DEFAULT")) {
+				return prestigeCostIncrease * rebirthNumber;
+			} else if (rebirthIncreaseType.equalsIgnoreCase("POWER")) {
+				return Math.pow(prestigeCostIncrease, rebirthNumber);
+			} else if (rebirthIncreaseType.equalsIgnoreCase("EXTRA")) {
+				return (prestigeCostIncrease * rebirthNumber) * 2;
+			}
+			return prestigeCostIncrease * rebirthNumber;
+		}
+			if(main.rebirthStorage.getPrestigeCostIncreasePercentage(rebirthName) <= 0) {
+				return 0.0;
+			} else {
+				return main.rebirthStorage.getPrestigeCostIncreasePercentage(rebirthName);
+			}
+		}
+	
 	@Deprecated
 	public Double getIncreasedRankupCost(String prestigeName, String rankName) {
 		Double eff = getRankCostMethodII(main.rankStorage.getRankPath(rankName));
@@ -1345,6 +1901,14 @@ public class PRXAPI {
 		double inc = eff / 100;
 		double afterinc;
 		afterinc = inc * getRankupCostIncreasePercentage(prestigeName);
+		return afterinc;
+	}
+	
+	public double getIncreasedPrestigeCost(String rebirthName, String prestigeName) {
+		double eff = getPrestigeCost(prestigeName);
+		double inc = eff / 100;
+		double afterinc;
+		afterinc = inc * getPrestigeCostIncreasePercentage(rebirthName);
 		return afterinc;
 	}
 	
@@ -1377,18 +1941,50 @@ public class PRXAPI {
 		return afterinc;
 	}
 	
+	public double getIncreasedPrestigeCostNB(String rebirthName, String prestigeName) {
+		double eff = getPrestigeCost(prestigeName);
+		if(rebirthName == null || rebirthName.equalsIgnoreCase("null")) {
+			return eff;
+		}
+		double inc = eff / 100;
+		double afterinc;
+		afterinc = inc * getPrestigeCostIncreasePercentage(rebirthName);
+		return afterinc;
+	}
+	
 	/**
-	 * 
+	 * Recommended Method
 	 * @param prestigeName
 	 * @param rankCost
 	 * @return rankup cost with prestige increase applied | returns only rankup cost if no prestige
 	 */
 	public double getIncreasedRankupCost(String prestigeName, Double rankCost) {
-		if(prestigeName == null || prestigeName.equalsIgnoreCase("null")) {
+		if(prestigeName == null || prestigeName.equalsIgnoreCase("null") || getRankupCostIncreasePercentage(prestigeName) <= 0) {
 			return rankCost;
 		}
 		double inc = rankCost / 100;
 		Double afterinc = inc * getRankupCostIncreasePercentage(prestigeName);
+		if(afterinc.isNaN()) {
+			return 0.0;
+		}
+		if(afterinc <= 0.0) {
+			return 0.0;
+		}
+		return afterinc;
+	}
+	
+	/**
+	 * Recommended Method
+	 * @param rebirthName
+	 * @param prestigeCost
+	 * @return prestige cost with rebirth increase applied | returns only prestige cost if no rebirth
+	 */
+	public double getIncreasedPrestigeCost(String rebirthName, Double prestigeCost) {
+		if(rebirthName == null || rebirthName.equalsIgnoreCase("null") || getPrestigeCostIncreasePercentage(rebirthName) <= 0) {
+			return prestigeCost;
+		}
+		double inc = prestigeCost / 100;
+		Double afterinc = inc * getPrestigeCostIncreasePercentage(rebirthName);
 		if(afterinc.isNaN()) {
 			return 0.0;
 		}
@@ -1404,10 +2000,22 @@ public class PRXAPI {
 		}
 		return false;
 	}
+	
+	public boolean isLastRank(UUID uuid) {
+		if(getPlayerRank(uuid).equalsIgnoreCase(main.globalStorage.getStringData("lastrank"))) {
+			return true;
+		}
+		return false;
+	}
+	
 	public void resetPlayerRank(OfflinePlayer offlinePlayer) {
 		main.playerStorage.setPlayerRank(offlinePlayer, main.globalStorage.getStringData("defaultrank"));
 	}
 
+	public void resetPlayerRank(UUID uuid) {
+		main.playerStorage.setPlayerRank(uuid, main.globalStorage.getStringData("defaultrank"));
+	}
+	
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1418,9 +2026,36 @@ public class PRXAPI {
 	    if(getPlayerNextRank(offlinePlayer) == null) {
 	    	return 0.0;
 	    }
-	    RankPath rp = RankPath.getRankPath(main.playerStorage.getPlayerRank(offlinePlayer) + "#~#" + main.playerStorage.getPlayerPath(offlinePlayer));
-		Double nextRankCost = main.rankStorage.getRankupCost(rp) + getIncreasedRankupCostNB(getPlayerPrestige(offlinePlayer), rp);	
+	    RankPath rp = RankPath.getRankPath(getPlayerNextRank(offlinePlayer) + "#~#" + main.playerStorage.getPlayerPath(offlinePlayer));
+		Double nextRankCost = getIncreasedRankupCost(getPlayerPrestige(offlinePlayer), getRankCostMethodII(rp));	
 		return Double.valueOf(nextRankCost);
+	}
+	
+	public Double getPlayerNextPrestigeCostWithIncreaseDirect(OfflinePlayer offlinePlayer) {
+		if(getPlayerNextPrestige(offlinePlayer) == null) {
+			return 0.0;
+		}
+	    String prestigeName = getPlayerNextPrestige(offlinePlayer);
+	    Double nextPrestigeCost = getIncreasedPrestigeCost(getPlayerRebirth(offlinePlayer), getPrestigeCost(prestigeName));
+	    return Double.valueOf(nextPrestigeCost);
+	}
+	
+	public Double getPlayerRankupCostWithIncreaseDirect(UUID uuid) {
+	    if(getPlayerNextRank(uuid) == null) {
+	    	return 0.0;
+	    }
+	    RankPath rp = RankPath.getRankPath(getPlayerNextRank(uuid) + "#~#" + main.playerStorage.getPlayerPath(uuid));
+		Double nextRankCost = getIncreasedRankupCost(getPlayerPrestige(uuid), getRankCostMethodII(rp));	
+		return Double.valueOf(nextRankCost);
+	}
+	
+	public Double getPlayerNextPrestigeCostWithIncreaseDirect(UUID uuid) {
+		if(getPlayerNextPrestige(uuid) == null) {
+			return 0.0;
+		}
+	    String prestigeName = getPlayerNextPrestige(uuid);
+	    Double nextPrestigeCost = getIncreasedPrestigeCost(getPlayerRebirth(uuid), getPrestigeCost(prestigeName));
+	    return Double.valueOf(nextPrestigeCost);
 	}
 	
 	   /**
@@ -1438,6 +2073,16 @@ public class PRXAPI {
 		return String.valueOf(convertedValue);
 	}
 
+	@SuppressWarnings("deprecation")
+	public String getPlayerRankupPercentageDirectOnline(UUID uuid, String name) {
+		Double percent = getPluginMainClass().econ.getBalance(name) / getPlayerRankupCostWithIncreaseDirect(uuid) * 100;
+		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
+		if(Double.valueOf(convertedValue) > 100) {
+			return "100";
+		}
+		return String.valueOf(convertedValue);
+	}
+	
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1451,6 +2096,14 @@ public class PRXAPI {
 		return String.valueOf(convertedValue);
 	}
 
+	@SuppressWarnings("deprecation")
+	public String getPlayerRankupPercentageNoLimitDirectOnline(UUID uuid, String name) {
+		Double percent = getPluginMainClass().econ.getBalance(name) / getPlayerRankupCostWithIncreaseDirect(uuid) * 100;
+		String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
+		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(percentRemovedSN));
+		return String.valueOf(convertedValue);
+	}
+	
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1459,6 +2112,17 @@ public class PRXAPI {
 	    */
 	public String getPlayerRankupPercentageDecimalDirect(OfflinePlayer offlinePlayer) {
 		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100;
+		String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
+		Double convertedValue = Double.valueOf(percentRemovedSN);
+		if(convertedValue > 100) {
+			return "100.0";
+		}
+		return String.valueOf(percentRemovedSN);
+    }
+	
+	@SuppressWarnings("deprecation")
+	public String getPlayerRankupPercentageDecimalDirectOnline(UUID uuid, String name) {
+		Double percent = getPluginMainClass().econ.getBalance(name) / getPlayerRankupCostWithIncreaseDirect(uuid) * 100;
 		String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
 		Double convertedValue = Double.valueOf(percentRemovedSN);
 		if(convertedValue > 100) {
@@ -1479,6 +2143,13 @@ public class PRXAPI {
 		return String.valueOf(percentRemovedSN);
     }
 
+	@SuppressWarnings("deprecation")
+	public String getPlayerRankupPercentageDecimalNoLimitDirectOnline(UUID uuid, String name) {
+		Double percent = getPluginMainClass().econ.getBalance(name) / getPlayerRankupCostWithIncreaseDirect(uuid) * 100;
+		String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
+		return String.valueOf(percentRemovedSN);
+    }
+	
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1489,6 +2160,9 @@ public class PRXAPI {
         return main.rankStorage.getRankupDisplayName(getPlayerRankPath(offlinePlayer));
 	}
 
+	public String getPlayerRankupDisplay(UUID uuid) {
+        return main.rankStorage.getRankupDisplayName(getPlayerRankPath(uuid));
+	}
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1497,6 +2171,10 @@ public class PRXAPI {
 	    */
 	public String getPlayerRankupDisplayR(OfflinePlayer offlinePlayer) {
         return c(main.rankStorage.getRankupDisplayName(getPlayerRankPath(offlinePlayer)));
+	}
+	
+	public String getPlayerRankupDisplayR(UUID uuid) {
+        return c(main.rankStorage.getRankupDisplayName(getPlayerRankPath(uuid)));
 	}
 	
 	/**
@@ -1527,6 +2205,9 @@ public class PRXAPI {
        main.rankupAPI.rankup(player);
 	}
 	
+	public void rankupLegacy(Player player) {
+		main.rankupLegacy.rankup(player);
+	}
    /**
     * Execute a prestige to a player
 	* @param player
@@ -1535,6 +2216,9 @@ public class PRXAPI {
        main.prestigeAPI.prestige(player);
 	}
 	
+	public void prestigeLegacy(Player player) {
+		main.prestigeLegacy.prestige(player);
+	}
 	/**
 	 * Execute a rankupmax to a player
 	 * @param player
@@ -1545,6 +2229,10 @@ public class PRXAPI {
 	
 	public void rebirth(Player player) {
 		main.rebirthAPI.rebirth(player);
+	}
+	
+	public void rebirthLegacy(Player player) {
+		main.rebirthLegacy.rebirth(player);
 	}
 	/**
 	 * 
@@ -1557,10 +2245,28 @@ public class PRXAPI {
 	
 	/**
 	 * 
+	 * @param player
+	 * @return -0 if player leaderboard position is more than 10
+	 */
+	public Integer getPlayerLeaderboardPosition(UUID uuid) {
+		return 0;
+	}
+	
+	/**
+	 * 
 	 * @param intValue
 	 * @return null if player leaderboard position is more than 10
 	 */
     public OfflinePlayer getLeaderboardPosition(Integer intValue) {
+    	return null;
+    }
+    
+	/**
+	 * 
+	 * @param intValue
+	 * @return null if player leaderboard position is more than 10
+	 */
+    public UUID getLeaderboardPositionUUID(Integer intValue) {
     	return null;
     }
 }

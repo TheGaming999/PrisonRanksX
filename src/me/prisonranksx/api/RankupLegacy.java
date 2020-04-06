@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -20,15 +21,22 @@ import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.XAutoRankupEvent;
 import me.prisonranksx.events.XRankUpdateEvent;
+import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
-public class Rankup {
-
+/**
+ *  for versions before 1.7
+ * @author TheGaming999 | Al3rb | SandwichaKSA
+ *
+ */
+public class RankupLegacy {
+	
 	private boolean isAutoRankupTaskEnabled;
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	private PRXAPI prxAPI;
 	private int autoRankupDelay;
-	public Rankup() {
+	
+	public RankupLegacy() {
 		this.prxAPI = main.prxAPI;
 		this.autoRankupDelay = main.globalStorage.getIntegerData("Options.autorankup-delay");
 	}
@@ -107,7 +115,8 @@ public class Rankup {
 				return;
 			}
 			Player p = player;
-			RankPath rp = prxAPI.getPlayerRankPath(p);
+			UUID u = XUUID.tryNameConvert(p.getName());
+			RankPath rp = prxAPI.getPlayerRankPath(u);
 			if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {
 				if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
 					prxAPI.taskedPlayers.remove(p);
@@ -118,7 +127,7 @@ public class Rankup {
 				return;
 			}
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
-				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(p)) && !p.hasPermission("*")) {
+				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(u)) && !p.hasPermission("*")) {
 					if(prxAPI.g("rankup-nopermission") == null || prxAPI.g("rankup-nopermission").isEmpty()) {
 						sender.sendMessage(prxAPI.g("forcerankup-nopermission").replace("%player%", p.getName()));
 						prxAPI.taskedPlayers.remove(p);
@@ -126,8 +135,8 @@ public class Rankup {
 					}
 					sender.sendMessage(prxAPI.g("forcerankup-nopermission").replace("%player%", p.getName()));
 					p.sendMessage(prxAPI.g("rankup-nopermission")
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 					prxAPI.taskedPlayers.remove(p);
 					return;
 				}
@@ -148,21 +157,21 @@ public class Rankup {
 				if(!rankupMsg.isEmpty()) {
 					if(main.globalStorage.getBooleanData("Options.send-rankupmsg")) {
 					p.sendMessage(prxAPI.cp(rankupMsg
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)), p));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)), p));
 					}
 				}
 			}
-			sender.sendMessage(prxAPI.g("forcerankup-msg").replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(p))
-					.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+			sender.sendMessage(prxAPI.g("forcerankup-msg").replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(u))
+					.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 			List<String> addPermissionList = main.rankStorage.getAddPermissionList(rp);
 			if(addPermissionList != null) {
 				if(!addPermissionList.isEmpty()) {
 					for(String permission : addPermissionList) {
 					main.perm.addPermission(p, permission
 							.replace("%player%", p.getName())
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 					}
 				}
 			}
@@ -172,8 +181,8 @@ public class Rankup {
 					for(String permission : delPermissionList) {
 						main.perm.delPermission(p, permission
 								.replace("%player%", p.getName())
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 					}
 				}
 			}
@@ -182,9 +191,9 @@ public class Rankup {
 				if(!rankupCommands.isEmpty()) {
 					List<String> newRankupCommands = new ArrayList<>();
 					for(String command : rankupCommands) {
-						newRankupCommands.add(command.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p))
-								.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncrease(p))));
+						newRankupCommands.add(command.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u))
+								.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncreaseDirect(u))));
 					}
 					main.executeCommands(p, newRankupCommands);
 				}
@@ -200,8 +209,8 @@ public class Rankup {
 				if(!actionbarText.isEmpty()) {
 					List<String> newActionbarText = new LinkedList<>();
 		            for(String line : actionbarText) {
-		            	newActionbarText.add(line.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-		            			.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+		            	newActionbarText.add(line.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+		            			.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 		            }
 				     int actionbarInterval = main.rankStorage.getActionbarInterval(rp);
 				     main.animateActionbar(p, actionbarInterval, actionbarText);
@@ -213,8 +222,8 @@ public class Rankup {
 					for(String messageLine : broadcastMessages) {
 						p.sendMessage(prxAPI.cp(messageLine
 								.replace("%player%", p.getName())
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(p)), p));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
 					}
 				}
 			}
@@ -223,8 +232,8 @@ public class Rankup {
 				if(!messages.isEmpty()) {
 					for(String messageLine : messages) {
 						p.sendMessage(prxAPI.cp(messageLine
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(p)), p));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
 					}
 				}
 			}
@@ -240,7 +249,7 @@ public class Rankup {
 			List<String> commands = rrc.getCommands(randomSection);
 			List<String> replacedCommands = new ArrayList<>();
 			for(String cmd : commands) {
-				String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(p)), p);
+				String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(u)), p);
 				replacedCommands.add(pCMD);
 			}
 			main.executeCommands(p, replacedCommands);
@@ -280,13 +289,14 @@ public class Rankup {
 				return;
 			}
 			Player p = player;
-			XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.NORMAL_RANKUP, prxAPI.getPlayerNextRank(p));
+			UUID u = XUUID.tryNameConvert(p.getName());
+			XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.NORMAL_RANKUP, prxAPI.getPlayerNextRank(u));
 
 			if(e.isCancelled()) {
 				return;
 			}
 			
-			RankPath rp = prxAPI.getPlayerRankPath(p);
+			RankPath rp = prxAPI.getPlayerRankPath(u);
 			if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {
 				if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
 					return;
@@ -296,13 +306,13 @@ public class Rankup {
 				return;
 			}
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
-				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(p)) && !p.hasPermission("*")) {
+				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(u)) && !p.hasPermission("*")) {
 					if(prxAPI.g("rankup-nopermission") == null || prxAPI.g("rankup-nopermission").isEmpty()) {
 						return;
 					}
 					p.sendMessage(prxAPI.g("rankup-nopermission")
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 					prxAPI.taskedPlayers.remove(player);
 					return;
 				}
@@ -317,14 +327,14 @@ public class Rankup {
 				prxAPI.taskedPlayers.remove(player);
 				return;
 			}
-			if(prxAPI.getPlayerRankupCostWithIncreaseDirect(p) > prxAPI.getPlayerMoney(p)) {
+			if(prxAPI.getPlayerRankupCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
 				if(prxAPI.h("notenoughmoney") == null || prxAPI.h("notenoughmoney").isEmpty()) {
 					return;
 				}
 				for(String line : prxAPI.h("notenoughmoney")) {
 					p.sendMessage(prxAPI.c(line)
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p)).replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p))
-							.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncreaseDirect(p))).replace("%rankup_cost_formatted%", prxAPI.formatBalance(prxAPI.getPlayerRankupCostWithIncreaseDirect(p))));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u)).replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u))
+							.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncreaseDirect(u))).replace("%rankup_cost_formatted%", prxAPI.formatBalance(prxAPI.getPlayerRankupCostWithIncreaseDirect(u))));
 				}
 				prxAPI.taskedPlayers.remove(player);
 				return;
@@ -334,8 +344,8 @@ public class Rankup {
 				if(!rankupMsg.isEmpty()) {
 					if(main.globalStorage.getBooleanData("Options.send-rankupmsg")) {
 					p.sendMessage(prxAPI.cp(rankupMsg
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)), p));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)), p));
 					}
 				}
 			}
@@ -345,8 +355,8 @@ public class Rankup {
 					for(String permission : addPermissionList) {
 					main.perm.addPermission(player, permission
 							.replace("%player%", p.getName())
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 					}
 				}
 			}
@@ -356,8 +366,8 @@ public class Rankup {
 					for(String permission : delPermissionList) {
 						main.perm.delPermission(p, permission
 								.replace("%player%", p.getName())
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 					}
 				}
 			}
@@ -366,9 +376,9 @@ public class Rankup {
 				if(!rankupCommands.isEmpty()) {
 					List<String> newRankupCommands = new ArrayList<>();
 					for(String command : rankupCommands) {
-						newRankupCommands.add(command.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p))
-								.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncrease(p))));
+						newRankupCommands.add(command.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u))
+								.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncreaseDirect(u))));
 					}
 					main.executeCommands(p, newRankupCommands);
 				}
@@ -384,8 +394,8 @@ public class Rankup {
 				if(!actionbarText.isEmpty()) {
 					List<String> newActionbarText = new LinkedList<>();
 		            for(String line : actionbarText) {
-		            	newActionbarText.add(line.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-		            			.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+		            	newActionbarText.add(line.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+		            			.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 		            }
 				     int actionbarInterval = main.rankStorage.getActionbarInterval(rp);
 				     main.animateActionbar(p, actionbarInterval, actionbarText);
@@ -397,8 +407,8 @@ public class Rankup {
 					for(String messageLine : broadcastMessages) {
 						p.sendMessage(prxAPI.cp(messageLine
 								.replace("%player%", p.getName())
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(p)), p));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
 					}
 				}
 			}
@@ -407,8 +417,8 @@ public class Rankup {
 				if(!messages.isEmpty()) {
 					for(String messageLine : messages) {
 						p.sendMessage(prxAPI.cp(messageLine
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(p)), p));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
 					}
 				}
 			}
@@ -424,7 +434,7 @@ public class Rankup {
 			List<String> commands = rrc.getCommands(randomSection);
 			List<String> replacedCommands = new ArrayList<>();
 			for(String cmd : commands) {
-				String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(p)), p);
+				String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(u)), p);
 				replacedCommands.add(pCMD);
 			}
 			main.executeCommands(p, replacedCommands);
@@ -444,7 +454,7 @@ public class Rankup {
 				spawnHologram(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
 			}
 			main.sendRankFirework(p);
-			main.econ.withdrawPlayer(p, prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
+			main.econ.withdrawPlayer(p, prxAPI.getPlayerRankupCostWithIncreaseDirect(u));
 			e.setRankup(main.rankStorage.getRankupName(rp));
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
@@ -454,13 +464,14 @@ public class Rankup {
 	
 		public void spawnHologram(List<String> format, int removeTime, int height, Player player) {
 			Player p = player;
+			UUID u = XUUID.tryNameConvert(p.getName());
 			Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
 			hologram.setAllowPlaceholders(true);
 			for(String line : format) {
 				String updatedLine = main.getString(line.replace("%player%", p.getName())
 						.replace("%player_display%", p.getDisplayName())
-						.replace("%nextrank%", prxAPI.getPlayerNextRank(p))
-						.replace("%nextrank_display%", main.getStringWithoutPAPI(prxAPI.getPlayerRankupDisplay(p)))
+						.replace("%nextrank%", prxAPI.getPlayerNextRank(u))
+						.replace("%nextrank_display%", main.getStringWithoutPAPI(prxAPI.getPlayerRankupDisplay(u)))
 						, p.getName());
 				hologram.appendTextLine(updatedLine);
 			}
@@ -472,13 +483,14 @@ public class Rankup {
 		public void spawnHologramAsync(List<String> format, int removeTime, int height, Player player) {
 			Bukkit.getScheduler().runTask(main, () -> {
 			Player p = player;
+			UUID u = XUUID.tryNameConvert(p.getName());
 			Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
 			hologram.setAllowPlaceholders(true);
 			for(String line : format) {
 				String updatedLine = main.getString(line.replace("%player%", p.getName())
 						.replace("%player_display%", p.getDisplayName())
-						.replace("%nextrank%", prxAPI.getPlayerNextRank(p))
-						.replace("%nextrank_display%", main.getStringWithoutPAPI(prxAPI.getPlayerRankupDisplay(p)))
+						.replace("%nextrank%", prxAPI.getPlayerNextRank(u))
+						.replace("%nextrank_display%", main.getStringWithoutPAPI(prxAPI.getPlayerRankupDisplay(u)))
 						, p.getName());
 				hologram.appendTextLine(updatedLine);
 			}
@@ -501,7 +513,8 @@ public class Rankup {
 			}
 
 			Player p = player;
-			RankPath rp = prxAPI.getPlayerRankPath(p);
+			UUID u = XUUID.tryNameConvert(p.getName());
+			RankPath rp = prxAPI.getPlayerRankPath(u);
 			XAutoRankupEvent e = new XAutoRankupEvent(p, main.prxAPI.getPlayerNextRank(p), rp.getRankName());
 			if(e.isCancelled()) {
 				return;
@@ -514,7 +527,7 @@ public class Rankup {
 				return;
 			}
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
-				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(p)) && !p.hasPermission("*")) {
+				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(u)) && !p.hasPermission("*")) {
 					if(prxAPI.g("rankup-nopermission") == null || prxAPI.g("rankup-nopermission").isEmpty()) {
 						return;
 					}
@@ -523,10 +536,13 @@ public class Rankup {
 				}
 			}
 			if(main.rankStorage.getRankupName(rp).equalsIgnoreCase("LASTRANK")) {
+				if(prxAPI.h("lastrank") == null || prxAPI.h("lastrank").isEmpty()) {
+					return;
+				}
 				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
-			if(prxAPI.getPlayerRankupCostWithIncreaseDirect(p) > prxAPI.getPlayerMoney(p)) {
+			if(prxAPI.getPlayerRankupCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
 				if(prxAPI.h("notenoughmoney") == null || prxAPI.h("notenoughmoney").isEmpty()) {
 					return;
 				}
@@ -538,8 +554,8 @@ public class Rankup {
 				if(!rankupMsg.isEmpty()) {
 					if(main.globalStorage.getBooleanData("Options.send-rankupmsg")) {
 					p.sendMessage(prxAPI.cp(rankupMsg
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)), p));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)), p));
 					}
 				}
 			}
@@ -549,8 +565,8 @@ public class Rankup {
 					for(String permission : addPermissionList) {
 					main.perm.addPermission(p, permission
 							.replace("%player%", p.getName())
-							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 					}
 				}
 			}
@@ -560,8 +576,8 @@ public class Rankup {
 					for(String permission : delPermissionList) {
 						main.perm.delPermission(p, permission
 								.replace("%player%", p.getName())
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 					}
 				}
 			}
@@ -570,9 +586,9 @@ public class Rankup {
 				if(!rankupCommands.isEmpty()) {
 					List<String> newRankupCommands = new ArrayList<>();
 					for(String command : rankupCommands) {
-						newRankupCommands.add(command.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p))
-								.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncrease(p))));
+						newRankupCommands.add(command.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u))
+								.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncreaseDirect(u))));
 					}
 					main.executeCommands(p, newRankupCommands);
 				}
@@ -588,8 +604,8 @@ public class Rankup {
 				if(!actionbarText.isEmpty()) {
 					List<String> newActionbarText = new LinkedList<>();
 		            for(String line : actionbarText) {
-		            	newActionbarText.add(line.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-		            			.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
+		            	newActionbarText.add(line.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+		            			.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
 		            }
 				     int actionbarInterval = main.rankStorage.getActionbarInterval(rp);
 				     main.animateActionbar(p, actionbarInterval, actionbarText);
@@ -601,8 +617,8 @@ public class Rankup {
 					for(String messageLine : broadcastMessages) {
 						p.sendMessage(prxAPI.cp(messageLine
 								.replace("%player%", p.getName())
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(p)), p));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
 					}
 				}
 			}
@@ -611,8 +627,8 @@ public class Rankup {
 				if(!messages.isEmpty()) {
 					for(String messageLine : messages) {
 						p.sendMessage(prxAPI.cp(messageLine
-								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
-								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(p)), p));
+								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
+								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
 					}
 				}
 			}
@@ -628,7 +644,7 @@ public class Rankup {
 			List<String> commands = rrc.getCommands(randomSection);
 			List<String> replacedCommands = new ArrayList<>();
 			for(String cmd : commands) {
-				String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(p)), p);
+				String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(u)), p);
 				replacedCommands.add(pCMD);
 			}
 			main.executeCommands(p, replacedCommands);
@@ -649,7 +665,7 @@ public class Rankup {
 			}
 			Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.sendRankFirework(p);
-			main.econ.withdrawPlayer(p, prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
+			main.econ.withdrawPlayer(p, prxAPI.getPlayerRankupCostWithIncreaseDirect(u));
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
 			}, 1);
@@ -657,5 +673,4 @@ public class Rankup {
 			main.getServer().getPluginManager().callEvent(e);
 			});
 		}
-	
 }

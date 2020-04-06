@@ -10,6 +10,7 @@ public class RebirthDataHandler {
 	private String nextRebirthName;
 	private String nextRebirthDisplayName;
 	private Double nextRebirthCost;
+	private Double prestigeCostIncreasePercentage;
 	private List<String> rebirthCommands;
 	private List<String> nextRebirthCommands;
 	private List<String> actionbarMessages;
@@ -24,7 +25,7 @@ public class RebirthDataHandler {
 	private FireworkManager fireworkManager;
 	
 	/**
-	 * Never touch this, everything will go wrong if you did. that is applied to all data handlers <!>
+	 * 
 	 * @param rebirthName
 	 */
 	public RebirthDataHandler(String rebirthName) {this.rebirthName = rebirthName;}
@@ -195,4 +196,12 @@ public class RebirthDataHandler {
 		}
 	}
   
+	public Double getPrestigeCostIncreasePercentage() {
+		return prestigeCostIncreasePercentage;
+	}
+	
+	public void setPrestigeCostIncreasePercentage(Double prestigeCostIncreasePercentage) {
+		this.prestigeCostIncreasePercentage = prestigeCostIncreasePercentage;
+	}
+	
 }

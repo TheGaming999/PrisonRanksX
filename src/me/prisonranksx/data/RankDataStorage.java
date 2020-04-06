@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,13 +16,31 @@ import me.prisonranksx.PrisonRanksX;
 
 public class RankDataStorage {
 
-	private HashMap<String, RankDataHandler> rankData;
+	private Map<String, RankDataHandler> rankData;
 	private PrisonRanksX main;
 	private Set<String> paths;
+	private Map<String, List<String>> pathRanks;
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
-	   this.rankData = new HashMap<String, RankDataHandler>();
+	   this.rankData = new LinkedHashMap<String, RankDataHandler>();
 	   this.paths = new HashSet<>();
+	   this.pathRanks = new LinkedHashMap<>();
+	}
+	
+	public Map<String, List<String>> getPathRanksMap() {
+		return this.pathRanks;
+	}
+	
+	public void putPathRank(String path, String rank) {
+		if(!pathRanks.containsKey(path)) {
+			pathRanks.put(path, new ArrayList<>());
+		}
+		if(pathRanks.get(path).contains(rank)) {
+			return;
+		}
+		List<String> ranks = pathRanks.get(path);
+		ranks.add(rank);
+		pathRanks.put(path, ranks);
 	}
 	
 	public RankDataStorage getStorage() {
@@ -90,6 +109,7 @@ public class RankDataStorage {
                 rdh.setPathName(pathName);
                 rankData.put(rankPath.get(), rdh);
                 paths.add(pathName);
+                putPathRank(pathName, rankName);
 			 }
 			}
 	}
@@ -176,15 +196,18 @@ public class RankDataStorage {
 	 * @return empty Collection if there is no pathName found
 	 */
 	public List<String> getRanksCollection(String pathName) {
-		List<String> ranksCollection = new ArrayList<>();
-		for(String rankPaths : rankData.keySet()) {
-			if(RankPath.getRankPath(rankPaths).getPath().equalsIgnoreCase(pathName)) {
-				ranksCollection.add(RankPath.getRankPath(rankPaths).getRank());
-			}
-		}
-		Collections.sort(ranksCollection);
-		return ranksCollection;
+		return pathRanks.get(pathName);
 	}
+//	public List<String> getRanksCollection(String pathName) {
+		//List<String> ranksCollection = new ArrayList<>();
+	//	for(String rankPaths : rankData.keySet()) {
+			//if(RankPath.getRankPath(rankPaths).getPath().equalsIgnoreCase(pathName)) {
+			//	ranksCollection.add(RankPath.getRankPath(rankPaths).getRank());
+		//	}
+		//}
+		//Collections.sort(ranksCollection);
+		//return ranksCollection;
+	//}
 	
 	//public void setRankupName(RankPath rankPath, String rankupName) {
 		//rankData.get(rankPath.get()).setRankupName(rankupName);
@@ -298,25 +321,26 @@ public class RankDataStorage {
 	 * use the method loadRankData(String rankName) to load the data in game
 	 */
 	public void saveRankData(RankPath rankPath) {
+		    String rankName = rankPath.getRankName();
 			String rankup = rankData.get(rankPath.get()).getRankupName();
-			String pathName = rankData.get(rankPath.get()).getPathName();
-            setData("Ranks." + pathName + "." +  rankData.get(rankPath.get()) + ".nextrank", rankData.get(rankPath.get()).getRankupName());
-            setData("Ranks." + pathName + "." +  rankData.get(rankPath.get()) + ".cost", rankData.get(rankPath.get()).getCost());
-            setData("Ranks." + pathName + "." +  rankData.get(rankPath.get()) + ".display", rankData.get(rankPath.get()).getDisplayName());
-            setData("Ranks." + pathName + "." +  rankData.get(rankPath.get()) + ".allow-prestige", rankData.get(rankPath.get()).isAllowPrestige());
+			String pathName = rankPath.getPathName();
+            setData("Ranks." + pathName + "." +  rankName + ".nextrank", rankData.get(rankPath.get()).getRankupName());
+            setData("Ranks." + pathName + "." +  rankName + ".cost", rankData.get(rankPath.get()).getCost());
+            setData("Ranks." + pathName + "." +  rankName + ".display", rankData.get(rankPath.get()).getDisplayName());
+            setData("Ranks." + pathName + "." +  rankName + ".allow-prestige", rankData.get(rankPath.get()).isAllowPrestige());
             setData("Ranks." + pathName + "." +  rankup + ".cost", rankData.get(rankPath.get()).getRankupCost());
             setData("Ranks." + pathName + "." +  rankup + ".display", rankData.get(rankPath.get()).getRankupDisplayName());
             setData("Ranks." + pathName + "." +  rankup + ".executecmds", rankData.get(rankPath.get()).getRankupCommands());
-            setData("Ranks." + pathName + "." +  rankup + ".actionbar.interval", rankData.get(rankPath.get()).getActionbarInterval());
-            setData("Ranks." + pathName + "." +  rankup + ".actionbar.text", rankData.get(rankPath.get()).getActionbarMessages());
-            setData("Ranks." + pathName + "." +  rankup + ".broadcast", rankData.get(rankPath.get()).getBroadcast());
-            setData("Ranks." + pathName + "." +  rankup + ".msg", rankData.get(rankPath.get()).getMsg());
-            setData("Ranks." + pathName + "." +  rankup + ".actions", rankData.get(rankPath.get()).getActions());
-            setData("Ranks." + pathName + "." +  rankup + ".addpermission", rankData.get(rankPath.get()).getAddPermissionList());
-            setData("Ranks." + pathName + "." +  rankup + ".delpermission", rankData.get(rankPath.get()).getDelPermissionList());
-            setData("Ranks." + pathName + "." +  rankup + ".randomcmds", rankData.get(rankPath.get()).getRandomCommandsManager().getRandomCommandsMap());
-            setData("Ranks." + pathName + "." +  rankup + ".firework", rankData.get(rankPath.get()).getFireworkManager().getFireworkBuilder());
-            setData("Ranks." + pathName + "." +  rankup + ".send-firework", rankData.get(rankPath.get()).isSendFirework());
+           // setData("Ranks." + pathName + "." +  rankup + ".actionbar.interval", rankData.get(rankPath.get()).getActionbarInterval());
+           // setData("Ranks." + pathName + "." +  rankup + ".actionbar.text", rankData.get(rankPath.get()).getActionbarMessages());
+           // setData("Ranks." + pathName + "." +  rankup + ".broadcast", rankData.get(rankPath.get()).getBroadcast());
+           // setData("Ranks." + pathName + "." +  rankup + ".msg", rankData.get(rankPath.get()).getMsg());
+           // setData("Ranks." + pathName + "." +  rankup + ".actions", rankData.get(rankPath.get()).getActions());
+           // setData("Ranks." + pathName + "." +  rankup + ".addpermission", rankData.get(rankPath.get()).getAddPermissionList());
+           // setData("Ranks." + pathName + "." +  rankup + ".delpermission", rankData.get(rankPath.get()).getDelPermissionList());
+           // setData("Ranks." + pathName + "." +  rankup + ".randomcmds", rankData.get(rankPath.get()).getRandomCommandsManager().getRandomCommandsMap());
+           // setData("Ranks." + pathName + "." +  rankup + ".firework", rankData.get(rankPath.get()).getFireworkManager().getFireworkBuilder());
+           // setData("Ranks." + pathName + "." +  rankup + ".send-firework", rankData.get(rankPath.get()).isSendFirework());
 	}
 	/**
 	 * Should only be used onDisable()
@@ -328,7 +352,7 @@ public class RankDataStorage {
 			for(Entry<String, RankDataHandler> rank : rankData.entrySet()) {
 				String rankName = rank.getKey().split("#~#")[0];
 				String rankup = rankData.get(rank.getKey()).getRankupName();
-				String pathName = rankData.get(rank.getKey()).getPathName();
+				String pathName = rank.getKey().split("#~#")[1];
 				//if(main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName) == null) {
 					//main.configManager.ranksConfig.createSection("Ranks." + pathName + "." + rankName);
 				//}
@@ -338,8 +362,8 @@ public class RankDataStorage {
                  if(rank.getValue().isAllowPrestige()) {
                  setData("Ranks." + pathName + "." +  rankName + ".allow-prestige", rank.getValue().isAllowPrestige());
                  }
-                 //setData("Ranks." + pathName + "." +  rankup + ".cost", rank.getValue().getRankupCost());
-                 //setData("Ranks." + pathName + "." +  rankup + ".display", rank.getValue().getRankupDisplayName());
+                 setData("Ranks." + pathName + "." +  rankup + ".cost", rank.getValue().getRankupCost());
+                 setData("Ranks." + pathName + "." +  rankup + ".display", rank.getValue().getRankupDisplayName());
                  setData("Ranks." + pathName + "." +  rankup + ".executecmds", rank.getValue().getRankupCommands());
                  setData("Ranks." + pathName + "." +  rankup + ".actionbar.interval", rank.getValue().getActionbarInterval());
                  setData("Ranks." + pathName + "." +  rankup + ".actionbar.text", rank.getValue().getActionbarMessages());
@@ -349,10 +373,10 @@ public class RankDataStorage {
                  setData("Ranks." + pathName + "." +  rankup + ".addpermission", rank.getValue().getAddPermissionList());
                  setData("Ranks." + pathName + "." +  rankup + ".delpermission", rank.getValue().getDelPermissionList());
                  if(rank.getValue().getRandomCommandsManager() != null) {
-                 setData("Ranks." + pathName + "." +  rankup + ".randomcmds", rank.getValue().getRandomCommandsManager().getRandomCommandsMap());
+                // setData("Ranks." + pathName + "." +  rankup + ".randomcmds", rank.getValue().getRandomCommandsManager().getRandomCommandsMap());
                  }
                  if(rank.getValue().getFireworkManager() != null && rank.getValue().isSendFirework()) {
-                 setData("Ranks." + pathName + "." +  rankup + ".firework", rank.getValue().getFireworkManager().getFireworkBuilder());
+                 // setData("Ranks." + pathName + "." +  rankup + ".firework-builder", rank.getValue().getFireworkManager().getFireworkBuilder());
                  }
                  if(rank.getValue().isSendFirework()) {
                  setData("Ranks." + pathName + "." +  rankup + ".send-firework", rank.getValue().isSendFirework());

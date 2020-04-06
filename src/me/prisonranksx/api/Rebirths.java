@@ -1,7 +1,6 @@
 package me.prisonranksx.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -33,6 +32,7 @@ public class Rebirths {
 	public String rebirthListConsole;
 	List<String> header;
 	List<String> footer;
+	public String rebirthListInvalidPage;
 	/**
 	    *
 	    * @param sender The sender to send the list to
@@ -130,6 +130,7 @@ public class Rebirths {
 					isCustomList = true;
 				}
 			}
+			rebirthListInvalidPage = main.messagesStorage.getStringMessage("rebirthlist-invalid-page");
 		}
 	  
 	public Rebirths() {}
@@ -143,6 +144,10 @@ public class Rebirths {
 		if(!enablePages || pageNumber == null) {
 			sendList(sender);
 		} else {
+			if(!main.prxAPI.numberAPI.isNumber(pageNumber) || Integer.valueOf(pageNumber) < 1) {
+				sender.sendMessage(main.prxAPI.c(rebirthListInvalidPage).replace("%page%", pageNumber));
+				return;
+			}
 			sendPagedList(pageNumber, sender);
 		}
 	}

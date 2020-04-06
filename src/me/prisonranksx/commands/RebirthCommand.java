@@ -28,6 +28,10 @@ public class RebirthCommand extends BukkitCommand {
 	      if(!(sender instanceof Player)) {
 	    	  return true;
 	      } 
+	      if(main.isBefore1_7) {
+	    	  main.prxAPI.rebirthLegacy((Player)sender);
+	    	  return true;
+	      }
            // do rebirth
 	      main.prxAPI.rebirth((Player)sender);
 		} else if (args.length == 1) {

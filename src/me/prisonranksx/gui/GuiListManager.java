@@ -2,7 +2,11 @@ package me.prisonranksx.gui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bukkit.Material;
@@ -27,6 +31,7 @@ public class GuiListManager {
 	public PrestigeItem emptyPrestigeItem;
 	public RebirthItem emptyRebirthItem;
 	public List<Integer> allowedRankSlots, allowedPrestigeSlots, allowedRebirthSlots;
+	public Map<String, List<String>> allowedRankSlotsMap;
 	public GuiListManager(PrisonRanksX main) {this.main = main;
 	ranksGUI = new PaginatedGUI(this.main.prxAPI.c(this.main.globalStorage.getStringData("Ranklist-gui.title")));
 	prestigesGUI = new PaginatedGUI(this.main.prxAPI.c(this.main.globalStorage.getStringData("Prestigelist-gui.title")));
@@ -59,6 +64,7 @@ public class GuiListManager {
 	emptyRebirthItem.setFlags(null);
 	emptyRebirthItem.setCommands(null);
 	}
+
 	
 	public void setupConstantItems() {
 		if(!this.main.globalStorage.getStringListData("Ranklist-gui.constant-items").isEmpty()) {
@@ -67,14 +73,20 @@ public class GuiListManager {
 				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
 				button.setListener(event -> {event.setCancelled(true);});
 				int slot = main.cim.readCustomItemSlot(item);
-				int page = main.cim.readCustomItemPage(item);
-				ranksGUI.setButton(slot * page, button);
+				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
+				ranksGUI.setButton(slot + page, button);
 			}
 			int i1 = -1;
 			for(ItemStack constantStack : ranksGUI.getInventory().getContents()) {
 				i1++;
 				if(constantStack == null || constantStack.getType() == Material.AIR) {
 					allowedRankSlots.add(i1);
+				}
+			}
+			for(String str : main.globalStorage.getStringData("Ranklist-gui.allowed-slots").split(",")) {
+				int x = Integer.valueOf(str);
+				if(!allowedRankSlots.contains(x)) {
+				allowedRankSlots.add(x);
 				}
 			}
 			//if(ranksGUI.getFinalPage() != 1) {
@@ -90,14 +102,20 @@ public class GuiListManager {
 				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
 				button.setListener(event -> {event.setCancelled(true);});
 				int slot = main.cim.readCustomItemSlot(item);
-				int page = main.cim.readCustomItemPage(item);
-				prestigesGUI.setButton(slot * page, button);
+				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
+				prestigesGUI.setButton(slot + page, button);
 			}
 			int i2 = -1;
 			for(ItemStack constantStack : prestigesGUI.getInventory().getContents()) {
 				i2++;
 				if(constantStack == null || constantStack.getType() == Material.AIR) {
 					allowedPrestigeSlots.add(i2);
+				}
+			}
+			for(String str : main.globalStorage.getStringData("Prestigelist-gui.allowed-slots").split(",")) {
+				int x = Integer.valueOf(str);
+				if(!allowedPrestigeSlots.contains(x)) {
+				allowedPrestigeSlots.add(x);
 				}
 			}
 		}
@@ -108,14 +126,20 @@ public class GuiListManager {
 				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
 				button.setListener(event -> {event.setCancelled(true);});
 				int slot = main.cim.readCustomItemSlot(item);
-				int page = main.cim.readCustomItemPage(item);
-				rebirthsGUI.setButton(slot * page, button);
+				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
+				rebirthsGUI.setButton(slot + page, button);
 			}
 			int i3 = -1;
 			for(ItemStack constantStack : rebirthsGUI.getInventory().getContents()) {
 				i3++;
 				if(constantStack == null || constantStack.getType() == Material.AIR) {
 					allowedRebirthSlots.add(i3);
+				}
+			}
+			for(String str : main.globalStorage.getStringData("Rebirthlist-gui.allowed-slots").split(",")) {
+				int x = Integer.valueOf(str);
+				if(!allowedRebirthSlots.contains(x)) {
+				allowedRebirthSlots.add(x);
 				}
 			}
 		}
@@ -131,6 +155,25 @@ public class GuiListManager {
 	
 	public RebirthItem getCustomItem(RebirthState rebirthState) {
 		return main.crri.getCustomRebirthItems().containsKey(rebirthState) ? main.crri.getCustomRebirthItems().get(rebirthState) : emptyRebirthItem;
+	}
+	
+	public ItemStack parseStack(String itemValue) {
+		ItemStack x;
+		if(itemValue.contains(":")) {
+			String[] nameAndData = itemValue.split(":");
+			String name = nameAndData[0];
+			byte data = Byte.parseByte(nameAndData[1]);
+			x = new ItemStack(XMaterial.matchXMaterial(name).parseMaterial());
+			x.setDurability(data);
+		} else if (itemValue.contains("#")) {
+			String[] nameAndData = itemValue.split(":");
+			String name = nameAndData[0];
+			byte data = Byte.parseByte(nameAndData[1]);
+			x = XMaterial.matchXMaterial(name, data).parseItem(true);
+		} else {
+			x = XMaterial.matchXMaterial(itemValue).parseItem(true);
+		}
+		return x;
 	}
 	
 	public void openRanksGUI(Player player) {
@@ -172,7 +215,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack completedItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack completedItem = parseStack(itemName);
 				completedItem.setAmount(itemAmount);
 				ItemMeta completedMeta = completedItem.getItemMeta();
 				completedMeta.setDisplayName(main.prxAPI.c(itemDisplayName));
@@ -242,7 +285,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Ranklist-gui.current-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack currentItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack currentItem = parseStack(itemName);
 				currentItem.setAmount(itemAmount);
 				ItemMeta currentMeta = currentItem.getItemMeta();
 				currentMeta.setDisplayName(main.prxAPI.c(itemDisplayName));
@@ -311,7 +354,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Ranklist-gui.other-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack otherItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack otherItem = parseStack(itemName);
 				otherItem.setAmount(itemAmount);
 				ItemMeta otherMeta = otherItem.getItemMeta();
 				otherMeta.setDisplayName(main.prxAPI.c(itemDisplayName));
@@ -386,7 +429,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(ps).getCommands() != null ? getCustomItem(ps).getCommands() : main.globalStorage.getStringListData("Prestigelist-gui.completed-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack completedItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack completedItem = parseStack(itemName);
 				completedItem.setAmount(itemAmount);
 				ItemMeta completedMeta = completedItem.getItemMeta();
 				completedMeta.setDisplayName(main.prxAPI.c(itemDisplayName));
@@ -449,7 +492,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(ps).getCommands() != null ? getCustomItem(ps).getCommands() : main.globalStorage.getStringListData("Prestigelist-gui.current-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack currentItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack currentItem = parseStack(itemName);
 				currentItem.setAmount(itemAmount);
 				ItemMeta currentMeta = currentItem.getItemMeta();
 				currentMeta.setDisplayName(main.prxAPI.c(itemDisplayName));
@@ -512,7 +555,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(ps).getCommands() != null ? getCustomItem(ps).getCommands() : main.globalStorage.getStringListData("Prestigelist-gui.other-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack otherItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack otherItem = parseStack(itemName);
 				otherItem.setAmount(itemAmount);
 				ItemMeta otherMeta = otherItem.getItemMeta();
 				otherMeta.setDisplayName(main.prxAPI.c(itemDisplayName));
@@ -587,7 +630,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Rebirthlist-gui.completed-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack completedItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack completedItem = parseStack(itemName);
 				completedItem.setAmount(itemAmount);
 				ItemMeta completedMeta = completedItem.getItemMeta();
 				completedMeta.setDisplayName(main.prxAPI.c(itemDisplayName));
@@ -650,7 +693,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Rebirthlist-gui.current-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack currentItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack currentItem = parseStack(itemName);
 				currentItem.setAmount(itemAmount);
 				ItemMeta currentMeta = currentItem.getItemMeta();
 				currentMeta.setDisplayName(main.prxAPI.c(itemDisplayName));
@@ -713,7 +756,7 @@ public class GuiListManager {
 				List<String> itemCommands = getCustomItem(rs).getCommands() != null ? getCustomItem(rs).getCommands() : main.globalStorage.getStringListData("Rebirthlist-gui.other-format.itemCOMMANDS");
 				List<String> realItemCommands = new ArrayList<String>();
 				List<String> coloredItemLore = new ArrayList<String>();
-				ItemStack otherItem = XMaterial.matchXMaterial(itemName).parseItem(true);
+				ItemStack otherItem = parseStack(itemName);
 				otherItem.setAmount(itemAmount);
 				ItemMeta otherMeta = otherItem.getItemMeta();
 				otherMeta.setDisplayName(main.prxAPI.c(itemDisplayName));

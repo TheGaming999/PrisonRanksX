@@ -12,12 +12,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.XUser;
 
 public class PRXCommand extends BukkitCommand {
 	
 	private static List<String> COMMANDS = new ArrayList<>();
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+	private String ver = "1.0";
 	public PRXCommand(String commandName) {
 		super(commandName);
 		this.setDescription(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".description", "Manage ranks,prestiges,rebirths settings")));
@@ -25,45 +27,13 @@ public class PRXCommand extends BukkitCommand {
 		this.setPermission(main.configManager.commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.admin"));
 		this.setPermissionMessage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
 		this.setAliases(main.configManager.commandsConfig.getStringList("commands." + commandName + ".aliases"));
+		ver = main.getDescription().getVersion();
 	}
-	
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if(args.length == 1) {
-	        //create new array
-			COMMANDS.add("setrank");
-			COMMANDS.add("resetrank");
-			COMMANDS.add("setprestige");
-			COMMANDS.add("setrebirth");
-			COMMANDS.add("createrebirth");
-			COMMANDS.add("setrebirthdisplay");
-			COMMANDS.add("createrank");
-			COMMANDS.add("setrankcost");
-			COMMANDS.add("setrankdisplay");
-			COMMANDS.add("delrank");
-			COMMANDS.add("setnextrank");
-			COMMANDS.add("createprestige");
-			COMMANDS.add("setprestigecost");
-			COMMANDS.add("getplaceholders");
-			COMMANDS.add("delplayerprestige");
-			COMMANDS.add("delplayerrank");
-			COMMANDS.add("setdefaultrank");
-			COMMANDS.add("setlastrank");
-			COMMANDS.add("setfirstprestige");
-			COMMANDS.add("setlastprestige");
-	        final List<String> completions = new ArrayList<>();
-	        //copy matches of first argument from list (ex: if first arg is 'm' will return just 'minecraft')
-	        StringUtil.copyPartialMatches(args[0], COMMANDS, completions);
-	        //sort the list
-	        Collections.sort(completions);
-	        return completions;
-			} else {
-				return null;
-			}
-	}
+
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
         if(args.length == 0) {
-        	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
+        	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av" + ver));
         	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
             sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         	sender.sendMessage(main.prxAPI.c("&c/&6prx help [page] &7⎟ &3show the available commands"));
@@ -82,8 +52,17 @@ public class PRXCommand extends BukkitCommand {
             sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3)"));
             sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         } else if (args.length == 1) {
+        	if(args[0].equalsIgnoreCase("terminate")) {
+        		if(main.terminateMode) {
+        		sender.sendMessage(main.prxAPI.c("&7Terminate mode &cdisabled&7."));
+        		main.terminateMode = false;
+        		} else {
+        			sender.sendMessage(main.prxAPI.c("&7Terminate mode &aenabled&7."));
+        			main.terminateMode = true;
+        		}
+        	}
         	if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
-            	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
+            	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av" + ver));
             	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
                 sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
             	sender.sendMessage(main.prxAPI.c("&c/&6prx help [page] &7⎟ &3type member in the page for members help"));
@@ -171,7 +150,7 @@ public class PRXCommand extends BukkitCommand {
         } else if(args.length == 2) {
         	if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
         		if(args[1].equalsIgnoreCase("1")) {
-                	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
+                	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av" + ver));
                 	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
                 	sender.sendMessage(main.prxAPI.c("&c/&6prx help [page] &7⎟ &3shows the available commands"));
@@ -189,7 +168,7 @@ public class PRXCommand extends BukkitCommand {
                     sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3)"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         		} else if (args[1].equalsIgnoreCase("2")) {
-                   	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
+                   	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av" + ver));
                 	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
                 	sender.sendMessage(main.prxAPI.c("&c/&6prx createprestige <name> <cost> [displayname]"));
@@ -204,7 +183,7 @@ public class PRXCommand extends BukkitCommand {
                     sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f2&7/&f3)"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         		} else if (args[1].equalsIgnoreCase("3")) {
-                   	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av2.5.2"));
+                   	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av" + ver));
                 	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional"));
                     sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
                 	sender.sendMessage(main.prxAPI.c("&c/&6prx createrebirth <name> <cost> [displayname]"));
@@ -228,6 +207,7 @@ public class PRXCommand extends BukkitCommand {
         			sender.sendMessage(main.prxAPI.c("&6/rebirth"));
         			sender.sendMessage(main.prxAPI.c("&6/rebirths"));
         			sender.sendMessage(main.prxAPI.c("&6/autorankup"));
+        			sender.sendMessage(main.prxAPI.c("&6/autoprestige"));
         		}
         	} else if (args[0].equalsIgnoreCase("createrank")) {
         		sender.sendMessage(main.prxAPI.c("&c/&6prx createrank <name> &4<cost> &c[displayname]"));
@@ -434,6 +414,7 @@ public class PRXCommand extends BukkitCommand {
         			costy = Double.valueOf(args[2]);
         		}
         		main.manager.createRank(args[1], Double.valueOf(costy));
+        		main.configManager.saveRanksConfig();
         		sender.sendMessage(main.prxAPI.g("createrank").replace("%createdrank%", args[1])
         				.replace("%rankcost%", args[2]));
         	} else if (args[0].equalsIgnoreCase("createprestige")) {
@@ -444,6 +425,7 @@ public class PRXCommand extends BukkitCommand {
         			costy = Double.valueOf(args[2]);
         		}
         		main.manager.createPrestige(args[1], Double.valueOf(costy));
+        		main.configManager.savePrestigesConfig();
         		sender.sendMessage(main.prxAPI.g("createprestige").replace("%createdprestige", args[1])
         				.replace("%prestigecost%", args[2]));
         	} else if (args[0].equalsIgnoreCase("createrebirth")) {
@@ -454,6 +436,7 @@ public class PRXCommand extends BukkitCommand {
         			costy = Double.valueOf(args[2]);
         		}
         		main.manager.createRebirth(args[1], Double.valueOf(costy));
+        		main.configManager.saveRebirthsConfig();
         		sender.sendMessage(main.prxAPI.g("createrebirth").replace("%createdrebirth%", args[1])
         		        .replace("%rebirthcost%", args[2]));
         	} else  if (args[0].equalsIgnoreCase("setrankcost")) {
@@ -465,6 +448,7 @@ public class PRXCommand extends BukkitCommand {
         		}
         		String matchedRank = main.manager.matchRank(args[1]);
         		main.manager.setRankCost(matchedRank, costy);
+        		main.configManager.saveRanksConfig();
         		sender.sendMessage(main.prxAPI.g("setrankcost").replace("%args1%", matchedRank)
         				.replace("%args2%", args[2]));
         	} else if (args[0].equalsIgnoreCase("setprestigecost")) {
@@ -476,6 +460,7 @@ public class PRXCommand extends BukkitCommand {
         		}
         		String matchedPrestige = main.manager.matchPrestige(args[1]);
         		main.manager.setPrestigeCost(matchedPrestige, costy);
+        		main.configManager.savePrestigesConfig();
         		sender.sendMessage(main.prxAPI.g("setprestigecost").replace("%args1%", matchedPrestige)
         				.replace("%args2%", args[2]));
         	} else if (args[0].equalsIgnoreCase("setrebirthcost")) {
@@ -487,24 +472,28 @@ public class PRXCommand extends BukkitCommand {
         		}
         		String matchedRebirth = main.manager.matchRebirth(args[1]);
         		main.manager.setRebirthCost(matchedRebirth, costy);
+        		main.configManager.saveRebirthsConfig();
         		sender.sendMessage(main.prxAPI.g("setrebirthcost").replace("%args1%", matchedRebirth)
         				.replace("%args2%", args[2]));
         	} else if (args[0].equalsIgnoreCase("setrankdisplay")) {
         		String matchedRank = main.manager.matchRank(args[1]);
         		String newDisplayName = main.getArgs(args, 2);
         		main.manager.setRankDisplayName(matchedRank, newDisplayName);
+        		main.configManager.saveRanksConfig();
         		sender.sendMessage(main.prxAPI.g("setrankdisplay").replace("%args1%", matchedRank)
         				.replace("%args2%", newDisplayName + " §f=> " + main.getStringWithoutPAPI(newDisplayName)));
         	} else if (args[0].equalsIgnoreCase("setprestigedisplay")) {
         		String matchedPrestige = main.manager.matchPrestige(args[1]);
         		String newDisplayName = main.getArgs(args, 2);
         		main.manager.setPrestigeDisplayName(matchedPrestige, newDisplayName);
+        		main.configManager.savePrestigesConfig();
         		sender.sendMessage(main.prxAPI.g("setprestigedisplay").replace("%args1%", matchedPrestige)
         				.replace("%args2%", newDisplayName + " §f=> " + main.getStringWithoutPAPI(newDisplayName)));
         	} else if (args[0].equalsIgnoreCase("setrebirthdisplay")) {
         		String matchedRebirth = main.manager.matchRebirth(args[1]);
         		String newDisplayName = main.getArgs(args, 2);
         		main.manager.setRebirthDisplayName(matchedRebirth, newDisplayName);
+        		main.configManager.savePrestigesConfig();
         		sender.sendMessage(main.prxAPI.g("setrebirthdisplay").replace("%args1%", matchedRebirth)
         				.replace("%args2%", newDisplayName + " §f=> " + main.getStringWithoutPAPI(newDisplayName)));
         	} else if (args[0].equalsIgnoreCase("setrank")) {
@@ -521,6 +510,22 @@ public class PRXCommand extends BukkitCommand {
         		main.prxAPI.setPlayerRank(p, newRank);
         		sender.sendMessage(main.prxAPI.g("setrank").replace("%target%", p.getName())
         				.replace("%settedrank%", newRank));
+        	} else if (args[0].equalsIgnoreCase("setpath")) {
+        		if(Bukkit.getPlayer(args[1]) == null) {
+        			sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
+    			    return true;
+    		    }
+    		    Player p = Bukkit.getPlayer(args[1]);
+    		    String newPath = main.manager.matchPath(args[2]);
+    		    if(!main.prxAPI.pathExists(newPath)) {
+    		    	sender.sendMessage(main.prxAPI.g("path-notfound").replace("%path%", newPath));
+    		    	return true;
+    		    }
+    		    main.prxAPI.setPlayerPath(p, newPath);
+    		    if(!main.prxAPI.rankExists(main.prxAPI.getPlayerRank(p), newPath)) {
+    		    	sender.sendMessage(main.prxAPI.c("&cUnable to find player's rank within the new path."));
+    		    	return true;
+    		    }
         	} else if (args[0].equalsIgnoreCase("setprestige")) {
         		if(Bukkit.getPlayer(args[1]) == null) {
         			  sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
@@ -557,6 +562,28 @@ public class PRXCommand extends BukkitCommand {
             			.replace("%args2%", newPath));
             }
         } else if (args.length >= 4) {
+        	if (args[0].equalsIgnoreCase("setrank")) {
+        		if(Bukkit.getPlayer(args[1]) == null) {
+            			sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
+        			return true;
+        		}
+        		Player p = Bukkit.getPlayer(args[1]);
+        		String newRank = main.manager.matchRank(args[2]);
+        		if(!main.prxAPI.rankExists(newRank)) {
+        			sender.sendMessage(main.prxAPI.g("rank-notfound").replace("%rank%", newRank));
+        			return true;
+        		}
+        		String newPath = main.manager.matchPath(args[3]);
+        		RankPath rp = new RankPath(newRank, newPath);
+        		if(!main.prxAPI.rankPathExists(rp)) {
+        			sender.sendMessage(main.prxAPI.g("path-notfound").replace("%path%", newPath));
+        			return true;
+        		}
+        		main.prxAPI.setPlayerRankPath(p, rp);
+        		sender.sendMessage(main.prxAPI.g("setrank").replace("%target%", p.getName())
+        				.replace("%settedrank%", newRank));
+        		sender.sendMessage(main.prxAPI.c("&7Path: " + newPath));
+        	}
         	if(args[0].equalsIgnoreCase("createrank")) {
         		double costy;
         		if(!main.prxAPI.numberAPI.isNumber(args[2])) {
@@ -564,11 +591,25 @@ public class PRXCommand extends BukkitCommand {
         		} else {
         			costy = Double.valueOf(args[2]);
         		}
-        		String displayName = main.getArgs(args, 3);
-        		main.manager.createRank(args[1], Double.valueOf(costy), displayName);
+        		String multiArgs = main.getArgs(args, 3);
+        		String path = "";
+        		if(multiArgs.contains("-path:")) {
+        		for(String argument : multiArgs.split(" ")) {
+        			if(argument.startsWith("-path:")) {
+        				path = argument.substring(6);
+        			}
+        		}
+        		path = main.manager.matchPath(path);
+        		}
+        		String displayName = multiArgs.replace("-path:" + path, "");
+        		main.manager.createRank(args[1], Double.valueOf(costy), main.globalStorage.getStringData("defaultpath"), displayName);
+        		main.configManager.saveRanksConfig();
         		sender.sendMessage(main.prxAPI.g("createrank").replace("%createdrank%", args[1])
         				.replace("%rankcost%", args[2]));
-        		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(displayName)));
+        		sender.sendMessage(main.prxAPI.c("&7Display: &r" + main.prxAPI.c(displayName)));
+        		if(!path.equals("")) {
+        			sender.sendMessage(main.prxAPI.c("&7Path: &6" + path));
+        		}
         	} else if (args[0].equalsIgnoreCase("createprestige")) {
         		double costy;
         		if(!main.prxAPI.numberAPI.isNumber(args[2])) {
@@ -578,6 +619,7 @@ public class PRXCommand extends BukkitCommand {
         		}
         		String displayName = main.getArgs(args, 3);
         		main.manager.createPrestige(args[1], Double.valueOf(costy), displayName);
+        		main.configManager.savePrestigesConfig();
         		sender.sendMessage(main.prxAPI.g("createprestige").replace("%createdprestige", args[1])
         				.replace("%prestigecost%", args[2]));
         		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(displayName)));
@@ -590,6 +632,7 @@ public class PRXCommand extends BukkitCommand {
         		}
         		String displayName = main.getArgs(args, 3);
         		main.manager.createRebirth(args[1], Double.valueOf(costy), displayName);
+        		main.configManager.saveRebirthsConfig();
         		sender.sendMessage(main.prxAPI.g("createrebirth").replace("%createdrebirth%", args[1])
         		        .replace("%rebirthcost%", args[2]));
         		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(displayName)));

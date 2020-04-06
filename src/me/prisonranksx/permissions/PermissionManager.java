@@ -14,7 +14,7 @@ public class PermissionManager {
     PRXAPI prxAPI;
 	public PermissionManager(PrisonRanksX main) {
 		this.main = main;
-		prxAPI = new PRXAPI();
+		prxAPI = this.main.prxAPI;
 	}
 	
 	public void addPermission(Player player, String permission) {

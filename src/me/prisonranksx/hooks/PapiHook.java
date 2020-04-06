@@ -237,7 +237,7 @@ PRXAPI prxAPI;
 			if(prxAPI.isCurrencySymbolBehind()) {
 			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostInString(p)); 
 			} else {
-				return String.valueOf(prxAPI.getPlayerNextPrestigeCostInString(p) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol())); 
+				return String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol())); 
 			}
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_cost_formatted")) {
@@ -247,7 +247,7 @@ PRXAPI prxAPI;
 			if(prxAPI.isCurrencySymbolBehind()) {
 			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostFormatted(p));
 			} else {
-				return String.valueOf(prxAPI.getPlayerNextPrestigeCostFormatted(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
+				return String.valueOf(main.formatBalance(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
 		}
 		if((arg0 == null)) {
@@ -269,7 +269,7 @@ PRXAPI prxAPI;
 
 	@Override
 	public String getVersion() {
-		return "1.0";
+		return "2.6";
 	}
  
 }

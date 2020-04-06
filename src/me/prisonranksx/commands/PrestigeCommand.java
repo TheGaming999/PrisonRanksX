@@ -28,6 +28,10 @@ public class PrestigeCommand extends BukkitCommand {
 	      if(!(sender instanceof Player)) {
 	    	  return true;
 	      } 
+	      if(main.isBefore1_7) {
+	    	  main.prxAPI.prestigeLegacy((Player)sender);
+	    	  return true;
+	      }
            // do prestige
 	      main.prxAPI.prestige((Player)sender);
 		} else if (args.length == 1) {

@@ -101,7 +101,11 @@ public class PlayerDataStorage {
 	}
 	
 	public String getPlayerRank(OfflinePlayer player) {
-		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getRank();
+		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getRankName();
+	}
+	
+	public String getPlayerRank(UUID uuid) {
+		return getPlayerData().get(uuid.toString()).getRankPath().getRankName();
 	}
 	
 	public void setPlayerRank(OfflinePlayer player, String rankName, String pathName) {
@@ -110,7 +114,7 @@ public class PlayerDataStorage {
 	}
 	
 	public void setPlayerRank(OfflinePlayer player, String rankName) {
-		RankPath rankPath = new RankPath(rankName, getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getPath());
+		RankPath rankPath = new RankPath(rankName, getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getPathName());
 		getPlayerData().get(XUser.getXUser(player).getUUID().toString()).setRankPath(rankPath);
 	}
 	
@@ -122,29 +126,59 @@ public class PlayerDataStorage {
 		getPlayerData().get(uuid.toString()).setRankPath(rankPath);
 	}
 	
+	public void setPlayerRank(UUID uuid, String rankName) {
+		RankPath rankPath = new RankPath(rankName, getPlayerData().get(XUser.getXUser(uuid.toString()).getUUID().toString()).getRankPath().getPathName());
+		getPlayerData().get(XUser.getXUser(uuid.toString()).getUUID().toString()).setRankPath(rankPath);
+	}
+	
 	public String getPlayerPrestige(OfflinePlayer player) {
 		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getPrestige();
+	}
+	
+	public String getPlayerPrestige(UUID uuid) {
+		return getPlayerData().get(uuid.toString()).getPrestige();
 	}
 	
 	public void setPlayerPrestige(OfflinePlayer player, String prestigeName) {
 		getPlayerData().get(XUser.getXUser(player).getUUID().toString()).setPrestige(prestigeName);
 	}
 	
+	public void setPlayerPrestige(UUID uuid, String prestigeName) {
+		getPlayerData().get(new XUser(uuid).getUUID().toString()).setPrestige(prestigeName);
+	}
+	
 	public String getPlayerRebirth(OfflinePlayer player) {
 		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRebirth();
+	}
+	
+	public String getPlayerRebirth(UUID uuid) {
+		return getPlayerData().get(uuid.toString()).getRebirth();
 	}
 	
 	public void setPlayerRebirth(OfflinePlayer player, String rebirthName) {
 		getPlayerData().get(XUser.getXUser(player).getUUID().toString()).setRebirth(rebirthName);
 	}
 	
+	public void setPlayerRebirth(UUID uuid, String rebirthName) {
+		getPlayerData().get(new XUser(uuid).getUUID().toString()).setRebirth(rebirthName);
+	}
+	
 	public String getPlayerPath(OfflinePlayer player) {
-		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getPath();
+		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getPathName();
+	}
+	
+	public String getPlayerPath(UUID uuid) {
+		return getPlayerData().get(uuid.toString()).getRankPath().getPathName();
 	}
 	
 	public void setPlayerPath(OfflinePlayer player, String pathName) {
-		RankPath rankPath = new RankPath(getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getRank(), pathName);
+		RankPath rankPath = new RankPath(getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getRankName(), pathName);
 		getPlayerData().get(XUser.getXUser(player).getUUID().toString()).setRankPath(rankPath);
+	}
+	
+	public void setPlayerPath(UUID uuid, String pathName) {
+		RankPath rankPath = new RankPath(getPlayerData().get(new XUser(uuid).getUUID().toString()).getRankPath().getRankName(), pathName);
+		getPlayerData().get(new XUser(uuid).getUUID().toString()).setRankPath(rankPath);
 	}
 	
 	public void setPlayerRankPath(OfflinePlayer player, RankPath rankPath) {
@@ -157,6 +191,10 @@ public class PlayerDataStorage {
 	
 	public RankPath getPlayerRankPath(OfflinePlayer player) {
 		return getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath();
+	}
+	
+	public RankPath getPlayerRankPath(UUID uuid) {
+		return getPlayerData().get(uuid.toString()).getRankPath();
 	}
 	
 	public void savePlayersData() {

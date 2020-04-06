@@ -53,16 +53,20 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import me.lucko.luckperms.LuckPerms;
-import me.lucko.luckperms.api.LuckPermsApi;
+import me.lucko.luckperms.common.api.LuckPermsApiProvider;
+import me.lucko.luckperms.common.plugin.LuckPermsPlugin;
 import me.prisonranksx.api.PRXAPI;
 import me.prisonranksx.api.PRXManager;
 import me.prisonranksx.api.Prestige;
+import me.prisonranksx.api.PrestigeLegacy;
 import me.prisonranksx.api.Prestiges;
 import me.prisonranksx.api.Ranks;
 import me.prisonranksx.api.Rankup;
+import me.prisonranksx.api.RankupLegacy;
 import me.prisonranksx.api.Rebirth;
+import me.prisonranksx.api.RebirthLegacy;
 import me.prisonranksx.api.Rebirths;
+import me.prisonranksx.commands.AutoPrestigeCommand;
 import me.prisonranksx.commands.AutoRankupCommand;
 import me.prisonranksx.commands.ForceRankupCommand;
 import me.prisonranksx.commands.PRXCommand;
@@ -119,6 +123,8 @@ import cloutteam.samjakob.gui.ItemBuilder;
 import cloutteam.samjakob.gui.buttons.GUIButton;
 import cloutteam.samjakob.gui.types.PaginatedGUI;
 import io.samdev.actionutil.ActionUtil;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import ru.tehkode.permissions.PermissionUser;
@@ -137,16 +143,20 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public ConfigManager configManager;
 	public TempOpProtection top;
 	public Rankup rankupAPI;
+	public RankupLegacy rankupLegacy;
 	public Prestige prestigeAPI;
+	public PrestigeLegacy prestigeLegacy;
 	public me.prisonranksx.api.RankupMax rankupMaxAPI;
 	public Ranks ranksAPI;
 	public Prestiges prestigesAPI;
 	public Rebirth rebirthAPI;
+	public RebirthLegacy rebirthLegacy;
 	public Rebirths rebirthsAPI;
 	public PRXManager manager;
 	public GuiListManager guiManager;
 	public boolean isActionUtil;
 	public boolean debug = false;
+	public boolean terminateMode = false;
 	public RankupCommand rankupCommand;
 	public PrestigeCommand prestigeCommand;
 	public RankupMaxCommand rankupMaxCommand;
@@ -156,6 +166,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public RebirthsCommand rebirthsCommand;
 	public PRXCommand prxCommand;
 	public AutoRankupCommand autoRankupCommand;
+	public AutoPrestigeCommand autoPrestigeCommand;
 	public ForceRankupCommand forceRankupCommand;
 	public CustomItemsManager cim;
 	public CustomRankItems cri;
@@ -166,7 +177,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public PRXAPI prxAPI;
 	public String vaultPlugin;
 	public boolean isVaultGroups;
-	public LuckPermsApi luckperms;
+	public LuckPerms luckperms;
 	public GMHook groupManager;
 	public List<String> ignoredSections;
 	public boolean isBefore1_7;
@@ -202,7 +213,13 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
     public Map<Player, BukkitTask> actionbar_task = new HashMap<>();
     BukkitTask actionbarTask;
     //
-
+public void setupLuckPerms() {
+	RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+	if (provider != null) {
+	    luckperms = provider.getProvider();
+	    
+	}
+}
 	 public Economy econ = null;
 	//...
 	 
@@ -235,9 +252,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	    		long timeBefore = System.currentTimeMillis();
 	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eSaving data...");
 	    		playerStorage.savePlayersData();
-	    		rankStorage.saveRanksData();
-	    		prestigeStorage.savePrestigesData();
-	    		rebirthStorage.saveRebirthsData();
 	    		long timeNow = System.currentTimeMillis() - timeBefore;
 	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved§7, §etook §6(§e" + String.valueOf(timeNow) + " ms§6)§e.");
 	    	}, 18000, 18000);
@@ -245,7 +259,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	    
 	public void onEnable() {
         String version = Bukkit.getVersion();
-    	if(version.contains("1.5") || version.contains("1.6") || version.contains("1.4") || version.contains("1.3") || version.contains("1.2") || version.endsWith("1.1 )") || version.contains("1.0")) {
+    	if(version.contains("1.5") || version.contains("1.6") || version.contains("1.4") || version.contains("1.3") || version.contains("1.2") || version.endsWith("1.1)") || version.contains("1.0")) {
     		isBefore1_7 = true;
     	}
         top = new TempOpProtection();
@@ -278,18 +292,18 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 			  configManager.loadConfigs();
 		       rankDataConfig = configManager.rankDataConfig;
 		       prestigeDataConfig = configManager.prestigeDataConfig;
-		       try {
-				ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			  globalStorage.loadGlobalData();
 			  rankStorage.loadRanksData();
 			  prestigeStorage.loadPrestigesData();
 			  rebirthStorage.loadRebirthsData();
 			  messagesStorage.loadMessages();
 			  playerStorage.loadPlayersData();
+		       try {
+				ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			  isVaultGroups = globalStorage.getBooleanData("Options.rankup-vault-groups");
 			  if(isVaultGroups) {
 				  this.vaultPlugin = globalStorage.getStringData("Options.rankup-vault-groups-plugin");
@@ -331,6 +345,10 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 			  autoRankupCommand = new AutoRankupCommand("autorankup");
 			  CommandLoader.registerCommand("autorankup", autoRankupCommand);
 			  }
+			  if(configManager.commandsConfig.getBoolean("commands.autoprestige.enable")) {
+				  autoPrestigeCommand = new AutoPrestigeCommand("autoprestige");
+				  CommandLoader.registerCommand("autoprestige", autoPrestigeCommand);
+			  }
 			  if(configManager.commandsConfig.getBoolean("commands.forcerankup.enable")) {
 			  forceRankupCommand = new ForceRankupCommand("forcerankup");
 			  CommandLoader.registerCommand("forcerankup", forceRankupCommand);
@@ -339,14 +357,20 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 			  // API Setup {
 			  prxAPI = new PRXAPI();
 			  prxAPI.setup();
+			  if(!isBefore1_7) {
 			  rankupAPI = new Rankup();
 			  prestigeAPI = new Prestige();
+			  rebirthAPI = new Rebirth();
+			  } else {
+				  rankupLegacy = new RankupLegacy();
+				  prestigeLegacy = new PrestigeLegacy();
+				  rebirthLegacy = new RebirthLegacy();
+			  }
 			  rankupMaxAPI = new me.prisonranksx.api.RankupMax();
 			  ranksAPI = new Ranks();
 			  ranksAPI.load();
 			  prestigesAPI = new Prestiges();
 			  prestigesAPI.load();
-			  rebirthAPI = new Rebirth();
 			  rebirthsAPI = new Rebirths();
 			  rebirthsAPI.load();
 			  manager = new PRXManager();
@@ -396,7 +420,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §2Started without ActionUtil.");
 		  }
 		  if(Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
-			  luckperms = LuckPerms.getApi();
+              setupLuckPerms();
 		  } else if (Bukkit.getPluginManager().isPluginEnabled("GroupManager")) {
 			  groupManager = new GMHook(this);
 		  }
@@ -417,7 +441,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 		        try {    
 		            openConnection();
 		            statement = connection.createStatement();  
-		            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + database + "." + table + " (uuid varchar(255), name varchar(255),rank varchar(255), prestige varchar(255), rebirth varchat(255));");
+		            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + database + "." + table + " (uuid varchar(255), name varchar(255),rank varchar(255), prestige varchar(255), rebirth varchar(255));");
 		            Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aSuccessfully connected to the database.");
 		        } catch (ClassNotFoundException e) {
 		        	 Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cdatabase class couldn't be found.");
@@ -465,6 +489,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
     }
     
     public void updateMySqlData(Player player, String rank, String prestige, String rebirth) {
+    	Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 		try {
 			OfflinePlayer p = player;
 			ResultSet result = statement.executeQuery("SELECT * FROM " + database + "." + table + " WHERE uuid = '" + p.getUniqueId().toString() + "'");
@@ -480,14 +505,17 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 			e1.printStackTrace();
 			getLogger().info("ERROR Updating Player SQL Data");
 		}
+    	});
     }
 	//
 	public void onDisable() {
+		if(terminateMode) {
+			closeConnection();
+			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §4Plugin terminated.");
+			return;
+		}
 		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eSaving data...");
 		playerStorage.savePlayersData();
-		rankStorage.saveRanksData();
-		prestigeStorage.savePrestigesData();
-		rebirthStorage.saveRebirthsData();
 		configManager.saveConfigs();
 		prxAPI = null;
 		mvdw = null;
@@ -617,15 +645,19 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onJoin(AsyncPlayerPreLoginEvent e) {
 		if(!isRankEnabled) {
+			debug("Rank is not enabled.");
 		  return;
 		}
 		XUser user;
 		if(!isBefore1_7) {
+		debug(" is 1.8+ (yes)");
 		user = new XUser(e.getUniqueId());
 		} else {
+			debug(" is 1.8+ (NO!)");
 			user = new XUser(XUUID.tryNameConvert(e.getName()));
 		}
 	    UUID playerUUID = user.getUUID();
+	    debug("uuid: " + playerUUID.toString());
 		if((playerStorage.isRegistered(playerUUID))) {
 			 return;
 		}
@@ -715,6 +747,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 		 }
 		@SuppressWarnings("unused")
 		public void sendRebirthFirework(Player p) {
+			Bukkit.getScheduler().runTask(this, () -> {
 		      String nextRebirth = prxAPI.getPlayerNextRebirth(p);
 		      Boolean sendFirework = rebirthStorage.isSendFirework(nextRebirth);
 		      if(!sendFirework) {
@@ -724,9 +757,17 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	    	  Map<String, Object> fbuilder = rebirthStorage.getFireworkBuilder(nextRebirth);
 	          boolean fbuilder_flicker = (boolean)fbuilder.get("flicker");
 	          boolean fbuilder_trail = (boolean)fbuilder.get("trail");
-	          List<String> fbuilder_effect = (List<String>)fbuilder.get("effect");
-	          List<String> fbuilder_color = (List<String>)fbuilder.get("color");
-	          List<String> fbuilder_fade = (List<String>)fbuilder.get("fade");
+	          List<String> fbuilder_effect = (ArrayList<String>)fbuilder.get("effect");
+	          List<String> fbuilder_color = (ArrayList<String>)fbuilder.get("color");
+	          List<String> fbuilder_fade = (ArrayList<String>)fbuilder.get("fade");
+	          List<Color> fireworkColors = new ArrayList<>();
+	          List<Color> fireworkFade = new ArrayList<>();
+	          for(String singleColor : fbuilder_color) {
+	        	  fireworkColors.add(getColor(singleColor));
+	          }
+	          for(String singleFade : fbuilder_fade) {
+	        	  fireworkFade.add(getColor(singleFade));
+	          }
 	          Integer fbuilder_power = (Integer)fbuilder.get("power");
 	          for(String eff : fbuilder_effect) {
 	    	  	   String effecto = eff;
@@ -735,15 +776,17 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	            .flicker(fbuilder_flicker)
 	            .trail(fbuilder_trail)
 	            .with(FireworkEffect.Type.valueOf(effecto.replace("SPARKLE", "BURST").replace("STARS", "STAR")))
-	            .withColor(fbuilder_color)
-	            .withFade(fbuilder_fade)
+	            .withColor(fireworkColors)
+	            .withFade(fireworkFade)
 	            .build());
 	          fm.setPower(fbuilder_power);
 	          fz.setFireworkMeta(fm);   
 	          }
+			});
 	    }
 	@SuppressWarnings("unused")
 	public void sendPrestigeFirework(Player p) {
+		Bukkit.getScheduler().runTask(this, () -> {
 	      String nextPrestige = prxAPI.getPlayerNextPrestige(p);
 	      Boolean sendFirework = prestigeStorage.isSendFirework(nextPrestige);
 	      if(!sendFirework) {
@@ -753,9 +796,17 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
     	  Map<String, Object> fbuilder = prestigeStorage.getFireworkBuilder(nextPrestige);
           boolean fbuilder_flicker = (boolean)fbuilder.get("flicker");
           boolean fbuilder_trail = (boolean)fbuilder.get("trail");
-          List<String> fbuilder_effect = (List<String>)fbuilder.get("effect");
-          List<String> fbuilder_color = (List<String>)fbuilder.get("color");
-          List<String> fbuilder_fade = (List<String>)fbuilder.get("fade");
+          List<String> fbuilder_effect = (ArrayList<String>)fbuilder.get("effect");
+          List<String> fbuilder_color = (ArrayList<String>)fbuilder.get("color");
+          List<String> fbuilder_fade = (ArrayList<String>)fbuilder.get("fade");
+          List<Color> fireworkColors = new ArrayList<>();
+          List<Color> fireworkFade = new ArrayList<>();
+          for(String singleColor : fbuilder_color) {
+        	  fireworkColors.add(getColor(singleColor));
+          }
+          for(String singleFade : fbuilder_fade) {
+        	  fireworkFade.add(getColor(singleFade));
+          }
           Integer fbuilder_power = (Integer)fbuilder.get("power");
           for(String eff : fbuilder_effect) {
     	  	   String effecto = eff;
@@ -764,15 +815,17 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
             .flicker(fbuilder_flicker)
             .trail(fbuilder_trail)
             .with(FireworkEffect.Type.valueOf(effecto.replace("SPARKLE", "BURST").replace("STARS", "STAR")))
-            .withColor(fbuilder_color)
-            .withFade(fbuilder_fade)
+            .withColor(fireworkColors)
+            .withFade(fireworkFade)
             .build());
           fm.setPower(fbuilder_power);
           fz.setFireworkMeta(fm);   
           }
+		});
     }
 	@SuppressWarnings("unused")
 	public void sendRankFirework(Player p) {
+		Bukkit.getScheduler().runTask(this, () -> {
 		String playerRank = null;
 			playerRank = playerStorage.getPlayerRank(p);
 	    String nextRank = prxAPI.getPlayerNextRank(p);
@@ -784,25 +837,32 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
     	Map<String, Object> fbuilder = rankStorage.getFireworkBuilder(playerStorage.getPlayerRankPath(p));
     boolean fbuilder_flicker = (boolean)fbuilder.get("flicker");
     boolean fbuilder_trail = (boolean)fbuilder.get("trail");
-    List<String> fbuilder_effect = (List<String>)fbuilder.get("effect");
-    List<String> fbuilder_color = (List<String>)fbuilder.get("color");
-    List<String> fbuilder_fade = (List<String>)fbuilder.get("fade");
-    Integer fbuilder_power = (Integer)fbuilder.get("power");
-    	   for(String eff : fbuilder_effect) {
-    		   String effecto = eff;
-        @SuppressWarnings("null")
-		FireworkMeta fm = fz.getFireworkMeta();
-        fm.addEffect(FireworkEffect.builder()
-        .flicker(fbuilder_flicker)
-        .trail(fbuilder_trail)
-        .with(FireworkEffect.Type.valueOf(effecto.replace("SPARKLE", "BURST").replace("STARS", "STAR")))
-        .withColor(fbuilder_color)
-        .withFade(fbuilder_fade)
-        .build());
-        fm.setPower(fbuilder_power);
-        fz.setFireworkMeta(fm);   
+    List<String> fbuilder_effect = (ArrayList<String>)fbuilder.get("effect");
+    List<String> fbuilder_color = (ArrayList<String>)fbuilder.get("color");
+    List<String> fbuilder_fade = (ArrayList<String>)fbuilder.get("fade");
+    List<Color> fireworkColors = new ArrayList<>();
+    List<Color> fireworkFade = new ArrayList<>();
+    for(String singleColor : fbuilder_color) {
+  	  fireworkColors.add(getColor(singleColor));
     }
-
+    for(String singleFade : fbuilder_fade) {
+  	  fireworkFade.add(getColor(singleFade));
+    }
+    Integer fbuilder_power = (Integer)fbuilder.get("power");
+    for(String eff : fbuilder_effect) {
+	  	   String effecto = eff;
+	  FireworkMeta fm = fz.getFireworkMeta();
+    fm.addEffect(FireworkEffect.builder()
+      .flicker(fbuilder_flicker)
+      .trail(fbuilder_trail)
+      .with(FireworkEffect.Type.valueOf(effecto.replace("SPARKLE", "BURST").replace("STARS", "STAR")))
+      .withColor(fireworkColors)
+      .withFade(fireworkFade)
+      .build());
+    fm.setPower(fbuilder_power);
+    fz.setFireworkMeta(fm);   
+    }
+		});
 	    }
 	
 	@EventHandler
@@ -961,7 +1021,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
     		   p.setOp(true);
     	       }
     		   Bukkit.dispatchCommand(p, opCommand);
-    		   if(!p.isOp()) {
+    		   if(!p.isOp() && top.isTempOp(p)) {
     		   p.setOp(false);
     		   top.delCommand(opCommand);
     		   top.setTempOp(p, false);
@@ -974,7 +1034,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	}
 	
 	public String v(String string) {
-		String Z = getConfig().getString("Moneyformatter.zillion");
+		String Z = globalStorage.getStringData("Moneyformatter.zillion");
 		return Z + string;
 	}
 	public String formatBalance(double y)
@@ -993,6 +1053,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 		String U = globalStorage.getStringData("MoneyFormatter.undecillion");
 		String D = globalStorage.getStringData("MoneyFormatter.Duodecillion");
 		String Z = globalStorage.getStringData("MoneyFormatter.zillion");
+		// ## k, ##, ###
         String[] abbrivations ={"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, Z + "II",Z + "III",v("IV"),v("V"),v("VI"),v("VII"), v("VIII"), v("IX"), v("X")
         		, "Z11", "Z12", "Z13", "Z14", "Z15", "Z16", "Z17" , "Z18" , "Z19", "Z20", "Z21", "Z22", "Z23", "Z24", "Z25", "Z26"
         		, "Z27", "Z28", "Z29", "Z30", "~", "~!", "~?", "~@", "#", "^", "&", "*", "-", "+", "+2", "+3", "+4", "+5", "+6"
@@ -1225,7 +1286,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 			if(vaultPlugin.equalsIgnoreCase("Vault")) {
 			   perms.playerAddGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("LuckPerms")) {
-				luckperms.getUser(uuid).setPrimaryGroup(nextRank);
+				luckperms.getUserManager().getUser(uuid).setPrimaryGroup(nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("GroupManager")) {
 				groupManager.setGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("PermissionsEX")) {
@@ -1252,7 +1313,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 			if(vaultPlugin.equalsIgnoreCase("Vault")) {
 			   perms.playerAddGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("LuckPerms")) {
-				luckperms.getUser(uuid).setPrimaryGroup(nextRank);
+				luckperms.getUserManager().getUser(uuid).setPrimaryGroup(nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("GroupManager")) {
 				groupManager.setGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("PermissionsEX")) {
@@ -1279,7 +1340,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 			if(vaultPlugin.equalsIgnoreCase("Vault")) {
 			   perms.playerAddGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("LuckPerms")) {
-				luckperms.getUser(uuid).setPrimaryGroup(nextRank);
+				luckperms.getUserManager().getUser(uuid).setPrimaryGroup(nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("GroupManager")) {
 				groupManager.setGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("PermissionsEX")) {

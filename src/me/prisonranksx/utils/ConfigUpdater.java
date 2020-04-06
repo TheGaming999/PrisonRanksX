@@ -26,8 +26,7 @@ import java.util.stream.Collectors;
  */
 public class ConfigUpdater {
 
-	private static String version = Bukkit.getVersion();
-	private static PrisonRanksX plugin = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+	private static PrisonRanksX prx = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	
     /**
      * Update a yaml file from a resource inside your plugin jar
@@ -38,10 +37,9 @@ public class ConfigUpdater {
      * @throws IOException If an IOException occurs
      */
     public static void update(Plugin plugin, String resourceName, File toUpdate, List<String> ignoredSections) throws IOException {
-    	if(version.contains("1.5") || version.contains("1.6") || version.contains("1.4") || version.contains("1.3") || version.contains("1.2")) {
-    		plugin.getLogger().info("(Ignore if not important to you) Config comment updater doesn't support (" + version +")");
-    		return;
-    	}
+    	if(prx.isBefore1_7) {
+    		prx.getLogger().info("(Ignore if not important to you) Config comment updater doesn't support (" + prx.getServer().getVersion() +")");
+    	} else {
         BufferedReader newReader = new BufferedReader(new InputStreamReader(plugin.getResource(resourceName)));
         List<String> newLines = newReader.lines().collect(Collectors.toList());
         newReader.close();
@@ -56,6 +54,7 @@ public class ConfigUpdater {
         Yaml yaml = new Yaml();
         Map<String, String> comments = parseComments(newLines, ignoredSectionsArrayList, oldConfig, yaml);
         write(newConfig, oldConfig, comments, ignoredSectionsArrayList, writer, yaml);
+    	}
     }
 
     //Write method doing the work.

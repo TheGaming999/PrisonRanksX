@@ -1,7 +1,6 @@
 package me.prisonranksx.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -10,9 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
-import me.prisonranksx.data.RankPath;
-import me.prisonranksx.utils.MCProgressBar;
-import me.prisonranksx.utils.ProgressBarBuilder;
 
 public class Prestiges {
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
@@ -35,6 +31,7 @@ public class Prestiges {
 	public String prestigeListConsole;
 	List<String> header;
 	List<String> footer;
+	public String prestigeListInvalidPage;
 	/**
 	    *
 	    * @param sender The sender to send the list to
@@ -131,6 +128,7 @@ public class Prestiges {
 					isCustomList = true;
 				}
 			}
+			prestigeListInvalidPage = main.messagesStorage.getStringMessage("prestigelist-invalid-page");
 		}
 	  
 	public Prestiges() {}
@@ -144,6 +142,10 @@ public class Prestiges {
 		if(!enablePages || pageNumber == null) {
 			sendList(sender);
 		} else {
+			if(!main.prxAPI.numberAPI.isNumber(pageNumber) || Integer.valueOf(pageNumber) < 1) {
+				sender.sendMessage(main.prxAPI.c(prestigeListInvalidPage).replace("%page%", pageNumber));
+				return;
+			}
 			sendPagedList(pageNumber, sender);
 		}
 	}
@@ -157,6 +159,7 @@ public class Prestiges {
 			}
 			Player p = (Player)sender;
 			String prestigeName = main.prxAPI.getPlayerPrestige(p);
+			String rebirth = main.prxAPI.getPlayerRebirth(p);
 			List<String> newPrestigesCollection = main.prestigeStorage.getPrestigesCollection();
 			if(prestigesCollection.isEmpty()) {
                 prestigesCollection = newPrestigesCollection;
@@ -196,8 +199,8 @@ public class Prestiges {
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
 							.replace("%nextprestige_name%", main.prestigeStorage.getDisplayName(prestige2))
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prestigeStorage.getNextPrestigeCost(prestige2)))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prestigeStorage.getNextPrestigeCost(prestige2)))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth ,prestige2)))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
                             , p);			
 					    currentPrestiges.add(format);
 					}
@@ -210,8 +213,8 @@ public class Prestiges {
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
 							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prestigeStorage.getNextPrestigeCost(prestige2)))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prestigeStorage.getNextPrestigeCost(prestige2)))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
                             , p);			
 					completedPrestiges.add(format);
 					}
@@ -224,8 +227,8 @@ public class Prestiges {
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
 							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prestigeStorage.getNextPrestigeCost(prestige2)))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prestigeStorage.getNextPrestigeCost(prestige2)))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
                             , p);			
 					otherPrestiges.add(format);
 					}
@@ -251,6 +254,7 @@ public class Prestiges {
 			}
 			Player p = (Player)sender;
             String prestigeName = main.prxAPI.getPlayerPrestige(p);
+            String rebirth = main.prxAPI.getPlayerRebirth(p);
 			List<String> newPrestigesCollection = main.prestigeStorage.getPrestigesCollection();
 			if(prestigesCollection.isEmpty()) {
                 prestigesCollection = newPrestigesCollection;
@@ -294,8 +298,8 @@ public class Prestiges {
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
 							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prestigeStorage.getNextPrestigeCost(prestige2)))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prestigeStorage.getNextPrestigeCost(prestige2)))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
                             , p);			
 					    currentPrestiges.add(format);
 					}
@@ -308,8 +312,8 @@ public class Prestiges {
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
 							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prestigeStorage.getNextPrestigeCost(prestige2)))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prestigeStorage.getNextPrestigeCost(prestige2)))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
                             , p);			
 					completedPrestiges.add(format);
 					}
@@ -322,8 +326,8 @@ public class Prestiges {
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
 							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prestigeStorage.getNextPrestigeCost(prestige2)))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prestigeStorage.getNextPrestigeCost(prestige2)))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
                             , p);			
 					otherPrestiges.add(format);
 					}
