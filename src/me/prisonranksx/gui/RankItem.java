@@ -70,4 +70,12 @@ public class RankItem {
 		return commands;
 	}
 	
+	/**
+	 * @return important values [material, amount, display-name, lore, commands]
+	 */
+	public String toString() {
+		return "material:" + this.material + ", amount:" + this.amount + ", display-name:" + displayName
+				+ ", lore:" + lore.toString() + ", commands:" + commands.toString();
+	}
+	
 }

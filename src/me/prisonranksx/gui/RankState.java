@@ -29,4 +29,8 @@ public class RankState {
 		return this.levelState;
 	}
 	
+	public String toString() {
+		return "[path:" + rankPath.get() + "]||[state:" + levelState.name() + "]";
+	}
+	
 }

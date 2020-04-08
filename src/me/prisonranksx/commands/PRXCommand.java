@@ -14,6 +14,12 @@ import org.bukkit.util.StringUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.XUser;
+import me.prisonranksx.events.PrestigeUpdateCause;
+import me.prisonranksx.events.RankUpdateCause;
+import me.prisonranksx.events.RebirthUpdateCause;
+import me.prisonranksx.events.XPrestigeUpdateEvent;
+import me.prisonranksx.events.XRankUpdateEvent;
+import me.prisonranksx.events.XRebirthUpdateEvent;
 
 public class PRXCommand extends BukkitCommand {
 	
@@ -52,7 +58,12 @@ public class PRXCommand extends BukkitCommand {
             sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3)"));
             sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         } else if (args.length == 1) {
-        	if(args[0].equalsIgnoreCase("terminate")) {
+        	if(args[0].equalsIgnoreCase("dev")) {
+        		main.cri.getCustomRankItems().entrySet().forEach(entry -> {
+        			sender.sendMessage(entry.getKey().toString() + " -> " + entry.getValue().toString());
+        		});
+        	}
+        	else if(args[0].equalsIgnoreCase("terminate")) {
         		if(main.terminateMode) {
         		sender.sendMessage(main.prxAPI.c("&7Terminate mode &cdisabled&7."));
         		main.terminateMode = false;
@@ -61,7 +72,7 @@ public class PRXCommand extends BukkitCommand {
         			main.terminateMode = true;
         		}
         	}
-        	if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
+        	else if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
             	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av" + ver));
             	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
                 sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
@@ -241,6 +252,10 @@ public class PRXCommand extends BukkitCommand {
         			return true;
         		}
         		Player p = Bukkit.getPlayer(parsedPlayerName);
+        		XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKSET, main.globalStorage.getStringData("defaultrank"));
+        		if(e.isCancelled()) {
+        			return true;
+        		}
         		main.prxAPI.resetPlayerRank(p);
         		sender.sendMessage(main.prxAPI.g("resetrank").replace("%target%", p.getName())
         				.replace("%firstrank%", main.globalStorage.getStringData("defaultrank")));
@@ -250,6 +265,12 @@ public class PRXCommand extends BukkitCommand {
         			    main.perm.delPermission(p, perm);
         		    }
         		}
+        		for(String command : main.globalStorage.getStringListMap().get("RankOptions.rank-reset-cmds")) {
+        			if(!command.startsWith("[rankpermissions") && !command.startsWith("[prestigeperm") && !command.startsWith("[rebirthp")) {
+        				main.executeCommand(p, command);
+        			}
+        		}
+        		Bukkit.getServer().getPluginManager().callEvent(e);
         	} else if (args[0].equalsIgnoreCase("resetprestige")) {
         		String parsedPlayerName = args[1];
         		if(Bukkit.getPlayer(parsedPlayerName) == null) {
@@ -257,6 +278,10 @@ public class PRXCommand extends BukkitCommand {
         			return true;
         		}
         		Player p = Bukkit.getPlayer(parsedPlayerName);
+        		XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKSET, main.globalStorage.getStringData("defaultrank"));
+        		if(e.isCancelled()) {
+        			return true;
+        		}
         		main.prxAPI.setPlayerPrestige(p, main.prxAPI.getFirstPrestige());
         		sender.sendMessage(main.prxAPI.g("resetprestige").replace("%target%", p.getName())
         				.replace("%firstprestige%", main.globalStorage.getStringData("firstprestige")));
@@ -287,6 +312,10 @@ public class PRXCommand extends BukkitCommand {
         			return true;
         		}
         		Player p = Bukkit.getPlayer(parsedPlayerName);
+        		XRebirthUpdateEvent e = new XRebirthUpdateEvent(p, RebirthUpdateCause.SETREBIRTH);
+        		if(e.isCancelled()) {
+        			return true;
+        		}
         		main.prxAPI.setPlayerRebirth(p, main.prxAPI.getFirstRebirth());
         		sender.sendMessage(main.prxAPI.g("resetrebirth").replace("%target%", p.getName())
         				.replace("%firstrebirth%", main.globalStorage.getStringData("firstrebirth")));
@@ -316,6 +345,7 @@ public class PRXCommand extends BukkitCommand {
         				main.executeCommand(p, cmd);
         			}
         		}
+        		Bukkit.getServer().getPluginManager().callEvent(e);
         	} else if (args[0].equalsIgnoreCase("setdefaultrank") || args[0].equalsIgnoreCase("setfirstrank")) {
         		String rankn = main.manager.matchRank(args[1]);
         		main.manager.setDefaultRank(rankn, true);
@@ -355,6 +385,10 @@ public class PRXCommand extends BukkitCommand {
         		}
         		Player p = Bukkit.getPlayer(args[1]);
         		XUser user = XUser.getXUser(p);
+        		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(p, PrestigeUpdateCause.DELPRESTIGE);
+        		if(e.isCancelled()) {
+        			return true;
+        		}
         		main.manager.delPlayerPrestige(user);
         		if(main.globalStorage.getStringListMap().get("PrestigeOptions.prestige-delete-cmds").contains("[rankpermissions]")) {
         		    Set<String> perms = main.prxAPI.allRankAddPermissions;
@@ -373,6 +407,7 @@ public class PRXCommand extends BukkitCommand {
         			}
         		}
         		sender.sendMessage(main.prxAPI.g("delplayerprestige").replace("%player%", p.getName()));
+        		Bukkit.getPluginManager().callEvent(e);
         	} else if (args[0].equalsIgnoreCase("delplayerrebirth")) {
         		if(Bukkit.getPlayer(args[1]) == null) {
         			sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
@@ -380,6 +415,10 @@ public class PRXCommand extends BukkitCommand {
         		}
         		Player p = Bukkit.getPlayer(args[1]);
         		XUser user = XUser.getXUser(p);
+        		XRebirthUpdateEvent e = new XRebirthUpdateEvent(p, RebirthUpdateCause.DELREBIRTH);
+        		if(e.isCancelled()) {
+        			return true;
+        		}
         		main.manager.delPlayerRebirth(user);
         		if(main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds").contains("[rankpermissions]")) {
         		    Set<String> perms = main.prxAPI.allRankAddPermissions;
@@ -404,6 +443,7 @@ public class PRXCommand extends BukkitCommand {
         			}
         		}
         		sender.sendMessage(main.prxAPI.g("delplayerrebirth").replace("%player%", p.getName()));
+        		Bukkit.getPluginManager().callEvent(e);
         	}
         } else if(args.length == 3) {
         	if(args[0].equalsIgnoreCase("createrank")) {
@@ -507,9 +547,14 @@ public class PRXCommand extends BukkitCommand {
         			sender.sendMessage(main.prxAPI.g("rank-notfound").replace("%rank%", newRank));
         			return true;
         		}
+        		XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKSET);
+        		if(e.isCancelled()) {
+        			return true;
+        		}
         		main.prxAPI.setPlayerRank(p, newRank);
         		sender.sendMessage(main.prxAPI.g("setrank").replace("%target%", p.getName())
         				.replace("%settedrank%", newRank));
+        		Bukkit.getPluginManager().callEvent(e);
         	} else if (args[0].equalsIgnoreCase("setpath")) {
         		if(Bukkit.getPlayer(args[1]) == null) {
         			sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
@@ -537,9 +582,14 @@ public class PRXCommand extends BukkitCommand {
         			sender.sendMessage(main.prxAPI.g("prestige-notfound").replace("%prestige%", newPrestige));
         			return true;
         		}
+        		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(p, PrestigeUpdateCause.SETPRESTIGE);
+        		if(e.isCancelled()) {
+        			return true;
+        		}
         		main.prxAPI.setPlayerPrestige(p, newPrestige);
         		sender.sendMessage(main.prxAPI.g("setprestige").replace("%target%", p.getName())
         				.replace("%settedprestige%", newPrestige));
+        		Bukkit.getPluginManager().callEvent(e);
         	} else if (args[0].equalsIgnoreCase("setrebirth")) {
         		if(Bukkit.getPlayer(args[1]) == null) {
       			  sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
@@ -551,9 +601,14 @@ public class PRXCommand extends BukkitCommand {
     			sender.sendMessage(main.prxAPI.g("rebirth-notfound").replace("%rebirth%", newRebirth));
     			return true;
     		}
+    		XRebirthUpdateEvent e = new XRebirthUpdateEvent(p, RebirthUpdateCause.SETREBIRTH);
+    		if(e.isCancelled()) {
+    			return true;
+    		}
       		main.prxAPI.setPlayerRebirth(p, newRebirth);
       		sender.sendMessage(main.prxAPI.g("setrebirth").replace("%target%", p.getName())
       				.replace("%settedrebirth%", newRebirth));
+      		Bukkit.getPluginManager().callEvent(e);
         	} else if (args[0].equalsIgnoreCase("setrankpath")) {
             	String rank = main.manager.matchRank(args[1]);
             	String newPath = main.manager.matchPath(args[2]);
@@ -579,6 +634,7 @@ public class PRXCommand extends BukkitCommand {
         			sender.sendMessage(main.prxAPI.g("path-notfound").replace("%path%", newPath));
         			return true;
         		}
+        		XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYCONVERT);
         		main.prxAPI.setPlayerRankPath(p, rp);
         		sender.sendMessage(main.prxAPI.g("setrank").replace("%target%", p.getName())
         				.replace("%settedrank%", newRank));

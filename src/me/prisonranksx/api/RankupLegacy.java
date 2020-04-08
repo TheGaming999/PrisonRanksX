@@ -454,9 +454,9 @@ public class RankupLegacy {
 				spawnHologram(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
 			}
 			main.sendRankFirework(p);
-			main.econ.withdrawPlayer(p, prxAPI.getPlayerRankupCostWithIncreaseDirect(u));
+			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerRankupCostWithIncreaseDirect(u));
 			e.setRankup(main.rankStorage.getRankupName(rp));
-			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
+			main.playerStorage.setPlayerRank(u, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
 			main.getServer().getPluginManager().callEvent(e);
 			});
@@ -665,8 +665,8 @@ public class RankupLegacy {
 			}
 			Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.sendRankFirework(p);
-			main.econ.withdrawPlayer(p, prxAPI.getPlayerRankupCostWithIncreaseDirect(u));
-			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
+			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerRankupCostWithIncreaseDirect(u));
+			main.playerStorage.setPlayerRank(u, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
 			}, 1);
 			Bukkit.getScheduler().runTask(main, () -> {

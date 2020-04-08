@@ -16,7 +16,10 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.PrestigeRandomCommands;
-import me.prisonranksx.events.XPrestigeEvent;
+import me.prisonranksx.events.XPrestigeUpdateEvent;
+import me.prisonranksx.events.XRankUpdateEvent;
+import me.prisonranksx.events.PrestigeUpdateCause;
+import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
@@ -100,7 +103,7 @@ public class PrestigeLegacy {
 		if(player == null) {
 			return;
 		}
-		XPrestigeEvent e = new XPrestigeEvent(player, "PRESTIGEUP");
+		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		
 		if(e.isCancelled()) {
 			return;
@@ -260,12 +263,17 @@ public class PrestigeLegacy {
 			spawnHologram(nextPrestigeHologramFormat, nextPrestigeHologramRemoveTime, nextPrestigeHologramHeight, p);
 		}
 		main.sendPrestigeFirework(p);
-		main.econ.withdrawPlayer(p, prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
+		main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetMoney")) {
-			main.econ.withdrawPlayer(p, prxAPI.getPlayerMoney(p.getName()));
+			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
 		}
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
+			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
+			if(e1.isCancelled()) {
+				return;
+			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
+			Bukkit.getPluginManager().callEvent(e1);
 		}
 		List<String> prestigeCommands = main.globalStorage.getStringListData("PrestigeOptions.prestige-cmds");
 		if(!prestigeCommands.isEmpty()) {
@@ -303,7 +311,7 @@ public class PrestigeLegacy {
 		if(player == null) {
 			return;
 		}
-		XPrestigeEvent e = new XPrestigeEvent(player, "PRESTIGEUP");
+		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		
 		if(e.isCancelled()) {
 			return;
@@ -447,12 +455,17 @@ public class PrestigeLegacy {
 			spawnHologram(nextPrestigeHologramFormat, nextPrestigeHologramRemoveTime, nextPrestigeHologramHeight, p);
 		}
 		main.sendPrestigeFirework(p);
-		main.econ.withdrawPlayer(p, prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
+		main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetMoney")) {
-			main.econ.withdrawPlayer(p, prxAPI.getPlayerMoney(p.getName()));
+			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
 		}
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
+			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
+			if(e1.isCancelled()) {
+				return;
+			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
+			Bukkit.getPluginManager().callEvent(e1);
 		}
 		List<String> prestigeCommands = main.globalStorage.getStringListData("PrestigeOptions.prestige-cmds");
 		if(!prestigeCommands.isEmpty()) {

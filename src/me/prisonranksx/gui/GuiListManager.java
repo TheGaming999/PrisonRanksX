@@ -158,20 +158,30 @@ public class GuiListManager {
 	}
 	
 	public ItemStack parseStack(String itemValue) {
-		ItemStack x;
-		if(itemValue.contains(":")) {
-			String[] nameAndData = itemValue.split(":");
+		ItemStack x = null;
+		itemValue = itemValue.toUpperCase();
+		if(itemValue.contains(";")) {
+			// 1.8 - 1.15
+			String[] nameAndData = itemValue.split(";");
 			String name = nameAndData[0];
 			byte data = Byte.parseByte(nameAndData[1]);
 			x = new ItemStack(XMaterial.matchXMaterial(name).parseMaterial());
 			x.setDurability(data);
 		} else if (itemValue.contains("#")) {
-			String[] nameAndData = itemValue.split(":");
+			// 1.8 - 1.15
+			String[] nameAndData = itemValue.split("#");
 			String name = nameAndData[0];
 			byte data = Byte.parseByte(nameAndData[1]);
-			x = XMaterial.matchXMaterial(name, data).parseItem(true);
+			x = XMaterial.matchXMaterial(name, data).parseItem();
+		} else if (itemValue.contains("->")) {
+			// 1.8 - 1.12 || 1.8 - 1.15 (ViaVersion)
+			String[] nameAndData = itemValue.split("->");
+			String name = nameAndData[0];
+			byte data = Byte.parseByte(nameAndData[1]);
+			x = new ItemStack(Material.matchMaterial(name), 1, data);
 		} else {
-			x = XMaterial.matchXMaterial(itemValue).parseItem(true);
+			// 1.8 - 1.15 Direct Parse => {itemname:itemdata}
+			x = XMaterial.matchXMaterial(itemValue).parseItem();
 		}
 		return x;
 	}

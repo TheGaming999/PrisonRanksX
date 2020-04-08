@@ -246,7 +246,6 @@ public class RankupMax {
         endNextRankActionbarInterval = main.rankStorage.getActionbarInterval(rp);
 		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
-		main.sendRankFirework(p);
         rankupMaxPassedRanks.put(p, rankups);
 		XRankupMaxEvent x = new XRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
 		Bukkit.getScheduler().runTask(main, () -> {

@@ -6,7 +6,7 @@ package me.prisonranksx.events;
 	private static RankUpdateCause rankUpdateCause;
 	
 
-	public static void setRankUpdateCauseAction(RankUpdateCause rankUpdateCause)
+	public static void setRankUpdateCause(RankUpdateCause rankUpdateCause)
 	{
 		RankUpdateCause.rankUpdateCause = rankUpdateCause;
 	}

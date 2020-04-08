@@ -15,7 +15,8 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RebirthRandomCommands;
-import me.prisonranksx.events.XRebirthEvent;
+import me.prisonranksx.events.XRebirthUpdateEvent;
+import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class Rebirth {
@@ -37,7 +38,7 @@ public class Rebirth {
 		if(player == null) {
 			return;
 		}
-		XRebirthEvent e = new XRebirthEvent(player, "REBIRTHUP");
+		XRebirthUpdateEvent e = new XRebirthUpdateEvent(player, RebirthUpdateCause.REBIRTHUP);
 		
 		if(e.isCancelled()) {
 			return;

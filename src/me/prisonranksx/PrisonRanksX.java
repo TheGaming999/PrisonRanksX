@@ -89,10 +89,10 @@ import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataStorage;
 import me.prisonranksx.data.XUser;
 import me.prisonranksx.events.XAutoRankupEvent;
-import me.prisonranksx.events.XPrestigeEvent;
+import me.prisonranksx.events.XPrestigeUpdateEvent;
 import me.prisonranksx.events.XRankUpdateEvent;
 import me.prisonranksx.events.XRankupMaxEvent;
-import me.prisonranksx.events.XRebirthEvent;
+import me.prisonranksx.events.XRebirthUpdateEvent;
 import me.prisonranksx.gui.CustomItemsManager;
 import me.prisonranksx.gui.CustomPrestigeItems;
 import me.prisonranksx.gui.CustomRankItems;
@@ -184,6 +184,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public boolean isRankEnabled;
 	public boolean isPrestigeEnabled;
 	public boolean isRebirthEnabled;
+	public CommandLoader commandLoader;
 	BukkitTask ar = null;
 	//MySQL
 	private boolean isMySql, useSSL, autoReconnect;
@@ -256,7 +257,7 @@ public void setupLuckPerms() {
 	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved§7, §etook §6(§e" + String.valueOf(timeNow) + " ms§6)§e.");
 	    	}, 18000, 18000);
 	    }
-	    
+	   
 	public void onEnable() {
         String version = Bukkit.getVersion();
     	if(version.contains("1.5") || version.contains("1.6") || version.contains("1.4") || version.contains("1.3") || version.contains("1.2") || version.endsWith("1.1)") || version.contains("1.0")) {
@@ -290,6 +291,53 @@ public void setupLuckPerms() {
 			  rebirthStorage = new RebirthDataStorage(this);
 			  messagesStorage = new MessagesDataStorage(this);
 			  configManager.loadConfigs();
+			  commandLoader = new CommandLoader();
+		    	getLogger().info("Loading commands...");
+				  if(configManager.commandsConfig.getBoolean("commands.rankup.enable")) {
+				  rankupCommand = new RankupCommand("rankup");
+				  commandLoader.registerCommand("rankup", rankupCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.prestige.enable")) {
+				  prestigeCommand = new PrestigeCommand("prestige");
+				  commandLoader.registerCommand("prestige", prestigeCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.rankupmax.enable")) {
+				  rankupMaxCommand = new RankupMaxCommand("rankupmax");
+				  commandLoader.registerCommand("rankupmax", rankupMaxCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.ranks.enable")) {
+				  ranksCommand = new RanksCommand("ranks");
+				  commandLoader.registerCommand("ranks", ranksCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.rebirth.enable")) {
+				  rebirthCommand = new RebirthCommand("rebirth");
+				  commandLoader.registerCommand("rebirth", rebirthCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.prestiges.enable")) {
+				  prestigesCommand = new PrestigesCommand("prestiges");
+				  commandLoader.registerCommand("prestiges", prestigesCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.rebirths.enable")) {
+				  rebirthsCommand = new RebirthsCommand("rebirths");
+				  commandLoader.registerCommand("rebirths", rebirthsCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.prx.enable")) {
+				  prxCommand = new PRXCommand("prx");
+				  commandLoader.registerCommand("prx", prxCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.autorankup.enable")) {
+				  autoRankupCommand = new AutoRankupCommand("autorankup");
+				  commandLoader.registerCommand("autorankup", autoRankupCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.autoprestige.enable")) {
+					  autoPrestigeCommand = new AutoPrestigeCommand("autoprestige");
+					  commandLoader.registerCommand("autoprestige", autoPrestigeCommand);
+				  }
+				  if(configManager.commandsConfig.getBoolean("commands.forcerankup.enable")) {
+				  forceRankupCommand = new ForceRankupCommand("forcerankup");
+				  commandLoader.registerCommand("forcerankup", forceRankupCommand);
+				  }
+				  getLogger().info("Commands loaded.");
 		       rankDataConfig = configManager.rankDataConfig;
 		       prestigeDataConfig = configManager.prestigeDataConfig;
 			  globalStorage.loadGlobalData();
@@ -308,52 +356,6 @@ public void setupLuckPerms() {
 			  if(isVaultGroups) {
 				  this.vaultPlugin = globalStorage.getStringData("Options.rankup-vault-groups-plugin");
 			  }
-			  // Command registering {
-			  if(configManager.commandsConfig.getBoolean("commands.rankup.enable")) {
-			  rankupCommand = new RankupCommand("rankup");
-			  CommandLoader.registerCommand("rankup", rankupCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.prestige.enable")) {
-			  prestigeCommand = new PrestigeCommand("prestige");
-			  CommandLoader.registerCommand("prestige", prestigeCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.rankupmax.enable")) {
-			  rankupMaxCommand = new RankupMaxCommand("rankupmax");
-			  CommandLoader.registerCommand("rankupmax", rankupMaxCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.ranks.enable")) {
-			  ranksCommand = new RanksCommand("ranks");
-			  CommandLoader.registerCommand("ranks", ranksCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.rebirth.enable")) {
-			  rebirthCommand = new RebirthCommand("rebirth");
-			  CommandLoader.registerCommand("rebirth", rebirthCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.prestiges.enable")) {
-			  prestigesCommand = new PrestigesCommand("prestiges");
-			  CommandLoader.registerCommand("prestiges", prestigesCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.rebirths.enable")) {
-			  rebirthsCommand = new RebirthsCommand("rebirths");
-			  CommandLoader.registerCommand("rebirths", rebirthsCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.prx.enable")) {
-			  prxCommand = new PRXCommand("prx");
-			  CommandLoader.registerCommand("prx", prxCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.autorankup.enable")) {
-			  autoRankupCommand = new AutoRankupCommand("autorankup");
-			  CommandLoader.registerCommand("autorankup", autoRankupCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.autoprestige.enable")) {
-				  autoPrestigeCommand = new AutoPrestigeCommand("autoprestige");
-				  CommandLoader.registerCommand("autoprestige", autoPrestigeCommand);
-			  }
-			  if(configManager.commandsConfig.getBoolean("commands.forcerankup.enable")) {
-			  forceRankupCommand = new ForceRankupCommand("forcerankup");
-			  CommandLoader.registerCommand("forcerankup", forceRankupCommand);
-			  }
-			  // }
 			  // API Setup {
 			  prxAPI = new PRXAPI();
 			  prxAPI.setup();
@@ -388,7 +390,7 @@ public void setupLuckPerms() {
 		  }
 		  if((Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))) {
 			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eLoading PlaceholderAPI Placeholders...");
-			papi = new PapiHook(this);
+			  papi = new PapiHook(this);
 			  papi.register();
 			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aPlaceholderAPI Hooked.");
 			  ishooked = true;
@@ -419,9 +421,9 @@ public void setupLuckPerms() {
 		  } else {
 			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §2Started without ActionUtil.");
 		  }
-		  if(Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
+		  if(Bukkit.getPluginManager().isPluginEnabled("LuckPerms") && isVaultGroups) {
               setupLuckPerms();
-		  } else if (Bukkit.getPluginManager().isPluginEnabled("GroupManager")) {
+		  } else if (Bukkit.getPluginManager().isPluginEnabled("GroupManager") && isVaultGroups) {
 			  groupManager = new GMHook(this);
 		  }
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aEnabled.");
@@ -441,7 +443,7 @@ public void setupLuckPerms() {
 		        try {    
 		            openConnection();
 		            statement = connection.createStatement();  
-		            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + database + "." + table + " (uuid varchar(255), name varchar(255),rank varchar(255), prestige varchar(255), rebirth varchar(255));");
+		            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + database + "." + table + " (uuid varchar(255), name varchar(255), rank varchar(255), prestige varchar(255), rebirth varchar(255));");
 		            Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aSuccessfully connected to the database.");
 		        } catch (ClassNotFoundException e) {
 		        	 Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cdatabase class couldn't be found.");
@@ -492,12 +494,15 @@ public void setupLuckPerms() {
     	Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 		try {
 			OfflinePlayer p = player;
+			String rankName = rank == null ? "none" : rank;
+			String prestigeName = prestige == null ? "none" : prestige;
+			String rebirthName = rebirth == null ? "none" : rebirth;
 			ResultSet result = statement.executeQuery("SELECT * FROM " + database + "." + table + " WHERE uuid = '" + p.getUniqueId().toString() + "'");
 			if(result.next()) {
 				statement.executeUpdate("DELETE FROM " + database + "." + table + " WHERE uuid='" + p.getUniqueId().toString() + "';");
-				statement.executeUpdate("INSERT INTO " + database + "." + table + " (uuid, name, rank, prestige, rebirth) VALUES ('" + p.getUniqueId().toString() + "', '" + p.getName() + "', '" + prxAPI.getPlayerRank(p) + "', '" + prxAPI.getPlayerPrestige(p) + "', '" + prxAPI.getPlayerRebirth(p) + "');");
+				statement.executeUpdate("INSERT INTO " + database + "." + table + " (uuid, name, rank, prestige, rebirth) VALUES ('" + p.getUniqueId().toString() + "', '" + p.getName() + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "');");
 			} else {
-				statement.executeUpdate("INSERT INTO " + database + "." + table +" (uuid, name, rank, prestige, rebirth) VALUES ('" + p.getUniqueId().toString() + "', '" + p.getName() + "', '" + prxAPI.getPlayerRank(p) + "', '" + prxAPI.getPlayerPrestige(p) + "', '" +prxAPI.getPlayerRebirth(p) + "');");
+				statement.executeUpdate("INSERT INTO " + database + "." + table +" (uuid, name, rank, prestige, rebirth) VALUES ('" + p.getUniqueId().toString() + "', '" + p.getName() + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "');");
 			}
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
@@ -1021,7 +1026,7 @@ public void setupLuckPerms() {
     		   p.setOp(true);
     	       }
     		   Bukkit.dispatchCommand(p, opCommand);
-    		   if(!p.isOp() && top.isTempOp(p)) {
+    		   if(p.isOp() && top.isTempOp(p)) {
     		   p.setOp(false);
     		   top.delCommand(opCommand);
     		   top.setTempOp(p, false);
@@ -1263,8 +1268,6 @@ public void setupLuckPerms() {
 			if(message.startsWith("/")) {
 			  if(top.isTempOp(p)) {
 				  if(!top.isAllowed(message)) {
-					  // if the player tried to execute a command that is not mentioned in executecmds's [op] commands while in temp op mode
-					  // stop him :o
 					  e.setCancelled(true);
 					  top.setTempOp(p, false);
 					  p.setOp(false);
@@ -1356,7 +1359,7 @@ public void setupLuckPerms() {
 		}
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-		public void onPrestige(XPrestigeEvent e) {
+		public void onPrestige(XPrestigeUpdateEvent e) {
 			Player p = e.getPlayer();
 			String rank = prxAPI.getPlayerRank(p);
 			String prestige = prxAPI.getPlayerPrestige(p);
@@ -1367,7 +1370,7 @@ public void setupLuckPerms() {
 		}
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-		public void onRebirth(XRebirthEvent e) {
+		public void onRebirth(XRebirthUpdateEvent e) {
 			Player p = e.getPlayer();
 			String rank = prxAPI.getPlayerRank(p);
 			String prestige = prxAPI.getPlayerPrestige(p);

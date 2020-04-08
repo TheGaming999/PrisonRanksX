@@ -16,7 +16,8 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RebirthRandomCommands;
-import me.prisonranksx.events.XRebirthEvent;
+import me.prisonranksx.events.XRebirthUpdateEvent;
+import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
@@ -40,7 +41,7 @@ public class RebirthLegacy {
 		if(player == null) {
 			return;
 		}
-		XRebirthEvent e = new XRebirthEvent(player, "REBIRTHUP");
+		XRebirthUpdateEvent e = new XRebirthUpdateEvent(player, RebirthUpdateCause.REBIRTHUP);
 		
 		if(e.isCancelled()) {
 			return;
@@ -199,9 +200,9 @@ public class RebirthLegacy {
 			spawnHologram(nextRebirthHologramFormat, nextRebirthHologramRemoveTime, nextRebirthHologramHeight, p);
 		}
 		main.sendRebirthFirework(p);
-		main.econ.withdrawPlayer(p, prxAPI.getPlayerNextRebirthCost(u));
+		main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerNextRebirthCost(u));
 		if(main.globalStorage.getBooleanData("RebirthOptions.ResetMoney")) {
-			main.econ.withdrawPlayer(p, prxAPI.getPlayerMoney(p.getName()));
+			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
 		}
 		if(main.globalStorage.getBooleanData("RebirthOptions.ResetRank")) {
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
