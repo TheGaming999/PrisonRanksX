@@ -45,7 +45,7 @@ public class RankRandomCommands {
 		if(main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds") != null &&
 				!main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getKeys(false).isEmpty()) {
 		randomCommandsMap = main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getValues(withKeys);
-		main.getLogger().info("[RandomCommandSetup] path: " + pathName + " -> " + "rank: " + rankName);
+		
 		}
 		List<List<String>> commandsList = new ArrayList<>();
 		List<Double> chances = new ArrayList<>();

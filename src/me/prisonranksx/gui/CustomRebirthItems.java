@@ -8,12 +8,12 @@ import me.prisonranksx.data.LevelType;
 
 public class CustomRebirthItems {
 
-	private Map<RebirthState, RebirthItem> customRebirthItems;
+	private Map<String, RebirthItem> customRebirthItems;
 	private PrisonRanksX main;
 	
 	public CustomRebirthItems(PrisonRanksX main) {this.customRebirthItems = new HashMap<>(); this.main = main;}
 	
-	public Map<RebirthState, RebirthItem> getCustomRebirthItems() {
+	public Map<String, RebirthItem> getCustomRebirthItems() {
 		return this.customRebirthItems;
 	}
 	
@@ -33,7 +33,7 @@ public class CustomRebirthItems {
 					ri.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.REBIRTH, ls, rebirth));
 					ri.setFlags(main.cim.readCustomLevelItemFlags(LevelType.REBIRTH, ls, rebirth));
 					ri.setCommands(main.cim.readCustomLevelItemCommands(LevelType.REBIRTH, ls, rebirth));
-					customRebirthItems.put(rs, ri);
+					customRebirthItems.put(rs.toString(), ri);
 				}
 			}
 		}

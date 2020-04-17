@@ -25,6 +25,10 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 		if(!main.isPrestigeEnabled) {
 			return true;
 		}
+		if(!sender.hasPermission(this.getPermission())) {
+			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			return true;
+		}
 		if(!(sender instanceof Player)) {
 			try {
 			sender.sendMessage(main.prxAPI.c(main.prestigesAPI.prestigeListConsole));

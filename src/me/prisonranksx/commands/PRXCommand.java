@@ -1,5 +1,6 @@
 package me.prisonranksx.commands;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
@@ -23,7 +26,6 @@ import me.prisonranksx.events.XRebirthUpdateEvent;
 
 public class PRXCommand extends BukkitCommand {
 	
-	private static List<String> COMMANDS = new ArrayList<>();
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	private String ver = "1.0";
 	public PRXCommand(String commandName) {
@@ -38,6 +40,10 @@ public class PRXCommand extends BukkitCommand {
 
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
+		if(!sender.hasPermission(this.getPermission())) {
+			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			return true;
+		}
         if(args.length == 0) {
         	sender.sendMessage(main.prxAPI.c("&3[&6PrisonRanksX&3] &av" + ver));
         	sender.sendMessage(main.prxAPI.c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
@@ -59,8 +65,32 @@ public class PRXCommand extends BukkitCommand {
             sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         } else if (args.length == 1) {
         	if(args[0].equalsIgnoreCase("dev")) {
-        		main.cri.getCustomRankItems().entrySet().forEach(entry -> {
-        			sender.sendMessage(entry.getKey().toString() + " -> " + entry.getValue().toString());
+        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        			try {
+        				sender.sendMessage(main.prxAPI.c("&2Converting rankdata..."));
+                  FileConfiguration oldRanked = YamlConfiguration.loadConfiguration(new File(main.getDataFolder() + "/ranked.yml"));
+                  for(String uuids : oldRanked.getConfigurationSection("Players").getKeys(false)) {
+                	  String uuid = uuids;
+                	  String rank = oldRanked.getString("Players." + uuid);
+                	  main.configManager.rankDataConfig.set("players." + uuid + ".rank", rank);
+                	  main.configManager.rankDataConfig.set("players." + uuid + ".path", main.prxAPI.getDefaultPath());
+                  }
+                  main.configManager.saveRankDataConfig();
+                  sender.sendMessage(main.prxAPI.c("&eRank data conversion success."));
+        			} catch (Exception err) {
+        				sender.sendMessage(main.prxAPI.c("&cRank data is already converted."));
+        			}
+        			try {
+        				FileConfiguration oldPrestiged = YamlConfiguration.loadConfiguration(new File(main.getDataFolder() + "/prestiged.yml"));
+        				for(String uuids : oldPrestiged.getConfigurationSection("Players").getKeys(false)) {
+        					String prestige = oldPrestiged.getString("Players." + uuids);
+        					main.configManager.prestigeDataConfig.set("players." + uuids, prestige);
+        				}
+        				main.configManager.savePrestigeDataConfig();
+        				sender.sendMessage(main.prxAPI.c("&ePrestige data conversion success."));
+        			} catch (Exception err) {
+        				sender.sendMessage(main.prxAPI.c("&cPrestige data is already converted."));
+        			}
         		});
         	}
         	else if(args[0].equalsIgnoreCase("terminate")) {

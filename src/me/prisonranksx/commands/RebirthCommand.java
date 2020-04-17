@@ -21,6 +21,10 @@ public class RebirthCommand extends BukkitCommand {
 
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
+		if(!sender.hasPermission(this.getPermission())) {
+			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			return true;
+		}
 		if(!main.isRebirthEnabled) {
 			return true;
 		}

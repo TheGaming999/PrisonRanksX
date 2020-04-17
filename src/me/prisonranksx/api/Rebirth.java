@@ -20,6 +20,7 @@ import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class Rebirth {
+	
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	private PRXAPI prxAPI;
 	public Rebirth() {

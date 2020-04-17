@@ -100,21 +100,19 @@ public class Prestige {
 			return;
 		}
 		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
-		
 		if(e.isCancelled()) {
 			return;
 		}
 		Player p = player;
 		String prestige = prxAPI.getPlayerNextPrestige(p);
 		if(!p.hasPermission(main.prestigeCommand.getPermission()) && !p.hasPermission("*")) {
-			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
-				return;
-			}
+			if(prxAPI.g("nopermission") != null && !prxAPI.g("nopermission").isEmpty()) {	
 			p.sendMessage(prxAPI.g("nopermission"));
+			}
 			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
-		if(prestige.equalsIgnoreCase("LASTPRESTIGE")) {
+		if(prestige == null) {
 			if(prxAPI.h("lastprestige") != null && !prxAPI.h("lastprestige").isEmpty()) {
 			for(String line : prxAPI.h("lastprestige")) {
 				p.sendMessage(prxAPI.c(line));
@@ -131,13 +129,12 @@ public class Prestige {
 			return;
 		}
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) > prxAPI.getPlayerMoney(p)) {
-			if(prxAPI.h("prestige-notenoughmoney") == null || prxAPI.h("prestige-notenoughmoney").isEmpty()) {
-				return;
-			}
+			if(prxAPI.h("prestige-notenoughmoney") != null && !prxAPI.h("prestige-notenoughmoney").isEmpty()) {
 			for(String line : prxAPI.h("prestige-notenoughmoney")) {
 				p.sendMessage(prxAPI.c(line)
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p)).replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p))
 						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))).replace("%nextprestige_cost_formatted%", prxAPI.getPlayerNextPrestigeCostFormatted(p)));
+			}
 			}
 			prxAPI.taskedPlayers.remove(p);
 			return;
@@ -156,7 +153,7 @@ public class Prestige {
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
-				main.perm.addPermission(player, permission
+				main.perm.addPermission(p, permission
 						.replace("%player%", p.getName())
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
 						.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p)));
@@ -296,13 +293,6 @@ public class Prestige {
 	}
 	
 	public void prestige(Player player, boolean silent) {
-		if(prxAPI.taskedPlayers.contains(player)) {
-			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
-			player.sendMessage(prxAPI.g("commandspam"));
-			}
-			return;
-		}
-		prxAPI.taskedPlayers.add(player);
 		if(player == null) {
 			return;
 		}
@@ -318,19 +308,15 @@ public class Prestige {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
 		if(prestige.equalsIgnoreCase("LASTPRESTIGE")) {
-			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
 		if(!prxAPI.isLastRank(p) && !main.rankStorage.isAllowPrestige(prxAPI.getPlayerRankPath(p))) {
-			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) > prxAPI.getPlayerMoney(p)) {
-			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
 		String prestigeMsg = prxAPI.g("prestige");
@@ -482,7 +468,6 @@ public class Prestige {
            });
 		}
 		main.playerStorage.setPlayerPrestige(p, prestige);
-		prxAPI.taskedPlayers.remove(player);
 		main.getServer().getPluginManager().callEvent(e);
 	}
 	

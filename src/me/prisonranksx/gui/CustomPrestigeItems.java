@@ -8,12 +8,12 @@ import me.prisonranksx.data.LevelType;
 
 public class CustomPrestigeItems {
 
-	private Map<PrestigeState, PrestigeItem> customPrestigeItems;
+	private Map<String, PrestigeItem> customPrestigeItems;
 	private PrisonRanksX main;
 	
 	public CustomPrestigeItems(PrisonRanksX main) {this.customPrestigeItems = new HashMap<>(); this.main = main;}
 	
-	public Map<PrestigeState, PrestigeItem> getCustomPrestigeItems() {
+	public Map<String, PrestigeItem> getCustomPrestigeItems() {
 		return this.customPrestigeItems;
 	}
 	
@@ -33,7 +33,7 @@ public class CustomPrestigeItems {
 					pi.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.PRESTIGE, ls, prestige));
 					pi.setFlags(main.cim.readCustomLevelItemFlags(LevelType.PRESTIGE, ls, prestige));
 					pi.setCommands(main.cim.readCustomLevelItemCommands(LevelType.PRESTIGE, ls, prestige));
-					customPrestigeItems.put(ps, pi);
+					customPrestigeItems.put(ps.toString(), pi);
 				}
 			}
 		}

@@ -9,12 +9,12 @@ import me.prisonranksx.data.RankPath;
 
 public class CustomRankItems {
 
-	private Map<RankState, RankItem> customRankItems;
+	private Map<String, RankItem> customRankItems;
 	private PrisonRanksX main;
 	
 	public CustomRankItems(PrisonRanksX main) {this.customRankItems = new HashMap<>(); this.main = main;}
 	
-	public Map<RankState, RankItem> getCustomRankItems() {
+	public Map<String, RankItem> getCustomRankItems() {
 		return this.customRankItems;
 	}
 	
@@ -36,7 +36,7 @@ public class CustomRankItems {
 					ri.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.RANK, ls, rank));
 					ri.setFlags(main.cim.readCustomLevelItemFlags(LevelType.RANK, ls, rank));
 					ri.setCommands(main.cim.readCustomLevelItemCommands(LevelType.RANK, ls, rank));
-					customRankItems.put(rs, ri);
+					customRankItems.put(rs.toString(), ri);
 				}
 			}
 		}

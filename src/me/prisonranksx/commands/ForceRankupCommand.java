@@ -24,6 +24,10 @@ public class ForceRankupCommand extends BukkitCommand {
 		if(!main.isRankEnabled) {
 			return true;
 		}
+		if(!sender.hasPermission(this.getPermission())) {
+			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			return true;
+		}
 		if(main.isBefore1_7) {
 	        if(args.length == 0) {
 	        	sender.sendMessage(main.prxAPI.g("forcerankup-noargs"));

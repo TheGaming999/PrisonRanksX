@@ -14,6 +14,7 @@ import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataHandler;
 import me.prisonranksx.data.XUser;
+import me.prisonranksx.gui.GuiListManager;
 import me.prisonranksx.hooks.MVdWPapiHook;
 import me.prisonranksx.hooks.PapiHook;
 import me.prisonranksx.utils.OnlinePlayers;
@@ -520,6 +521,14 @@ public class PRXManager {
       main.rebirthAPI = new Rebirth();
       main.rebirthsAPI = new Rebirths();
       main.rebirthsAPI.load();
+      main.cri.getCustomRankItems().clear();
+      main.cri.setup();
+      main.cpi.getCustomPrestigeItems().clear();
+      main.cpi.setup();
+      main.crri.getCustomRebirthItems().clear();
+      main.crri.setup();
+      main.guiManager = new GuiListManager(main);
+      main.guiManager.setupConstantItems();
 	}
 	
 	public void save() {

@@ -419,30 +419,89 @@ public class NumberAPI {
 	}
 	
 	/**
-	 * calculate simple mafs
-	 * @param value example: (2 * 5) + 1, (1+2)*4, 2*2*2+5
+	 * calculate a string expression
+	 * @param str example: (2 * 5) + 1, (1+2)*4, (5 / 2) + 1 * 3 + sqrt(100)
 	 * @return result
+	 * @author a guy on stackoverflow
 	 */
-	public double calculateSimple(String value) {
-		String key = value.replace(" ", "").replace("(", "[").replace(")", "]");
-		if(key.contains("(") && key.contains(")")) {
-		        Pattern worldName = Pattern.compile("\\[(.*?)\\]");
-		        Matcher m3 = worldName.matcher(key);
-		        while (m3.find()) {
-		        	firstOrdered.add(m3.group());
+	public double calculate(final String str) {
+		    return new Object() {
+		        int pos = -1, ch;
+
+		        void nextChar() {
+		            ch = (++pos < str.length()) ? str.charAt(pos) : -1;
 		        }
+
+		        boolean eat(int charToEat) {
+		            while (ch == ' ') nextChar();
+		            if (ch == charToEat) {
+		                nextChar();
+		                return true;
+		            }
+		            return false;
+		        }
+
+		        double parse() {
+		            nextChar();
+		            double x = parseExpression();
+		            if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char)ch);
+		            return x;
+		        }
+
+		        // Grammar:
+		        // expression = term | expression `+` term | expression `-` term
+		        // term = factor | term `*` factor | term `/` factor
+		        // factor = `+` factor | `-` factor | `(` expression `)`
+		        //        | number | functionName factor | factor `^` factor
+
+		        double parseExpression() {
+		            double x = parseTerm();
+		            for (;;) {
+		                if      (eat('+')) x += parseTerm(); // addition
+		                else if (eat('-')) x -= parseTerm(); // subtraction
+		                else return x;
+		            }
+		        }
+
+		        double parseTerm() {
+		            double x = parseFactor();
+		            for (;;) {
+		                if      (eat('*')) x *= parseFactor(); // multiplication
+		                else if (eat('/')) x /= parseFactor(); // division
+		                else return x;
+		            }
+		        }
+
+		        double parseFactor() {
+		            if (eat('+')) return parseFactor(); // unary plus
+		            if (eat('-')) return -parseFactor(); // unary minus
+
+		            double x;
+		            int startPos = this.pos;
+		            if (eat('(')) { // parentheses
+		                x = parseExpression();
+		                eat(')');
+		            } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
+		                while ((ch >= '0' && ch <= '9') || ch == '.') nextChar();
+		                x = Double.parseDouble(str.substring(startPos, this.pos));
+		            } else if (ch >= 'a' && ch <= 'z') { // functions
+		                while (ch >= 'a' && ch <= 'z') nextChar();
+		                String func = str.substring(startPos, this.pos);
+		                x = parseFactor();
+		                if (func.equals("sqrt")) x = Math.sqrt(x);
+		                else if (func.equals("sin")) x = Math.sin(Math.toRadians(x));
+		                else if (func.equals("cos")) x = Math.cos(Math.toRadians(x));
+		                else if (func.equals("tan")) x = Math.tan(Math.toRadians(x));
+		                else throw new RuntimeException("Unknown function: " + func);
+		            } else {
+		                throw new RuntimeException("Unexpected: " + (char)ch);
+		            }
+
+		            if (eat('^')) x = Math.pow(x, parseFactor()); // exponentiation
+
+		            return x;
+		        }
+		    }.parse();
 		}
-		for(String ordered : firstOrdered) {
-			key = key.replace(ordered, "");
-		}
-	    for(char operation : key.toCharArray()) {
-	    	if(operation == '*') {
-	    	  int index = key.indexOf(String.valueOf(operation));
-	    	} else if (operation == '/') {
-	    		int index = key.indexOf(String.valueOf(operation));
-	    	}
-	    }
-	    return Double.valueOf(key);
-	}
 	
 }

@@ -21,13 +21,16 @@ public class XUser {
        return  new XUser(XUUID.getXUUID(offlinePlayer));
 	}
 	
-	@Deprecated
 	public static XUser getXUser(Player player) {
-		return new XUser(player.getUniqueId());
+		return new XUser(XUUID.getXUUID(player));
 	}
 	
 	public static XUser getXUser(String uuid) {
 		return new XUser(UUID.fromString(uuid));
+	}
+	
+	public static XUser getXUser(UUID uuid) {
+		return new XUser(uuid);
 	}
 	
 	public void setUUID(UUID uuid) {

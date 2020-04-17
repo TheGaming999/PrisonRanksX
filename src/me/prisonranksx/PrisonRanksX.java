@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -46,6 +47,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -78,6 +81,8 @@ import me.prisonranksx.commands.RankupCommand;
 import me.prisonranksx.commands.RankupMaxCommand;
 import me.prisonranksx.commands.RebirthCommand;
 import me.prisonranksx.commands.RebirthsCommand;
+import me.prisonranksx.commands.TopPrestigesCommand;
+import me.prisonranksx.commands.TopRebirthsCommand;
 import me.prisonranksx.data.GlobalDataStorage;
 import me.prisonranksx.data.MessagesDataStorage;
 import me.prisonranksx.data.PlayerDataHandler;
@@ -101,8 +106,10 @@ import me.prisonranksx.gui.GuiListManager;
 import me.prisonranksx.hooks.GMHook;
 import me.prisonranksx.hooks.MVdWPapiHook;
 import me.prisonranksx.hooks.PapiHook;
+import me.prisonranksx.leaderboard.LeaderboardManager;
 import me.prisonranksx.permissions.PermissionManager;
 import me.prisonranksx.reflections.Actionbar;
+import me.prisonranksx.reflections.ActionbarProgress;
 import me.prisonranksx.utils.ListUtils;
 import me.prisonranksx.utils.NumberAPI;
 import me.prisonranksx.utils.OnlinePlayers;
@@ -125,6 +132,7 @@ import cloutteam.samjakob.gui.types.PaginatedGUI;
 import io.samdev.actionutil.ActionUtil;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.User;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import ru.tehkode.permissions.PermissionUser;
@@ -168,6 +176,8 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public AutoRankupCommand autoRankupCommand;
 	public AutoPrestigeCommand autoPrestigeCommand;
 	public ForceRankupCommand forceRankupCommand;
+	public TopPrestigesCommand topPrestigesCommand;
+	public TopRebirthsCommand topRebirthsCommand;
 	public CustomItemsManager cim;
 	public CustomRankItems cri;
 	public CustomPrestigeItems cpi;
@@ -185,12 +195,16 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public boolean isPrestigeEnabled;
 	public boolean isRebirthEnabled;
 	public CommandLoader commandLoader;
+	public LeaderboardManager lbm;
+	public ActionbarProgress abprogress;
+	private boolean isABProgress;
+	private Set<UUID> actionbarInUse; 
 	BukkitTask ar = null;
 	//MySQL
 	private boolean isMySql, useSSL, autoReconnect;
-    private Connection connection;
-    private String host, database, username, password, table;
-    private int port;
+    public Connection connection;
+    public String host, database, username, password, table;
+    public int port;
 	private Statement statement;
 	//vault
 	private Permission perms;
@@ -221,6 +235,10 @@ public void setupLuckPerms() {
 	    
 	}
 }
+
+   public void onLoad() {
+	commandLoader = new CommandLoader();
+   }
 	 public Economy econ = null;
 	//...
 	 
@@ -254,7 +272,7 @@ public void setupLuckPerms() {
 	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eSaving data...");
 	    		playerStorage.savePlayersData();
 	    		long timeNow = System.currentTimeMillis() - timeBefore;
-	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved§7, §etook §6(§e" + String.valueOf(timeNow) + " ms§6)§e.");
+	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved §7& §etook §6(§e" + String.valueOf(timeNow) + " ms§6)§e.");
 	    	}, 18000, 18000);
 	    }
 	   
@@ -268,12 +286,25 @@ public void setupLuckPerms() {
 		  getConfig().options().copyDefaults(true);
 		  saveDefaultConfig();
 	 	    try {
-					ConfigUpdater.update(this, "config.yml", new File(this.getDataFolder() + "/config.yml"), new ArrayList<>());
+	 			ignoredSections = new ArrayList<>();
+	 			ignoredSections.add("Ranklist-gui.current-format.custom");
+	 			ignoredSections.add("Ranklist-gui.current-format.custom");
+	 			ignoredSections.add("Ranklist-gui.completed-format.custom");
+	 			ignoredSections.add("Ranklist-gui.other-format.custom");
+	 			ignoredSections.add("Prestigelist-gui.current-format.custom");
+	 			ignoredSections.add("Prestigelist-gui.completed-format.custom");
+	 			ignoredSections.add("Prestigelist-gui.other-format.custom");
+	 			ignoredSections.add("Rebirthlist-gui.current-format.custom");
+	 			ignoredSections.add("Rebirthlist-gui.completed-format.custom");
+	 			ignoredSections.add("Rebirthlist-gui.other-format.custom");
+					ConfigUpdater.update(this, "config.yml", new File(this.getDataFolder() + "/config.yml"), ignoredSections);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
+          if(commandLoader == null) {
+        	  commandLoader = new CommandLoader();
+          }
 		  if((!Bukkit.getPluginManager().isPluginEnabled("Vault"))) {
           Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cUnable to find vault !");
 		  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cFailed to start, disabling....");
@@ -291,8 +322,7 @@ public void setupLuckPerms() {
 			  rebirthStorage = new RebirthDataStorage(this);
 			  messagesStorage = new MessagesDataStorage(this);
 			  configManager.loadConfigs();
-			  commandLoader = new CommandLoader();
-		    	getLogger().info("Loading commands...");
+			  
 				  if(configManager.commandsConfig.getBoolean("commands.rankup.enable")) {
 				  rankupCommand = new RankupCommand("rankup");
 				  commandLoader.registerCommand("rankup", rankupCommand);
@@ -337,7 +367,8 @@ public void setupLuckPerms() {
 				  forceRankupCommand = new ForceRankupCommand("forcerankup");
 				  commandLoader.registerCommand("forcerankup", forceRankupCommand);
 				  }
-				  getLogger().info("Commands loaded.");
+
+				  
 		       rankDataConfig = configManager.rankDataConfig;
 		       prestigeDataConfig = configManager.prestigeDataConfig;
 			  globalStorage.loadGlobalData();
@@ -345,7 +376,9 @@ public void setupLuckPerms() {
 			  prestigeStorage.loadPrestigesData();
 			  rebirthStorage.loadRebirthsData();
 			  messagesStorage.loadMessages();
-			  playerStorage.loadPlayersData();
+
+			  setupMySQL();
+			  //playerStorage.loadPlayersData();
 		       try {
 				ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
 			} catch (IOException e) {
@@ -359,6 +392,16 @@ public void setupLuckPerms() {
 			  // API Setup {
 			  prxAPI = new PRXAPI();
 			  prxAPI.setup();
+			  if(configManager.commandsConfig.getBoolean("commands.topprestiges.enable")) {
+			  topPrestigesCommand = new TopPrestigesCommand("topprestiges");
+			  commandLoader.registerCommand("topprestiges", topPrestigesCommand);
+			  topPrestigesCommand.load();
+			  }
+			  if(configManager.commandsConfig.getBoolean("commands.toprebirths.enable")) {
+			  topRebirthsCommand = new TopRebirthsCommand("toprebirths");
+			  commandLoader.registerCommand("toprebirths", topRebirthsCommand);
+			  topRebirthsCommand.load();
+			  }
 			  if(!isBefore1_7) {
 			  rankupAPI = new Rankup();
 			  prestigeAPI = new Prestige();
@@ -386,6 +429,7 @@ public void setupLuckPerms() {
 			  cri.setup();
 			  cpi.setup();
 			  crri.setup();
+			  lbm = new LeaderboardManager(this);
 			  // }
 		  }
 		  if((Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))) {
@@ -427,37 +471,67 @@ public void setupLuckPerms() {
 			  groupManager = new GMHook(this);
 		  }
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aEnabled.");
-		       host = globalStorage.getStringData("MySQL.host");
-		        port = globalStorage.getIntegerData("MySQL.port");
-		        database = globalStorage.getStringData("MySQL.database");
-		        username = globalStorage.getStringData("MySQL.username");
-		        password = globalStorage.getStringData("MySQL.password");   
-		        table = globalStorage.getStringData("MySQL.table");
-		        isMySql = globalStorage.getBooleanData("MySQL.enable");
-		        useSSL = globalStorage.getBooleanData("MySQL.useSSL");
-		        autoReconnect = globalStorage.getBooleanData("MySQL.autoReconnect");
-		        isRankEnabled = globalStorage.getBooleanData("Options.rank-enabled");
-		        isPrestigeEnabled = globalStorage.getBooleanData("Options.prestige-enabled");
-		        isRebirthEnabled = globalStorage.getBooleanData("Options.rebirth-enabled");
-		        if(isMySql) {
-		        try {    
-		            openConnection();
-		            statement = connection.createStatement();  
-		            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + database + "." + table + " (uuid varchar(255), name varchar(255), rank varchar(255), prestige varchar(255), rebirth varchar(255));");
-		            Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aSuccessfully connected to the database.");
-		        } catch (ClassNotFoundException e) {
-		        	 Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cdatabase class couldn't be found.");
-		            e.printStackTrace();
-		            getLogger().info("MySql Connection failed.");
-		        } catch (SQLException e) {
-		        	Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL error occurred.");
-		            e.printStackTrace();
-		            getLogger().info("MySql SQL Error occurred.");
-		        }
-		        }
+
+
 				  guiManager = new GuiListManager(this);
 				  guiManager.setupConstantItems();
+				  abprogress = new ActionbarProgress(this);
+				  isABProgress = globalStorage.getBooleanData("Options.actionbar-progress");
+				  actionbarInUse = new HashSet<UUID>();
 				  startAsyncUpdateTask();
+	}
+	
+	public boolean isMySql() {
+		return this.isMySql;
+	}
+	
+	public Statement getMySqlStatement() {
+		return this.statement;
+	}
+	
+	public void setupMySQL() {
+	       host = globalStorage.getStringData("MySQL.host");
+	        port = globalStorage.getIntegerData("MySQL.port");
+	        database = globalStorage.getStringData("MySQL.database");
+	        username = globalStorage.getStringData("MySQL.username");
+	        password = globalStorage.getStringData("MySQL.password");   
+	        table = globalStorage.getStringData("MySQL.table");
+	        isMySql = globalStorage.getBooleanData("MySQL.enable");
+	        useSSL = globalStorage.getBooleanData("MySQL.useSSL");
+	        autoReconnect = globalStorage.getBooleanData("MySQL.autoReconnect");
+	        isRankEnabled = globalStorage.getBooleanData("Options.rank-enabled");
+	        isPrestigeEnabled = globalStorage.getBooleanData("Options.prestige-enabled");
+	        isRebirthEnabled = globalStorage.getBooleanData("Options.rebirth-enabled");
+        if(isMySql) {
+        try {    
+            openConnection();
+            statement = connection.createStatement();  
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + database + "." + table + " (uuid varchar(255), name varchar(255), rank varchar(255), prestige varchar(255), rebirth varchar(255), path varchar(255));");
+         
+            Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aSuccessfully connected to the database.");
+        } catch (ClassNotFoundException e) {
+        	 Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cdatabase class couldn't be found.");
+            e.printStackTrace();
+            getLogger().info("MySql Connection failed.");
+        } catch (SQLException e) {
+        	Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL error occurred.");
+            e.printStackTrace();
+            getLogger().info("MySql SQL Error occurred.");
+        }
+        try {
+        	statement.executeUpdate("ALTER TABLE " + database + "." + table + " ADD rebirth varchar(255);");
+        	
+         } catch (SQLException err) {
+        	// COLUMN ALREADY EXISTS
+        
+         }
+        try {
+			statement.executeUpdate("ALTER TABLE " + database + "." + table + " ADD path varchar(255);");
+		} catch (SQLException e) {
+			// COLUMN ALREADY EXISTS
+			
+		}
+        }
 	}
 	
     public void openConnection() throws SQLException, ClassNotFoundException {
@@ -490,19 +564,22 @@ public void setupLuckPerms() {
 		}
     }
     
-    public void updateMySqlData(Player player, String rank, String prestige, String rebirth) {
+    public void updateMySqlData(Player player, String rank, String prestige, String rebirth, String path) {
     	Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 		try {
-			OfflinePlayer p = player;
-			String rankName = rank == null ? "none" : rank;
+			Player p = player;
+			String name = p.getName();
+			String u = XUser.getXUser(p).getUUID().toString();
+			String rankName = rank == null ? "A" : rank;
 			String prestigeName = prestige == null ? "none" : prestige;
 			String rebirthName = rebirth == null ? "none" : rebirth;
-			ResultSet result = statement.executeQuery("SELECT * FROM " + database + "." + table + " WHERE uuid = '" + p.getUniqueId().toString() + "'");
+			String pathName = path == null ? "default" : path;
+			ResultSet result = statement.executeQuery("SELECT * FROM " + database + "." + table + " WHERE uuid = '" + u + "'");
 			if(result.next()) {
-				statement.executeUpdate("DELETE FROM " + database + "." + table + " WHERE uuid='" + p.getUniqueId().toString() + "';");
-				statement.executeUpdate("INSERT INTO " + database + "." + table + " (uuid, name, rank, prestige, rebirth) VALUES ('" + p.getUniqueId().toString() + "', '" + p.getName() + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "');");
+				statement.executeUpdate("DELETE FROM " + database + "." + table + " WHERE uuid = '" + u + "';");
+				statement.executeUpdate("INSERT INTO " + database + "." + table + " (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 			} else {
-				statement.executeUpdate("INSERT INTO " + database + "." + table +" (uuid, name, rank, prestige, rebirth) VALUES ('" + p.getUniqueId().toString() + "', '" + p.getName() + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "');");
+				statement.executeUpdate("INSERT INTO " + database + "." + table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 			}
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
@@ -648,21 +725,21 @@ public void setupLuckPerms() {
 	}
 	
 	@EventHandler(priority=EventPriority.HIGHEST)
-	public void onJoin(AsyncPlayerPreLoginEvent e) {
+	public void onAsyncLogin(AsyncPlayerPreLoginEvent e) {
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 		if(!isRankEnabled) {
-			debug("Rank is not enabled.");
 		  return;
 		}
 		XUser user;
 		if(!isBefore1_7) {
-		debug(" is 1.8+ (yes)");
 		user = new XUser(e.getUniqueId());
 		} else {
-			debug(" is 1.8+ (NO!)");
 			user = new XUser(XUUID.tryNameConvert(e.getName()));
 		}
 	    UUID playerUUID = user.getUUID();
-	    debug("uuid: " + playerUUID.toString());
+	    if(!playerStorage.isLoaded(playerUUID)) {
+	    playerStorage.loadPlayerData(playerUUID);
+	    }
 		if((playerStorage.isRegistered(playerUUID))) {
 			 return;
 		}
@@ -673,8 +750,34 @@ public void setupLuckPerms() {
 		     playerStorage.setPlayerRank(playerUUID, new RankPath(globalStorage.getStringData("defaultrank"), globalStorage.getStringData("defaultpath")));
             return;
 			}
+		});
+	}
+	
+	@EventHandler
+	public void onJoin(PlayerJoinEvent e) {
+		if(isBefore1_7) {
+			return;
+		}
+		if(!isABProgress) {
+			return;
+		}
+		Bukkit.getScheduler().runTaskLater(this, () -> {
+			this.abprogress.enable(e.getPlayer());
+		}, 100);
+	}
+	
+	@EventHandler
+	public void onQuit(PlayerQuitEvent e) {
+		if(!isABProgress) {
+			return;
+		}
+		this.abprogress.disable(e.getPlayer());
 	}
 
+	
+	public boolean hasActionbarOn(UUID uuid) {
+		return actionbarInUse.contains(uuid);
+	}
 	/**
 	 * 
 	 * @param player the player that will receive the action bar message
@@ -689,6 +792,7 @@ public void setupLuckPerms() {
         	 return;
          }
          Player p = player;
+         actionbarInUse.add(p.getUniqueId());
          List<String> actionBar = actionbar;
 		if(actionBar.size() == 1) {
 			Actionbar.sendActionBar(p, getString(actionBar.get(0), p.getName()).replace("%rankup%", getString(prxAPI.getPlayerRank(p), p.getName())).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), p.getName())));
@@ -709,6 +813,7 @@ public void setupLuckPerms() {
         		 }
 		        	Integer lines = actionBar.size();
 		        	if(actionbar_animation.get(p) == lines) {
+		        		actionbarInUse.remove(p.getUniqueId());
 		        		cancel();
 		        		return;
 		        	}
@@ -890,11 +995,11 @@ public void setupLuckPerms() {
 		if(isRankEnabled) {
 			 playerRankPath = playerStorage.getPlayerRankPath(p);
 		}
-		String playerRank = playerRankPath == null ? "" : this.getStringWithoutPAPI(rankStorage.getDisplayName(playerRankPath));
+		String playerRank = playerRankPath == null ? "" : this.getStringWithoutPAPI(rankStorage.getDisplayName(playerRankPath) + "&r");
 		String playerPrestige = playerStorage.getPlayerPrestige(p) != null  && isPrestigeEnabled ? 
-				this.getStringWithoutPAPI(prestigeStorage.getDisplayName(playerStorage.getPlayerPrestige(p))) + " ": getStringWithoutPAPI(globalStorage.getStringData("Options.no-prestige-display"));
+				this.getStringWithoutPAPI(prestigeStorage.getDisplayName(playerStorage.getPlayerPrestige(p)) + "&r") + " ": getStringWithoutPAPI(globalStorage.getStringData("Options.no-prestige-display"));
 		String playerRebirth = playerStorage.getPlayerRebirth(p) != null && isRebirthEnabled ? 
-				this.getStringWithoutPAPI(rebirthStorage.getDisplayName(playerStorage.getPlayerRebirth(p))) + " ": getStringWithoutPAPI(globalStorage.getStringData("Options.no-rebirth-display"));
+				this.getStringWithoutPAPI(rebirthStorage.getDisplayName(playerStorage.getPlayerRebirth(p)) + "&r") + " ": getStringWithoutPAPI(globalStorage.getStringData("Options.no-rebirth-display"));
 		boolean rankForceDisplay = globalStorage.getBooleanData("Options.force-rank-display");
 		boolean prestigeForceDisplay = globalStorage.getBooleanData("Options.force-prestige-display");
 		boolean rebirthForceDisplay = globalStorage.getBooleanData("Options.force-rebirth-display");
@@ -1279,9 +1384,13 @@ public void setupLuckPerms() {
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
 		public void onRankup(XRankUpdateEvent e) {
+			if(isBefore1_7) {
+				return;
+			}
 			Player p = e.getPlayer();
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			if(isVaultGroups) { 
@@ -1289,7 +1398,9 @@ public void setupLuckPerms() {
 			if(vaultPlugin.equalsIgnoreCase("Vault")) {
 			   perms.playerAddGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("LuckPerms")) {
-				luckperms.getUserManager().getUser(uuid).setPrimaryGroup(nextRank);
+				User lpUser = luckperms.getUserManager().getUser(uuid);
+				lpUser.setPrimaryGroup(nextRank);
+				luckperms.getUserManager().saveUser(lpUser);
 			} else if (vaultPlugin.equalsIgnoreCase("GroupManager")) {
 				groupManager.setGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("PermissionsEX")) {
@@ -1300,15 +1411,19 @@ public void setupLuckPerms() {
 			}
 			}
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth);
+				updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
 		public void onAutoRankup(XAutoRankupEvent e) {
+			if(isBefore1_7) {
+				return;
+			}
 			Player p = e.getPlayer();
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			if(isVaultGroups) { 
@@ -1316,7 +1431,9 @@ public void setupLuckPerms() {
 			if(vaultPlugin.equalsIgnoreCase("Vault")) {
 			   perms.playerAddGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("LuckPerms")) {
-				luckperms.getUserManager().getUser(uuid).setPrimaryGroup(nextRank);
+				User lpUser = luckperms.getUserManager().getUser(uuid);
+				lpUser.setPrimaryGroup(nextRank);
+				luckperms.getUserManager().saveUser(lpUser);
 			} else if (vaultPlugin.equalsIgnoreCase("GroupManager")) {
 				groupManager.setGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("PermissionsEX")) {
@@ -1327,15 +1444,19 @@ public void setupLuckPerms() {
 			}
 			}
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth);
+				updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
 		public void onRankupMax(XRankupMaxEvent e) {
+			if(isBefore1_7) {
+				return;
+			}
 			Player p = e.getPlayer();
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			if(isVaultGroups) { 
@@ -1343,7 +1464,9 @@ public void setupLuckPerms() {
 			if(vaultPlugin.equalsIgnoreCase("Vault")) {
 			   perms.playerAddGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("LuckPerms")) {
-				luckperms.getUserManager().getUser(uuid).setPrimaryGroup(nextRank);
+				User lpUser = luckperms.getUserManager().getUser(uuid);
+				lpUser.setPrimaryGroup(nextRank);
+				luckperms.getUserManager().saveUser(lpUser);
 			} else if (vaultPlugin.equalsIgnoreCase("GroupManager")) {
 				groupManager.setGroup(p, nextRank);
 			} else if (vaultPlugin.equalsIgnoreCase("PermissionsEX")) {
@@ -1354,29 +1477,37 @@ public void setupLuckPerms() {
 			}
 			}
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth);
+				updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
 		public void onPrestige(XPrestigeUpdateEvent e) {
+			if(isBefore1_7) {
+				return;
+			}
 			Player p = e.getPlayer();
 			String rank = prxAPI.getPlayerRank(p);
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth);
+				updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
 		public void onRebirth(XRebirthUpdateEvent e) {
+			if(isBefore1_7) {
+				return;
+			}
 			Player p = e.getPlayer();
 			String rank = prxAPI.getPlayerRank(p);
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth);
+				updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		

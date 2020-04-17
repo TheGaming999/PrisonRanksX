@@ -489,13 +489,6 @@ public class Rankup {
 		}
 		
 		public void rankup(Player player, boolean silent) {
-			if(prxAPI.taskedPlayers.contains(player)) {
-				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
-					return;
-				}
-				return;
-			}
-			prxAPI.taskedPlayers.add(player);
 			if(player == null) {
 				return;
 			}
@@ -510,27 +503,17 @@ public class Rankup {
 				if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
 					return;
 				}
-				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
 				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(p)) && !p.hasPermission("*")) {
-					if(prxAPI.g("rankup-nopermission") == null || prxAPI.g("rankup-nopermission").isEmpty()) {
-						return;
-					}
-					prxAPI.taskedPlayers.remove(p);
 					return;
 				}
 			}
 			if(main.rankStorage.getRankupName(rp).equalsIgnoreCase("LASTRANK")) {
-				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			if(prxAPI.getPlayerRankupCostWithIncreaseDirect(p) > prxAPI.getPlayerMoney(p)) {
-				if(prxAPI.h("notenoughmoney") == null || prxAPI.h("notenoughmoney").isEmpty()) {
-					return;
-				}
-				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			String rankupMsg = prxAPI.g("rankup");
@@ -651,7 +634,6 @@ public class Rankup {
 			main.sendRankFirework(p);
 			main.econ.withdrawPlayer(p, prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
-			prxAPI.taskedPlayers.remove(p);
 			}, 1);
 			Bukkit.getScheduler().runTask(main, () -> {
 			main.getServer().getPluginManager().callEvent(e);

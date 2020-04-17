@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -35,8 +36,19 @@ public class ConfigManager {
 	public FileConfiguration rebirthDataConfig;
 	public File rebirthsFile;
 	public FileConfiguration rebirthsConfig;
+	public List<String> ignoredSections;
 	
 	public void loadConfigs() {
+		ignoredSections = new ArrayList<>();
+		ignoredSections.add("Ranklist-gui.current-format.custom");
+		ignoredSections.add("Ranklist-gui.completed-format.custom");
+		ignoredSections.add("Ranklist-gui.other-format.custom");
+		ignoredSections.add("Prestigelist-gui.current-format.custom");
+		ignoredSections.add("Prestigelist-gui.completed-format.custom");
+		ignoredSections.add("Prestigelist-gui.other-format.custom");
+		ignoredSections.add("Rebirthlist-gui.current-format.custom");
+		ignoredSections.add("Rebirthlist-gui.completed-format.custom");
+		ignoredSections.add("Rebirthlist-gui.other-format.custom");
 		createMessagesConfig();
 		createCommandsConfig();
 		createRankDataConfig();
@@ -47,6 +59,12 @@ public class ConfigManager {
 		createRebirthsConfig();
 		if(!messagesConfig.contains("Messages")) {
 		messagesConfig.options().copyDefaults(true);
+		}
+    	try {
+			ConfigUpdater.update(main, "messages.yml", new File(main.getDataFolder() + "/messages.yml"), new ArrayList<String>());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		if(!commandsConfig.contains("commands")) {
 			commandsConfig.options().copyDefaults(true);
@@ -64,7 +82,7 @@ public class ConfigManager {
 		prestigesConfig.options().copyDefaults(true);
 		}
 		if(!rebirthDataConfig.contains("players")) {
-		rebirthDataConfig.options().copyDefaults();
+		rebirthDataConfig.options().copyDefaults(true);
 		}
 		if(!rebirthsConfig.contains("Rebirths")) {
 		rebirthsConfig.options().copyDefaults(true);
@@ -227,7 +245,7 @@ public class ConfigManager {
 	 
 	 public void reloadMainConfig() {
 	 	    try {
-					ConfigUpdater.update(main, "config.yml", new File("config.yml"), new ArrayList<String>());
+					ConfigUpdater.update(main, "config.yml", new File(main.getDataFolder() + "/config.yml"), ignoredSections);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -238,7 +256,7 @@ public class ConfigManager {
 	 public void saveMainConfig() {
 		 main.saveConfig();
 	 	    try {
-					ConfigUpdater.update(main, "config.yml", new File(main.getDataFolder() + "/config.yml"), new ArrayList<String>());
+					ConfigUpdater.update(main, "config.yml", new File(main.getDataFolder() + "/config.yml"), ignoredSections);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

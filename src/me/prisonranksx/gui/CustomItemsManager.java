@@ -72,7 +72,7 @@ public class CustomItemsManager {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
 		ConfigurationSection section = (ConfigurationSection)plugin.globalStorage.getMap().get(levelName + "list-gui." + stateName + "-format.custom").get(name);
-		return section.getStringList("itemLORE");
+		return !section.getStringList("itemLORE").isEmpty() ? section.getStringList("itemLORE") : null;
 	}
 	
 	@Nullable
@@ -80,7 +80,7 @@ public class CustomItemsManager {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
 		ConfigurationSection section = (ConfigurationSection)plugin.globalStorage.getMap().get(levelName + "list-gui." + stateName + "-format.custom").get(name);
-		return section.getStringList("itemENCHANTMENTS");
+		return !section.getStringList("itemENCHANTMENTS").isEmpty() ? section.getStringList("itemENCHANTMENTS") : null;
 	}
 	
 	@Nullable
@@ -88,7 +88,7 @@ public class CustomItemsManager {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
 		ConfigurationSection section = (ConfigurationSection)plugin.globalStorage.getMap().get(levelName + "list-gui." + stateName + "-format.custom").get(name);
-		return section.getStringList("itemFLAGS");
+		return !section.getStringList("itemFLAGS").isEmpty() ? section.getStringList("itemFLAGS") : null;
 	}
 	
 	@Nullable
@@ -96,12 +96,12 @@ public class CustomItemsManager {
 		String levelName = StringUtils.capitalize(levelType.name().toLowerCase());
 		String stateName = levelState.name().toLowerCase();
 		ConfigurationSection section = (ConfigurationSection)plugin.globalStorage.getMap().get(levelName + "list-gui." + stateName + "-format.custom").get(name);
-		return section.getStringList("itemCOMMANDS");
+		return !section.getStringList("itemCOMMANDS").isEmpty() ? section.getStringList("itemCOMMANDS") : null;
 	}
 	
 	public ItemStack readCustomItem(String stringValue) {
 		ItemStack stringStack = new ItemStack(Material.STONE, 1);
-		ItemMeta stackMeta = stringStack.getItemMeta();;
+		ItemMeta stackMeta = stringStack.getItemMeta();
 		int amount = 1;
 		String displayName = "";
 		List<String> lore = new ArrayList<>();

@@ -111,6 +111,10 @@ public class MessagesDataStorage {
 		String prestigeListConsole = registerStringMessage("prestigelist-console");
 		String rebirthListConsole = registerStringMessage("rebirthlist-console");
 		String forceRankupNoArgs = registerStringMessage("forcerankup-noargs");
+		List<String> topPrestiges = registerStringListMessage("top-prestiges");
+		String topPrestigesLastPageReached = registerStringMessage("top-prestiges-last-page-reached");
+		List<String> topRebirths = registerStringListMessage("top-rebirths");
+		String topRebirthsLastPageReached = registerStringMessage("top-rebirths-last-page-reached");
 	}
 	
 	public String getStringMessage(String configMessage) {

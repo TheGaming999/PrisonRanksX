@@ -37,9 +37,10 @@ public class RankupMax {
         Player p = player;
         String rankupFrom = null;
         if(rankupMaxProcess.contains(p)) {
-        	player.sendMessage(prxAPI.g("rankupmax-is-on"));
+        	p.sendMessage(prxAPI.g("rankupmax-is-on"));
         	return;
         }
+        rankupMaxMap.remove(p);
         rankupMaxStreak.put(p, 0);
         rankupMaxProcess.add(p);
         //clear old data
@@ -49,19 +50,20 @@ public class RankupMax {
         rankupFrom = currentRank;
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(p);
-        Double playerBalance = main.econ.getBalance(player);
-        //other values
+        Double playerBalance = main.econ.getBalance(p);
+        main.debug("Before loop: " + nextRank);
+        // other values
         List<String> ranksConfigList = prxAPI.getRanksCollection(rp1.getPathName());
         List<String> lastRankMessage = main.messagesStorage.getStringListMessage("lastrank");
         List<String> notEnoughMoneyMessage = main.messagesStorage.getStringListMessage("notenoughmoney");
-        //if the player is at the latest rank
+        // if the player is at the latest rank
         if(nextRank == null) {
-        	main.sendListMessage(player, lastRankMessage);
+        	main.sendListMessage(p, lastRankMessage);
         	rankupMaxProcess.remove(p);
         	return;
         }
-        //if he had a nextrank
-        //player values
+        // if he had a nextrank
+        // player values
         String nextRankDisplay = main.getString(prxAPI.getPlayerRankupDisplay(p), p.getName());
 	    Double nextRankCost = prxAPI.getPlayerRankupCostWithIncreaseDirect(p);
 	    String nextRankCostInString = String.valueOf(nextRankCost);
@@ -121,9 +123,11 @@ public class RankupMax {
         	   //RankPath rp = main.playerStorage.getPlayerRankPath(p);
         	   loopCurrentRankDisplay = main.rankStorage.getDisplayName(rp);
         	   loopNextRank = main.rankStorage.getRankupName(rp);
+        	   main.debug("After loop: " + loopNextRank);
         	   //if there is no rank next then stop the loop
         	   if(loopNextRank.equalsIgnoreCase("lastrank")) {
         		   main.sendListMessage(p, lastRankMessage);
+        		   main.debug("After loop: lastrankmessage");
         		   rankupMaxProcess.remove(p);
         		   break;
         	   }
@@ -131,7 +135,7 @@ public class RankupMax {
         	   loopNextRankCost = main.rankStorage.getRankupCost(rp);
         	   //if the player is prestiged then will we check with the increase percentage
                if(prxAPI.hasPrestiged(p)) {
-              	loopNextRankCost = main.rankStorage.getRankupCost(rp) + prxAPI.getIncreasedRankupCostNB(main.playerStorage.getPlayerPrestige(p), rp);
+              	loopNextRankCost = prxAPI.getIncreasedRankupCost(main.playerStorage.getPlayerPrestige(p), rp);
                 }
                //update values
                loopNextRankCostInString = String.valueOf(loopNextRankCost);

@@ -1,13 +1,8 @@
 package me.prisonranksx.gui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -76,24 +71,12 @@ public class GuiListManager {
 				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				ranksGUI.setButton(slot + page, button);
 			}
-			int i1 = -1;
-			for(ItemStack constantStack : ranksGUI.getInventory().getContents()) {
-				i1++;
-				if(constantStack == null || constantStack.getType() == Material.AIR) {
-					allowedRankSlots.add(i1);
-				}
-			}
 			for(String str : main.globalStorage.getStringData("Ranklist-gui.allowed-slots").split(",")) {
 				int x = Integer.valueOf(str);
 				if(!allowedRankSlots.contains(x)) {
 				allowedRankSlots.add(x);
 				}
 			}
-			//if(ranksGUI.getFinalPage() != 1) {
-			//for(int slot : allowedRankSlots) {
-			//	allowedRankSlots.add(slot + 54);
-			//}
-			//}
 		}
 
 		if(!this.main.globalStorage.getStringListData("Prestigelist-gui.constant-items").isEmpty()) {
@@ -104,13 +87,6 @@ public class GuiListManager {
 				int slot = main.cim.readCustomItemSlot(item);
 				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				prestigesGUI.setButton(slot + page, button);
-			}
-			int i2 = -1;
-			for(ItemStack constantStack : prestigesGUI.getInventory().getContents()) {
-				i2++;
-				if(constantStack == null || constantStack.getType() == Material.AIR) {
-					allowedPrestigeSlots.add(i2);
-				}
 			}
 			for(String str : main.globalStorage.getStringData("Prestigelist-gui.allowed-slots").split(",")) {
 				int x = Integer.valueOf(str);
@@ -129,13 +105,6 @@ public class GuiListManager {
 				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				rebirthsGUI.setButton(slot + page, button);
 			}
-			int i3 = -1;
-			for(ItemStack constantStack : rebirthsGUI.getInventory().getContents()) {
-				i3++;
-				if(constantStack == null || constantStack.getType() == Material.AIR) {
-					allowedRebirthSlots.add(i3);
-				}
-			}
 			for(String str : main.globalStorage.getStringData("Rebirthlist-gui.allowed-slots").split(",")) {
 				int x = Integer.valueOf(str);
 				if(!allowedRebirthSlots.contains(x)) {
@@ -146,15 +115,15 @@ public class GuiListManager {
 	}
 	
 	public RankItem getCustomItem(RankState rankState) {
-		return main.cri.getCustomRankItems().containsKey(rankState) ? main.cri.getCustomRankItems().get(rankState) : emptyRankItem;
+		return main.cri.getCustomRankItems().containsKey(rankState.toString()) ? main.cri.getCustomRankItems().get(rankState.toString()) : emptyRankItem;
 	}
 	
 	public PrestigeItem getCustomItem(PrestigeState prestigeState) {
-		return main.cpi.getCustomPrestigeItems().containsKey(prestigeState) ? main.cpi.getCustomPrestigeItems().get(prestigeState) : emptyPrestigeItem;
+		return main.cpi.getCustomPrestigeItems().containsKey(prestigeState.toString()) ? main.cpi.getCustomPrestigeItems().get(prestigeState.toString()) : emptyPrestigeItem;
 	}
 	
 	public RebirthItem getCustomItem(RebirthState rebirthState) {
-		return main.crri.getCustomRebirthItems().containsKey(rebirthState) ? main.crri.getCustomRebirthItems().get(rebirthState) : emptyRebirthItem;
+		return main.crri.getCustomRebirthItems().containsKey(rebirthState.toString()) ? main.crri.getCustomRebirthItems().get(rebirthState.toString()) : emptyRebirthItem;
 	}
 	
 	public ItemStack parseStack(String itemValue) {
@@ -164,7 +133,7 @@ public class GuiListManager {
 			// 1.8 - 1.15
 			String[] nameAndData = itemValue.split(";");
 			String name = nameAndData[0];
-			byte data = Byte.parseByte(nameAndData[1]);
+			short data = Short.parseShort(nameAndData[1]);
 			x = new ItemStack(XMaterial.matchXMaterial(name).parseMaterial());
 			x.setDurability(data);
 		} else if (itemValue.contains("#")) {
@@ -188,6 +157,7 @@ public class GuiListManager {
 	
 	public void openRanksGUI(Player player) {
 		Player p = player;
+		PaginatedGUI playerGUI = ranksGUI;
 		RankPath rp = main.prxAPI.getPlayerRankPath(p);
 		String playerRank = rp.getRankName();
 		String playerPath = rp.getPathName();
@@ -261,9 +231,9 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRankSlots.isEmpty()) {
-			        ranksGUI.setButton(allowedRankSlots.get(rankIndex), completedButton);
+			        playerGUI.setButton(allowedRankSlots.get(rankIndex), completedButton);
 					} else {
-						ranksGUI.setButton(rankIndex, completedButton);
+						playerGUI.setButton(rankIndex, completedButton);
 					}
 		        
 			}
@@ -331,9 +301,9 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRankSlots.isEmpty()) {
-			        ranksGUI.setButton(allowedRankSlots.get(rankIndex), currentButton);
+			        playerGUI.setButton(allowedRankSlots.get(rankIndex), currentButton);
 					} else {
-						ranksGUI.setButton(rankIndex, currentButton);
+						playerGUI.setButton(rankIndex, currentButton);
 					}
 			}
 			if(playerRankIndex < rankIndex) { // if not completed
@@ -400,17 +370,18 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRankSlots.isEmpty()) {
-		        ranksGUI.setButton(allowedRankSlots.get(rankIndex), otherButton);
+		        playerGUI.setButton(allowedRankSlots.get(rankIndex), otherButton);
 				} else {
-					ranksGUI.setButton(rankIndex, otherButton);
+					playerGUI.setButton(rankIndex, otherButton);
 				}
 			}
 		}
-		p.openInventory(ranksGUI.getInventory());
+		p.openInventory(playerGUI.getInventory());
 	}
 	
 	public void openPrestigesGUI(Player player) {
 		Player p = player;
+		PaginatedGUI playerGUI = prestigesGUI;
 		String playerPrestige = main.prxAPI.getPlayerPrestige(p);
 		List<String> prestigesCollection = main.prxAPI.getPrestigesCollection();
 		int playerPrestigeIndex = prestigesCollection.indexOf(playerPrestige);
@@ -475,9 +446,9 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedPrestigeSlots.isEmpty()) {
-		        prestigesGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), completedButton);
+		        playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), completedButton);
 			    } else {
-			    	prestigesGUI.setButton(prestigeIndex, completedButton);
+			    	playerGUI.setButton(prestigeIndex, completedButton);
 			    }
 			}
 			if(playerPrestigeIndex == prestigeIndex) { // if current
@@ -538,9 +509,9 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedPrestigeSlots.isEmpty()) {
-			        prestigesGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), currentButton);
+			        playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), currentButton);
 				    } else {
-				    	prestigesGUI.setButton(prestigeIndex, currentButton);
+				    	playerGUI.setButton(prestigeIndex, currentButton);
 				    }
 			}
 			if(playerPrestigeIndex < prestigeIndex) { // if not completed
@@ -601,17 +572,18 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedPrestigeSlots.isEmpty()) {
-			        prestigesGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), otherButton);
+			        playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), otherButton);
 				    } else {
-				    	prestigesGUI.setButton(prestigeIndex, otherButton);
+				    	playerGUI.setButton(prestigeIndex, otherButton);
 				    }
 			}
 		}
-		p.openInventory(prestigesGUI.getInventory());
+		p.openInventory(playerGUI.getInventory());
 	}
 	
 	public void openRebirthsGUI(Player player) {
 		Player p = player;
+		PaginatedGUI playerGUI = rebirthsGUI;
 		String playerRebirth = main.prxAPI.getPlayerRebirth(p);
 		List<String> rebirthsCollection = main.prxAPI.getRebirthsCollection();
 		int playerRebirthIndex = rebirthsCollection.indexOf(playerRebirth);
@@ -676,9 +648,9 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRebirthSlots.isEmpty()) {
-		        rebirthsGUI.setButton(allowedRebirthSlots.get(rebirthIndex), completedButton);
+		        playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), completedButton);
 				} else {
-					rebirthsGUI.setButton(rebirthIndex, completedButton);
+					playerGUI.setButton(rebirthIndex, completedButton);
 				}
 			}
 			if(playerRebirthIndex == rebirthIndex) { // if current
@@ -739,9 +711,9 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRebirthSlots.isEmpty()) {
-			        rebirthsGUI.setButton(allowedRebirthSlots.get(rebirthIndex), currentButton);
+			        playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), currentButton);
 					} else {
-						rebirthsGUI.setButton(rebirthIndex, currentButton);
+						playerGUI.setButton(rebirthIndex, currentButton);
 					}
 			}
 			if(playerRebirthIndex < rebirthIndex) { // if not completed
@@ -802,12 +774,12 @@ public class GuiListManager {
                     main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRebirthSlots.isEmpty()) {
-			        rebirthsGUI.setButton(allowedRebirthSlots.get(rebirthIndex), otherButton);
+			        playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), otherButton);
 					} else {
-						rebirthsGUI.setButton(rebirthIndex, otherButton);
+						playerGUI.setButton(rebirthIndex, otherButton);
 					}
 			}
 		}
-		p.openInventory(rebirthsGUI.getInventory());
+		p.openInventory(playerGUI.getInventory());
 	}
 }

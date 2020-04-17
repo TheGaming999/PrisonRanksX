@@ -53,7 +53,7 @@ public class RebirthDataStorage {
 				List<String> addPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".addpermission");
 				List<String> delPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".delpermission");
 
-				RebirthRandomCommands randomCommandsManager = new RebirthRandomCommands(rebirthName, true);
+				RebirthRandomCommands randomCommandsManager = new RebirthRandomCommands(rebirthName, false, true);
 				FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
 				boolean sendFirework = main.configManager.rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
 				RebirthDataHandler rbdh = new RebirthDataHandler(rebirthName);

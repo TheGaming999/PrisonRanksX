@@ -208,6 +208,10 @@ public class GlobalDataStorage {
 	    int autoRankupDelay = registerIntegerData("Options.autorankup-delay");
 	    int autoPrestigeDelay = registerIntegerData("Options.autoprestige-delay");
 	    int autoRebirthDelay = registerIntegerData("Options.autorebirth-delay");
+	    boolean actionbarProgress = registerBooleanData("Options.actionbar-progress");
+	    boolean actionbarProgressOnlyPickaxe = registerBooleanData("Options.actionbar-progress-only-pickaxe");
+	    String actionbarProgressFormat = registerStringData("Options.actionbar-progress-format");
+	    int actionbarProgressUpdater = registerIntegerData("Options.actionbar-progress-updater");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");
@@ -370,6 +374,7 @@ public class GlobalDataStorage {
 		boolean prestigeOptionResetRank = registerBooleanData("PrestigeOptions.ResetRank");
 		double prestigeOptionRankupCostIncreasePercentage = registerDoubleData("PrestigeOptions.rankup_cost_increase_percentage");
 		String prestigeOptionCostIncreaseType = registerStringData("PrestigeOptions.cost_increase_type");
+		String prestigeOptionCostIncreaseExpression = registerStringData("PrestigeOptions.cost_increase_expression");
 		List<String> prestigeOptionPrestigeCMDS = registerStringListData("PrestigeOptions.prestige-cmds");
 		List<String> prestigeOptionPrestigeDeleteCMDS = registerStringListData("PrestigeOptions.prestige-delete-cmds");
 		List<String> prestigeOptionPrestigeResetCMDS = registerStringListData("PrestigeOptions.prestige-reset-cmds");
@@ -379,6 +384,7 @@ public class GlobalDataStorage {
 		boolean rebirthOptionResetPrestige = registerBooleanData("RebirthOptions.ResetPrestige");
 		double rebirthOptionPrestigeCostIncreasePercentage = registerDoubleData("RebirthOptions.prestige_cost_increase_percentage");
 		String rebirthOptionCostIncreaseType = registerStringData("RebirthOptions.cost_increase_type");
+		String rebirthOptionCostIncreaseExpression = registerStringData("RebirthOptions.cost_increase_expression");
 		List<String> rebirthOptionRebirthCMDS = registerStringListData("RebirthOptions.rebirth-cmds");
 		List<String> rebirthOptionRebirthDeleteCMDS = registerStringListData("RebirthOptions.rebirth-delete-cmds");
 		List<String> rebirthOptionRebirthResetCMDS = registerStringListData("RebirthOptions.rebirth-reset-cmds");

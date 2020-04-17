@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
 
@@ -36,6 +37,17 @@ public class XUUID {
 	 * @return Real UUID for versions beyond 1.7 | otherwise it will return a fake UUID for 1.6/1.5/1.4 etc...
 	 */
 	public static UUID getXUUID(OfflinePlayer player) {
+		UUID u;
+		if(main.isBefore1_7) {
+			u = UUID.nameUUIDFromBytes(player.getName().getBytes());
+		} else {
+			u = player.getUniqueId();
+		}
+		uuid = u;
+		return u;
+	}
+	
+	public static UUID getXUUID(Player player) {
 		UUID u;
 		if(main.isBefore1_7) {
 			u = UUID.nameUUIDFromBytes(player.getName().getBytes());

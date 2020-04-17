@@ -1,14 +1,17 @@
 package me.prisonranksx.hooks;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.api.PRXAPI;
+import me.prisonranksx.data.RankPath;
 
-public class PapiHook extends PlaceholderExpansion{
-private PrisonRanksX main;
-PRXAPI prxAPI;
+public class PapiHook extends PlaceholderExpansion {
+	
+    private PrisonRanksX main;
+    PRXAPI prxAPI;
 	public PapiHook(PrisonRanksX main) {
 		super();
 		this.main = main;
@@ -235,9 +238,19 @@ PRXAPI prxAPI;
 				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
 			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostInString(p)); 
+			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)); 
 			} else {
 				return String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol())); 
+			}
+		}
+		if(arg1.equalsIgnoreCase("nextrebirth_cost")) {
+			if(!prxAPI.hasNextRebirth(p)) {
+				return main.getString(main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
+			}
+			if(prxAPI.isCurrencySymbolBehind()) {
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextRebirthCost(p));
+			} else {
+				return String.valueOf(prxAPI.getPlayerNextRebirthCost(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_cost_formatted")) {
@@ -245,10 +258,87 @@ PRXAPI prxAPI;
 				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
 			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostFormatted(p));
+			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(main.formatBalance(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)));
 			} else {
 				return String.valueOf(main.formatBalance(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
+		}
+		if(arg1.equalsIgnoreCase("nextrebirth_cost_formatted")) {
+			if(!prxAPI.hasNextRebirth(p)) {
+				return main.getString(main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
+			}
+			if(prxAPI.isCurrencySymbolBehind()) {
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(main.formatBalance(prxAPI.getPlayerNextRebirthCost(p)));
+			} else {
+				return String.valueOf(main.formatBalance(prxAPI.getPlayerNextRebirthCost(p))) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
+			}
+		}
+		if(arg1.startsWith("rank_displayname_")) {
+			String rank = arg1.split("_")[2];
+			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
+			return prxAPI.getRankDisplay(rp);
+		}
+		if(arg1.startsWith("rank_cost_")) {
+			String rank = arg1.split("_")[2];
+			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
+			String prestige = prxAPI.getPlayerPrestige(p);
+			double rankCost = prxAPI.getRankCost(rp);
+			String increasedRankCost = String.valueOf(prxAPI.getIncreasedRankupCost(prestige, rankCost));
+			return String.valueOf(increasedRankCost);
+		}
+		if(arg1.startsWith("rank_costformatted_")) {
+			String rank = arg1.split("_")[2];
+			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
+			String prestige = prxAPI.getPlayerPrestige(p);
+			double rankCost = prxAPI.getRankCost(rp);
+			double increasedRankCost = prxAPI.getIncreasedRankupCost(prestige, rankCost);
+			return String.valueOf(prxAPI.formatBalance(increasedRankCost));
+		}
+		if(arg1.startsWith("prestige_displayname_")) {
+			String prestige = arg1.split("_")[2];
+			return String.valueOf(prxAPI.getPrestigeDisplay(prestige));
+		}
+		if(arg1.startsWith("prestige_cost_")) {
+			String prestige = arg1.split("_")[2];
+			String rebirth = prxAPI.getPlayerRebirth(p);
+			double prestigeCost = prxAPI.getPrestigeCost(prestige);
+			double increasedPrestigeCost = prxAPI.getIncreasedPrestigeCost(rebirth, prestigeCost);
+			return String.valueOf(increasedPrestigeCost);
+		}
+		if(arg1.startsWith("prestige_costformatted_")) {
+			String prestige = arg1.split("_")[2];
+			String rebirth = prxAPI.getPlayerRebirth(p);
+			double prestigeCost = prxAPI.getPrestigeCost(prestige);
+			double increasedPrestigeCost = prxAPI.getIncreasedPrestigeCost(rebirth, prestigeCost);
+			return String.valueOf(prxAPI.formatBalance(increasedPrestigeCost));
+		}
+		if(arg1.startsWith("rebirth_displayname_")) {
+			String rebirth = arg1.split("_")[2];
+			return prxAPI.getRebirthDisplay(rebirth);
+		}
+		if(arg1.startsWith("rebirth_cost_")) {
+			String rebirth = arg1.split("_")[2];
+			return String.valueOf(prxAPI.getRebirthCost(rebirth));
+		}
+		if(arg1.startsWith("rebirth_costformatted_")) {
+			String rebirth = arg1.split("_")[2];
+			return String.valueOf(prxAPI.getRebirthCostFormatted(rebirth));
+		}
+		if(arg1.startsWith("name_prestige_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(Bukkit.getOfflinePlayer(main.lbm.getPlayerFromPositionPrestige(position).getKey()).getName());
+		}
+		if(arg1.startsWith("value_prestige_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(prxAPI.getPlayerPrestige(main.lbm.getPlayerFromPositionPrestige(position).getKey()));
+		}
+		if(arg1.startsWith("name_rebirth_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(Bukkit.getOfflinePlayer(main.lbm.getPlayerFromPositionRebirth(position).getKey()).getName());
+		}
+		if(arg1.startsWith("value_rebirth_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(prxAPI.getPlayerRebirth(main.lbm.getPlayerFromPositionRebirth(position).getKey()));
 		}
 		if((arg0 == null)) {
 			return null;
@@ -269,7 +359,7 @@ PRXAPI prxAPI;
 
 	@Override
 	public String getVersion() {
-		return "2.6";
+		return "2.5.10c";
 	}
  
 }
