@@ -20,16 +20,35 @@ public class RankDataStorage {
 	private PrisonRanksX main;
 	private Set<String> paths;
 	private Map<String, List<String>> pathRanks;
+	private Map<String, List<String>> consoleCommands;
+	private Map<String, List<String>> playerCommands;
+	private Map<String, List<String>> opCommands;
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
 	   this.rankData = new LinkedHashMap<String, RankDataHandler>();
 	   this.paths = new HashSet<>();
 	   this.pathRanks = new LinkedHashMap<>();
+	   this.consoleCommands = new LinkedHashMap<>();
+	   this.playerCommands = new LinkedHashMap<>();
+	   this.opCommands = new LinkedHashMap<>();
 	}
 	
 	public Map<String, List<String>> getPathRanksMap() {
 		return this.pathRanks;
 	}
+	
+	public Map<String, List<String>> getConsoleCommands() {
+		return this.consoleCommands;
+	}
+	
+	public Map<String, List<String>> getOpCommands() {
+		return this.opCommands;
+	}
+	
+	public Map<String, List<String>> getPlayerCommands() {
+		return this.playerCommands;
+	}
+	
 	
 	public void putPathRank(String path, String rank) {
 		if(!pathRanks.containsKey(path)) {
@@ -85,7 +104,7 @@ public class RankDataStorage {
 				List<String> delPermissionList = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
 				RankRandomCommands randomCommandsManager = new RankRandomCommands(rankupName, false, pathName, true);
 				FireworkManager fireworkManager = new FireworkManager(rankupName, LevelType.RANK, pathName);
-				boolean sendFirework = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".send-firework");
+				boolean sendFirework = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 				RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 				RankPath rankPath = new RankPath(rankName, pathName);
 				rdh.setName(rankName);
@@ -110,6 +129,29 @@ public class RankDataStorage {
                 rankData.put(rankPath.get(), rdh);
                 paths.add(pathName);
                 putPathRank(pathName, rankName);
+    			List<String> commands = rankupCommands;
+    			List<String> consoleCommands = new ArrayList<>();
+    			List<String> opCommands = new ArrayList<>();
+    			List<String> playerCommands = new ArrayList<>();
+    			if(commands == null || commands.isEmpty()) {
+    				return;
+    			}
+    			for(String command : commands) {
+    				if(command.startsWith("[console]") || !command.startsWith("[")) {
+    					consoleCommands.add(command.replace("[console] ", "").replace("%rankup%", rankupName).replace("%rank%", rankName)
+    							.replace("%rankup_display%", rankupDisplayName));
+    				} else if(command.startsWith("[player]")) {
+    					playerCommands.add(command.substring(9).replace("%rankup%", rankupName).replace("%rank%", rankName)
+    							.replace("%rankup_display%", rankupDisplayName));
+    				} else if(command.startsWith("[op]")) {
+    					opCommands.add(command.substring(5).replace("%rankup%", rankupName).replace("%rank%", rankName)
+    							.replace("%rankup_display%", rankupDisplayName));
+    				}
+    			}
+    			String rp = rankPath.get();
+    			this.consoleCommands.put(rp, consoleCommands);
+    			this.opCommands.put(rp, opCommands);
+    			this.playerCommands.put(rp, playerCommands);
 			 }
 			}
 	}
@@ -138,7 +180,7 @@ public class RankDataStorage {
 		List<String> delPermissionList = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
 		RankRandomCommands randomCommandsManager = new RankRandomCommands(rankupName, false, pathName, true);
 		FireworkManager fireworkManager = new FireworkManager(rankupName, LevelType.RANK, pathName);
-		boolean sendFirework = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".send-firework");
+		boolean sendFirework = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 		RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 		rdh.setName(rankName);
         rdh.setPathName(pathName);

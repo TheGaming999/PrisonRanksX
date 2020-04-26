@@ -85,3 +85,17 @@ commands:
     permission-message: "&cYou don't have permission to execute this command."
     usage: "/<command>"
     aliases: [prisonranksx, prisonrx, pranksx]
+  topprestiges:
+    enable: true
+    description: "show players prestiges leaderboard"
+    permission: "prisonranksx.topprestiges"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
+    aliases: [topprestige, tprestige]
+  toprebirths:
+    enable: true
+    description: "show players rebirths leaderboard"
+    permission: "prisonranksx.toprebirths"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
+    aliases: [toprebirth, trebirth]

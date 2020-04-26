@@ -26,7 +26,7 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 			return true;
 		}
 		if(!sender.hasPermission(this.getPermission())) {
-			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
 		if(!(sender instanceof Player)) {

@@ -49,6 +49,18 @@ public class ActionbarProgress {
 		return this.diamondPickaxe;
 	}
 	
+	public void setActionbarMessage(String actionbarMessage) {
+		this.actionbarMessage = actionbarMessage;
+	}
+	
+	public String getActionbarMessage() {
+		return this.actionbarMessage;
+	}
+	
+	public Set<UUID> getPlayers() {
+		return this.players;
+	}
+	
 	public void enable(Player p) {
       players.add(p.getUniqueId());
       if(!isTaskOn) {
@@ -85,6 +97,9 @@ public class ActionbarProgress {
 	
 	public boolean isHoldingDiamondPickaxe(Player player) {
 		Player p = player;
+		if(p == null || !p.isOnline()) {
+			return false;
+		}
 		if(p.getItemInHand() == null) {
 			return false;
 		}

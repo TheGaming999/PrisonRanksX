@@ -38,10 +38,23 @@ public class PRXCommand extends BukkitCommand {
 		ver = main.getDescription().getVersion();
 	}
 
+	public String getRandomColor() {
+		int rand = main.prxAPI.numberAPI.getRandomInteger(0, 15);
+			switch (rand) {
+			  case 10: return "a";
+			  case 11: return "b";
+			  case 12: return "c";
+			  case 13: return "d";
+			  case 14: return "e";
+			  case 15: return "f";
+			  default: return String.valueOf(rand);
+			}
+	}
+	
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
 		if(!sender.hasPermission(this.getPermission())) {
-			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
         if(args.length == 0) {
@@ -64,6 +77,9 @@ public class PRXCommand extends BukkitCommand {
             sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3)"));
             sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         } else if (args.length == 1) {
+        	if(args[0].equalsIgnoreCase("getprestiges")) {
+        		sender.sendMessage(String.valueOf(main.prxAPI.getPlayerPrestiges((Player)sender)));
+        	}
         	if(args[0].equalsIgnoreCase("dev")) {
         		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
         			try {
@@ -128,6 +144,15 @@ public class PRXCommand extends BukkitCommand {
         		});
         	} else if (args[0].equalsIgnoreCase("cleartask")) {
         		main.prxAPI.taskedPlayers.clear();
+        		sender.sendMessage(main.prxAPI.c("&c&k~&r &4&l&o&nTask limit cleared&r &c&k~"));
+        	} else if (args[0].equalsIgnoreCase("errors")) {
+        		if(main.errorInspector.getErrors().isEmpty()) {
+        			sender.sendMessage(main.prxAPI.c("&" + getRandomColor() + "&l&oNo errors were found."));
+        			return true;
+        		}
+        		main.errorInspector.getErrors().forEach(error -> {
+        			sender.sendMessage(main.prxAPI.c(error));
+        		});
         	} else if (args[0].equalsIgnoreCase("save")) {
         		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
         		sender.sendMessage(main.prxAPI.c("&eSaving data..."));

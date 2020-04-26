@@ -79,9 +79,12 @@ public class RebirthLegacy {
 			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
-		if(prxAPI.hasNextPrestige(u)) {
+		int requiredPrestiges = prxAPI.getRequiredPrestiges(rebirth);
+		if(requiredPrestiges > prxAPI.getPlayerPrestiges(u)) {
 			// ouh
-			p.sendMessage(prxAPI.c("&cFailed to rebirth."));
+			int left = requiredPrestiges - prxAPI.getPlayerPrestiges(u);
+			p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
+					.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
 			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
@@ -99,7 +102,7 @@ public class RebirthLegacy {
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
-				main.perm.addPermission(player, permission
+				main.perm.addPermission(p.getName(), permission
 						.replace("%player%", p.getName())
 						.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
 						.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(u)));
@@ -110,7 +113,7 @@ public class RebirthLegacy {
 		if(delPermissionList != null) {
 			if(!delPermissionList.isEmpty()) {
 				for(String permission : delPermissionList) {
-					main.perm.delPermission(p, permission
+					main.perm.delPermission(p.getName(), permission
 							.replace("%player%", p.getName())
 							.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
 							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(u)));
@@ -151,7 +154,7 @@ public class RebirthLegacy {
 		if(broadcastMessages != null) {
 			if(!broadcastMessages.isEmpty()) {
 				for(String messageLine : broadcastMessages) {
-					p.sendMessage(prxAPI.cp(messageLine
+					Bukkit.broadcastMessage(prxAPI.cp(messageLine
 							.replace("%player%", p.getName())
 							.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
 							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(u)), p));
@@ -215,15 +218,15 @@ public class RebirthLegacy {
            rebirthCommands.forEach(cmd -> {
         	   if(cmd.startsWith("[rankpermissions]")) {
         		   prxAPI.allRankAddPermissions.forEach(permission -> {
-        		   main.perm.delPermission(p, permission);
+        		   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else if (cmd.startsWith("[prestigepermissions]")) {
         		   prxAPI.allPrestigeAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p, permission);
+        			   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else if (cmd.startsWith("[rebirthpermissions]")) {
         		   prxAPI.allRebirthAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p, permission);
+        			   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else {
         		   main.executeCommand(p, cmd);

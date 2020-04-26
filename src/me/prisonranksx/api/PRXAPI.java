@@ -248,6 +248,14 @@ public class PRXAPI {
 	public String getDefaultPath() {
 		return main.globalStorage.getStringData("defaultpath");
 	}
+	
+	public String getDefaultRank() {
+		return main.globalStorage.getStringData("defaultrank");
+	}
+	
+	public String getLastRank() {
+		return main.globalStorage.getStringData("lastrank");
+	}
 	   /**
 	    * PrisonRanksX API
 	    * 
@@ -1133,13 +1141,13 @@ public class PRXAPI {
 	    * 
 	    *  @param offlinePlayer
 	    *  @return String player rank number in ranks list
-	    *  @deprecated use getRankNumber(String pathName, String rankName); instead
 	    */
-	@Deprecated
-	public String getPlayerRankNumber(OfflinePlayer offlinePlayer) {
-		ArrayList<String> xo = new ArrayList<String>(rankDataConfig.getConfigurationSection("Ranks").getKeys(false));
-		String ranknumber = String.valueOf(xo.indexOf(getPlayerRank(offlinePlayer)) + 1);
-		return ranknumber;
+	public int getPlayerRankNumber(OfflinePlayer offlinePlayer) {
+		return Integer.valueOf(getRankNumber(getPlayerRankPath(offlinePlayer).getPathName(),getPlayerRank(offlinePlayer)));
+	}
+	
+	public int getPlayerRankNumber(UUID uuid) {
+		return Integer.valueOf(getRankNumber(getPlayerRankPath(uuid).getPathName(),getPlayerRank(uuid)));
 	}
 	
 	   /**
@@ -2062,9 +2070,9 @@ public class PRXAPI {
 			return prestigeCost;
 		}
 		Double afterinc = main.prxAPI.numberAPI.calculate(rebirthIncreaseExpression
-				.replace("{cost_increase}", String.valueOf(getRankupCostIncreasePercentage(rebirthName)))
+				.replace("{cost_increase}", String.valueOf(getPrestigeCostIncreasePercentage(rebirthName)))
 				.replace("{rebirthnumber}", String.valueOf(getPrestigeNumber(rebirthName)))
-				.replace("{rankcost}", String.valueOf(main.prxAPI.numberAPI.deleteScientificNotationA(prestigeCost)))
+				.replace("{prestigecost}", String.valueOf(main.prxAPI.numberAPI.deleteScientificNotationA(prestigeCost)))
 				.replace("{ranknumber}", String.valueOf(1))
 				);
 		if(afterinc.isNaN()) {
@@ -2141,6 +2149,55 @@ public class PRXAPI {
 	    String prestigeName = getPlayerNextPrestige(uuid);
 	    Double nextPrestigeCost = getIncreasedPrestigeCost(getPlayerRebirth(uuid), getPrestigeCost(prestigeName));
 	    return Double.valueOf(nextPrestigeCost);
+	}
+	
+	/**
+	 * 
+	 * @param offlinePlayer
+	 * @return player prestiges amount with rebirth number in count.
+	 * example: player. prestige=10 rebirth=2 will return 30
+	 */
+	public int getPlayerPrestiges(OfflinePlayer offlinePlayer) {
+		int rebirthNumber = getPlayerRebirthNumber(offlinePlayer) == 0 ? 0 : getPlayerRebirthNumber(offlinePlayer) * getPrestigesCollection().size();
+		if(!hasPrestiged(offlinePlayer)) {
+			return 0;
+		}
+		if(!hasRebirthed(offlinePlayer)) {
+			if(!hasPrestiged(offlinePlayer)) {
+				return 0;
+			}
+			return getPlayerPrestigeNumber(offlinePlayer) + rebirthNumber - 1;
+		}
+		return getPlayerPrestigeNumber(offlinePlayer) + rebirthNumber;
+	}
+	
+	/**
+	 * 
+	 * @param uuid
+	 * @return player prestiges amount with rebirth number in count.
+	 * example: player. prestige=10 rebirth=2 will return 30
+	 */
+	public int getPlayerPrestiges(UUID uuid) {
+		int rebirthNumber = getPlayerRebirthNumber(uuid) == 0 ? 0 : getPlayerRebirthNumber(uuid) * getPrestigesCollection().size();
+		if(!hasPrestiged(uuid)) {
+			return 0;
+		}
+		if(!hasRebirthed(uuid)) {
+			if(!hasPrestiged(uuid)) {
+				return 0;
+			}
+			return getPlayerPrestigeNumber(uuid) + rebirthNumber - 1;
+		}
+		return getPlayerPrestigeNumber(uuid) + rebirthNumber;
+	}
+	
+	/**
+	 * 
+	 * @param rebirthName
+	 * @return rebirth's required prestiges amount for a success rebirth.
+	 */
+	public int getRequiredPrestiges(String rebirthName) {
+		return main.rebirthStorage.getRequiredPrestiges(rebirthName);
 	}
 	
 	   /**

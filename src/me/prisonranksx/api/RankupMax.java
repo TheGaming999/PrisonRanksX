@@ -18,18 +18,31 @@ import me.prisonranksx.events.XRankupMaxEvent;
 public class RankupMax {
 
 	
-	public Map<OfflinePlayer, String> rankupMaxMap = new HashMap<>();
-	public Map<OfflinePlayer, List<String>> rankupMaxCommandsMap = new HashMap<>();
-	public Map<OfflinePlayer, String> rankupMaxRecentRankupMap = new HashMap<>();
-    public List<OfflinePlayer> rankupMaxProcess = new ArrayList<>();
-    public Map<OfflinePlayer, Integer> rankupMaxStreak = new HashMap<>();
-    public Map<OfflinePlayer, String> rankupFromMap = new HashMap<>();
-    public Map<OfflinePlayer, List<String>> rankupMaxPassedRanks = new HashMap<>();
-	public Map<OfflinePlayer, Integer> len = new HashMap<>();
+	public final Map<OfflinePlayer, String> rankupMaxMap;
+	public final Map<OfflinePlayer, List<String>> rankupMaxCommandsMap;
+	public final Map<OfflinePlayer, String> rankupMaxRecentRankupMap;
+    public final List<OfflinePlayer> rankupMaxProcess;
+    public final Map<OfflinePlayer, Integer> rankupMaxStreak;
+    public final Map<OfflinePlayer, String> rankupFromMap;
+    public final Map<OfflinePlayer, List<String>> rankupMaxPassedRanks;
+    public final Map<OfflinePlayer, Double> rankupMaxCost;
+    public final String rankupMaxMsg;
+    public boolean isRankupMaxMsg;
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	private PRXAPI prxAPI;
+	
 	public RankupMax() {
 		this.prxAPI = main.prxAPI;
+		this.rankupMaxMap = new HashMap<>();
+		this.rankupMaxCommandsMap = new HashMap<>();
+		this.rankupMaxRecentRankupMap = new HashMap<>();
+		this.rankupMaxProcess = new ArrayList<>();
+		this.rankupMaxStreak = new HashMap<>();
+		this.rankupFromMap = new HashMap<>();
+		this.rankupMaxPassedRanks = new HashMap<>();
+		this.rankupMaxCost = new HashMap<>();
+		this.rankupMaxMsg = main.messagesStorage.getStringMessage("rankupmax");
+		this.isRankupMaxMsg = main.globalStorage.getBooleanData("Options.send-rankupmaxmsg");
 	}
 	
 	@SuppressWarnings("unused")
@@ -40,7 +53,8 @@ public class RankupMax {
         	p.sendMessage(prxAPI.g("rankupmax-is-on"));
         	return;
         }
-        rankupMaxMap.remove(p);
+        double allCost = 0;
+        rankupMaxCost.put(p, allCost);
         rankupMaxStreak.put(p, 0);
         rankupMaxProcess.add(p);
         //clear old data
@@ -51,7 +65,6 @@ public class RankupMax {
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(p);
         Double playerBalance = main.econ.getBalance(p);
-        main.debug("Before loop: " + nextRank);
         // other values
         List<String> ranksConfigList = prxAPI.getRanksCollection(rp1.getPathName());
         List<String> lastRankMessage = main.messagesStorage.getStringListMessage("lastrank");
@@ -101,7 +114,7 @@ public class RankupMax {
         //~~~~~~
         //==============
         //@@@@@@@@@@@@@@@@@@@@
- 	  main.getServer().getScheduler().runTaskAsynchronously(main, () -> {
+ 	  Bukkit.getServer().getScheduler().runTaskAsynchronously(main, () -> {
         for(String rankSection : ranksConfigList) {
         	//loopValues
         	String loopCurrentRank = null;
@@ -118,16 +131,14 @@ public class RankupMax {
         	List<String> loopNextRankActions = new ArrayList<>();
         	Double loopPlayerBalance = main.econ.getBalance(p);
         	//temporarily save player data in a map
-        	   RankPath rp = new RankPath(rankupMaxMap.get(p), "default");
+        	   RankPath rp = new RankPath(rankupMaxMap.get(p), main.prxAPI.getDefaultPath());
         	   loopCurrentRank = rankupMaxMap.get(p);
         	   //RankPath rp = main.playerStorage.getPlayerRankPath(p);
         	   loopCurrentRankDisplay = main.rankStorage.getDisplayName(rp);
         	   loopNextRank = main.rankStorage.getRankupName(rp);
-        	   main.debug("After loop: " + loopNextRank);
         	   //if there is no rank next then stop the loop
         	   if(loopNextRank.equalsIgnoreCase("lastrank")) {
         		   main.sendListMessage(p, lastRankMessage);
-        		   main.debug("After loop: lastrankmessage");
         		   rankupMaxProcess.remove(p);
         		   break;
         	   }
@@ -137,6 +148,7 @@ public class RankupMax {
                if(prxAPI.hasPrestiged(p)) {
               	loopNextRankCost = prxAPI.getIncreasedRankupCost(main.playerStorage.getPlayerPrestige(p), rp);
                 }
+               rankupMaxCost.put(p, rankupMaxCost.get(p) + loopNextRankCost);
                //update values
                loopNextRankCostInString = String.valueOf(loopNextRankCost);
                loopNextRankCostFormatted = prxAPI.formatBalance(loopNextRankCost);
@@ -162,11 +174,10 @@ public class RankupMax {
             	   p.sendMessage(loopRankupMsg);
                }
                loopNextRankCommands = main.rankStorage.getRankupCommands(rp);
-               
                if(loopNextRankCommands != null && !loopNextRankCommands.isEmpty()) {
-               for(String cmd : loopNextRankCommands) {
-            	   allRanksCommands.add(cmd.replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank).replace("%player%", p.getName()).replace("%rankup_cost%", loopNextRankCostInString).replace("%rankup_cost_formatted%", loopNextRankCostFormatted));
-               }
+            	   Bukkit.getScheduler().runTask(main, () -> {
+            	   main.executeCachedCommands(p, rp);
+            	   });
                }
                
    	        if(main.rankStorage.getAddPermissionList(rp) != null && !main.rankStorage.getAddPermissionList(rp).isEmpty()) {
@@ -208,7 +219,9 @@ public class RankupMax {
    			List<String> replacedCommands = new ArrayList<>();
    			for(String cmd : commands) {
    				String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(p)), p);
-   				allRanksCommands.add(pCMD);
+   				Bukkit.getScheduler().runTask(main, () -> {
+   				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), pCMD);
+   				});
    			}
    			}
    			}
@@ -217,13 +230,11 @@ public class RankupMax {
                rankupMaxStreak.put(p, main.plus(rankupMaxStreak.get(p)));
                rankups.add(loopNextRank);
                rankupMaxMap.put(p, loopNextRank);
-               //prxAPI.setPlayerRank(p, loopNextRank);
+               prxAPI.setPlayerRank(p, loopNextRank);
         }
-        main.executeCommandsSafely(p, allRanksCommands);
-        allRanksCommands.clear();
         //end of loop
         //save player data
-        RankPath rp = new RankPath(rankupMaxMap.get(p), "default");
+        RankPath rp = new RankPath(rankupMaxMap.get(p), main.prxAPI.getDefaultPath());
     	List<String> endNextRankActionbarMessage = new ArrayList<>();
     	Integer endNextRankActionbarInterval = null;
     	List<String> endNextRankBroadcast = new ArrayList<>();
@@ -248,17 +259,29 @@ public class RankupMax {
         
         endNextRankActionbarMessage = main.rankStorage.getActionbarMessages(rp);
         endNextRankActionbarInterval = main.rankStorage.getActionbarInterval(rp);
+        main.debug(rankupMaxMsg);
+        main.debug(rankupFromMap.get(p));
+        main.debug(rankupMaxMap.get(p));
+        main.debug(String.valueOf(rankupMaxCost.get(p)));
+        if(isRankupMaxMsg) {
+        	p.sendMessage(main.getString(rankupMaxMsg, p.getName()).replace("%rank%", rankupFromMap.get(p))
+        			.replace("%rank_display%", prxAPI.getRankDisplay(new RankPath(rankupFromMap.get(p), rp.getPathName())))
+        			.replace("%rankup%", rankupMaxMap.get(p))
+        			.replace("%rankup_display%", prxAPI.getRankDisplay(new RankPath(rankupMaxMap.get(p), rp.getPathName())))
+        			.replace("%cost%", String.valueOf(rankupMaxCost.get(p)))
+        			);
+        }
 		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
         rankupMaxPassedRanks.put(p, rankups);
 		XRankupMaxEvent x = new XRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
-		Bukkit.getScheduler().runTask(main, () -> {
+		Bukkit.getScheduler().runTaskLater(main, () -> {
 		main.getServer().getPluginManager().callEvent(x);
         rankupMaxMap.remove(p);
         rankupMaxProcess.remove(p);
         rankupMaxPassedRanks.remove(p);
         rankupFromMap.remove(p);
-		});
+		}, 1);
  	  });
 	}
 	

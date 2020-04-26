@@ -14,6 +14,7 @@ import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataHandler;
 import me.prisonranksx.data.XUser;
+import me.prisonranksx.error.ErrorInspector;
 import me.prisonranksx.gui.GuiListManager;
 import me.prisonranksx.hooks.MVdWPapiHook;
 import me.prisonranksx.hooks.PapiHook;
@@ -495,6 +496,7 @@ public class PRXManager {
 	public void reload() {
 	  main.configManager.reloadMainConfig();
       main.configManager.reloadConfigs();
+      main.configManager.loadConfigs();
       main.globalStorage.loadGlobalData();
       main.rankStorage.loadRanksData();
       main.prestigeStorage.loadPrestigesData();
@@ -529,6 +531,10 @@ public class PRXManager {
       main.crri.setup();
       main.guiManager = new GuiListManager(main);
       main.guiManager.setupConstantItems();
+      if(!main.isBefore1_7) {
+      main.errorInspector = new ErrorInspector(main);
+      main.errorInspector.inspect();
+      }
 	}
 	
 	public void save() {
@@ -573,14 +579,20 @@ public class PRXManager {
 		pdh.setRandomCommandsManager(null);
         main.prestigeStorage.putData(name, pdh);
         main.prestigeStorage.savePrestigeData(name);
+		if(getPreviousPrestige(name) != null) {
+			String prev = getPreviousPrestige(name);
+			main.prestigeStorage.getDataHandler(prev).setNextPrestigeName(name);
+			main.prestigeStorage.savePrestigeData(prev);
+		}
 		main.globalStorage.getStringMap().put("lastprestige", name);
 		main.getConfig().set("lastprestige", name);
 		main.configManager.saveMainConfig();
 	}
 	
 	public void createPrestige(String name, double cost, String displayName) {
-	    PrestigeDataHandler pdh = new PrestigeDataHandler(name);
-		pdh.setName(name);
+		String namec = name;
+	    PrestigeDataHandler pdh = new PrestigeDataHandler(namec);
+		pdh.setName(namec);
 		pdh.setCost(cost);
 		pdh.setNextPrestigeName("LASTPRESTIGE");
 		pdh.setDisplayName(displayName);
@@ -598,10 +610,15 @@ public class PRXManager {
 		pdh.setSendFirework(false);
 		pdh.setFireworkManager(null);
 		pdh.setRandomCommandsManager(null);
-        main.prestigeStorage.putData(name, pdh);
-        main.prestigeStorage.savePrestigeData(name);
-		main.globalStorage.getStringMap().put("lastprestige", name);
-		main.getConfig().set("lastprestige", name);
+        main.prestigeStorage.putData(namec, pdh);
+        main.prestigeStorage.savePrestigeData(namec);
+		if(getPreviousPrestige(namec) != null) {
+			String prev = getPreviousPrestige(namec);
+			main.prestigeStorage.getDataHandler(prev).setNextPrestigeName(namec);
+			main.prestigeStorage.savePrestigeData(prev);
+		}
+		main.globalStorage.getStringMap().put("lastprestige", namec);
+		main.getConfig().set("lastprestige", namec);
 		main.configManager.saveMainConfig();
 	}
 	
@@ -657,6 +674,11 @@ public class PRXManager {
 		rdh.setRandomCommandsManager(null);
         main.rebirthStorage.putData(name, rdh);
         main.rebirthStorage.saveRebirthData(name);
+        if(getPreviousRebirth(name) != null) {
+        	String prev = getPreviousRebirth(name);
+        	main.rebirthStorage.getDataHandler(prev).setNextRebirthName(name);
+        	main.rebirthStorage.saveRebirthData(prev);
+        }
 		main.globalStorage.getStringMap().put("lastrebirth", name);
 		main.getConfig().set("lastrebirth", name);
 		main.configManager.saveMainConfig();
@@ -683,6 +705,11 @@ public class PRXManager {
 		rdh.setRandomCommandsManager(null);
         main.rebirthStorage.putData(name, rdh);
         main.rebirthStorage.saveRebirthData(name);
+        if(getPreviousRebirth(name) != null) {
+        	String prev = getPreviousRebirth(name);
+        	main.rebirthStorage.getDataHandler(prev).setNextRebirthName(name);
+        	main.rebirthStorage.saveRebirthData(prev);
+        }
 		main.globalStorage.getStringMap().put("lastrebirth", name);
 		main.getConfig().set("lastrebirth", name);
 		main.configManager.saveMainConfig();
@@ -815,5 +842,31 @@ public class PRXManager {
 			}
 		}
 		return matchedPath;
+	}
+	
+	/**
+	 * 
+	 * @param rank1
+	 * @param rank2
+	 * @return rankup commands between two ranks
+	 * @example rank1: B rank2: F
+	 * @itwillreturn the rankup commands of B, C, D, E, and F
+	 */
+	public List<String> getRankupCommandsBetween(String rank1, String rank2) {
+	 List<String> cleanList = main.prxAPI.getRanksCollection();
+	 List<String> editedList = new ArrayList<>(cleanList);
+	 List<String> rankupCommands = new ArrayList<>();
+	 for(int i = cleanList.indexOf(rank1) - 1 ; i > -1 ; i--) {
+		 editedList.remove(i);
+	 }
+	 for(int i2 = cleanList.indexOf(rank2) + 1; i2 < cleanList.size() - 1; i2++) {
+		 editedList.remove(i2);
+	 }
+	 for(String rank : editedList) {
+		 main.rankStorage.getRankupCommands(new RankPath(rank, defaultPath)).forEach(command -> {
+			 rankupCommands.add(command.replace("%rankup%", rank));
+		 });
+	 }
+	 return rankupCommands;
 	}
 }

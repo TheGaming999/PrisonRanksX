@@ -1,3 +1,4 @@
+
 package me.prisonranksx.utils;
 
 import org.bukkit.Bukkit;
@@ -8,11 +9,10 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.plugin.Plugin;
 import org.yaml.snakeyaml.Yaml;
 
-import com.google.common.io.Files;
-
 import me.prisonranksx.PrisonRanksX;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,10 +27,9 @@ import java.util.stream.Collectors;
 public class ConfigUpdater {
 
 	private static PrisonRanksX prx = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
-	
     /**
      * Update a yaml file from a resource inside your plugin jar
-     * @param plugin You plugin
+     * @param plugin Your plugin
      * @param resourceName The yaml file name to update from, typically config.yml
      * @param toUpdate The yaml file to update
      * @param ignoredSections List of sections to ignore and copy from the current config
@@ -40,12 +39,13 @@ public class ConfigUpdater {
     	if(prx.isBefore1_7) {
     		prx.getLogger().info("(Ignore if not important to you) Config comment updater doesn't support (" + prx.getServer().getVersion() +")");
     	} else {
-        BufferedReader newReader = new BufferedReader(new InputStreamReader(plugin.getResource(resourceName)));
+        BufferedReader newReader = new BufferedReader(new InputStreamReader(plugin.getResource(resourceName), StandardCharsets.UTF_8));
         List<String> newLines = newReader.lines().collect(Collectors.toList());
         newReader.close();
+
         FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(toUpdate);
         FileConfiguration newConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(plugin.getResource(resourceName)));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(toUpdate));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(toUpdate), StandardCharsets.UTF_8));
 
         List<String> ignoredSectionsArrayList = new ArrayList<>(ignoredSections);
         //ignoredSections can ONLY contain configurations sections

@@ -404,6 +404,13 @@ public class NumberAPI {
 		}
 		return number;
 	}
+	
+	public int limitInverse(int number, int limit) {
+		if(number < limit) {
+			return limit;
+		}
+		return number;
+	}
     /**
      * 
      * @param number the number you want to limit

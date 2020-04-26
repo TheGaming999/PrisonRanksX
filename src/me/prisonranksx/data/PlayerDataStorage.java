@@ -14,6 +14,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.MySqlUtils;
 import me.prisonranksx.utils.XUUID;
 
 public class PlayerDataStorage {
@@ -135,7 +136,6 @@ public class PlayerDataStorage {
 	public void loadPlayerData(UUID uuid) {
 		XUser xu = XUser.getXUser(uuid.toString());
 		if(main.isMySql()) {
-			main.debug(uuid.toString());
 			ResultSet result = null;
 			try {
 				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.database + "." + main.table + " WHERE uuid = '" + xu.getUUID().toString() + "';");
@@ -150,8 +150,8 @@ public class PlayerDataStorage {
 			try {
 				while (result.next()) {
 				    rank = result.getString("rank") == null ? defaultRank : result.getString("rank");
-				    prestige = result.getString("prestige");
-				    rebirth = result.getString("rebirth");
+				    prestige = result.getString("prestige").equals("none") ? null : result.getString("prestige");
+				    rebirth = result.getString("rebirth").equals("none") ? null : result.getString("rebirth");
 				    path = result.getString("path") == null ? defaultPath : result.getString("path");
 					PlayerDataHandler pdh = new PlayerDataHandler(xu);
 					RankPath rankPath = new RankPath(rank, path);
@@ -356,15 +356,19 @@ public class PlayerDataStorage {
 					PlayerDataHandler value = player.getValue();
 			    		try {
 			    			String u = player.getKey();
-			    			String rankName = value.getRankPath().getRankName() == null ? "A" : value.getRankPath().getRankName();
-			    			String pathName = value.getRankPath().getPathName() == null ? "default" : value.getRankPath().getPathName();
-			    			String prestigeName = value.getPrestige() == null ? null : value.getPrestige();
-			    			String rebirthName = value.getRebirth() == null ? null : value.getRebirth();
-			    			String name = main.isBefore1_7 ? "unknown" : Bukkit.getOfflinePlayer(UUID.fromString(u)).getName();
+			    			String rankName = value.getRankPath().getRankName() == null ? defaultRank : value.getRankPath().getRankName();
+			    			String pathName = value.getRankPath().getPathName() == null ? defaultPath : value.getRankPath().getPathName();
+			    			String prestigeName = value.getPrestige() == null ? "none" : value.getPrestige();
+			    			String rebirthName = value.getRebirth() == null ? "none" : value.getRebirth();
+			    			MySqlUtils util = new MySqlUtils(main.getMySqlStatement(), main.database + "." + main.table);
+			    			String name = main.isBefore1_7 ? XUUID.getLegacyName(UUID.fromString(u)) : Bukkit.getOfflinePlayer(UUID.fromString(u)).getName();
 			    			ResultSet result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.database + "." + main.table + " WHERE uuid = '" + u + "'");
 			    			if(result.next()) {
-			    				main.getMySqlStatement().executeUpdate("DELETE FROM " + main.database + "." + main.table + " WHERE uuid = '" + u + "';");
-			    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.database + "." + main.table + " (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+			    				util.set(u, "rank", rankName);
+			    				util.set(u, "path", pathName);
+			    				util.set(u, "prestige", prestigeName);
+			    				util.set(u, "rebirth", rebirthName);
+			    				util.set(u, "name", name);      
 			    			} else {
 			    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.database + "." + main.table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 			    			}
@@ -388,11 +392,48 @@ public class PlayerDataStorage {
 			}
 	}
 	
-	public void savePlayerData(OfflinePlayer player) {
-		main.configManager.rankDataConfig.set("players." + player.getUniqueId().toString() + ".rank", getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getRank());
-		main.configManager.rankDataConfig.set("players." + player.getUniqueId().toString() + ".path", getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getPath());
-		main.configManager.prestigeDataConfig.set("players." + player.getUniqueId().toString(), getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getPrestige());
-		main.configManager.rebirthDataConfig.set("players." + player.getUniqueId().toString(), getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRebirth());
+	public void savePlayerData(Player player) {
+		if(main.isMySql()) {
+				if(player != null) {
+					PlayerDataHandler value = getPlayerData().get(XUUID.getXUUID(player).toString());
+			    		try {
+			    			String u = value.getUUID().toString();
+			    			String rankName = value.getRankPath().getRankName() == null ? defaultRank : value.getRankPath().getRankName();
+			    			String pathName = value.getRankPath().getPathName() == null ? defaultPath : value.getRankPath().getPathName();
+			    			String prestigeName = value.getPrestige() == null ? "none" : value.getPrestige();
+			    			String rebirthName = value.getRebirth() == null ? "none" : value.getRebirth();
+			    			MySqlUtils util = new MySqlUtils(main.getMySqlStatement(), main.database + "." + main.table);
+			    			String name = main.isBefore1_7 ? XUUID.getLegacyName(UUID.fromString(u)) : Bukkit.getOfflinePlayer(UUID.fromString(u)).getName();
+			    			ResultSet result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.database + "." + main.table + " WHERE uuid = '" + u + "'");
+			    			if(result.next()) {
+			    				util.set(u, "rank", rankName);
+			    				util.set(u, "path", pathName);
+			    				util.set(u, "prestige", prestigeName);
+			    				util.set(u, "rebirth", rebirthName);
+			    				util.set(u, "name", name);
+			    			} else {
+			    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.database + "." + main.table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+			    			}
+			    		} catch (SQLException e1) {
+			    			// TODO Auto-generated catch block
+			    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+			    			e1.printStackTrace();
+			    			main.getLogger().info("ERROR Updating Player SQL Data");
+			    		}
+				}
+			
+			return;
+		}
+			
+				if(player != null) {
+					PlayerDataHandler pdh = getPlayerData().get(XUUID.getXUUID(player).toString());
+					String u = pdh.getUUID().toString();
+		main.configManager.rankDataConfig.set("players." + u + ".rank", pdh.getRankPath().getRank());
+		main.configManager.rankDataConfig.set("players." + u + ".path", pdh.getRankPath().getPath());
+		main.configManager.prestigeDataConfig.set("players." + u, pdh.getPrestige());
+		main.configManager.rebirthDataConfig.set("players." + u, pdh.getRebirth());
+				}
+			
 	}
 	
 }

@@ -272,11 +272,11 @@ public class ConfigManager {
 		}
 			messagesConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/messages.yml"));
 			commandsConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/commands.yml"));
-			rankDataConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/rankdata.yml"));
+			//rankDataConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/rankdata.yml"));
 			ranksConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/ranks.yml"));
-			prestigeDataConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/prestigedata.yml"));
+			//prestigeDataConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/prestigedata.yml"));
 			prestigesConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/prestiges.yml"));
-			rebirthDataConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/rebirthdata.yml"));
+			//rebirthDataConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/rebirthdata.yml"));
 			rebirthsConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/rebirths.yml"));
     }
 	

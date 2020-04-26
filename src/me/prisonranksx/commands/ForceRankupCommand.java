@@ -25,7 +25,7 @@ public class ForceRankupCommand extends BukkitCommand {
 			return true;
 		}
 		if(!sender.hasPermission(this.getPermission())) {
-			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
 		if(main.isBefore1_7) {

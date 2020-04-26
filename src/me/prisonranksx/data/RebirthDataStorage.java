@@ -52,7 +52,8 @@ public class RebirthDataStorage {
 				List<String> actions = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actions");
 				List<String> addPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".addpermission");
 				List<String> delPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".delpermission");
-
+                int requiredPrestiges = 0;
+                requiredPrestiges = loadInt("Rebirths." + rebirthName + ".required_prestiges");
 				RebirthRandomCommands randomCommandsManager = new RebirthRandomCommands(rebirthName, false, true);
 				FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
 				boolean sendFirework = main.configManager.rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
@@ -76,6 +77,7 @@ public class RebirthDataStorage {
                 rbdh.setRandomCommandsManager(randomCommandsManager);
                 rbdh.setFireworkManager(fireworkManager);
                 rbdh.setSendFirework(sendFirework);
+                rbdh.setRequiredPrestiges(requiredPrestiges);
                 getRebirthData().put(rebirthName, rbdh);
 			}
 	}
@@ -85,6 +87,13 @@ public class RebirthDataStorage {
 			return 0.0;
 		}
 		return main.configManager.rebirthsConfig.getDouble(node, 0.0);
+	}
+	
+	public Integer loadInt(String node) {
+		if(main.configManager.rebirthsConfig.get(node) == null) {
+			return 0;
+		}
+		return main.configManager.rebirthsConfig.getInt(node, 0);
 	}
 	
 	public void loadRebirthData(String rebirthName) {
@@ -220,6 +229,10 @@ public class RebirthDataStorage {
 		return rebirthData.get(rebirthName).getPrestigeCostIncreasePercentage();
 	}
 	
+	public int getRequiredPrestiges(String rebirthName) {
+		return rebirthData.get(rebirthName).getRequiredPrestiges();
+	}
+	
 	public void setData(String node, Object value) {
 		if(value == null || node.contains("LASTREBIRTH")) {
 			return;
@@ -305,6 +318,7 @@ public class RebirthDataStorage {
                  setData("Rebirths." + rebirth.getKey() + ".addpermission", rebirth.getValue().getAddPermissionList());
                  setData("Rebirths." + rebirth.getKey() + ".delpermission", rebirth.getValue().getDelPermissionList());
                  setData("Rebirths." + rebirth.getKey() + ".prestige_cost_increase_percentage", rebirth.getValue().getPrestigeCostIncreasePercentage());
+                 setData("Rebirths." + rebirth.getKey() + ".required_prestiges", rebirth.getValue().getRequiredPrestiges());
                  if(rebirth.getValue().getRandomCommandsManager() != null) {
                 // setData("Rebirths." + rebirth.getKey() + ".randomcmds", rebirth.getValue().getRandomCommandsManager().getRandomCommandsMap());
                  }

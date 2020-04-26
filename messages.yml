@@ -71,7 +71,7 @@ Messages:
   setprestigedisplay: "&cChanged &e%prestige% &cdisplay to &e%changeddisplay%&c."
   setprestigecost: "&cChanged Prestige &e%prestige% &ccost to %prestigecost%&c."
   # placeholders: %nextprestige% %nextprestige_display%
-  prestige: "&aYou have prestiged to \n&r%nextprestige_display%"
+  prestige: "&aYou have prestiged to &r%nextprestige_display%"
   forceprestige: "&aYou forced a prestige promotion to &f%target%"
   noprestige: "&aYou can't prestige at this rank."
   # placeholders: %player%
@@ -96,7 +96,7 @@ Messages:
   - "&aYou are at the latest rank"
   - "&7&m                                       &7&m"
   # placeholders: %player% %rankup% %rankup_display%
-  forcerankup-msg: "&a%player% &cranked up to &e%rankup%"
+  forcerankup-msg: "&aYou forced a rankup for &e%player% &aand he ranked up to &e%rankup%&a."
   # placeholders: %player%
   forcerankup-lastrank: "&a%player% &6is already at the latest rank."
   # placeholders: %player%
@@ -105,11 +105,15 @@ Messages:
   rankup-nopermission: "&cYou don't have permission to rankup to %rankup%"
   # placeholders: %target% %rankup% %rankup_display%
   rankup-other-nopermission: "&cYou don't have permission to force a rankup for %target% to %rankup%"
+  # ignore
   ranksgui-open: "&aOpening ranks gui..."
+  # ignore
   prestigesgui-open: "&cOpening prestige list gui..."
   autorankup-enabled: "&eAuto Rankup &aEnabled"
   autorankup-disabled: "&eAuto Rankup &cDisabled"
+  # ignore
   autorankup-nopermission: "&cYou don't have permission to use auto rankup"
+  # ignore
   autorankup-lastrank: "&eAuto Rankup &7automatically &cdisabled &7because you are at the latest rank"
   autoprestige-enabled: "&3Auto Prestige &aEnabled"
   autoprestige-disabled: "&3Auto Prestige &cDisabled"
@@ -143,3 +147,34 @@ Messages:
   prestigelist-console: "&3You can't view the prestiges format list in console. sending a plain list instead..."
   rebirthlist-console: "&4You can't view the rebirths format list in console. sending a plain list instead..."
   forcerankup-noargs: "&cUsage: /forcerankup <player>"
+  top-prestiges:
+  - "[header]&7- &e&oTop &6&oPrestiges &7-"
+  - "&81: &e%name1% &8- &3%value1%"
+  - "&82: &e%name2% &8- &3%value2%"
+  - "&83: &e%name3% &8- &3%value3%"
+  - "&84: &e%name4% &8- &3%value4%"
+  - "&85: &e%name5% &8- &3%value5%"
+  - "&86: &e%name6% &8- &3%value6%"
+  - "&87: &e%name7% &8- &3%value7%"
+  - "&88: &e%name8% &8- &3%value8%"
+  - "&89: &e%name9% &8- &3%value9%"
+  - "&810: &e%name10% &8- &3%value10%"
+  - "[footer]&6Page: &e&o<%currentpage%/%totalpages%>"
+  top-prestiges-last-page-reached: "&e&oThere are only &6&o%page% &e&opage(s)."
+  top-rebirths:
+  - "[header]&7- &c&oTop &4&oRebirths &7-"
+  - "&81: &c%name1% &8- &3%value1%"
+  - "&82: &c%name2% &8- &3%value2%"
+  - "&83: &c%name3% &8- &3%value3%"
+  - "&84: &c%name4% &8- &3%value4%"
+  - "&85: &c%name5% &8- &3%value5%"
+  - "&86: &c%name6% &8- &3%value6%"
+  - "&87: &c%name7% &8- &3%value7%"
+  - "&88: &c%name8% &8- &3%value8%"
+  - "&89: &c%name9% &8- &3%value9%"
+  - "&810: &c%name10% &8- &3%value10%"
+  - "[footer]&4Page: &c&o<%currentpage%/%totalpages%>"
+  top-rebirths-last-page-reached: "&c&oThere are only &4&o%page% &c&opage(s)."
+  rebirth-failed: "&cYou need &4&n%prestiges_amount_left%&c prestiges more to rebirth."
+  # placeholders: %rank% %rank_display% %rankup% %rankup_display% %cost%
+  rankupmax: "&a&oYou have successfully ranked up from &6&o%rank% &a&oto &6&o%rankup%&a&o."

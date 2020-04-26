@@ -1,6 +1,6 @@
 package me.prisonranksx.events;
 
-public enum PrestigeUpdateCause {PRESTIGEUP, SETPRESTIGE, DELPRESTIGE;
+public enum PrestigeUpdateCause {PRESTIGEUP, SETPRESTIGE, DELPRESTIGE, AUTOPRESTIGE;
 
 	private static PrestigeUpdateCause cause;
 	

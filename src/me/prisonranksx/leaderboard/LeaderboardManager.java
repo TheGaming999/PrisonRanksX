@@ -52,7 +52,19 @@ public class LeaderboardManager {
 	/**
 	 * 
 	 * @param position
-	 * @return an entry of player uuid and prestige number integer. 
+	 * @return an entry of player uuid and rank number integer. 
+	 *  @null  null if there is not a player in that position || no player joined to take this position.
+	 */
+	public Entry<UUID, Integer> getPlayerFromPositionRank(int position) {
+		list.clear();
+		list.addAll(getRankLeaderboard().entrySet());
+		return indexExists(list, position - 1) ? list.get(position - 1) : null;
+	}
+	
+	/**
+	 * 
+	 * @param position
+	 * @return player name
 	 *  @String  fallback if there is not a player in that position || no player joined to take this position.
 	 */
 	public String getPlayerNameFromPositionPrestige(int position, String fallback) {
@@ -62,11 +74,53 @@ public class LeaderboardManager {
        return Bukkit.getOfflinePlayer(getPlayerFromPositionPrestige(position).getKey()).getName();
 	}
 	
+	public String getPlayerValueFromPositionPrestige(int position, String fallback) {
+		if(getPlayerFromPositionPrestige(position) == null) {
+			return fallback;
+		}
+		return main.prxAPI.getPlayerPrestige(getPlayerFromPositionPrestige(position).getKey());
+	}
+	
+	public String getPlayerNameFromPositionRank(int position, String fallback) {
+		if(getPlayerFromPositionRank(position) == null) {
+			return fallback;
+		}
+		return Bukkit.getOfflinePlayer(getPlayerFromPositionRank(position).getKey()).getName();
+	}
+	
+	public String getPlayerValueFromPositionRank(int position, String fallback) {
+		if(getPlayerFromPositionRank(position) == null) {
+			return fallback;
+		}
+		return main.prxAPI.getPlayerRank(getPlayerFromPositionRank(position).getKey());
+	}
+	
+	/**
+	 * 
+	 * @param position
+	 * @param fallback
+	 * @return player's prestige
+	 * @String returns String fallback if there is no player took that position.
+	 */
 	public String getPlayerPrestigeFromPosition(int position, String fallback) {
 		if(getPlayerFromPositionPrestige(position) == null) {
 			return fallback;
 		}
 		return main.prxAPI.getPlayerPrestige(getPlayerFromPositionPrestige(position).getKey());
+	}
+	
+	/**
+	 * 
+	 * @param position
+	 * @param fallback
+	 * @return player's rank
+	 * @String returns String fallback if there is no player took that position.
+	 */
+	public String getPlayerRankFromPosition(int position, String fallback) {
+		if(getPlayerFromPositionRank(position) == null) {
+			return fallback;
+		}
+		return main.prxAPI.getPlayerRank(getPlayerFromPositionRank(position).getKey());
 	}
 	
 	public Entry<UUID, Integer> getPlayerFromPositionRebirth(int position) {
@@ -101,12 +155,35 @@ public class LeaderboardManager {
 		return players.indexOf(player.getUniqueId()) + 1;
 	}
 	
+	public int getPlayerRankPosition(OfflinePlayer player) {
+		players.clear();
+		players.addAll(getRankLeaderboard().keySet());
+		return players.indexOf(player.getUniqueId()) + 1;
+	}
+	
+	public int getPlayerRankValue(OfflinePlayer player) {
+		return getRankLeaderboard().get(player.getUniqueId());
+	}
+	
 	public int getPlayerPrestigeValue(OfflinePlayer player) {
 		return getPrestigeLeaderboard().get(player.getUniqueId());
 	}
 	
 	public int getPlayerRebirthValue(OfflinePlayer player) {
 		return getRebirthLeaderboard().get(player.getUniqueId());
+	}
+	
+	public Map<UUID, Integer> getRankLeaderboard() {
+	    values.clear();
+	    Set<String> playerUUIDs = main.playerStorage.getPlayerData().keySet();
+	    for (String player : playerUUIDs) {
+	    	UUID u = UUID.fromString(player);
+	        values.put(u, main.prxAPI.getPlayerRankNumber(u));
+	    }
+	    return values.entrySet()
+	            .stream()
+	            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+	            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (i, i2) -> i, LinkedHashMap::new));
 	}
 	
 	public Map<UUID, Integer> getPrestigeLeaderboard() {

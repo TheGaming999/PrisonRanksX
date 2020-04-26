@@ -22,7 +22,7 @@ public class RankupCommand extends BukkitCommand {
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
 		if(!sender.hasPermission(this.getPermission())) {
-			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
 		if(!main.isRankEnabled) {
@@ -30,7 +30,7 @@ public class RankupCommand extends BukkitCommand {
 		}
 		if(args.length == 0) {
 	      if(!(sender instanceof Player)) {
-	    	  String runFromConsole = main.messagesStorage.getStringMessage("Messages.runfromconsole");
+	    	  String runFromConsole = main.messagesStorage.getStringMessage("runfromconsole");
 	    	  sender.sendMessage(main.prxAPI.c(runFromConsole));
 	    	  return true;
 	      } 

@@ -168,7 +168,7 @@ public class RankupLegacy {
 			if(addPermissionList != null) {
 				if(!addPermissionList.isEmpty()) {
 					for(String permission : addPermissionList) {
-					main.perm.addPermission(p, permission
+					main.perm.addPermission(p.getName(), permission
 							.replace("%player%", p.getName())
 							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
@@ -179,7 +179,7 @@ public class RankupLegacy {
 			if(delPermissionList != null) {
 				if(!delPermissionList.isEmpty()) {
 					for(String permission : delPermissionList) {
-						main.perm.delPermission(p, permission
+						main.perm.delPermission(p.getName(), permission
 								.replace("%player%", p.getName())
 								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
@@ -220,7 +220,7 @@ public class RankupLegacy {
 			if(broadcastMessages != null) {
 				if(!broadcastMessages.isEmpty()) {
 					for(String messageLine : broadcastMessages) {
-						p.sendMessage(prxAPI.cp(messageLine
+						Bukkit.broadcastMessage(prxAPI.cp(messageLine
 								.replace("%player%", p.getName())
 								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
@@ -353,7 +353,7 @@ public class RankupLegacy {
 			if(addPermissionList != null) {
 				if(!addPermissionList.isEmpty()) {
 					for(String permission : addPermissionList) {
-					main.perm.addPermission(player, permission
+					main.perm.addPermission(p.getName(), permission
 							.replace("%player%", p.getName())
 							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
@@ -364,7 +364,7 @@ public class RankupLegacy {
 			if(delPermissionList != null) {
 				if(!delPermissionList.isEmpty()) {
 					for(String permission : delPermissionList) {
-						main.perm.delPermission(p, permission
+						main.perm.delPermission(p.getName(), permission
 								.replace("%player%", p.getName())
 								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
@@ -456,9 +456,11 @@ public class RankupLegacy {
 			main.sendRankFirework(p);
 			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerRankupCostWithIncreaseDirect(u));
 			e.setRankup(main.rankStorage.getRankupName(rp));
+			Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.playerStorage.setPlayerRank(u, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
 			main.getServer().getPluginManager().callEvent(e);
+			}, 1);
 			});
 		}
 	
@@ -563,7 +565,7 @@ public class RankupLegacy {
 			if(addPermissionList != null) {
 				if(!addPermissionList.isEmpty()) {
 					for(String permission : addPermissionList) {
-					main.perm.addPermission(p, permission
+					main.perm.addPermission(p.getName(), permission
 							.replace("%player%", p.getName())
 							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
@@ -574,7 +576,7 @@ public class RankupLegacy {
 			if(delPermissionList != null) {
 				if(!delPermissionList.isEmpty()) {
 					for(String permission : delPermissionList) {
-						main.perm.delPermission(p, permission
+						main.perm.delPermission(p.getName(), permission
 								.replace("%player%", p.getName())
 								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));

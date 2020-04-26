@@ -161,7 +161,7 @@ public class PrestigeLegacy {
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
-				main.perm.addPermission(player, permission
+				main.perm.addPermission(p.getName(), permission
 						.replace("%player%", p.getName())
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 						.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
@@ -172,7 +172,7 @@ public class PrestigeLegacy {
 		if(delPermissionList != null) {
 			if(!delPermissionList.isEmpty()) {
 				for(String permission : delPermissionList) {
-					main.perm.delPermission(p, permission
+					main.perm.delPermission(p.getName(), permission
 							.replace("%player%", p.getName())
 							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
@@ -213,7 +213,7 @@ public class PrestigeLegacy {
 		if(broadcastMessages != null) {
 			if(!broadcastMessages.isEmpty()) {
 				for(String messageLine : broadcastMessages) {
-					p.sendMessage(prxAPI.cp(messageLine
+					Bukkit.broadcastMessage(prxAPI.cp(messageLine
 							.replace("%player%", p.getName())
 							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)), p));
@@ -268,27 +268,29 @@ public class PrestigeLegacy {
 			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
 		}
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
+			Bukkit.getScheduler().runTask(main, () -> {
 			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
 				return;
 			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
 			Bukkit.getPluginManager().callEvent(e1);
+			});
 		}
 		List<String> prestigeCommands = main.globalStorage.getStringListData("PrestigeOptions.prestige-cmds");
 		if(!prestigeCommands.isEmpty()) {
            prestigeCommands.forEach(cmd -> {
         	   if(cmd.startsWith("[rankpermissions]")) {
         		   prxAPI.allRankAddPermissions.forEach(permission -> {
-        		   main.perm.delPermission(p, permission);
+        		   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else if (cmd.startsWith("[prestigepermissions]")) {
         		   prxAPI.allPrestigeAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p, permission);
+        			   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else if (cmd.startsWith("[rebirthpermissions]")) {
         		   prxAPI.allRebirthAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p, permission);
+        			   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else {
         		   main.executeCommand(p, cmd);
@@ -353,7 +355,7 @@ public class PrestigeLegacy {
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
-				main.perm.addPermission(player, permission
+				main.perm.addPermission(p.getName(), permission
 						.replace("%player%", p.getName())
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 						.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
@@ -364,7 +366,7 @@ public class PrestigeLegacy {
 		if(delPermissionList != null) {
 			if(!delPermissionList.isEmpty()) {
 				for(String permission : delPermissionList) {
-					main.perm.delPermission(p, permission
+					main.perm.delPermission(p.getName(), permission
 							.replace("%player%", p.getName())
 							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
@@ -460,27 +462,29 @@ public class PrestigeLegacy {
 			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
 		}
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
+			Bukkit.getScheduler().runTask(main, () -> {
 			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
 				return;
 			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
 			Bukkit.getPluginManager().callEvent(e1);
+			});
 		}
 		List<String> prestigeCommands = main.globalStorage.getStringListData("PrestigeOptions.prestige-cmds");
 		if(!prestigeCommands.isEmpty()) {
            prestigeCommands.forEach(cmd -> {
         	   if(cmd.startsWith("[rankpermissions]")) {
         		   prxAPI.allRankAddPermissions.forEach(permission -> {
-        		   main.perm.delPermission(p, permission);
+        		   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else if (cmd.startsWith("[prestigepermissions]")) {
         		   prxAPI.allPrestigeAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p, permission);
+        			   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else if (cmd.startsWith("[rebirthpermissions]")) {
         		   prxAPI.allRebirthAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p, permission);
+        			   main.perm.delPermission(p.getName(), permission);
         		   });
         	   } else {
         		   main.executeCommand(p, cmd);
@@ -489,10 +493,13 @@ public class PrestigeLegacy {
 		}
 		main.playerStorage.setPlayerPrestige(u, prestige);
 		prxAPI.taskedPlayers.remove(player);
+		Bukkit.getScheduler().runTask(main, () -> {
 		main.getServer().getPluginManager().callEvent(e);
+		});
 	}
 	
 	public void spawnHologram(List<String> format, int removeTime, int height, Player player) {
+		Bukkit.getScheduler().runTask(main, () -> {
 		UUID u = XUUID.tryNameConvert(player.getName());
 		Hologram hologram = HologramsAPI.createHologram(main, player.getLocation().add(0, height, 0));
 		hologram.setAllowPlaceholders(true);
@@ -507,5 +514,6 @@ public class PrestigeLegacy {
         Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable () {public void run() {
         	hologram.delete();
         }}, 20L * removeTime);
+		});
 	}
 }

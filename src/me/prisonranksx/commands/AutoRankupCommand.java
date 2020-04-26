@@ -21,7 +21,7 @@ public class AutoRankupCommand extends BukkitCommand
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
 		if(!sender.hasPermission(this.getPermission())) {
-			sender.sendMessage(main.prxAPI.g(this.getPermissionMessage()));
+			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
 		if(!main.isRankEnabled) {

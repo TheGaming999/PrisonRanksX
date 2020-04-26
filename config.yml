@@ -14,6 +14,7 @@
 # "[incorrect]", "✖"
 # "[bowarrow]", "➸"
 # "[squaredot]", "◼"
+# "[square]", "■"
 # "[happyface]", "☺"
 # "[|]", "⎟"
 # --------------------------------------------------------------
@@ -54,6 +55,8 @@ Options:
   send-prestigemsg: true
   # -
   send-rebirthmsg: true
+  # /rankupmax msg
+  send-rankupmaxmsg: true
   # Don't like the text rank list then try this setting [set it to true].
   GUI-RANKLIST: false
   # You want a cool gui prestige list? use this [change it to true].
@@ -97,7 +100,18 @@ Options:
   # time between auto rankups in ticks
   autorankup-delay: 20
   autoprestige-delay: 20
+  # still not added.
   autorebirth-delay: 20
+  # actionbar that shows your current progress to the next stage. that appear above your hotbar.
+  actionbar-progress: true
+  # show actionbar progress only while holding a diamond pickaxe?
+  actionbar-progress-only-pickaxe: true
+  # basically placeholderapi placeholders.
+  actionbar-progress-format: "%prisonranksx_rankup_progress% &e%prisonranksx_rankup_percentage%"
+  # update time in ticks (20 ticks = 1 second), (40 ticks = 2 seconds).
+  actionbar-progress-updater: 40
+  # send save message every 15 minutes to console?
+  save-notification: true
 Ranklist-text: # text based ranks list
   # placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted%
   rank-current-format: "%rank_displayname% &a> %nextrank_displayname% &a| &2$&e%nextrank_cost_formatted% &a<&m---"
@@ -166,7 +180,7 @@ Holograms:
     enable: true
     remove-time: 5
     height: 4
-    format:
+    format: # placeholders: %player% %nextprestige% %nextprestige_display%
     - "&c%player%"
     - "&9&kii&6Prestiged Up To&9&kii"
     - "&4&l%nextprestige%"
@@ -178,7 +192,7 @@ Holograms:
     - "&c%player%"
     - "&c&kii&4Reborn To&c&kii"
     - "&e&l%nextrebirth%"
-MySQL: # wanna store players data in a database? enable this. but keep in mind this is only for reading (showing the rank in a website, prestige etc....)
+MySQL: # wanna store players data in a database instead of yml files? enable this.
   enable: false
   host: localhost
   port: 3306
@@ -222,11 +236,15 @@ Ranklist-gui:
   - "slot=6 item=DIAMOND amount=1 name=&4Same_Enchantment lore=&f&lDifferent_name enchantments=unbreaking:1 flags=HIDE_ENCHANTS"
   - "slot=7 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks@&7List@&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
   - "slot=8 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks@&7List@&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  # ranks item slots if it's above 44 it will be added to the next page.
+  # ranks item slots if it's above 44 it will be added to the next page. this was made to separate the constant items and rank items
   allowed-slots: "9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55"
   current-format: # placeholders: %currentrank% %currentrank_display% %currentrank_cost% %currentrank_cost_formatted%
-    # format: <itemname>:[data] | example: WOOL:1 | data is optional || <itemname>#[data] | example: DIAMOND_SWORD:42 | sets a damaged sword.
-    itemNAME: EMERALD_BLOCK
+    # format: <itemname>:[data] | example: WOOL:1
+    # format: <itemname>;[data] | example: WOOL:5
+    # format: <itemname>#[data] | example: STAINED_CLAY#2
+    # format: <itemname>->[data] | example: STAINED_CLAY->14
+    # format: <itemname> | example: DIAMOND
+    itemNAME: "stained_clay;14"
     itemAMOUNT: 1
     itemDISPLAYNAME: "&a%currentrank_display%"
     itemLORE: # placeholder api supported
@@ -238,13 +256,12 @@ Ranklist-gui:
     itemCOMMANDS: # placeholder api supported. possible prefixes { (cancel-item_move),(closeinv),[op] <command>,[console] <command>,[player] <command>}
     - "(cancel-item_move)"
     - "[console] warp %currentrank%"
-    # bypass the default format and replace it with a custom one for a specific rank (remove # and a space behind to enable)
-    # custom:
-    #   B:
-    #     itemLORE:
-    #     - "&4Your rank is B!"
+    custom:
+      B:
+        itemLORE:
+        - "&4Your rank is B!"
   completed-format: # placeholders: %completedrank% %completedrank_display% %completedrank_cost% %completedrank_cost_formatted%
-    itemNAME: EMERALD_BLOCK
+    itemNAME: "DIAMOND_SWORD;14"
     itemAMOUNT: 1
     itemDISPLAYNAME: "&a%completedrank_display%"
     itemLORE:
@@ -346,8 +363,11 @@ PrestigeOptions:
   ResetRank: true
   # global rankup_cost_increase, if you want to disable this set it to 0 default: (prestigenumber * rankup_cost_increase_percentage)
   rankup_cost_increase_percentage: 0
-  # types: DEFAULT=>{prestigeNumber * cost_increase}, POWER=>{prestigeNumber+1 ^ cost_increase}, EXTRA=>{(prestigeNumber * cost_increase) * 2} || + rankCost
+  # types: DEFAULT=>{prestigeNumber * cost_increase}, POWER=>{prestigeNumber+1 ^ cost_increase}, EXTRA=>{(prestigeNumber * cost_increase) * 2}
   cost_increase_type: DEFAULT
+  # this expression is not for the global increase.
+  # placeholders: {rankcost}, {prestigenumber}, {cost_increase}
+  cost_increase_expression: "{cost_increase} * ({rankcost} / 100)"
   # executed when you prestige
   prestige-cmds:
   - "[rankpermissions] remove"
@@ -372,6 +392,8 @@ RebirthOptions:
   ResetPrestige: true
   prestige_cost_increase_percentage: 0
   cost_increase_type: DEFAULT
+  # placeholders: {prestigecost}, {rebirthnumber}, {cost_increase}
+  cost_increase_expression: "{cost_increase} * ({prestigecost} / 100)"
   rebirth-cmds:
   - "[rankpermissions] remove"
   - "[prestigepermissions] remove"
@@ -421,6 +443,13 @@ PlaceholderAPI:
   next-progress-full-isprestige: "&7Type &c/prestige&7!"
   next-progress-full-isrebirth: "&7Type &c/rebirth&7!"
   next-progress-full-islast: "&7You are at the latest stage."
+  # what to show when there is no player that took this position i.e no player prestiged so there will be not 1st player in the leaderboard.
+  leaderboard-name-rank-null: "none"
+  leaderboard-value-rank-null: "none"
+  leaderboard-name-prestige-null: "none"
+  leaderboard-value-prestige-null: "none"
+  leaderboard-name-rebirth-null: "none"
+  leaderboard-value-rebirth-null: "none"
 MoneyFormatter:
   thousand: 'K'
   million: 'M'
@@ -440,7 +469,7 @@ MoneyFormatter:
 # Don't Forget This !
 # ----------------------------------------------
 defaultrank: A
-lastrank: D
+lastrank: B
 defaultpath: "default"
 firstprestige: P1
 lastprestige: P2

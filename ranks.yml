@@ -1,4 +1,5 @@
 # default ranks
+# don't put anything under the first rank. except for display, nextrank, and cost. because the actions that will be executed is the rank you rankup to.
 Ranks:
   default: # rank path: default
     'A': # shouldn't put any actions here.

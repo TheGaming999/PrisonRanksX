@@ -76,9 +76,12 @@ public class Rebirth {
 			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
-		if(prxAPI.hasNextPrestige(p)) {
+		int requiredPrestiges = prxAPI.getRequiredPrestiges(rebirth);
+		if(requiredPrestiges > prxAPI.getPlayerPrestiges(p)) {
 			// ouh
-			p.sendMessage(prxAPI.c("&cFailed to rebirth."));
+			int left = requiredPrestiges - prxAPI.getPlayerPrestiges(p);
+			p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
+					.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
 			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
@@ -148,7 +151,7 @@ public class Rebirth {
 		if(broadcastMessages != null) {
 			if(!broadcastMessages.isEmpty()) {
 				for(String messageLine : broadcastMessages) {
-					p.sendMessage(prxAPI.cp(messageLine
+					Bukkit.broadcastMessage(prxAPI.cp(messageLine
 							.replace("%player%", p.getName())
 							.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p))
 							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(p)), p));
@@ -227,9 +230,11 @@ public class Rebirth {
         	   }
            });
 		}
+		Bukkit.getScheduler().runTaskLater(main, () -> {
 		main.playerStorage.setPlayerRebirth(p, rebirth);
 		prxAPI.taskedPlayers.remove(player);
 		main.getServer().getPluginManager().callEvent(e);
+		}, 1);
 	}
 	
 	public void spawnHologram(List<String> format, int removeTime, int height, Player player) {

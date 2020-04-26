@@ -2,8 +2,9 @@ package me.prisonranksx.data;
 
 import java.util.UUID;
 
-import org.bukkit.OfflinePlayer;
+import javax.annotation.Nullable;
 
+@Nullable
 public class PlayerDataHandler {
 
 	private XUser player;
@@ -19,14 +20,18 @@ public class PlayerDataHandler {
 	@Deprecated
 	public void setRank(String newRank) {this.rank = newRank;}
 	
-	public void setPrestige(String newPrestige) {this.prestige = newPrestige;}
+	public void setPrestige(String newPrestige) {
+		this.prestige = newPrestige == "none" ? null : newPrestige;
+	}
 	
 	@Deprecated
 	public void setPath(String newPath) {this.path = newPath;}
 	
 	public void setRankPath(RankPath rankPath) {this.rankPath = rankPath;}
 	
-	public void setRebirth(String newRebirth) {this.rebirth = newRebirth;}
+	public void setRebirth(String newRebirth) {
+		this.rebirth = newRebirth == "none" ? null : newRebirth;
+	}
 	
 	public void setUUID(UUID uuid) {this.uuid = uuid;}
 	

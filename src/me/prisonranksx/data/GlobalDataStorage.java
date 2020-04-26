@@ -20,6 +20,8 @@ public class GlobalDataStorage {
 	private Map<String, Map<String, Object>> mapData;
 	private Map<String, Object> globalData;
 	private PrisonRanksX main;
+	public boolean isRankEnabled;
+	public String rankupProgressStyle;
 	
 	/**
 	 * If you want to register your config thing just use one of register#### methods onEnable of your plugin
@@ -172,7 +174,7 @@ public class GlobalDataStorage {
 	public void loadGlobalData() {
 		List<String> worlds = registerStringListData("worlds");
 		//Under Options
-		boolean isRankEnabled = registerBooleanData("Options.rank-enabled");
+		isRankEnabled = registerBooleanData("Options.rank-enabled");
 		boolean isPrestigeEnabled = registerBooleanData("Options.prestige-enabled");
 		boolean isRebirthEnabled = registerBooleanData("Options.rebirth-enabled");
 		String forceDisplayOrder = registerStringData("Options.force-display-order");
@@ -185,6 +187,7 @@ public class GlobalDataStorage {
 		boolean isSendRankupMsg = registerBooleanData("Options.send-rankupmsg");
 		boolean isSendPrestigeMsg = registerBooleanData("Options.send-prestigemsg");
 		boolean isSendRebirthMsg = registerBooleanData("Options.send-rebirthmsg");
+		boolean isSendRankupMaxMsg = registerBooleanData("Options.send-rankupmaxmsg");
 		boolean isGuiRankList = registerBooleanData("Options.GUI-RANKLIST");
 		boolean isGuiPrestigeList = registerBooleanData("Options.GUI-PRESTIGELIST");
 		boolean isGuiRebirthList = registerBooleanData("Options.GUI-REBIRTHLIST");
@@ -212,6 +215,7 @@ public class GlobalDataStorage {
 	    boolean actionbarProgressOnlyPickaxe = registerBooleanData("Options.actionbar-progress-only-pickaxe");
 	    String actionbarProgressFormat = registerStringData("Options.actionbar-progress-format");
 	    int actionbarProgressUpdater = registerIntegerData("Options.actionbar-progress-updater");
+	    boolean saveNotification = registerBooleanData("Options.save-notification");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");
@@ -392,7 +396,7 @@ public class GlobalDataStorage {
 		List<String> rankOptionRankDeleteCMDS = registerStringListData("RankOptions.rank-delete-cmds");
 		List<String> rankOptionRankResetCMDS = registerStringListData("RankOptions.rank-reset-cmds");
 		//Under PlaceholderAPI
-		String rankupProgressStyle = registerStringData("PlaceholderAPI.rankup-progress-style");
+		rankupProgressStyle = registerStringData("PlaceholderAPI.rankup-progress-style");
 		String rankupProgressFilled = registerStringData("PlaceholderAPI.rankup-progress-filled");
 		String rankupProgressNeeded = registerStringData("PlaceholderAPI.rankup-progress-needed");
 		boolean rankupProgressFullEnabled = registerBooleanData("PlaceholderAPI.rankup-progress-full-enabled");
@@ -430,6 +434,12 @@ public class GlobalDataStorage {
 	    String nextProgressFullIsPrestige = registerStringData("PlaceholderAPI.next-progress-full-isprestige");
 	    String nextProgressFullIsRebirth = registerStringData("PlaceholderAPI.next-progress-full-isrebirth");
 	    String nextProgressFullIsLast = registerStringData("PlaceholderAPI.next-progress-full-islast");
+	    String leaderboardNameRankNull = registerStringData("PlaceholderAPI.leaderboard-name-rank-null");
+	    String leaderboardValueRankNull = registerStringData("PlaceholderAPI.leaderboard-value-rank-null");
+	    String leaderboardNamePrestigeNull = registerStringData("PlaceholderAPI.leaderboard-name-prestige-null");
+	    String leaderboardValuePrestigeNull = registerStringData("PlaceholderAPI.leaderboard-value-prestige-null");
+	    String leaderboardNameRebirthNull = registerStringData("PlaceholderAPI.leaderboard-name-rebirth-null");
+	    String leaderboardValueRebirthNull = registerStringData("PlaceholderAPI.leaderboard-value-rebirth-null");
 	    //Under MoneyFormatter
 	    String thousand = registerStringData("MoneyFormatter.thousand");
 	    String million = registerStringData("MoneyFormatter.million");

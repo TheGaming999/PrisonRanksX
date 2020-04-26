@@ -12,7 +12,6 @@ public class RebirthDataHandler {
 	private Double nextRebirthCost;
 	private Double prestigeCostIncreasePercentage;
 	private List<String> rebirthCommands;
-	private List<String> nextRebirthCommands;
 	private List<String> actionbarMessages;
 	private int actionbarInterval;
 	private List<String> actions;
@@ -23,6 +22,7 @@ public class RebirthDataHandler {
 	private boolean sendFirework;
 	private RebirthRandomCommands randomCommandsManager;
 	private FireworkManager fireworkManager;
+	private int requiredPrestiges;
 	
 	/**
 	 * 
@@ -202,6 +202,14 @@ public class RebirthDataHandler {
 	
 	public void setPrestigeCostIncreasePercentage(Double prestigeCostIncreasePercentage) {
 		this.prestigeCostIncreasePercentage = prestigeCostIncreasePercentage;
+	}
+	
+	public int getRequiredPrestiges() {
+		return requiredPrestiges;
+	}
+	
+	public void setRequiredPrestiges(int requiredPrestiges) {
+		this.requiredPrestiges = requiredPrestiges;
 	}
 	
 }

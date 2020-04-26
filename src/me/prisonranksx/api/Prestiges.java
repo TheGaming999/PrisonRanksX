@@ -154,7 +154,9 @@ public class Prestiges {
 		if(!enablePages) {
 			// no enable pages
 			if(isCustomList) {
+				Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 				prestigeListFormat.forEach(format -> sender.sendMessage(main.prxAPI.c(format)));
+				});
 				return;
 			}
 			Player p = (Player)sender;
@@ -247,6 +249,7 @@ public class Prestiges {
 	}
 	
 	private void sendPagedList(String pageNumber, CommandSender sender) {
+		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 		if(enablePages) {
 			if(isCustomList) {
 				this.paginate(sender, prestigeWithPagesListFormat, Integer.parseInt(pageNumber), null, null);
@@ -349,5 +352,6 @@ public class Prestiges {
 
 			
 		}
+		});
 	}
 }

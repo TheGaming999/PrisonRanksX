@@ -32,6 +32,24 @@ public class PermissionManager {
 		}
         main.getPermissions().playerAdd(null, player, permission);
 	}
+	
+	@SuppressWarnings("deprecation")
+	public void addPermission(String playerName, String permission) {
+		if(permission.startsWith("[") && permission.contains("]")) {
+		      String fullpermission = permission;
+		        Pattern worldName = Pattern.compile("\\[(.*?)\\]");
+		        Matcher m3 = worldName.matcher(fullpermission);
+		        String world = "";
+		        while (m3.find()) {
+		           world = m3.group(1);
+		        }
+		        String node = fullpermission.split("]")[1].substring(1);
+		        prxAPI.getPluginMainClass().getPermissions().playerAdd(Bukkit.getWorld(world).getName(), playerName, node);
+		        return;
+		}
+      main.getPermissions().playerAdd(Bukkit.getPlayer(playerName), permission);
+	}
+	
 	public void delPermission(Player player, String permission) {
 		if(permission.startsWith("[") && permission.contains("]")) {
 		      String fullpermission = permission;
@@ -47,4 +65,21 @@ public class PermissionManager {
 		}
         main.getPermissions().playerRemove(null, player, permission);
 	}
+	
+	public void delPermission(String playerName, String permission) {
+		if(permission.startsWith("[") && permission.contains("]")) {
+		      String fullpermission = permission;
+		        Pattern worldName = Pattern.compile("\\[(.*?)\\]");
+		        Matcher m3 = worldName.matcher(fullpermission);
+		        String world = "";
+		        while (m3.find()) {
+		           world = m3.group(1);
+		        }
+		        String node = fullpermission.split("]")[1].substring(1);
+		        prxAPI.getPluginMainClass().getPermissions().playerRemove(Bukkit.getWorld(world).getName(), playerName, node);
+		        return;
+		}
+      main.getPermissions().playerRemove(Bukkit.getPlayer(playerName), permission);
+	}
+	
 }

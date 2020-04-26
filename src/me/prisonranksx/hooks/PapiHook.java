@@ -11,14 +11,50 @@ import me.prisonranksx.data.RankPath;
 public class PapiHook extends PlaceholderExpansion {
 	
     private PrisonRanksX main;
-    PRXAPI prxAPI;
+    private PRXAPI prxAPI;
+    private String nullNameRank;
+    private String nullValueRank;
+    private String nullNamePrestige;
+    private String nullValuePrestige;
+    private String nullNameRebirth;
+    private String nullValueRebirth;
+
 	public PapiHook(PrisonRanksX main) {
 		super();
 		this.main = main;
-		prxAPI = main.prxAPI;
+		prxAPI = this.main.prxAPI;
+		nullNameRank = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-name-rank-null");
+		nullValueRank = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-value-rank-null");
+		nullNamePrestige = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-name-prestige-null");
+		nullValuePrestige = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-value-prestige-null");
+		nullNameRebirth = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-name-rebirth-null");
+		nullValueRebirth = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-value-rebirth-null");
 	}
 
+	public String getNullNameRank() {
+		return this.nullNameRank;
+	}
 
+	public String getNullValueRank() {
+		return this.nullValueRank;
+	}
+	
+	public String getNullNamePrestige() {
+		return this.nullNamePrestige;
+	}
+	
+	public String getNullValuePrestige() {
+		return this.nullValuePrestige;
+	}
+	
+	public String getNullNameRebirth() {
+		return this.nullNameRebirth;
+	}
+	
+	public String getNullValueRebirth() {
+		return this.nullValueRebirth;
+	}
+	
     @Override
     public boolean persist(){
         return true;
@@ -326,19 +362,33 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.startsWith("name_prestige_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(Bukkit.getOfflinePlayer(main.lbm.getPlayerFromPositionPrestige(position).getKey()).getName());
+			return String.valueOf(main.lbm.getPlayerNameFromPositionPrestige(position, getNullNamePrestige()));
 		}
 		if(arg1.startsWith("value_prestige_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(prxAPI.getPlayerPrestige(main.lbm.getPlayerFromPositionPrestige(position).getKey()));
+			return String.valueOf(main.lbm.getPlayerPrestigeFromPosition(position, getNullValuePrestige()));
 		}
 		if(arg1.startsWith("name_rebirth_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(Bukkit.getOfflinePlayer(main.lbm.getPlayerFromPositionRebirth(position).getKey()).getName());
+			return String.valueOf(main.lbm.getPlayerNameFromPositionRebirth(position, getNullNameRebirth()));
 		}
 		if(arg1.startsWith("value_rebirth_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(prxAPI.getPlayerRebirth(main.lbm.getPlayerFromPositionRebirth(position).getKey()));
+			return String.valueOf(main.lbm.getPlayerRebirthFromPosition(position, getNullValueRebirth()));
+		}
+		if(arg1.startsWith("name_rank_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(main.lbm.getPlayerNameFromPositionRank(position, getNullNameRank()));
+		}
+		if(arg1.startsWith("value_rank_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(main.lbm.getPlayerRankFromPosition(position, getNullValueRank()));
+		}
+		if(arg1.startsWith("has_prestiged")) {
+			return String.valueOf(prxAPI.hasPrestiged(p));
+		}
+		if(arg1.startsWith("has_rebirthed")) {
+			return String.valueOf(prxAPI.hasRebirthed(p));
 		}
 		if((arg0 == null)) {
 			return null;

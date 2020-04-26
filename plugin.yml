@@ -1,5 +1,7 @@
 main: me.prisonranksx.PrisonRanksX
-version: 2.5.8
+version: 2.5.13
 name: PrisonRanksX
 author: TheGaming999 aka Al3rb
-softdepend: [Vault,PlaceholderAPI,MVdWPlaceholderAPI,HolographicDisplays,ActionUtil,PermissionsEX,GroupManager,LuckPerms]
+load: POSTWORLD
+depend: [Vault]
+softdepend: [PlaceholderAPI,MVdWPlaceholderAPI,HolographicDisplays,ActionUtil,PermissionsEX,GroupManager,LuckPerms]
