@@ -64,22 +64,22 @@ public class TopPrestigesCommand extends BukkitCommand {
     * @param page The page number to display.
     * @param countAll The count of all available entries 
     */
-  public void paginate(CommandSender sender, List<String> list, int page, List<String> header, List<String> footer)
+  public void paginate(CommandSender sender, List<String> list, int page, List<String> header, List<String> footer, int size)
   {
 	  header = main.prxAPI.cl(header);
 	  footer = main.prxAPI.cl(footer);
       int totalPageCount = 1;
       int cpos = (prestigePerPage * (page - 1));
-      if((list.size() % prestigePerPage) == 0)
+      if((size % prestigePerPage) == 0)
       {
-        if(list.size() > 0)
+        if(size > 0)
         {
-            totalPageCount = list.size() / prestigePerPage;
+            totalPageCount = size / prestigePerPage;
         }     
       }
       else
       {
-        totalPageCount = (list.size() / prestigePerPage) + 1;
+        totalPageCount = (size / prestigePerPage) + 1;
       }
  
       if(page <= totalPageCount)
@@ -125,7 +125,7 @@ public class TopPrestigesCommand extends BukkitCommand {
  //endline
            if(footer != null) {
 	         	  for(String line : footer) {
-	         		  sender.sendMessage(line.replace("%currentpage%", String.valueOf(page)).replace("%totalpages%", String.valueOf(totalPageCount)));
+	         		  sender.sendMessage(line.replace("%currentpage%", String.valueOf(page + 1)).replace("%totalpages%", String.valueOf(totalPageCount)));
 	         	  }
 	            }
       }
@@ -142,9 +142,9 @@ public class TopPrestigesCommand extends BukkitCommand {
 			return true;
 		}
 		if(args.length == 0) {
-            this.paginate(sender, leaderboardLines, 1, header, footer);		
+            this.paginate(sender, leaderboardLines, 1, header, footer, main.lbm.getPrestigeLeaderboard().size());		
 		} else if (args.length == 1) {
-			this.paginate(sender, leaderboardLines, Integer.valueOf(args[0]), header, footer);
+			this.paginate(sender, leaderboardLines, Integer.valueOf(args[0]), header, footer, main.lbm.getPrestigeLeaderboard().size());
 		}
 		return true;
 	}

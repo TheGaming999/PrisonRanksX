@@ -1,7 +1,9 @@
 package me.prisonranksx.data;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -41,8 +43,44 @@ public class PlayerDataStorage {
 	}
 	
 	
-	@Deprecated
 	public void loadPlayersData() {
+		if(main.isMySql()) {
+	           try {
+	               String sql = "SELECT * FROM " + main.database + "." + main.table;
+	               Statement statement = main.connection.createStatement();
+	               ResultSet result = statement.executeQuery(sql);
+	               while (result.next()) {
+	            	   String uuid = result.getString("uuid");
+		    		   String rankName = result.getString("rank") == null ? defaultRank : result.getString("rank");
+		    		   String pathName = result.getString("path") == null ? defaultPath : result.getString("path");
+		    		   String prestigeName = result.getString("prestige").equals("none") ? null : result.getString("prestige");
+		    		   String rebirthName = result.getString("rebirth").equals("none") ? null : result.getString("rebirth");
+		    		   XUser user = XUser.getXUser(uuid);
+                       PlayerDataHandler pdh =new PlayerDataHandler(user);
+                       RankPath rp = new RankPath(rankName, pathName);
+                       pdh.setUUID(user.getUUID());
+                       pdh.setRankPath(rp);
+                       if(prestigeName != null) {
+                    	 pdh.setPrestige(prestigeName);  
+                       }
+                       if(rebirthName != null) {
+                    	 pdh.setRebirth(rebirthName);
+                       }
+                       getPlayerData().put(uuid.toString(), pdh);
+	                   
+	                  
+	           }
+	               statement.close();
+
+
+	           }
+	           catch (SQLException e) {
+	    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data load failed.");
+	    			e.printStackTrace();
+	    			main.getLogger().info("Error loading player sql data");
+	           }
+	           return;
+	}
 		for(String strg : main.configManager.rankDataConfig.getConfigurationSection("players").getKeys(false)) {
 			XUser xu = XUser.getXUser(strg);
 			String str = xu.getUUID().toString();
@@ -351,36 +389,39 @@ public class PlayerDataStorage {
 	
 	public void savePlayersData() {
 		if(main.isMySql()) {
-			for(Entry<String, PlayerDataHandler> player : getPlayerData().entrySet()) {
-				if(player.getKey() != null) {
-					PlayerDataHandler value = player.getValue();
-			    		try {
-			    			String u = player.getKey();
+		           try {
+		               String sql = "UPDATE " + main.database + "." + main.table + " SET rank=?,prestige=?,rebirth=?,name=?,path=? WHERE uuid=?";
+		               PreparedStatement statement = main.connection.prepareStatement(sql);
+		               boolean executeRequired = false;
+		               for (String p : getPlayerData().keySet()) {
+		            	   PlayerDataHandler value = getPlayerData().get(p);
 			    			String rankName = value.getRankPath().getRankName() == null ? defaultRank : value.getRankPath().getRankName();
 			    			String pathName = value.getRankPath().getPathName() == null ? defaultPath : value.getRankPath().getPathName();
 			    			String prestigeName = value.getPrestige() == null ? "none" : value.getPrestige();
 			    			String rebirthName = value.getRebirth() == null ? "none" : value.getRebirth();
-			    			MySqlUtils util = new MySqlUtils(main.getMySqlStatement(), main.database + "." + main.table);
-			    			String name = main.isBefore1_7 ? XUUID.getLegacyName(UUID.fromString(u)) : Bukkit.getOfflinePlayer(UUID.fromString(u)).getName();
-			    			ResultSet result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.database + "." + main.table + " WHERE uuid = '" + u + "'");
-			    			if(result.next()) {
-			    				util.set(u, "rank", rankName);
-			    				util.set(u, "path", pathName);
-			    				util.set(u, "prestige", prestigeName);
-			    				util.set(u, "rebirth", rebirthName);
-			    				util.set(u, "name", name);      
-			    			} else {
-			    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.database + "." + main.table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
-			    			}
-			    		} catch (SQLException e1) {
-			    			// TODO Auto-generated catch block
-			    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
-			    			e1.printStackTrace();
-			    			main.getLogger().info("ERROR Updating Player SQL Data");
-			    		}
-				}
-			}
-			return;
+			    			String name = main.isBefore1_7 ? XUUID.getLegacyName(UUID.fromString(p)) : Bukkit.getOfflinePlayer(UUID.fromString(p)).getName();
+		                   statement.setString(1, p);
+		                   statement.setString(2, name);
+                           statement.setString(3, rankName);
+                           statement.setString(4, prestigeName);
+                           statement.setString(5, rebirthName);
+                           statement.setString(6, pathName);
+		                   statement.addBatch();
+		                   executeRequired = true;
+		               }
+		               if (executeRequired) {
+		                   statement.executeBatch();
+		               }
+		               statement.close();
+
+
+		           }
+		           catch (SQLException e) {
+		    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+		    			e.printStackTrace();
+		    			main.getLogger().info("ERROR Updating Player SQL Data");
+		           }
+		           return;
 		}
 			for(Entry<String, PlayerDataHandler> player : getPlayerData().entrySet()) {
 				if(player.getKey() != null) {

@@ -14,7 +14,10 @@ public class ErrorInspector {
 
 	private PrisonRanksX main;
 	private List<String> errors;
-	
+    boolean rankSave = false;
+    boolean prestigeSave = false;
+    boolean rebirthSave = false;
+    
 	public ErrorInspector(PrisonRanksX main) {this.main = main; this.errors = new ArrayList<>();}
 	
 	/**
@@ -58,16 +61,49 @@ public class ErrorInspector {
         		errors.add("&e(0x2)Solution: delete rankdata.yml while the server is offline OR edit player data inside rankdata.yml manually while the server is offline.");
         	}
         });
+       if(main.isMySql()) {
+    	   return;
+       }
        main.configManager.rankDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
     	   String rank = main.configManager.rankDataConfig.getString("players." + player + ".rank");
     	   String path = main.configManager.rankDataConfig.getString("players." + player + ".path");
     	   if(main.rankStorage.getRankupName(new RankPath(rank, path)) == null) {
     		   main.getLogger().warning("Player rank doesn't have a rankup name. Repairing...");
     		   main.configManager.rankDataConfig.set("players." + player + ".rank", main.prxAPI.getDefaultRank());
-    		   main.configManager.saveRankDataConfig();
+    		   rankSave = true;
     		   main.getLogger().warning("Please restart your server to avoid future problems.");
     	   }
        });
+       main.configManager.prestigeDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
+    	   String prestige = main.configManager.prestigeDataConfig.getString("players." + player);
+    	   if(main.prestigeStorage.getNextPrestigeName(prestige) == null) {
+    		   main.getLogger().warning("Player prestige doesn't have a next prestige name. Repairing...");
+    		   main.configManager.prestigeDataConfig.set("players." + player, main.prxAPI.getFirstPrestige());
+    		   prestigeSave = true;
+    		   main.getLogger().warning("Please restart your server to avoid future problems.");
+    	   }
+       });
+       main.configManager.rebirthDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
+    	   String rebirth = main.configManager.rebirthDataConfig.getString("players." + player);
+    	   if(main.rebirthStorage.getNextRebirthName(rebirth) == null) {
+    		   main.getLogger().warning("Player rebirth doesn't have a next rebirth name. Repairing...");
+    		   main.configManager.rebirthDataConfig.set("players." + player, main.prxAPI.getFirstRebirth());
+    		   rebirthSave = true;
+    		   main.getLogger().warning("Please restart your server to avoid future problems.");
+    	   }
+       });
+       if(rankSave) {
+    	   rankSave = false;
+    	   main.configManager.saveRankDataConfig();
+       }
+       if(prestigeSave) {
+    	   prestigeSave = false;
+    	   main.configManager.savePrestigeDataConfig();
+       }
+       if(rebirthSave) {
+    	   rebirthSave = false;
+    	   main.configManager.saveRebirthDataConfig();
+       }
 		} catch (Exception err) {
 			
 		}

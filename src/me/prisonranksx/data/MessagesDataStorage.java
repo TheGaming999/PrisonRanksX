@@ -77,6 +77,7 @@ public class MessagesDataStorage {
 		String prestige = registerStringMessage("prestige");
 		String noPrestige = registerStringMessage("noprestige");
 		String delPlayerPrestige = registerStringMessage("delplayerprestige");
+		String delPlayerRebirth = registerStringMessage("delplayerrebirth");
 		List<String> prestigeNotEnoughMoney = registerStringListMessage("prestige-notenoughmoney");
 		List<String> lastPrestige = registerStringListMessage("lastprestige");
 		List<String> lastPrestigeOther = registerStringListMessage("lastprestige-other");

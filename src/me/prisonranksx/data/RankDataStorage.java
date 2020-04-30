@@ -33,6 +33,10 @@ public class RankDataStorage {
 	   this.opCommands = new LinkedHashMap<>();
 	}
 	
+	/**
+	 * (String path, List<String> ranks)
+	 * @return
+	 */
 	public Map<String, List<String>> getPathRanksMap() {
 		return this.pathRanks;
 	}
@@ -94,7 +98,7 @@ public class RankDataStorage {
 				Double rankupCost = main.configManager.ranksConfig.getDouble("Ranks." + pathName + "." +  rankupName + ".cost", 0.0);
 				String rankupDisplayName = main.configManager.ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display");
 				boolean allowPrestige = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".allow-prestige");
-				List<String> rankupCommands = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".executecmds");
+				List<String> rankupCommands = getList("Ranks." + pathName + "." +  rankupName + ".executecmds");
 				List<String> actionbarMessages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
 				int actionbarInterval = main.configManager.ranksConfig.getInt("Ranks." + pathName + "." +  rankupName + ".actionbar.interval");
 				List<String> broadcastMessages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".broadcast");
@@ -133,9 +137,7 @@ public class RankDataStorage {
     			List<String> consoleCommands = new ArrayList<>();
     			List<String> opCommands = new ArrayList<>();
     			List<String> playerCommands = new ArrayList<>();
-    			if(commands == null || commands.isEmpty()) {
-    				return;
-    			}
+    			if(commands != null && !commands.isEmpty()) {
     			for(String command : commands) {
     				if(command.startsWith("[console]") || !command.startsWith("[")) {
     					consoleCommands.add(command.replace("[console] ", "").replace("%rankup%", rankupName).replace("%rank%", rankName)
@@ -152,6 +154,7 @@ public class RankDataStorage {
     			this.consoleCommands.put(rp, consoleCommands);
     			this.opCommands.put(rp, opCommands);
     			this.playerCommands.put(rp, playerCommands);
+    			}
 			 }
 			}
 	}
@@ -161,6 +164,13 @@ public class RankDataStorage {
 			return 0;
 		}
 		return main.configManager.ranksConfig.getInt(node);
+	}
+	
+	public List<String> getList(String node) {
+		if(node == null || main.configManager.ranksConfig.get(node) == null) {
+			return new ArrayList<>();
+		}
+		return main.configManager.ranksConfig.getStringList(node);
 	}
 	
 	public void loadRankData(String rankName, String pathName) {

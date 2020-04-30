@@ -9,13 +9,15 @@ import me.prisonranksx.api.PRXAPI;
 import be.maximvdw.placeholderapi.PlaceholderReplaceEvent;
 
 public class MVdWPapiHook {
+	
     private PrisonRanksX main;
     private PRXAPI prxAPI;
 	public MVdWPapiHook(PrisonRanksX main) {
 		super();
 		this.main = main;
-		prxAPI = main.prxAPI;
+		prxAPI = this.main.prxAPI;
 	}
+	
 	public void registerPlaceholders() {
 	    PlaceholderAPI.registerPlaceholder(main, "prisonranksx_currentrank_name", new PlaceholderReplacer() {
 			@Override

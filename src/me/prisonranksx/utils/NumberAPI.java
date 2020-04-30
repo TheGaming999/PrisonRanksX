@@ -310,7 +310,7 @@ public class NumberAPI {
      * @param toValue double maximum range
      * @return Random double number in a range
      */
-    public Double getRandomDouble(Double fromValue, Double toValue) {
+    public double getRandomDouble(Double fromValue, Double toValue) {
     	double randomValue = fromValue + (toValue - fromValue) * rd.nextDouble();
     	return randomValue;
     }
@@ -321,11 +321,10 @@ public class NumberAPI {
      * @param toValue int maximum range
      * @return Random int number in a range
      */
-    public Integer getRandomInteger(Integer fromValue, Integer toValue) {
-    	Integer randomValue = fromValue + (toValue - fromValue) * rd.nextInt();
+    public int getRandomInteger(Integer fromValue, Integer toValue) {
+    	int randomValue = limit(rd.nextInt(++toValue - fromValue) + fromValue, toValue);
     	return randomValue;
     }
-   
     /**
      * 
      * @param chance the value to check

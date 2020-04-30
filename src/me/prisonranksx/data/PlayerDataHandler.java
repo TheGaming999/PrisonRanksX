@@ -61,6 +61,24 @@ public class PlayerDataHandler {
 		return uuid;
 	}
 	
+	public String toString() {
+		String rank = this.rankPath.getRankName();
+		String path = this.rankPath.getPathName();
+		String prestige = this.prestige == null ? "null" : this.prestige;
+		String rebirth = this.rebirth == null ? "null" : this.rebirth;
+		String uuid = this.player.getUUID().toString();
+		return "rank:" + rank + "->path:" + path + "||prestige:" + prestige + "||rebirth:" + rebirth + "||uuid:" + uuid;
+	}
+	
+	public String toString2() {
+		String rank = this.rankPath.getRankName();
+		String path = this.rankPath.getPathName();
+		String prestige = this.prestige == null ? "null" : this.prestige;
+		String rebirth = this.rebirth == null ? "null" : this.rebirth;
+		String uuid = this.player.getUUID().toString();
+		return "rank:" + rank + "->path:" + path + "||prestige:" + prestige + "||rebirth:" + rebirth + "||uuid:" + uuid + "||name:" + this.player.getOfflineName();
+	}
+	
 	public XUser getUser() {
 		return this.player;
 	}

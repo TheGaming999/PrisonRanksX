@@ -456,6 +456,7 @@ public void setupLuckPerms() {
 				  errorInspector = new ErrorInspector(this);
 				  errorInspector.inspect();
 				  }
+				  playerStorage.loadPlayersData();
 	}
 	
 	public boolean isMySql() {
@@ -551,6 +552,7 @@ public void setupLuckPerms() {
 			String prestigeName = prestige == null ? "none" : prestige;
 			String rebirthName = rebirth == null ? "none" : rebirth;
 			String pathName = path == null ? prxAPI.getDefaultPath() : path;
+			Statement statement = connection.createStatement();
 			MySqlUtils util = new MySqlUtils(statement, database + "." + table);
 			ResultSet result = statement.executeQuery("SELECT * FROM " + database + "." + table + " WHERE uuid = '" + u + "'");
 			if(result.next()) {
@@ -582,6 +584,7 @@ public void setupLuckPerms() {
 			String prestigeName = prxAPI.getPlayerPrestige(uu) == null ? "none" : prxAPI.getPlayerPrestige(uu);
 			String rebirthName = prxAPI.getPlayerRebirth(uu) == null ? "none" : prxAPI.getPlayerRebirth(uu);
 			String pathName = prxAPI.getPlayerRankPath(uu).getPathName() == null ? prxAPI.getDefaultPath() : prxAPI.getPlayerRankPath(uu).getPathName();
+			Statement statement = connection.createStatement();
 			MySqlUtils util = new MySqlUtils(statement, database + "." + table);
 			ResultSet result = statement.executeQuery("SELECT * FROM " + database + "." + table + " WHERE uuid = '" + u + "'");
 			if(result.next()) {
@@ -616,6 +619,7 @@ public void setupLuckPerms() {
 			String prestigeName = prxAPI.getPlayerPrestige(uu) == null ? "none" : prxAPI.getPlayerPrestige(uu);
 			String rebirthName = prxAPI.getPlayerRebirth(uu) == null ? "none" : prxAPI.getPlayerRebirth(uu);
 			String pathName = prxAPI.getPlayerRankPath(uu).getPathName() == null ? prxAPI.getDefaultPath() : prxAPI.getPlayerRankPath(uu).getPathName();
+			Statement statement = connection.createStatement();
 			MySqlUtils util = new MySqlUtils(statement, database + "." + table);
 			ResultSet result = statement.executeQuery("SELECT * FROM " + database + "." + table + " WHERE uuid = '" + u + "'");
 			if(result.next()) {
@@ -649,6 +653,7 @@ public void setupLuckPerms() {
 			String prestigeName = prxAPI.getPlayerPrestige(uu) == null ? "none" : prxAPI.getPlayerPrestige(uu);
 			String rebirthName = prxAPI.getPlayerRebirth(uu) == null ? "none" : prxAPI.getPlayerRebirth(uu);
 			String pathName = prxAPI.getPlayerRankPath(uu).getPathName() == null ? prxAPI.getDefaultPath() : prxAPI.getPlayerRankPath(uu).getPathName();
+			Statement statement = connection.createStatement();
 			MySqlUtils util = new MySqlUtils(statement, database + "." + table);
 			ResultSet result = statement.executeQuery("SELECT * FROM " + database + "." + table + " WHERE uuid = '" + u + "'");
 			if(result.next()) {

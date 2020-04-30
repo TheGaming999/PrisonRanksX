@@ -13,6 +13,8 @@ import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RankRandomCommands;
+import me.prisonranksx.events.RankUpdateCause;
+import me.prisonranksx.events.XRankUpdateEvent;
 import me.prisonranksx.events.XRankupMaxEvent;
 
 public class RankupMax {
@@ -65,6 +67,11 @@ public class RankupMax {
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(p);
         Double playerBalance = main.econ.getBalance(p);
+        XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
+        Bukkit.getPluginManager().callEvent(e);
+        if(e.isCancelled()) {
+        	return;
+        }
         // other values
         List<String> ranksConfigList = prxAPI.getRanksCollection(rp1.getPathName());
         List<String> lastRankMessage = main.messagesStorage.getStringListMessage("lastrank");
@@ -253,21 +260,17 @@ public class RankupMax {
           	     p.sendMessage(main.getString(msg, p.getName()).replace("%player%", p.getName()).replace("%rankup_display%", main.getString(main.rankStorage.getDisplayName(rp), p.getName())));  
              }
         }
-        if(endIsRankupMsgLastRankOnly) {
+        if(endIsRankupMsgLastRankOnly && !isRankupMaxMsg) {
         	p.sendMessage(rankupMessage.replace("%rankup%", rankupMaxMap.get(p)).replace("%rankup_display%", main.getString(main.rankStorage.getDisplayName(rp), p.getName())));
         }
         
         endNextRankActionbarMessage = main.rankStorage.getActionbarMessages(rp);
         endNextRankActionbarInterval = main.rankStorage.getActionbarInterval(rp);
-        main.debug(rankupMaxMsg);
-        main.debug(rankupFromMap.get(p));
-        main.debug(rankupMaxMap.get(p));
-        main.debug(String.valueOf(rankupMaxCost.get(p)));
         if(isRankupMaxMsg) {
         	p.sendMessage(main.getString(rankupMaxMsg, p.getName()).replace("%rank%", rankupFromMap.get(p))
-        			.replace("%rank_display%", prxAPI.getRankDisplay(new RankPath(rankupFromMap.get(p), rp.getPathName())))
+        			.replace("%rank_display%", prxAPI.c(prxAPI.getRankDisplay(new RankPath(rankupFromMap.get(p), rp.getPathName()))))
         			.replace("%rankup%", rankupMaxMap.get(p))
-        			.replace("%rankup_display%", prxAPI.getRankDisplay(new RankPath(rankupMaxMap.get(p), rp.getPathName())))
+        			.replace("%rankup_display%", prxAPI.c(prxAPI.getRankDisplay(new RankPath(rankupMaxMap.get(p), rp.getPathName()))))
         			.replace("%cost%", String.valueOf(rankupMaxCost.get(p)))
         			);
         }

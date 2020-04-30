@@ -1423,6 +1423,7 @@ public class PRXAPI {
 		//if(getPlayerPrestigeDisplay(offlinePlayer) == null) {
 			//return null;
 		//}
+		
 		return main.playerStorage.getPlayerPrestige(offlinePlayer);
 	}
 

@@ -10,9 +10,12 @@ import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.PrestigeDataHandler;
+import me.prisonranksx.data.PrestigeDataStorage;
 import me.prisonranksx.data.RankDataHandler;
+import me.prisonranksx.data.RankDataStorage;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataHandler;
+import me.prisonranksx.data.RebirthDataStorage;
 import me.prisonranksx.data.XUser;
 import me.prisonranksx.error.ErrorInspector;
 import me.prisonranksx.gui.GuiListManager;
@@ -498,8 +501,11 @@ public class PRXManager {
       main.configManager.reloadConfigs();
       main.configManager.loadConfigs();
       main.globalStorage.loadGlobalData();
+      main.rankStorage = new RankDataStorage(main);
       main.rankStorage.loadRanksData();
+      main.prestigeStorage = new PrestigeDataStorage(main);
       main.prestigeStorage.loadPrestigesData();
+      main.rebirthStorage = new RebirthDataStorage(main);
       main.rebirthStorage.loadRebirthsData();
       if(main.ishooked) {
       main.papi = new PapiHook(main);
@@ -531,6 +537,8 @@ public class PRXManager {
       main.crri.setup();
       main.guiManager = new GuiListManager(main);
       main.guiManager.setupConstantItems();
+      main.topPrestigesCommand.load();
+      main.topRebirthsCommand.load();
       if(!main.isBefore1_7) {
       main.errorInspector = new ErrorInspector(main);
       main.errorInspector.inspect();

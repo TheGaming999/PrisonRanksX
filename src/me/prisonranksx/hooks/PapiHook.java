@@ -1,17 +1,18 @@
 package me.prisonranksx.hooks;
 
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.api.PRXAPI;
 import me.prisonranksx.data.RankPath;
+import me.prisonranksx.leaderboard.LeaderboardManager;
 
 public class PapiHook extends PlaceholderExpansion {
 	
     private PrisonRanksX main;
     private PRXAPI prxAPI;
+    private LeaderboardManager lbm;
     private String nullNameRank;
     private String nullValueRank;
     private String nullNamePrestige;
@@ -23,6 +24,7 @@ public class PapiHook extends PlaceholderExpansion {
 		super();
 		this.main = main;
 		prxAPI = this.main.prxAPI;
+		lbm = new LeaderboardManager(main);
 		nullNameRank = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-name-rank-null");
 		nullValueRank = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-value-rank-null");
 		nullNamePrestige = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-name-prestige-null");
@@ -362,27 +364,27 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.startsWith("name_prestige_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(main.lbm.getPlayerNameFromPositionPrestige(position, getNullNamePrestige()));
+			return String.valueOf(lbm.getPlayerNameFromPositionPrestige(position, getNullNamePrestige()));
 		}
 		if(arg1.startsWith("value_prestige_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(main.lbm.getPlayerPrestigeFromPosition(position, getNullValuePrestige()));
+			return String.valueOf(lbm.getPlayerPrestigeFromPosition(position, getNullValuePrestige()));
 		}
 		if(arg1.startsWith("name_rebirth_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(main.lbm.getPlayerNameFromPositionRebirth(position, getNullNameRebirth()));
+			return String.valueOf(lbm.getPlayerNameFromPositionRebirth(position, getNullNameRebirth()));
 		}
 		if(arg1.startsWith("value_rebirth_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(main.lbm.getPlayerRebirthFromPosition(position, getNullValueRebirth()));
+			return String.valueOf(lbm.getPlayerRebirthFromPosition(position, getNullValueRebirth()));
 		}
 		if(arg1.startsWith("name_rank_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(main.lbm.getPlayerNameFromPositionRank(position, getNullNameRank()));
+			return String.valueOf(lbm.getPlayerNameFromPositionRank(position, getNullNameRank()));
 		}
 		if(arg1.startsWith("value_rank_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-			return String.valueOf(main.lbm.getPlayerRankFromPosition(position, getNullValueRank()));
+			return String.valueOf(lbm.getPlayerRankFromPosition(position, getNullValueRank()));
 		}
 		if(arg1.startsWith("has_prestiged")) {
 			return String.valueOf(prxAPI.hasPrestiged(p));
@@ -399,7 +401,7 @@ public class PapiHook extends PlaceholderExpansion {
 
 	@Override
 	public String getAuthor() {
-		return "TheGaming999";
+		return main.getDescription().getAuthors().get(0);
 	}
 
 	@Override
@@ -409,7 +411,7 @@ public class PapiHook extends PlaceholderExpansion {
 
 	@Override
 	public String getVersion() {
-		return "2.5.10c";
+		return main.getDescription().getVersion();
 	}
  
 }

@@ -40,7 +40,7 @@ public class Rebirth {
 			return;
 		}
 		XRebirthUpdateEvent e = new XRebirthUpdateEvent(player, RebirthUpdateCause.REBIRTHUP);
-		
+		main.getServer().getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
 			return;
 		}
@@ -233,7 +233,7 @@ public class Rebirth {
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 		main.playerStorage.setPlayerRebirth(p, rebirth);
 		prxAPI.taskedPlayers.remove(player);
-		main.getServer().getPluginManager().callEvent(e);
+		
 		}, 1);
 	}
 	

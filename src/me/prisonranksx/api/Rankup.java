@@ -107,7 +107,8 @@ public class Rankup {
 				return;
 			}
 			XRankUpdateEvent e = new XRankUpdateEvent(player, RankUpdateCause.FORCE_RANKUP);
-			
+			e.setRankup(prxAPI.getPlayerNextRank(player));
+			main.getServer().getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
 				return;
 			}
@@ -266,7 +267,6 @@ public class Rankup {
 			Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
-			main.getServer().getPluginManager().callEvent(e);
 			}, 1);
 	    }
 	
@@ -285,17 +285,18 @@ public class Rankup {
 			}
 			Player p = player;
 			XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.NORMAL_RANKUP, prxAPI.getPlayerNextRank(p));
+            
 
-			if(e.isCancelled()) {
-				return;
-			}
 			
 			RankPath rp = prxAPI.getPlayerRankPath(p);
 			// time to cache.
 			String currentRank = rp.getRankName();
 			String nextRank = prxAPI.getPlayerNextRank(p);
-
-			
+			e.setRankup(nextRank);
+			main.getServer().getPluginManager().callEvent(e);
+			if(e.isCancelled()) {
+				return;
+			}
 			if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {
 				if(prxAPI.g("nopermission") != null && !prxAPI.g("nopermission").isEmpty()) {
 				p.sendMessage(prxAPI.g("nopermission"));
@@ -468,7 +469,7 @@ public class Rankup {
 			Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
-			main.getServer().getPluginManager().callEvent(e);
+			
 			}, 1);
 			});
 		}
@@ -521,6 +522,9 @@ public class Rankup {
 			
 			
 			XAutoRankupEvent e = new XAutoRankupEvent(p, nextRank, rp.getRankName());
+			Bukkit.getScheduler().runTask(main, () -> {
+			main.getServer().getPluginManager().callEvent(e);
+			});
 			if(e.isCancelled()) {
 				getTaskedPlayers().remove(p);
 				return;
@@ -673,9 +677,7 @@ public class Rankup {
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
 			getTaskedPlayers().remove(p);
 			}, 1);
-			Bukkit.getScheduler().runTask(main, () -> {
-			main.getServer().getPluginManager().callEvent(e);
-			});
+
 		}
 
 		public Set<Player> getTaskedPlayers() {

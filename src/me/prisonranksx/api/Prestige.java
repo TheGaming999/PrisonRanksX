@@ -103,6 +103,7 @@ public class Prestige {
 			return;
 		}
 		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
+		main.getServer().getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
 			return;
 		}
@@ -263,12 +264,12 @@ public class Prestige {
 			main.econ.withdrawPlayer(p, prxAPI.getPlayerMoney(p));
 		}
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
-			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
+			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE, main.globalStorage.getStringData("defaultrank"));
+			Bukkit.getPluginManager().callEvent(e1);
 			if(e1.isCancelled()) {
 				return;
 			}
 			main.playerStorage.setPlayerRank(p, main.globalStorage.getStringData("defaultrank"));
-			Bukkit.getPluginManager().callEvent(e1);
 		}
 		List<String> prestigeCommands = main.globalStorage.getStringListData("PrestigeOptions.prestige-cmds");
 		if(!prestigeCommands.isEmpty()) {
@@ -293,7 +294,7 @@ public class Prestige {
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 		main.playerStorage.setPlayerPrestige(p, prestige);
 		prxAPI.taskedPlayers.remove(player);
-		main.getServer().getPluginManager().callEvent(e);
+		
 		}, 1);
 	}
 	
@@ -304,7 +305,9 @@ public class Prestige {
        }
        getTaskedPlayers().add(p);
 		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.AUTOPRESTIGE);
-		
+		Bukkit.getScheduler().runTask(main, () -> {
+		main.getServer().getPluginManager().callEvent(e);
+		});
 		if(e.isCancelled()) {
 			return;
 		}
@@ -479,9 +482,7 @@ public class Prestige {
 		main.playerStorage.setPlayerPrestige(p, prestige);
 		getTaskedPlayers().remove(p);
 		}, 1);
-		Bukkit.getScheduler().runTask(main, () -> {
-		main.getServer().getPluginManager().callEvent(e);
-		});
+
 	}
 	
 	public void spawnHologram(List<String> format, int removeTime, int height, Player player) {
