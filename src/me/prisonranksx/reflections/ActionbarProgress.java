@@ -9,6 +9,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.google.common.collect.Sets;
+
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.utils.XMaterial;
 
@@ -25,7 +27,7 @@ public class ActionbarProgress {
 	
 	public ActionbarProgress(PrisonRanksX main) {
 		this.main = main;
-		this.players = new HashSet<>();
+		this.players = Sets.newConcurrentHashSet();
 		this.isTaskOn = false;
 		this.actionbarMessage = this.main.globalStorage.getStringData("Options.actionbar-progress-format");
 		this.actionbarUpdater = this.main.globalStorage.getIntegerData("Options.actionbar-progress-updater");

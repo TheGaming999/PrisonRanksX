@@ -2388,6 +2388,10 @@ public class PRXAPI {
 		main.rankupMaxAPI.rankupMax(player);
 	}
 	
+	public void rankupMaxLimit(Player player, String rank) {
+		main.rankupMaxAPI.rankupMax(player, rank);
+	}
+	
 	public void rebirth(Player player) {
 		main.rebirthAPI.rebirth(player);
 	}

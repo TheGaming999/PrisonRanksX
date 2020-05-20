@@ -496,7 +496,25 @@ public class PRXManager {
 		}
 	}
 	
+	public void reloadPlayerData() {
+	    main.playerStorage.getPlayerData().clear();
+	    main.rankStorage.getEntireData().clear();
+	    main.prestigeStorage.getPrestigeData().clear();
+	    main.rebirthStorage.getRebirthData().clear();
+	    main.rankStorage.loadRanksData();
+	    main.prestigeStorage.loadPrestigesData();
+	    main.rebirthStorage.loadRebirthsData();
+	    main.getPlayerStorage().loadPlayersData();
+	}
+	
 	public void reload() {
+	main.globalStorage.getDoubleMap().clear();
+    main.globalStorage.getStringMap().clear();
+	main.globalStorage.getBooleanMap().clear();
+    main.globalStorage.getStringListMap().clear();
+	main.globalStorage.getIntegerMap().clear();
+    main.globalStorage.getStringSetMap().clear();
+	main.globalStorage.getGlobalMap().clear();
 	  main.configManager.reloadMainConfig();
       main.configManager.reloadConfigs();
       main.configManager.loadConfigs();
@@ -508,9 +526,12 @@ public class PRXManager {
       main.rebirthStorage = new RebirthDataStorage(main);
       main.rebirthStorage.loadRebirthsData();
       if(main.ishooked) {
+      main.papi = null;
       main.papi = new PapiHook(main);
+      main.papi.register();
       }
       if(main.isMvdw) {
+    	  main.mvdw = null;
     	  main.mvdw = new MVdWPapiHook(main);
     	  main.mvdw.registerPlaceholders();
       }
@@ -539,6 +560,7 @@ public class PRXManager {
       main.guiManager.setupConstantItems();
       main.topPrestigesCommand.load();
       main.topRebirthsCommand.load();
+      main.getPlayerStorage().loadPlayersData();
       if(!main.isBefore1_7) {
       main.errorInspector = new ErrorInspector(main);
       main.errorInspector.inspect();

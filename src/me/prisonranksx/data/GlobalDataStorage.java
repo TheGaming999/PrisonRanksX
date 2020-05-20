@@ -215,6 +215,7 @@ public class GlobalDataStorage {
 	    boolean actionbarProgressOnlyPickaxe = registerBooleanData("Options.actionbar-progress-only-pickaxe");
 	    String actionbarProgressFormat = registerStringData("Options.actionbar-progress-format");
 	    int actionbarProgressUpdater = registerIntegerData("Options.actionbar-progress-updater");
+	    boolean autoSave = registerBooleanData("Options.autosave");
 	    boolean saveNotification = registerBooleanData("Options.save-notification");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");

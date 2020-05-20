@@ -33,7 +33,7 @@ public class ErrorInspector {
 	}
 	
 	/**
-	 * start searching for errors.
+	 * ! start searching for errors.
 	 */
 	public void inspect() {
 		errors.clear();
@@ -41,6 +41,7 @@ public class ErrorInspector {
 		try {
 		Set<String> rankList = main.configManager.ranksConfig.getConfigurationSection("Ranks." + main.prxAPI.getDefaultPath()).getKeys(false);
         String[] arrayList = rankList.toArray(new String[0]);
+        String firstRank = arrayList[0];
         String lastRank = arrayList[rankList.size()-1];
         if(!lastRank.equals(main.prxAPI.getLastRank())) {
         	main.getLogger().warning("Last rank on ranks.yml doesn't match lastrank on config.yml, type '/prx errors' for more info.");
@@ -59,6 +60,43 @@ public class ErrorInspector {
         		errors.add("&4(0x2)Error: &c" + Bukkit.getOfflinePlayer(UUID.fromString(player)).getName() + " has a rank that doesn't exist in ranks.yml"
         				+ " with UUID:" + player);
         		errors.add("&e(0x2)Solution: delete rankdata.yml while the server is offline OR edit player data inside rankdata.yml manually while the server is offline.");
+        	}
+        });
+        main.playerStorage.getPlayerData().keySet().forEach(player -> {
+        	if(!main.prxAPI.rankPathExists(main.playerStorage.getPlayerData().get(player).getRankPath())) {
+        		main.getLogger().warning("Player rank data is null, type '/prx errors' for more info.");
+        		errors.add("&4(0x3)Error: &c" + Bukkit.getOfflinePlayer(UUID.fromString(player)).getName() + " has a rank-with-path that doesn't exist in ranks.yml"
+        				+ " with UUID:" + player);
+        		errors.add("&e(0x3)Solution: delete rankdata.yml while the server is offline OR edit player data inside rankdata.yml manually while the server is offline.");
+        	}
+        });
+        if(!firstRank.equals(main.prxAPI.getDefaultRank())) {
+        	main.getLogger().warning("first rank on ranks.yml doesn't match defaultrank on config.yml, type '/prx errors' for more info.");
+        	errors.add("&4(0x4)Error: &cfirst rank on ranks.yml doesn't match defaultrank on config.yml"
+        			+ " &cthis may result into an unexpected behavior");
+        	errors.add("&e(0x4)Solution: goto config.yml at the very bottom change defaultrank to the one in ranks.yml while the server is &loffline&e remember: it's (CASE SENSITIVE)");
+        }
+        rankList.forEach(rank -> {
+        	if(main.configManager.ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".executecmds")) {
+        		main.getLogger().warning("Rank " + rank + " executecmds uses a wrong format! please change to the list format instead, type '/prx errors' for more info.");
+        		errors.add("&4(0x5)Error: " + rank + " uses the string format '' instead of the list format - string");
+        		errors.add("&e(0x5)Solution: change &nexecutecmds: 'example'&e to the following format:");
+        		errors.add("&eexecutecmds:");
+        		errors.add("&e- 'example'");
+        	}
+        	if(main.configManager.ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".broadcast")) {
+        		main.getLogger().warning("Rank " + rank + " broadcast uses a wrong format! please change to the list format instead, type '/prx errors' for more info.");
+        		errors.add("&4(0x6)Error: " + rank + " uses the string format '' instead of the list format - string");
+        		errors.add("&e(0x6)Solution: change &nbroadcast: 'example'&e to the following format:");
+        		errors.add("&ebroadcast:");
+        		errors.add("&e- 'example'");
+        	}
+        	if(main.configManager.ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".msg")) {
+        		main.getLogger().warning("Rank " + rank + " msg uses a wrong format! please change to the list format instead, type '/prx errors' for more info.");
+        		errors.add("&4(0x7)Error: " + rank + " uses the string format '' instead of the list format - string");
+        		errors.add("&e(0x7)Solution: change &nmsg: 'example'&e to the following format:");
+        		errors.add("&emsg:");
+        		errors.add("&e- 'example'");
         	}
         });
        if(main.isMySql()) {

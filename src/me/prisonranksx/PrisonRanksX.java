@@ -240,12 +240,12 @@ public void setupLuckPerms() {
 	    public void startAsyncUpdateTask() {
 	    	Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
 	    		long timeBefore = System.currentTimeMillis();
-	    		if(globalStorage.getBooleanData("Options.save-notification")) {
+	    		if(getGlobalStorage().getBooleanData("Options.save-notification")) {
 	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eSaving data...");
 	    		}
-	    		playerStorage.savePlayersData();
+	    		getPlayerStorage().savePlayersData();
 	    		long timeNow = System.currentTimeMillis() - timeBefore;
-	    		if(globalStorage.getBooleanData("Options.save-notification")) {
+	    		if(getGlobalStorage().getBooleanData("Options.save-notification")) {
 	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved §7& §etook §6(§e" + String.valueOf(timeNow) + " ms§6)§e.");
 	    		}
 	    	}, 18000, 18000);
@@ -451,12 +451,14 @@ public void setupLuckPerms() {
 				  abprogress = new ActionbarProgress(this);
 				  isABProgress = globalStorage.getBooleanData("Options.actionbar-progress");
 				  actionbarInUse = new HashSet<UUID>();
-				  startAsyncUpdateTask();
 				  if(!isBefore1_7) {
 				  errorInspector = new ErrorInspector(this);
 				  errorInspector.inspect();
 				  }
 				  playerStorage.loadPlayersData();
+				  if(getGlobalStorage().getBooleanData("Options.autosave")) {
+				  startAsyncUpdateTask();
+				  }
 	}
 	
 	public boolean isMySql() {
@@ -682,7 +684,9 @@ public void setupLuckPerms() {
 		}
 		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eSaving data...");
 		playerStorage.savePlayersData();
-		configManager.saveConfigs();
+		configManager.saveRankDataConfig();
+		configManager.savePrestigeDataConfig();
+		configManager.saveRebirthDataConfig();
 		prxAPI = null;
 		mvdw = null;
 		perm = null;
@@ -717,6 +721,26 @@ public void setupLuckPerms() {
 	public void debug(String message) {
 		if(debug) {
 		Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + message));
+		}
+	}
+	
+	public void debug(Object message) {
+		if(debug) {
+			if(message instanceof Integer) {
+				int msg = (int)message;
+				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + String.valueOf(msg)));
+			} else if (message instanceof Double) {
+				double msg = (double)message;
+				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + String.valueOf(msg)));
+			} else if (message instanceof List) {
+				List<String> msg = (ArrayList)message;
+				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + msg.toString()));
+			} else if (message instanceof Set) {
+				Set<String> msg = (HashSet)message;
+				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + msg.toString()));
+			} else {
+				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + message.toString()));
+			}
 		}
 	}
 
@@ -808,6 +832,14 @@ public void setupLuckPerms() {
 		}
 	}
 	
+	public PlayerDataStorage getPlayerStorage() {
+		return this.playerStorage;
+	}
+	
+	public GlobalDataStorage getGlobalStorage() {
+		return this.globalStorage;
+	}
+	
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onAsyncLogin(AsyncPlayerPreLoginEvent e) {
 		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
@@ -821,20 +853,20 @@ public void setupLuckPerms() {
 			user = new XUser(XUUID.tryNameConvert(e.getName()));
 		}
 	    UUID playerUUID = user.getUUID();
-	    if(!playerStorage.isLoaded(playerUUID)) {
-	    playerStorage.loadPlayerData(playerUUID);
+	    if(!getPlayerStorage().isLoaded(playerUUID)) {
+	    getPlayerStorage().loadPlayerData(playerUUID);
 		 if(isMySql()) {
 			this.updateMySqlData(user.getUUID(), e.getName());
 		 }
 	    }
-		if((playerStorage.isRegistered(playerUUID))) {
+		if((getPlayerStorage().isRegistered(playerUUID))) {
 			 return;
 		}
-			if((!playerStorage.isRegistered(playerUUID))) {
-			 playerStorage.register(playerUUID);
-			 RankPath rankPath = new RankPath(globalStorage.getStringData("defaultrank"), globalStorage.getStringData("defaultpath"));
-			 playerStorage.setPlayerRankPath(playerUUID, rankPath);
-		     playerStorage.setPlayerRank(playerUUID, new RankPath(globalStorage.getStringData("defaultrank"), globalStorage.getStringData("defaultpath")));
+			if((!getPlayerStorage().isRegistered(playerUUID))) {
+			 getPlayerStorage().register(playerUUID);
+			 RankPath rankPath = new RankPath(getGlobalStorage().getStringData("defaultrank"), getGlobalStorage().getStringData("defaultpath"));
+			 getPlayerStorage().setPlayerRankPath(playerUUID, rankPath);
+		     getPlayerStorage().setPlayerRank(playerUUID, new RankPath(getGlobalStorage().getStringData("defaultrank"), getGlobalStorage().getStringData("defaultpath")));
             return;
 			}
 		});
@@ -855,24 +887,30 @@ public void setupLuckPerms() {
 	
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onQuit(PlayerQuitEvent e) {
+		Player p = e.getPlayer();
 		if(isMySql()) {
-			this.updateMySqlData(e.getPlayer());
+			this.updateMySqlData(p);
+		} else {
+			getPlayerStorage().savePlayerData(p);
 		}
 		if(!isABProgress) {
 			return;
 		}
-		this.abprogress.disable(e.getPlayer());
+		this.abprogress.disable(p);
 	}
 
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onKick(PlayerKickEvent e) {
+		Player p = e.getPlayer();
 		if(isMySql()) {
-			this.updateMySqlData(e.getPlayer());
+			this.updateMySqlData(p);
+		} else {
+			getPlayerStorage().savePlayerData(p);
 		}
 		if(!isABProgress) {
 			return;
 		}
-		this.abprogress.disable(e.getPlayer());
+		this.abprogress.disable(p);
 	}
 	
 	

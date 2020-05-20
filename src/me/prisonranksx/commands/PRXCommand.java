@@ -159,6 +159,20 @@ public class PRXCommand extends BukkitCommand {
         		main.manager.reload();
         		sender.sendMessage(main.prxAPI.g("reload"));
         		});
+        	} else if (args[0].equalsIgnoreCase("reload-data")) {
+        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+            		sender.sendMessage(main.prxAPI.c("&eReloading Data..."));
+            		main.manager.reload();
+            		sender.sendMessage(main.prxAPI.g("reload"));
+        		});
+        	} else if (args[0].equalsIgnoreCase("reenable") || args[0].equalsIgnoreCase("ree")) {
+        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        		sender.sendMessage(main.prxAPI.c("&eEnabling..."));
+        		main.onEnable();
+        		sender.sendMessage(main.prxAPI.c("&eReloading..."));
+        		main.manager.reload();
+        		sender.sendMessage(main.prxAPI.c("&6Plugin Successfully re-enabled."));
+        		});
         	} else if (args[0].equalsIgnoreCase("cleartask")) {
         		main.prxAPI.taskedPlayers.clear();
         		sender.sendMessage(main.prxAPI.c("&c&k~&r &4&l&o&nTask limit cleared&r &c&k~"));
@@ -176,6 +190,14 @@ public class PRXCommand extends BukkitCommand {
         		main.manager.save();
         		sender.sendMessage(main.prxAPI.g("save"));
         		});
+        	} else if (args[0].equalsIgnoreCase("debug")) {
+        		if(main.debug) {
+        			main.debug = false;
+        			sender.sendMessage(main.prxAPI.c("&6Debug &cdisabled&6."));
+        		} else {
+        			main.debug = true;
+        			sender.sendMessage(main.prxAPI.c("&6Debug &aenabled&6."));
+        		}
         	} else if (args[0].equalsIgnoreCase("createrank")) {
         		sender.sendMessage(main.prxAPI.c("&c/&6prx createrank &4<name> <cost> &c[displayname]"));
         	} else if (args[0].equalsIgnoreCase("createprestige")) {

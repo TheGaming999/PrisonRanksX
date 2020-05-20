@@ -34,6 +34,12 @@ public class RankupMaxCommand extends BukkitCommand{
 	      } 
        //do rankup max
 	     main.prxAPI.rankupMax((Player)sender);
+		} else if (args.length == 1) {
+			String rank = main.manager.matchRank(args[0]);
+			if(!main.prxAPI.rankExists(rank)) {
+				return true;
+			}
+			main.prxAPI.rankupMaxLimit((Player)sender, rank);
 		}
 		return true;
 	}
