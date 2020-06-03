@@ -41,6 +41,9 @@ public class MCProgressBar {
 	
 	public MCProgressBar() {}
 	
+	/**
+	 * build the progressbar, give access to setValue(int) method.
+	 */
 	public void build() {
 		progressBar = getChars(xs, maxValue);
 		defaultProgressBar = getChars(xs, maxValue);

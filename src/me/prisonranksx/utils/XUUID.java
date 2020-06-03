@@ -77,6 +77,26 @@ public class XUUID {
 		return u;
 	}
 	
+	public static String getNameFromUUID(UUID uuid) {
+		if(main.isBefore1_7) {
+		    return legacyPlayers.get(uuid);
+		}
+		return Bukkit.getOfflinePlayer(uuid).getName();
+	}
+	
+	/**
+	 * 
+	 * @param uuid
+	 * @return the correct uuid counting the server version.
+	 */
+	public static UUID fetchUUID(UUID uuid) {
+		if(main.isBefore1_7) {
+			if(legacyPlayers.containsKey(uuid)) {
+				return uuid;
+			}
+		}
+		return Bukkit.getOfflinePlayer(uuid).getUniqueId();
+	}
 	
 	public void setUUID(UUID uuid) {
 		this.uuid = uuid;

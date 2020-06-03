@@ -2167,7 +2167,7 @@ public class PRXAPI {
 			if(!hasPrestiged(offlinePlayer)) {
 				return 0;
 			}
-			return getPlayerPrestigeNumber(offlinePlayer) + rebirthNumber - 1;
+			return getPlayerPrestigeNumber(offlinePlayer) + rebirthNumber;
 		}
 		return getPlayerPrestigeNumber(offlinePlayer) + rebirthNumber;
 	}
@@ -2187,7 +2187,7 @@ public class PRXAPI {
 			if(!hasPrestiged(uuid)) {
 				return 0;
 			}
-			return getPlayerPrestigeNumber(uuid) + rebirthNumber - 1;
+			return getPlayerPrestigeNumber(uuid) + rebirthNumber;
 		}
 		return getPlayerPrestigeNumber(uuid) + rebirthNumber;
 	}
@@ -2216,6 +2216,67 @@ public class PRXAPI {
 		return String.valueOf(convertedValue);
 	}
 
+	/**
+	 * 
+	 * @param offlinePlayer
+	 * @return true if the player has the permission and the money to prestige unless he is at the latest prestige.
+	 */
+	public boolean canPrestige(Player player) {
+		PRXAPI prxAPI = this;
+		Player p = player;
+		String prestige = prxAPI.getPlayerNextPrestige(p);
+		if(!p.hasPermission(main.prestigeCommand.getPermission()) && !p.hasPermission("*")) {
+			return false;
+		}
+		if(prestige == null) {
+			return false;
+		}
+		if(!prxAPI.isLastRank(p) && !main.rankStorage.isAllowPrestige(prxAPI.getPlayerRankPath(p))) {
+			return false;
+		}
+		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) > prxAPI.getPlayerMoney(p)) {
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean canRebirth(Player player) {
+		PRXAPI prxAPI = this;
+		Player p = player;
+		String rebirth = prxAPI.getPlayerNextRebirth(p);
+		if(!p.hasPermission(main.rebirthCommand.getPermission()) && !p.hasPermission("*")) {
+			return false;
+		}
+		if(rebirth.equalsIgnoreCase("LASTREBIRTH")) {
+			return false;
+		}
+		if(prxAPI.getPlayerNextRebirthCost(p) > prxAPI.getPlayerMoney(p)) {
+			return false;
+		}
+		int requiredPrestiges = prxAPI.getRequiredPrestiges(rebirth);
+		if(requiredPrestiges > prxAPI.getPlayerPrestiges(p)) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @param offlinePlayer
+	 * @return will return 100 if anything goes wrong.
+	 */
+	public String getPlayerRankupPercentageSafe(OfflinePlayer offlinePlayer) {
+		if(getPlayerNextRank(offlinePlayer) == null) {
+			return "100";
+		}
+		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankupCostWithIncreaseDirect(offlinePlayer);
+		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
+		if(Double.valueOf(convertedValue) > 100) {
+			return "100";
+		}
+		return String.valueOf(convertedValue);
+	}
+	
 	public String getPlayerNextPrestigePercentageDirect(OfflinePlayer offlinePlayer) {
 		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerNextPrestigeCostWithIncreaseDirect(offlinePlayer) * 100;
 		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));

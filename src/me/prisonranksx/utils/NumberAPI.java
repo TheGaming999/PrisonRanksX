@@ -11,10 +11,6 @@ import java.util.Random;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.bukkit.Bukkit;
 
 import javafx.util.converter.BigIntegerStringConverter;
 

@@ -77,6 +77,7 @@ public class Rebirth {
 			return;
 		}
 		int requiredPrestiges = prxAPI.getRequiredPrestiges(rebirth);
+		if(requiredPrestiges > 0) {
 		if(requiredPrestiges > prxAPI.getPlayerPrestiges(p)) {
 			// ouh
 			int left = requiredPrestiges - prxAPI.getPlayerPrestiges(p);
@@ -84,6 +85,14 @@ public class Rebirth {
 					.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
 			prxAPI.taskedPlayers.remove(p);
 			return;
+		}
+		} else {
+			if(!prxAPI.hasNextPrestige(p)) {
+				p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", "")
+						.replace("%prestiges_amount%", ""));
+				prxAPI.taskedPlayers.remove(p);
+				return;
+			}
 		}
 		String rebirthMsg = prxAPI.g("rebirth");
 		if(rebirthMsg != null) {

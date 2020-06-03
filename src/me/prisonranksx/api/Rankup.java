@@ -301,7 +301,7 @@ public class Rankup {
 				if(prxAPI.g("nopermission") != null && !prxAPI.g("nopermission").isEmpty()) {
 				p.sendMessage(prxAPI.g("nopermission"));
 				}
-				taskedPlayers.remove(player);
+				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			if(main.rankStorage.getRankupName(rp).equalsIgnoreCase("LASTRANK")) {

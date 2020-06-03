@@ -77,6 +77,7 @@ import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataStorage;
 import me.prisonranksx.data.XUser;
 import me.prisonranksx.error.ErrorInspector;
+import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.XAutoRankupEvent;
 import me.prisonranksx.events.XPrestigeUpdateEvent;
 import me.prisonranksx.events.XRankUpdateEvent;
@@ -94,6 +95,7 @@ import me.prisonranksx.leaderboard.LeaderboardManager;
 import me.prisonranksx.permissions.PermissionManager;
 import me.prisonranksx.reflections.Actionbar;
 import me.prisonranksx.reflections.ActionbarProgress;
+import me.prisonranksx.reflections.ExpbarProgress;
 import me.prisonranksx.utils.TempOpProtection;
 import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.CommandLoader;
@@ -167,9 +169,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public boolean isRankEnabled;
 	public boolean isPrestigeEnabled;
 	public boolean isRebirthEnabled;
+	public boolean forceSave;
 	public CommandLoader commandLoader;
 	public LeaderboardManager lbm;
 	public ActionbarProgress abprogress;
+	public ExpbarProgress ebprogress;
 	private boolean isABProgress;
 	private Set<UUID> actionbarInUse; 
 	BukkitTask ar = null;
@@ -211,6 +215,8 @@ public void setupLuckPerms() {
 }
 
 	 public Economy econ = null;
+	private boolean isEBProgress;
+	private boolean isSaveOnLeave;
 	//...
 	 
 	    private boolean setupEconomy() {
@@ -351,6 +357,7 @@ public void setupLuckPerms() {
 			  messagesStorage.loadMessages();
 
 			  setupMySQL();
+			  forceSave = globalStorage.getBooleanData("Options.forcesave");
 			  //playerStorage.loadPlayersData();
 		       try {
 				ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
@@ -449,7 +456,10 @@ public void setupLuckPerms() {
 				  guiManager = new GuiListManager(this);
 				  guiManager.setupConstantItems();
 				  abprogress = new ActionbarProgress(this);
+				  ebprogress = new ExpbarProgress(this);
+				  isEBProgress = globalStorage.getBooleanData("Options.expbar-progress");
 				  isABProgress = globalStorage.getBooleanData("Options.actionbar-progress");
+				  isSaveOnLeave = globalStorage.getBooleanData("Options.save-on-leave");
 				  actionbarInUse = new HashSet<UUID>();
 				  if(!isBefore1_7) {
 				  errorInspector = new ErrorInspector(this);
@@ -512,6 +522,10 @@ public void setupLuckPerms() {
 			
 		}
         }
+	}
+	
+	public boolean isForceSave() {
+		return forceSave;
 	}
 	
     public void openConnection() throws SQLException, ClassNotFoundException {
@@ -877,21 +891,32 @@ public void setupLuckPerms() {
 		if(isBefore1_7) {
 			return;
 		}
+		Player p = e.getPlayer();
+		if(isEBProgress) {
+			Bukkit.getScheduler().runTaskLater(this, () -> {
+				this.ebprogress.enable(p);
+			}, 120);
+		}
 		if(!isABProgress) {
 			return;
 		}
 		Bukkit.getScheduler().runTaskLater(this, () -> {
-			this.abprogress.enable(e.getPlayer());
+			this.abprogress.enable(p);
 		}, 120);
 	}
 	
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onQuit(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
+		if(isSaveOnLeave) {
 		if(isMySql()) {
 			this.updateMySqlData(p);
 		} else {
-			getPlayerStorage().savePlayerData(p);
+			getPlayerStorage().savePlayerData(p.getUniqueId());
+		}
+		}
+		if(isEBProgress) {
+			this.ebprogress.disable(p);
 		}
 		if(!isABProgress) {
 			return;
@@ -902,10 +927,15 @@ public void setupLuckPerms() {
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onKick(PlayerKickEvent e) {
 		Player p = e.getPlayer();
+		if(isSaveOnLeave) {
 		if(isMySql()) {
 			this.updateMySqlData(p);
 		} else {
 			getPlayerStorage().savePlayerData(p);
+		}
+		}
+		if(isEBProgress) {
+			this.ebprogress.disable(p);
 		}
 		if(!isABProgress) {
 			return;
@@ -1558,7 +1588,18 @@ public void setupLuckPerms() {
 			if(isBefore1_7) {
 				return;
 			}
+			if(e.getCause() == RankUpdateCause.RANKUPMAX) {
+				return;
+			}
 			Player p = e.getPlayer();
+			if(isForceSave()) {
+				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
+				playerStorage.savePlayerData(p);
+				configManager.saveRankDataConfig();
+				configManager.savePrestigeDataConfig();
+				configManager.saveRebirthDataConfig();
+				}, 20);
+			}
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
 			String path = prxAPI.getPlayerRankPath(p).getPathName();
@@ -1592,6 +1633,14 @@ public void setupLuckPerms() {
 				return;
 			}
 			Player p = e.getPlayer();
+			if(isForceSave()) {
+				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
+				playerStorage.savePlayerData(p);
+				configManager.saveRankDataConfig();
+				configManager.savePrestigeDataConfig();
+				configManager.saveRebirthDataConfig();
+				}, 20);
+			}
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
 			String path = prxAPI.getPlayerRankPath(p).getPathName();
@@ -1625,6 +1674,14 @@ public void setupLuckPerms() {
 				return;
 			}
 			Player p = e.getPlayer();
+			if(isForceSave()) {
+				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
+				playerStorage.savePlayerData(p);
+				configManager.saveRankDataConfig();
+				configManager.savePrestigeDataConfig();
+				configManager.saveRebirthDataConfig();
+				}, 20);
+			}
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
 			String path = prxAPI.getPlayerRankPath(p).getPathName();
@@ -1658,6 +1715,14 @@ public void setupLuckPerms() {
 				return;
 			}
 			Player p = e.getPlayer();
+			if(isForceSave()) {
+				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
+				playerStorage.savePlayerData(p);
+				configManager.saveRankDataConfig();
+				configManager.savePrestigeDataConfig();
+				configManager.saveRebirthDataConfig();
+				}, 20);
+			}
 			String rank = prxAPI.getPlayerRank(p);
 			String path = prxAPI.getPlayerRankPath(p).getPathName();
 			String prestige = prxAPI.getPlayerPrestige(p);
@@ -1673,6 +1738,14 @@ public void setupLuckPerms() {
 				return;
 			}
 			Player p = e.getPlayer();
+			if(isForceSave()) {
+				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
+				playerStorage.savePlayerData(p);
+				configManager.saveRankDataConfig();
+				configManager.savePrestigeDataConfig();
+				configManager.saveRebirthDataConfig();
+				}, 20);
+			}
 			String rank = prxAPI.getPlayerRank(p);
 			String path = prxAPI.getPlayerRankPath(p).getPathName();
 			String prestige = prxAPI.getPlayerPrestige(p);

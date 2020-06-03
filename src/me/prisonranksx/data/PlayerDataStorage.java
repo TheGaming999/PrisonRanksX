@@ -433,6 +433,54 @@ public class PlayerDataStorage {
 			}
 	}
 	
+	public void savePlayerData(UUID uuid) {
+		UUID player = uuid;
+		if(main.isMySql()) {
+			if(player != null) {
+				PlayerDataHandler value = getPlayerData().get(XUUID.fetchUUID(player).toString());
+		    		try {
+		    			String u = value.getUUID().toString();
+		    			String rankName = value.getRankPath().getRankName() == null ? defaultRank : value.getRankPath().getRankName();
+		    			String pathName = value.getRankPath().getPathName() == null ? defaultPath : value.getRankPath().getPathName();
+		    			String prestigeName = value.getPrestige() == null ? "none" : value.getPrestige();
+		    			String rebirthName = value.getRebirth() == null ? "none" : value.getRebirth();
+		    			MySqlUtils util = new MySqlUtils(main.getMySqlStatement(), main.database + "." + main.table);
+		    			String name = main.isBefore1_7 ? XUUID.getLegacyName(UUID.fromString(u)) : Bukkit.getOfflinePlayer(UUID.fromString(u)).getName();
+		    			ResultSet result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.database + "." + main.table + " WHERE uuid = '" + u + "'");
+		    			if(result.next()) {
+		    				util.set(u, "rank", rankName);
+		    				util.set(u, "path", pathName);
+		    				util.set(u, "prestige", prestigeName);
+		    				util.set(u, "rebirth", rebirthName);
+		    				util.set(u, "name", name);
+		    			} else {
+		    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.database + "." + main.table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+		    			}
+		    		} catch (SQLException e1) {
+		    			// TODO Auto-generated catch block
+		    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+		    			e1.printStackTrace();
+		    			main.getLogger().info("ERROR Updating Player SQL Data");
+		    		}
+			}
+		
+		return;
+	}
+		
+			if(player != null) {
+				PlayerDataHandler pdh = getPlayerData().get(XUUID.fetchUUID(player).toString());
+				if(pdh.getUUID() == null) {
+					return;
+				}
+				String u = pdh.getUUID().toString();
+	main.configManager.rankDataConfig.set("players." + u + ".rank", pdh.getRankPath().getRank());
+	main.configManager.rankDataConfig.set("players." + u + ".path", pdh.getRankPath().getPath());
+	main.configManager.prestigeDataConfig.set("players." + u, pdh.getPrestige());
+	main.configManager.rebirthDataConfig.set("players." + u, pdh.getRebirth());
+			}
+		
+	}
+	
 	public void savePlayerData(Player player) {
 		if(main.isMySql()) {
 				if(player != null) {
@@ -468,6 +516,9 @@ public class PlayerDataStorage {
 			
 				if(player != null) {
 					PlayerDataHandler pdh = getPlayerData().get(XUUID.getXUUID(player).toString());
+					if(pdh.getUUID() == null) {
+						return;
+					}
 					String u = pdh.getUUID().toString();
 		main.configManager.rankDataConfig.set("players." + u + ".rank", pdh.getRankPath().getRank());
 		main.configManager.rankDataConfig.set("players." + u + ".path", pdh.getRankPath().getPath());

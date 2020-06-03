@@ -526,9 +526,11 @@ public class PRXManager {
       main.rebirthStorage = new RebirthDataStorage(main);
       main.rebirthStorage.loadRebirthsData();
       if(main.ishooked) {
+    	  Bukkit.getScheduler().runTask(main, () -> {
       main.papi = null;
       main.papi = new PapiHook(main);
       main.papi.register();
+    	  });
       }
       if(main.isMvdw) {
     	  main.mvdw = null;
