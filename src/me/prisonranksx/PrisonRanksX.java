@@ -867,7 +867,7 @@ public void setupLuckPerms() {
 			user = new XUser(XUUID.tryNameConvert(e.getName()));
 		}
 	    UUID playerUUID = user.getUUID();
-	    if(!getPlayerStorage().isLoaded(playerUUID)) {
+	    if(!getPlayerStorage().isRegistered(playerUUID)) {
 	    getPlayerStorage().loadPlayerData(playerUUID);
 		 if(isMySql()) {
 			this.updateMySqlData(user.getUUID(), e.getName());

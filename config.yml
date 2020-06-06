@@ -110,8 +110,19 @@ Options:
   actionbar-progress-format: "%prisonranksx_rankup_progress% &e%prisonranksx_rankup_percentage%"
   # update time in ticks (20 ticks = 1 second), (40 ticks = 2 seconds).
   actionbar-progress-updater: 40
+  # don't enable if you use experience for another thing.
+  expbar-progress: false
+  # expbar update time (10 ticks) (0.5 second)
+  expbar-progress-updater: 10
+  # the placeholder must return a number from 0 to 100 ! otherwise it will not work properly
+  expbar-progress-format: "%prisonranksx_rankup_percentage%"
+  # autosave data every 15 minutes?
+  autosave: true
   # send save message every 15 minutes to console?
   save-notification: true
+  # force rank/prestige/rebirth data save upon a rank/prestige/rebirth update?.
+  forcesave: false
+  save-on-leave: false
 Ranklist-text: # text based ranks list
   # placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted%
   rank-current-format: "%rank_displayname% &a> %nextrank_displayname% &a| &2$&e%nextrank_cost_formatted% &a<&m---"

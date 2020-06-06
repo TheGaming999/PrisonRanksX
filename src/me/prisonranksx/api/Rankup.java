@@ -289,7 +289,6 @@ public class Rankup {
 
 			
 			RankPath rp = prxAPI.getPlayerRankPath(p);
-			// time to cache.
 			String currentRank = rp.getRankName();
 			String nextRank = prxAPI.getPlayerNextRank(p);
 			e.setRankup(nextRank);
@@ -430,7 +429,7 @@ public class Rankup {
 					}
 				}
 			}
-			Map<String, Double> chances = new HashMap<String, Double>();
+			Map<String, Double> chances = new HashMap<>();
 			RankRandomCommands rrc = main.rankStorage.getRandomCommandsManager(rp);
 			if(rrc != null && rrc.getRandomCommandsMap() != null && !rrc.getRandomCommandsMap().isEmpty()) {
 			for(String section : rrc.getRandomCommandsMap().keySet()) {
@@ -639,7 +638,7 @@ public class Rankup {
 					}
 				}
 			}
-			Map<String, Double> chances = new HashMap<String, Double>();
+			Map<String, Double> chances = new HashMap<>();
 			RankRandomCommands rrc = main.rankStorage.getRandomCommandsManager(rp);
 			if(rrc != null && rrc.getRandomCommandsMap() != null && !rrc.getRandomCommandsMap().isEmpty()) {
 			for(String section : rrc.getRandomCommandsMap().keySet()) {

@@ -48,7 +48,7 @@ public class RankupMax {
 	}
 	
 	@SuppressWarnings("unused")
-	public void rankupMax(Player player) {
+	public void rankupMax(final Player player) {
         Player p = player;
         String rankupFrom = null;
         if(rankupMaxProcess.contains(p)) {
@@ -207,7 +207,7 @@ public class RankupMax {
                  }
                }
                loopNextRankActions = main.rankStorage.getActions(rp);
-               if(main.isActionUtil && !loopNextRankActions.isEmpty()) {
+               if(main.isActionUtil && loopNextRankActions != null && !loopNextRankActions.isEmpty()) {
             	   ActionUtil.executeActions(p, loopNextRankActions);
                }
    			Map<String, Double> chances = new HashMap<String, Double>();
@@ -285,9 +285,14 @@ public class RankupMax {
 	}
 	
 	@SuppressWarnings("unused")
-	public void rankupMax(Player player, String limit) {
+	public void rankupMax(final Player player, final String rankLimit) {
         Player p = player;
         String rankupFrom = null;
+        RankPath rp1 = prxAPI.getPlayerRankPath(p);
+        String limit = main.manager.matchRank(rankLimit, rp1.getPathName());
+        if(!prxAPI.rankExists(limit, rp1.getPathName())) {
+        	return;
+        }
         if(rankupMaxProcess.contains(p)) {
         	p.sendMessage(prxAPI.g("rankupmax-is-on"));
         	return;
@@ -298,7 +303,7 @@ public class RankupMax {
         rankupMaxProcess.add(p);
         //clear old data
         //player checking values
-        RankPath rp1 = prxAPI.getPlayerRankPath(p);
+        
         String currentRank = prxAPI.getPlayerRank(p);
         rankupFrom = currentRank;
         rankupFromMap.put(p, rankupFrom);
@@ -444,7 +449,7 @@ public class RankupMax {
                  }
                }
                loopNextRankActions = main.rankStorage.getActions(rp);
-               if(main.isActionUtil && !loopNextRankActions.isEmpty()) {
+               if(main.isActionUtil && loopNextRankActions != null && !loopNextRankActions.isEmpty()) {
             	   ActionUtil.executeActions(p, loopNextRankActions);
                }
    			Map<String, Double> chances = new HashMap<String, Double>();

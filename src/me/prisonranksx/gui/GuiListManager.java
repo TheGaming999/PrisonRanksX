@@ -172,7 +172,7 @@ public class GuiListManager {
 				String rankName = rank;
 				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
-				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostNB(playerPrestige, xrp));
+				double rankCostNumber = (main.prxAPI.getIncreasedRankupCost(playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
 				rs.setLevelState(LevelState.COMPLETED);
@@ -242,7 +242,7 @@ public class GuiListManager {
 				String rankName = rank;
 				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
-				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostNB(playerPrestige, xrp));
+				double rankCostNumber = (main.prxAPI.getIncreasedRankupCost(playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
 				rs.setLevelState(LevelState.CURRENT);
@@ -311,7 +311,7 @@ public class GuiListManager {
 				String rankName = rank;
 				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
-				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostNB(playerPrestige, xrp));
+				double rankCostNumber = (main.prxAPI.getIncreasedRankupCost(playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
 				rs.setLevelState(LevelState.OTHER);
@@ -392,7 +392,8 @@ public class GuiListManager {
 				// placeholders {
 				String prestigeName = prestige;
 				String prestigeDisplayName = main.prxAPI.c(main.prestigeStorage.getDisplayName(prestigeName));
-				double prestigeCostNumber = (main.prestigeStorage.getCost(prestigeName));
+				String rebirth = main.prxAPI.getPlayerRebirth(p);
+				double prestigeCostNumber = (main.prxAPI.getIncreasedPrestigeCost(rebirth, prestigeName));
 				String prestigeCost = String.valueOf(prestigeCostNumber);
 				String formattedPrestigeCost = main.formatBalance(prestigeCostNumber);
 				ps.setLevelState(LevelState.COMPLETED);
@@ -455,7 +456,8 @@ public class GuiListManager {
 				// placeholders {
 				String prestigeName = prestige;
 				String prestigeDisplayName = main.prxAPI.c(main.prestigeStorage.getDisplayName(prestigeName));
-				double prestigeCostNumber = (main.prestigeStorage.getCost(prestigeName));
+				String rebirth = main.prxAPI.getPlayerRebirth(p);
+				double prestigeCostNumber = (main.prxAPI.getIncreasedPrestigeCost(rebirth, prestigeName));
 				String prestigeCost = String.valueOf(prestigeCostNumber);
 				String formattedPrestigeCost = main.formatBalance(prestigeCostNumber);
 				ps.setLevelState(LevelState.CURRENT);
@@ -518,7 +520,8 @@ public class GuiListManager {
 				// placeholders {
 				String prestigeName = prestige;
 				String prestigeDisplayName = main.prxAPI.c(main.prestigeStorage.getDisplayName(prestigeName));
-				double prestigeCostNumber = (main.prestigeStorage.getCost(prestigeName));
+				String rebirth = main.prxAPI.getPlayerRebirth(p);
+				double prestigeCostNumber = (main.prxAPI.getIncreasedPrestigeCost(rebirth, prestigeName));
 				String prestigeCost = String.valueOf(prestigeCostNumber);
 				String formattedPrestigeCost = main.formatBalance(prestigeCostNumber);
 				ps.setLevelState(LevelState.OTHER);

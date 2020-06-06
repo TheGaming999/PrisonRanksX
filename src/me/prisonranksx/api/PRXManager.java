@@ -560,8 +560,13 @@ public class PRXManager {
       main.crri.setup();
       main.guiManager = new GuiListManager(main);
       main.guiManager.setupConstantItems();
+      if(main.topPrestigesCommand != null) {
       main.topPrestigesCommand.load();
+      }
+      if(main.topRebirthsCommand != null) {
       main.topRebirthsCommand.load();
+      }
+      main.getPlayerStorage().savePlayersData();
       main.getPlayerStorage().loadPlayersData();
       if(!main.isBefore1_7) {
       main.errorInspector = new ErrorInspector(main);
