@@ -162,7 +162,7 @@ public class PRXCommand extends BukkitCommand {
         	} else if (args[0].equalsIgnoreCase("reload-data")) {
         		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
             		sender.sendMessage(main.prxAPI.c("&eReloading Data..."));
-            		main.manager.reload();
+            		main.manager.reloadPlayerData();
             		sender.sendMessage(main.prxAPI.g("reload"));
         		});
         	} else if (args[0].equalsIgnoreCase("reenable") || args[0].equalsIgnoreCase("ree")) {
@@ -175,6 +175,9 @@ public class PRXCommand extends BukkitCommand {
         		});
         	} else if (args[0].equalsIgnoreCase("cleartask")) {
         		main.prxAPI.taskedPlayers.clear();
+        		main.prestigeAPI.getTaskedPlayers().clear();
+        		main.rankupAPI.getTaskedPlayers().clear();
+        		main.rankupMaxAPI.rankupMaxProcess.clear();
         		sender.sendMessage(main.prxAPI.c("&c&k~&r &4&l&o&nTask limit cleared&r &c&k~"));
         	} else if (args[0].equalsIgnoreCase("errors")) {
         		if(main.errorInspector.getErrors().isEmpty()) {

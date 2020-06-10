@@ -94,7 +94,7 @@ public class Rankup {
 		}
 	}
 	
-	    public void forceRankup(Player player, CommandSender sender) {
+	    public void forceRankup(final Player player, final CommandSender sender) {
 	    	if(prxAPI.taskedPlayers.contains(player)) {
 				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 					return;
@@ -270,7 +270,7 @@ public class Rankup {
 			}, 1);
 	    }
 	
-		public void rankup(Player player) {
+		public void rankup(final Player player) {
 			Bukkit.getScheduler().runTask(main, () -> {
 			if(prxAPI.taskedPlayers.contains(player)) {
 				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {

@@ -174,8 +174,9 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public LeaderboardManager lbm;
 	public ActionbarProgress abprogress;
 	public ExpbarProgress ebprogress;
-	private boolean isABProgress;
-	private Set<UUID> actionbarInUse; 
+	public boolean isABProgress;
+	public boolean isRankupMaxWarpFilter;
+	public Set<UUID> actionbarInUse; 
 	BukkitTask ar = null;
 	public ErrorInspector errorInspector;
 	//MySQL
@@ -215,8 +216,8 @@ public void setupLuckPerms() {
 }
 
 	 public Economy econ = null;
-	private boolean isEBProgress;
-	private boolean isSaveOnLeave;
+	public boolean isEBProgress;
+	public boolean isSaveOnLeave;
 	//...
 	 
 	    private boolean setupEconomy() {
@@ -258,6 +259,7 @@ public void setupLuckPerms() {
 	    }
 	   
 	public void onEnable() {
+		  
         String version = Bukkit.getVersion();
         commandLoader = new CommandLoader();
     	if(version.contains("1.5") || version.contains("1.6") || version.contains("1.4") || version.contains("1.3") || version.contains("1.2") || version.endsWith("1.1)") || version.contains("1.0")) {
@@ -265,8 +267,8 @@ public void setupLuckPerms() {
     	}
         top = new TempOpProtection();
 		Bukkit.getPluginManager().registerEvents(this, this);
-		  getConfig().options().copyDefaults(true);
-		  saveDefaultConfig();
+		 getConfig().options().copyDefaults(true);
+		saveDefaultConfig();
 	 	    try {
 	 			ignoredSections = new ArrayList<>();
 	 			ignoredSections.add("Ranklist-gui.current-format.custom");
@@ -358,6 +360,7 @@ public void setupLuckPerms() {
 
 			  setupMySQL();
 			  forceSave = globalStorage.getBooleanData("Options.forcesave");
+			  isRankupMaxWarpFilter = globalStorage.getBooleanData("Options.rankupmax-warp-filter");
 			  //playerStorage.loadPlayersData();
 		       try {
 				ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
@@ -1231,6 +1234,39 @@ public void setupLuckPerms() {
 		}
 	}
 
+	public void executeCachedCommandsWithWarpFilter(Player player, RankPath rank) {
+		String rankpath = rank.get();
+		Player p = player;
+		String name = p.getName();
+		if(rankStorage.getConsoleCommands().containsKey(rankpath)) {
+		for(String string : rankStorage.getConsoleCommands().get(rankpath)) {
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string.replace("%player%", name));
+		}
+		}
+		if(rankStorage.getPlayerCommands().containsKey(rankpath)) {
+		for(String string : rankStorage.getPlayerCommands().get(rankpath)) {
+			if(!string.contains("warp")) {
+			Bukkit.dispatchCommand(p, string.replace("%player%", name));
+			}
+		}
+		}
+		if(rankStorage.getOpCommands().containsKey(rankpath)) {
+		for(String string : rankStorage.getOpCommands().get(rankpath)) {
+ 		   if(!p.isOp()) {
+ 		   top.addCommand(string);
+ 		   top.setTempOp(p, true);
+ 		   p.setOp(true);
+ 	       }
+ 		   Bukkit.dispatchCommand(p, string.replace("%player%", name));
+ 		   if(p.isOp() && top.isTempOp(p)) {
+ 		   p.setOp(false);
+ 		   top.delCommand(string);
+ 		   top.setTempOp(p, false);
+ 		   }
+		}
+		}
+	}
+	
 	public void executeCachedCommands(Player player, RankPath rank) {
 		String rankpath = rank.get();
 		Player p = player;

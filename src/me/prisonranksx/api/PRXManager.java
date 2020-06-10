@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -21,6 +22,9 @@ import me.prisonranksx.error.ErrorInspector;
 import me.prisonranksx.gui.GuiListManager;
 import me.prisonranksx.hooks.MVdWPapiHook;
 import me.prisonranksx.hooks.PapiHook;
+import me.prisonranksx.leaderboard.LeaderboardManager;
+import me.prisonranksx.reflections.ActionbarProgress;
+import me.prisonranksx.reflections.ExpbarProgress;
 import me.prisonranksx.utils.OnlinePlayers;
 
 public class PRXManager {
@@ -42,7 +46,7 @@ public class PRXManager {
 	 * @param pathName rank's path
 	 * @return null if there is not a previous rank | otherwise: previous rank name
 	 */
-	public String getPreviousRank(String name, String pathName) {
+	public String getPreviousRank(final String name, final String pathName) {
 		List<String> ranksCollection = main.prxAPI.getRanksCollection(pathName);
 		int previousRankIndex = ranksCollection.indexOf(name) > 0 ? ranksCollection.indexOf(name) - 1 : -999;
 		if(previousRankIndex == -999) {
@@ -52,7 +56,7 @@ public class PRXManager {
 		return previousRank;
 	}
 	
-	public String getPreviousPrestige(String name) {
+	public String getPreviousPrestige(final String name) {
 		List<String> prestigesCollection = main.prxAPI.getPrestigesCollection();
 		int previousPrestigeIndex = prestigesCollection.indexOf(name) > 0 ? prestigesCollection.indexOf(name) - 1 : -999;
 		if(previousPrestigeIndex == -999) {
@@ -62,7 +66,7 @@ public class PRXManager {
 		return previousPrestige;
 	}
 	
-	public String getPreviousRebirth(String name) {
+	public String getPreviousRebirth(final String name) {
 		List<String> rebirthsCollection = main.prxAPI.getRebirthsCollection();
 		int previousRebirthIndex = rebirthsCollection.indexOf(name) > 0 ? rebirthsCollection.indexOf(name) - 1 : -999;
 		if(previousRebirthIndex == -999) {
@@ -75,7 +79,7 @@ public class PRXManager {
 	// A , B , C
 	// 0 , 1 , 2
 	// 1 , 2 , 3
-	public String getNextRank(String name, String pathName) {
+	public String getNextRank(final String name, final String pathName) {
 		List<String> ranksCollection = main.prxAPI.getRanksCollection(pathName);
 		int count = ranksCollection.size() - 1; // starting from 0
 		int nextRankIndex = ranksCollection.indexOf(name) < count ? ranksCollection.indexOf(name) + 1 : -999;
@@ -86,7 +90,7 @@ public class PRXManager {
 		return nextRank;
 	}
 	
-	public String getNextPrestige(String name) {
+	public String getNextPrestige(final String name) {
 		List<String> prestigesCollection = main.prxAPI.getPrestigesCollection();
 		int count = prestigesCollection.size() - 1; // starting from 0
 		int nextPrestigeIndex = prestigesCollection.indexOf(name) < count ? prestigesCollection.indexOf(name) + 1 : -999;
@@ -97,7 +101,7 @@ public class PRXManager {
 		return nextPrestige;
 	}
 	
-	public String getNextRebirth(String name) {
+	public String getNextRebirth(final String name) {
 		List<String> rebirthsCollection = main.prxAPI.getRebirthsCollection();
 		int count = rebirthsCollection.size() - 1;
 		int nextRebirthIndex = rebirthsCollection.indexOf(name) < count ? rebirthsCollection.indexOf(name) + 1 : -999;
@@ -113,7 +117,7 @@ public class PRXManager {
 	 * @param cost rank cost
 	 * creates a rank within the default path
 	 */
-	public void createRank(String name, double cost) {
+	public void createRank(final String name, final double cost) {
 		RankDataHandler rdh = new RankDataHandler(name, defaultPath);
 		//FireworkManager fm = new FireworkManager(name, LevelType.RANK, defaultPath);
 		//RankRandomCommands rrc = new RankRandomCommands(name, false, defaultPath, false);
@@ -160,7 +164,7 @@ public class PRXManager {
 	 * @param cost
 	 * @param pathName
 	 */
-	public void createRank(String name, double cost, String pathName) {
+	public void createRank(final String name, final double cost, final String pathName) {
 		RankDataHandler rdh = new RankDataHandler(name, pathName);
 		//FireworkManager fm = new FireworkManager(name, LevelType.RANK, defaultPath);
 		//RankRandomCommands rrc = new RankRandomCommands(name, false, defaultPath, false);
@@ -208,7 +212,7 @@ public class PRXManager {
 	 * @param pathName
 	 * @param displayName
 	 */
-	public void createRank(String name, double cost, String pathName, String displayName) {
+	public void createRank(final String name, final double cost, final String pathName, final String displayName) {
 		RankDataHandler rdh = new RankDataHandler(name, pathName);
 		//FireworkManager fm = new FireworkManager(name, LevelType.RANK, defaultPath);
 		//RankRandomCommands rrc = new RankRandomCommands(name, false, defaultPath, false);
@@ -254,7 +258,7 @@ public class PRXManager {
 	 * @param name
 	 * @param newCost
 	 */
-	public void setRankCost(String name, double newCost) {
+	public void setRankCost(final String name, final double newCost) {
 	    RankPath rp = new RankPath(name, defaultPath);
 		if(main.rankStorage.getEntireData().get(rp.get()) == null) {
 			// rank doesn't exist
@@ -281,7 +285,7 @@ public class PRXManager {
 	 * @param newCost
 	 * @param pathName
 	 */
-	public void setRankCost(String name, double newCost, String pathName) {
+	public void setRankCost(final String name, final double newCost, final String pathName) {
 	    RankPath rp = new RankPath(name, pathName);
 		if(main.rankStorage.getEntireData().get(rp.get()) == null) {
 			// rank doesn't exist
@@ -307,7 +311,7 @@ public class PRXManager {
 	 * @param name
 	 * @param newDisplayName
 	 */
-	public void setRankDisplayName(String name, String newDisplayName) {
+	public void setRankDisplayName(final String name, final String newDisplayName) {
 	    RankPath rp = new RankPath(name, defaultPath);
 		if(main.rankStorage.getEntireData().get(rp.get()) == null) {
 			// rank doesn't exist
@@ -332,7 +336,7 @@ public class PRXManager {
 	 * @param name
 	 * @param newPathName
 	 */
-	public void setRankPathName(String name, String newPathName) {
+	public void setRankPathName(final String name, final String newPathName) {
 	    RankPath rp = new RankPath(name, defaultPath);
 		if(main.rankStorage.getEntireData().get(rp.get()) == null) {
 			// rank doesn't exist
@@ -344,7 +348,7 @@ public class PRXManager {
 	    main.rankStorage.saveRankData(rp);
 	}
 	
-	public void delRank(String name) {
+	public void delRank(final String name) {
 		if(main.rankStorage.getEntireData().get(name + "#~#" + defaultPath) == null) {
 			// rank doesn't exist
 			main.debug("doesn't exi-");
@@ -394,7 +398,7 @@ public class PRXManager {
 	 * @param name
 	 * @param pathName
 	 */
-	public void delRank(String name, String pathName) {
+	public void delRank(final String name, final String pathName) {
 		if(main.rankStorage.getEntireData().get(name + "#~#" + pathName) == null) {
 			// rank doesn't exist
 			main.debug("doesn't exi-");
@@ -444,7 +448,7 @@ public class PRXManager {
 	 * @param name rank name
 	 * @param save true = save to config | otherwise it will only be saved in the storage
 	 */
-	public void setDefaultRank(String name, boolean save) {
+	public void setDefaultRank(final String name, boolean save) {
 		main.globalStorage.getStringMap().put("defaultrank", name);
 		main.getConfig().set("defaultrank", name);
 		if(save) {
@@ -452,7 +456,7 @@ public class PRXManager {
 		}
 	}
 	
-	public void setFirstPrestige(String name, boolean save) {
+	public void setFirstPrestige(final String name, boolean save) {
 		main.globalStorage.getStringMap().put("firstprestige", name);
 		main.getConfig().set("firstprestige", name);
 		if(save) {
@@ -460,7 +464,7 @@ public class PRXManager {
 		}
 	}
 	
-	public void setFirstRebirth(String name, boolean save) {
+	public void setFirstRebirth(final String name, boolean save) {
 		main.globalStorage.getStringMap().put("firstrebirth", name);
 		main.getConfig().set("firstrebirth", name);
 		if(save) {
@@ -472,7 +476,7 @@ public class PRXManager {
 	 * @param name rank name
 	 * @param save true = save to config | otherwise it will only be saved in the storage
 	 */
-	public void setLastRank(String name, boolean save) {
+	public void setLastRank(final String name, boolean save) {
 		main.globalStorage.getStringMap().put("lastrank", name);
 		main.getConfig().set("lastrank", name);
 		if(save) {
@@ -480,7 +484,7 @@ public class PRXManager {
 		}
 	}
 	
-	public void setLastPrestige(String name, boolean save) {
+	public void setLastPrestige(final String name, boolean save) {
 		main.globalStorage.getStringMap().put("lastprestige", name);
 		main.getConfig().set("lastprestige", name);
 		if(save) {
@@ -488,7 +492,7 @@ public class PRXManager {
 		}
 	}
 	
-	public void setLastRebirth(String name, boolean save) {
+	public void setLastRebirth(final String name, boolean save) {
 		main.globalStorage.getStringMap().put("lastrebirth", name);
 		main.getConfig().set("lastrebirth", name);
 		if(save) {
@@ -542,6 +546,7 @@ public class PRXManager {
       main.prxAPI.setup();
       main.prxAPI.loadPermissions();
       main.prxAPI.loadProgressBars();
+      main.actionbarInUse = new HashSet<UUID>();
       main.rankupAPI = new Rankup();
       main.ranksAPI = new Ranks();
       main.ranksAPI.load();
@@ -560,12 +565,26 @@ public class PRXManager {
       main.crri.setup();
       main.guiManager = new GuiListManager(main);
       main.guiManager.setupConstantItems();
+      main.forceSave = main.globalStorage.getBooleanData("Options.forcesave");
+      main.lbm = new LeaderboardManager(main);
+      main.isSaveOnLeave = main.globalStorage.getBooleanData("Options.save-on-leave");
       if(main.topPrestigesCommand != null) {
       main.topPrestigesCommand.load();
       }
       if(main.topRebirthsCommand != null) {
       main.topRebirthsCommand.load();
       }
+      if(main.isABProgress) {
+      main.abprogress = new ActionbarProgress(main);
+      } else {
+    	  main.abprogress.clear(true);
+      }
+      if(main.isEBProgress) {
+      main.ebprogress = new ExpbarProgress(main);
+      } else {
+    	  main.ebprogress.clear(true);
+      }
+      main.isRankupMaxWarpFilter = main.globalStorage.getBooleanData("Options.rankupmax-warp-filter");
       main.getPlayerStorage().savePlayersData();
       main.getPlayerStorage().loadPlayersData();
       if(!main.isBefore1_7) {
@@ -594,7 +613,7 @@ public class PRXManager {
 		}
 	}
 	
-	public void createPrestige(String name, double cost) {
+	public void createPrestige(final String name, final double cost) {
 	    PrestigeDataHandler pdh = new PrestigeDataHandler(name);
 		pdh.setName(name);
 		pdh.setCost(cost);
@@ -626,7 +645,7 @@ public class PRXManager {
 		main.configManager.saveMainConfig();
 	}
 	
-	public void createPrestige(String name, double cost, String displayName) {
+	public void createPrestige(final String name, final double cost, final String displayName) {
 		String namec = name;
 	    PrestigeDataHandler pdh = new PrestigeDataHandler(namec);
 		pdh.setName(namec);

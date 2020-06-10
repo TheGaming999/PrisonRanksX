@@ -2,8 +2,10 @@ package me.prisonranksx.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -23,11 +25,12 @@ public class RankupMax {
 	public final Map<OfflinePlayer, String> rankupMaxMap;
 	public final Map<OfflinePlayer, List<String>> rankupMaxCommandsMap;
 	public final Map<OfflinePlayer, String> rankupMaxRecentRankupMap;
-    public final List<OfflinePlayer> rankupMaxProcess;
+    public final Set<OfflinePlayer> rankupMaxProcess;
     public final Map<OfflinePlayer, Integer> rankupMaxStreak;
     public final Map<OfflinePlayer, String> rankupFromMap;
     public final Map<OfflinePlayer, List<String>> rankupMaxPassedRanks;
     public final Map<OfflinePlayer, Double> rankupMaxCost;
+    public final Map<OfflinePlayer, Boolean> canPrestigeMap;
     public final String rankupMaxMsg;
     public boolean isRankupMaxMsg;
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
@@ -38,11 +41,12 @@ public class RankupMax {
 		this.rankupMaxMap = new HashMap<>();
 		this.rankupMaxCommandsMap = new HashMap<>();
 		this.rankupMaxRecentRankupMap = new HashMap<>();
-		this.rankupMaxProcess = new ArrayList<>();
+		this.rankupMaxProcess = new HashSet<>();
 		this.rankupMaxStreak = new HashMap<>();
 		this.rankupFromMap = new HashMap<>();
 		this.rankupMaxPassedRanks = new HashMap<>();
 		this.rankupMaxCost = new HashMap<>();
+		this.canPrestigeMap = new HashMap<>();
 		this.rankupMaxMsg = main.messagesStorage.getStringMessage("rankupmax");
 		this.isRankupMaxMsg = main.globalStorage.getBooleanData("Options.send-rankupmaxmsg");
 	}
@@ -97,7 +101,7 @@ public class RankupMax {
     	boolean isRankupMsgLastRankOnly = main.globalStorage.getBooleanData("Options.rankupmax-rankupmsglastrankonly");
     	boolean isPerRankPermission = main.globalStorage.getBooleanData("Options.per-rank-permission");
     	String rankupNoPermissionMessage = main.getString(main.messagesStorage.getStringMessage("rankup-nopermission"), p.getName()).replace("%nextrank%", nextRank).replace("%rankup%", nextRank).replace("%rankup_display%", nextRankDisplay);
-    	
+        canPrestigeMap.remove(p);
         //if the rank cost is higher than player's balance
         if(nextRankCost > playerBalance) {
             for (String msg : notEnoughMoneyMessage) {
@@ -145,9 +149,25 @@ public class RankupMax {
         	   loopNextRank = main.rankStorage.getRankupName(rp);
         	   //if there is no rank next then stop the loop
         	   if(loopNextRank.equalsIgnoreCase("lastrank")) {
+        		   if(main.getGlobalStorage().getBooleanData("Options.rankupmax-with-prestige")) {
+        			   if(main.prxAPI.canPrestige(p, true)) {
+        				   main.debug("can prestige: true");
+        				   canPrestigeMap.put(p, true);
+        				   break;
+        			   } else {
+        				   main.debug("can prestige: false");
+                		   main.sendListMessage(p, lastRankMessage);
+                		   canPrestigeMap.remove(p);
+                		   rankupMaxProcess.remove(p);
+                		   break;
+        			   }
+        		   } else {
+        		   main.debug("can prestige: ignored");
         		   main.sendListMessage(p, lastRankMessage);
+        		   canPrestigeMap.remove(p);
         		   rankupMaxProcess.remove(p);
         		   break;
+        		   }
         	   }
         	   //if not then continue and check for the cost
               	loopNextRankCost = prxAPI.getIncreasedRankupCost(main.playerStorage.getPlayerPrestige(p), main.rankStorage.getRankupCost(rp));
@@ -180,7 +200,11 @@ public class RankupMax {
                loopNextRankCommands = main.rankStorage.getRankupCommands(rp);
                if(loopNextRankCommands != null && !loopNextRankCommands.isEmpty()) {
             	   Bukkit.getScheduler().runTask(main, () -> {
+            		   if(main.isRankupMaxWarpFilter) {
+            			   main.executeCachedCommandsWithWarpFilter(p, rp);
+            		   } else {
             	   main.executeCachedCommands(p, rp);
+            		   }
             	   });
                }
                
@@ -280,6 +304,20 @@ public class RankupMax {
         rankupMaxProcess.remove(p);
         rankupMaxPassedRanks.remove(p);
         rankupFromMap.remove(p);
+        if(canPrestigeMap.containsKey(p)) {
+        	main.prestigeAPI.prestige2(p, true);
+            rankupMax(p);
+            return;
+        }
+        if(main.isRankupMaxWarpFilter) {
+          if(main.rankStorage.getPlayerCommands().containsKey(rankupMaxMap.get(p))) {
+        	main.rankStorage.getPlayerCommands().get(rankupMaxMap.get(p)).forEach(line -> {
+        		if(line.contains("warp")) {
+        			main.executeCommand(p, line);
+        		}
+        	});
+          }
+        }
 		}, 1);
  	  });
 	}
@@ -422,7 +460,11 @@ public class RankupMax {
                loopNextRankCommands = main.rankStorage.getRankupCommands(rp);
                if(loopNextRankCommands != null && !loopNextRankCommands.isEmpty()) {
             	   Bukkit.getScheduler().runTask(main, () -> {
+            		   if(main.isRankupMaxWarpFilter) {
+            			   main.executeCachedCommandsWithWarpFilter(p, rp);
+            		   } else {
             	   main.executeCachedCommands(p, rp);
+            		   }
             	   });
                }
                

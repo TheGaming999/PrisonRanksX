@@ -164,6 +164,7 @@ public class Ranks {
 			String pathName = rp.getPathName();
 			String rankName = rp.getRankName();
 			String prestige = main.prxAPI.getPlayerPrestige(p);
+			String rebirth = main.prxAPI.getPlayerRebirth(p);
 			List<String> newRanksCollection = main.rankStorage.getRanksCollection(pathName);
 			if(ranksCollection.isEmpty()) {
                 ranksCollection = newRanksCollection;
@@ -204,8 +205,8 @@ public class Ranks {
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
 							.replace("%nextrank_name%", main.rankStorage.getRankupName(rankPath))
 							.replace("%nextrank_displayname%", main.rankStorage.getRankupDisplayName(rankPath))
-							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
-							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCostX(rebirth ,prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCostX(rebirth,prestige, main.rankStorage.getRankupCost(rankPath))))
                             , p);			
 					    currentRanks.add(format);
 					}
@@ -218,8 +219,8 @@ public class Ranks {
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
 							.replace("%nextrank_name%", main.rankStorage.getRankupName(rankPath))
 							.replace("%nextrank_displayname%", main.rankStorage.getRankupDisplayName(rankPath))
-							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
-							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCostX(rebirth,prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCostX(rebirth,prestige, main.rankStorage.getRankupCost(rankPath))))
                             , p);			
 					completedRanks.add(format);
 					}
@@ -232,8 +233,8 @@ public class Ranks {
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
 							.replace("%nextrank_name%", main.rankStorage.getRankupName(rankPath))
 							.replace("%nextrank_displayname%", main.rankStorage.getRankupDisplayName(rankPath))
-							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
-							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCostX(rebirth,prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCostX(rebirth,prestige, main.rankStorage.getRankupCost(rankPath))))
                             , p);			
 					otherRanks.add(format);
 					}
@@ -262,6 +263,7 @@ public class Ranks {
 			String pathName = rp.getPathName();
 			String rankName = rp.getRankName();
 			String prestige = main.prxAPI.getPlayerPrestige(p);
+			String rebirth = main.prxAPI.getPlayerRebirth(p);
 			List<String> newRanksCollection = main.rankStorage.getRanksCollection(pathName);
 			ranksCollection = newRanksCollection;
 			//int finalPage = ranksCollection.size() / rankPerPage < 1 ? 1 : ranksCollection.size() / rankPerPage;
@@ -304,8 +306,8 @@ public class Ranks {
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
 							.replace("%nextrank_name%", main.rankStorage.getRankupName(rankPath))
 							.replace("%nextrank_displayname%", main.rankStorage.getRankupDisplayName(rankPath))
-							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
-							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCostX(rebirth, prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCostX(rebirth,prestige, main.rankStorage.getRankupCost(rankPath))))
                             , p);			
 					    currentRanks.add(format);
 					}
@@ -318,8 +320,8 @@ public class Ranks {
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
 							.replace("%nextrank_name%", main.rankStorage.getRankupName(rankPath))
 							.replace("%nextrank_displayname%", main.rankStorage.getRankupDisplayName(rankPath))
-							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
-							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCostX(rebirth, prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCostX(rebirth, prestige, main.rankStorage.getRankupCost(rankPath))))
                             , p);			
 					completedRanks.add(format);
 					}
@@ -333,8 +335,8 @@ public class Ranks {
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
 							.replace("%nextrank_name%", main.rankStorage.getRankupName(rankPath))
 							.replace("%nextrank_displayname%", main.rankStorage.getRankupDisplayName(rankPath))
-							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
-							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCost(prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost%", String.valueOf(main.prxAPI.getIncreasedRankupCostX(rebirth, prestige, main.rankStorage.getRankupCost(rankPath))))
+							.replace("%nextrank_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedRankupCostX(rebirth, prestige, main.rankStorage.getRankupCost(rankPath))))
                             , p);			
 					otherRanks.add(format);
 					}

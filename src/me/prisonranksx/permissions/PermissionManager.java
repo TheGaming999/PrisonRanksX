@@ -16,7 +16,7 @@ public class PermissionManager {
 		this.main = main;
 	}
 	
-	public void addPermission(Player player, String perm) {
+	public void addPermission(final Player player, final String perm) {
 		String permission = perm;
 		if(permission.startsWith("[") && permission.contains("]")) {
 			int worldIndex = permission.lastIndexOf("]");
@@ -28,8 +28,8 @@ public class PermissionManager {
         main.getPermissions().playerAdd(null, player, permission);
 	}
 	
-	@SuppressWarnings("deprecation")
-	public void addPermission(String playerName, String permission) {
+	@Deprecated
+	public void addPermission(final String playerName, final String permission) {
 		if(permission.startsWith("[") && permission.contains("]")) {
 		      String fullpermission = permission;
 		        Pattern worldName = Pattern.compile("\\[(.*?)\\]");
@@ -45,7 +45,7 @@ public class PermissionManager {
       main.getPermissions().playerAdd(Bukkit.getPlayer(playerName), permission);
 	}
 	
-	public void delPermission(Player player, String perm) {
+	public void delPermission(final Player player, final String perm) {
 		String permission = perm;
 		if(permission.startsWith("[") && permission.contains("]")) {
 			int worldIndex = permission.lastIndexOf("]");
@@ -57,7 +57,8 @@ public class PermissionManager {
         main.getPermissions().playerRemove(null, player, permission);
 	}
 	
-	public void delPermission(String playerName, String permission) {
+	@Deprecated
+	public void delPermission(final String playerName, final String permission) {
 		if(permission.startsWith("[") && permission.contains("]")) {
 		      String fullpermission = permission;
 		        Pattern worldName = Pattern.compile("\\[(.*?)\\]");

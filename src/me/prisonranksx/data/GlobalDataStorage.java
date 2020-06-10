@@ -222,6 +222,7 @@ public class GlobalDataStorage {
 	    boolean saveNotification = registerBooleanData("Options.save-notification");
 	    boolean forceSave = registerBooleanData("Options.forcesave");
 	    boolean saveOnLeave = registerBooleanData("Options.save-on-leave");
+	    boolean rankupMaxWarpFilter = registerBooleanData("Options.rankupmax-warp-filter");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");

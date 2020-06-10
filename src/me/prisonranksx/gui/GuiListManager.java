@@ -114,15 +114,15 @@ public class GuiListManager {
 		}
 	}
 	
-	public RankItem getCustomItem(RankState rankState) {
+	public RankItem getCustomItem(final RankState rankState) {
 		return main.cri.getCustomRankItems().containsKey(rankState.toString()) ? main.cri.getCustomRankItems().get(rankState.toString()) : emptyRankItem;
 	}
 	
-	public PrestigeItem getCustomItem(PrestigeState prestigeState) {
+	public PrestigeItem getCustomItem(final PrestigeState prestigeState) {
 		return main.cpi.getCustomPrestigeItems().containsKey(prestigeState.toString()) ? main.cpi.getCustomPrestigeItems().get(prestigeState.toString()) : emptyPrestigeItem;
 	}
 	
-	public RebirthItem getCustomItem(RebirthState rebirthState) {
+	public RebirthItem getCustomItem(final RebirthState rebirthState) {
 		return main.crri.getCustomRebirthItems().containsKey(rebirthState.toString()) ? main.crri.getCustomRebirthItems().get(rebirthState.toString()) : emptyRebirthItem;
 	}
 	
@@ -164,6 +164,7 @@ public class GuiListManager {
 		List<String> ranksCollection = main.prxAPI.getRanksCollection(playerPath);
 		int playerRankIndex = ranksCollection.indexOf(playerRank);
 		String playerPrestige = main.prxAPI.getPlayerPrestige(p);
+		String playerRebirth = main.prxAPI.getPlayerRebirth(p);
 		RankState rs = new RankState();
 		for(String rank : ranksCollection) {
 			int rankIndex = ranksCollection.indexOf(rank);
@@ -172,7 +173,7 @@ public class GuiListManager {
 				String rankName = rank;
 				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
-				double rankCostNumber = (main.prxAPI.getIncreasedRankupCost(playerPrestige, xrp));
+				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostX(playerRebirth, playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
 				rs.setLevelState(LevelState.COMPLETED);
@@ -242,7 +243,7 @@ public class GuiListManager {
 				String rankName = rank;
 				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
-				double rankCostNumber = (main.prxAPI.getIncreasedRankupCost(playerPrestige, xrp));
+				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostX(playerRebirth, playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
 				rs.setLevelState(LevelState.CURRENT);
@@ -311,7 +312,7 @@ public class GuiListManager {
 				String rankName = rank;
 				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
-				double rankCostNumber = (main.prxAPI.getIncreasedRankupCost(playerPrestige, xrp));
+				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostX(playerRebirth, playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
 				String formattedRankCost = main.formatBalance(rankCostNumber);
 				rs.setLevelState(LevelState.OTHER);

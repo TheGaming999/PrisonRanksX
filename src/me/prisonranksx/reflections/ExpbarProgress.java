@@ -75,9 +75,8 @@ public class ExpbarProgress {
 			for(UUID u : players) {
 				Player p = Bukkit.getPlayer(u);
 				int levels = Integer.valueOf(main.prxAPI.getPlayerRankupPercentageSafe(p));
-				p.setExp(Float.valueOf(levels) / 100);
+			    p.setLevel(levels * 1);
 				//Experience.changeExp(p, levels);
-			    p.setLevel(levels);
 				//p.setExp(Float.valueOf(PlaceholderAPI.setPlaceholders(p, expbarFormat)));
 			}
 		}, expbarUpdater, expbarUpdater);
