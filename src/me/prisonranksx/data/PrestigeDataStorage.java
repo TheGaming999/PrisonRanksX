@@ -94,7 +94,7 @@ public class PrestigeDataStorage {
 	}
 	
 	public Integer loadInt(String node) {
-		if(main.configManager.prestigesConfig.get(node) == null) {
+		if(!main.configManager.prestigesConfig.isSet(node) || !main.configManager.prestigesConfig.isInt(node)) {
 			return 0;
 		}
 		return main.configManager.prestigesConfig.getInt(node, 0);
@@ -105,7 +105,7 @@ public class PrestigeDataStorage {
 	}
 	
 	public Double loadDouble(String node) {
-		if(main.configManager.prestigesConfig.get(node) == null) {
+		if(!main.configManager.prestigesConfig.isSet(node) || !main.configManager.prestigesConfig.isDouble(node)) {
 			return 0.0;
 		}
 		return main.configManager.prestigesConfig.getDouble(node, 0.0);

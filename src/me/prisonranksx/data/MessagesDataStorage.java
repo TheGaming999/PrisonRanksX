@@ -17,12 +17,12 @@ public class MessagesDataStorage {
 	
 	public MessagesDataStorage(PrisonRanksX main) {this.main = main;}
 	
-	public String registerStringMessage(String configNode) {
+	public String registerStringMessage(final String configNode) {
 		stringData.put(configNode, main.configManager.messagesConfig.getString("Messages." + configNode));
 		return main.configManager.messagesConfig.getString("Messages." + configNode);
 	}
 	
-	public List<String> registerStringListMessage(String configNode) {
+	public List<String> registerStringListMessage(final String configNode) {
 		stringListData.put(configNode, main.configManager.messagesConfig.getStringList("Messages." + configNode));
 		return main.configManager.messagesConfig.getStringList("Messages." + configNode);
 	}
@@ -76,6 +76,7 @@ public class MessagesDataStorage {
 		String setPrestigeCost = registerStringMessage("setprestigecost");
 		String prestige = registerStringMessage("prestige");
 		String noPrestige = registerStringMessage("noprestige");
+		String noRebirth = registerStringMessage("norebirth");
 		String delPlayerPrestige = registerStringMessage("delplayerprestige");
 		String delPlayerRebirth = registerStringMessage("delplayerrebirth");
 		List<String> prestigeNotEnoughMoney = registerStringListMessage("prestige-notenoughmoney");

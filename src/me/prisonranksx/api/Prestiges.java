@@ -173,11 +173,11 @@ public class Prestiges {
 			Integer varIndex = prestigeListFormat.indexOf(String.valueOf("[prestigeslist]"));
 			// header and footer setup {
 			if(prestigeListFormatHeader.isEmpty() && prestigeListFormatFooter.isEmpty() && prestigeListFormat.size() > 1) {
-			  for(String line : prestigeListFormat) {
-				  if(varIndex > prestigeListFormat.indexOf(line)) {
-					  prestigeListFormatHeader.add(line);
-				  } if (varIndex < prestigeListFormat.indexOf(line)) {
-					  prestigeListFormatFooter.add(line);
+			  for(int i = 0; i < prestigeListFormat.size(); i++) {
+				  if(varIndex > i) {
+					  prestigeListFormatHeader.add(prestigeListFormat.get(i));
+				  } if (varIndex < i) {
+					  prestigeListFormatFooter.add(prestigeListFormat.get(i));
 			  	  }
 			  }
 			}

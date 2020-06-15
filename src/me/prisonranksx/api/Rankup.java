@@ -110,6 +110,7 @@ public class Rankup {
 			e.setRankup(prxAPI.getPlayerNextRank(player));
 			main.getServer().getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
+				prxAPI.taskedPlayers.remove(player);
 				return;
 			}
 			Player p = player;
@@ -294,6 +295,7 @@ public class Rankup {
 			e.setRankup(nextRank);
 			main.getServer().getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
+				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {

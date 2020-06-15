@@ -176,13 +176,13 @@ public class Ranks {
 			Integer varIndex = rankListFormat.indexOf(String.valueOf("[rankslist]"));
 			// header and footer setup {
 			if(rankListFormatHeader.isEmpty() && rankListFormatFooter.isEmpty() && rankListFormat.size() > 1) {
-			  for(String line : rankListFormat) {
-				  if(varIndex > rankListFormat.indexOf(line)) {
-					  rankListFormatHeader.add(line);
-				  } if (varIndex < rankListFormat.indexOf(line)) {
-					  rankListFormatFooter.add(line);
-			  	  }
-			  }
+				  for(int i = 0; i < rankListFormat.size(); i++) {
+					  if(varIndex > i) {
+						  rankListFormatHeader.add(rankListFormat.get(i));
+					  } if (varIndex < i) {
+						  rankListFormatFooter.add(rankListFormat.get(i));
+				  	  }
+				  }
 			}
 			// }
 			// send header {

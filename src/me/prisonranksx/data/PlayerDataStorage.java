@@ -390,9 +390,8 @@ public class PlayerDataStorage {
 	public void savePlayersData() {
 		if(main.isMySql()) {
 		           try {
-		               String sql = "UPDATE " + main.database + "." + main.table + " SET rank=?,prestige=?,rebirth=?,name=?,path=? WHERE uuid=?";
+		               String sql = "UPDATE " + main.database + "." + main.table + " SET name=?,rank=?,prestige=?,rebirth=?,path=? WHERE uuid=?";
 		               PreparedStatement statement = main.connection.prepareStatement(sql);
-		               boolean executeRequired = false;
 		               for (String p : getPlayerData().keySet()) {
 		            	   PlayerDataHandler value = getPlayerData().get(p);
 			    			String rankName = value.getRankPath().getRankName() == null ? defaultRank : value.getRankPath().getRankName();
@@ -406,15 +405,9 @@ public class PlayerDataStorage {
                            statement.setString(4, prestigeName);
                            statement.setString(5, rebirthName);
                            statement.setString(6, pathName);
-		                   statement.addBatch();
-		                   executeRequired = true;
-		               }
-		               if (executeRequired) {
-		                   statement.executeBatch();
+		                   statement.execute();
 		               }
 		               statement.close();
-
-
 		           }
 		           catch (SQLException e) {
 		    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");

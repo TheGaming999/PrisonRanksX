@@ -140,7 +140,7 @@ public class Rebirths {
 	 * @param pageNumber put null if you want to send a normal list
 	 * @param sender
 	 */
-	public void send(String pageNumber, CommandSender sender) {
+	public void send(final String pageNumber, CommandSender sender) {
 		if(!enablePages || pageNumber == null) {
 			sendList(sender);
 		} else {
@@ -172,11 +172,11 @@ public class Rebirths {
 			Integer varIndex = rebirthListFormat.indexOf(String.valueOf("[rebirthslist]"));
 			// header and footer setup {
 			if(rebirthListFormatHeader.isEmpty() && rebirthListFormatFooter.isEmpty() && rebirthListFormat.size() > 1) {
-			  for(String line : rebirthListFormat) {
-				  if(varIndex > rebirthListFormat.indexOf(line)) {
-					  rebirthListFormatHeader.add(line);
-				  } if (varIndex < rebirthListFormat.indexOf(line)) {
-					  rebirthListFormatFooter.add(line);
+			  for(int i = 0; i < rebirthListFormat.size(); i++) {
+				  if(varIndex > i) {
+					  rebirthListFormatHeader.add(rebirthListFormat.get(i));
+				  } if (varIndex < i) {
+					  rebirthListFormatFooter.add(rebirthListFormat.get(i));
 			  	  }
 			  }
 			}

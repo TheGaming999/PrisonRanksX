@@ -110,8 +110,9 @@ public class RankupLegacy {
 				return;
 			}
 			XRankUpdateEvent e = new XRankUpdateEvent(player, RankUpdateCause.FORCE_RANKUP);
-			
+			Bukkit.getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
+				prxAPI.taskedPlayers.remove(player);
 				return;
 			}
 			Player p = player;
@@ -272,7 +273,6 @@ public class RankupLegacy {
 			e.setRankup(main.rankStorage.getRankupName(rp));
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
-			main.getServer().getPluginManager().callEvent(e);
 	    }
 	
 		public void rankup(Player player) {
@@ -291,8 +291,9 @@ public class RankupLegacy {
 			Player p = player;
 			UUID u = XUUID.tryNameConvert(p.getName());
 			XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.NORMAL_RANKUP, prxAPI.getPlayerNextRank(u));
-
+             Bukkit.getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
+				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			
@@ -405,7 +406,7 @@ public class RankupLegacy {
 			if(broadcastMessages != null) {
 				if(!broadcastMessages.isEmpty()) {
 					for(String messageLine : broadcastMessages) {
-						p.sendMessage(prxAPI.cp(messageLine
+						Bukkit.broadcastMessage(prxAPI.cp(messageLine
 								.replace("%player%", p.getName())
 								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
@@ -459,7 +460,6 @@ public class RankupLegacy {
 			Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.playerStorage.setPlayerRank(u, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
-			main.getServer().getPluginManager().callEvent(e);
 			}, 1);
 			});
 		}
@@ -502,7 +502,7 @@ public class RankupLegacy {
 			});
 		}
 		
-		public void rankup(Player player, boolean silent) {
+		public void rankup(final Player player, boolean silent) {
 			if(prxAPI.taskedPlayers.contains(player)) {
 				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 					return;
@@ -518,7 +518,9 @@ public class RankupLegacy {
 			UUID u = XUUID.tryNameConvert(p.getName());
 			RankPath rp = prxAPI.getPlayerRankPath(u);
 			XAutoRankupEvent e = new XAutoRankupEvent(p, main.prxAPI.getPlayerNextRank(p), rp.getRankName());
+			Bukkit.getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
+				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {
@@ -617,7 +619,7 @@ public class RankupLegacy {
 			if(broadcastMessages != null) {
 				if(!broadcastMessages.isEmpty()) {
 					for(String messageLine : broadcastMessages) {
-						p.sendMessage(prxAPI.cp(messageLine
+						Bukkit.broadcastMessage(prxAPI.cp(messageLine
 								.replace("%player%", p.getName())
 								.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(u)), p));
@@ -671,8 +673,5 @@ public class RankupLegacy {
 			main.playerStorage.setPlayerRank(u, main.rankStorage.getRankupName(rp));
 			prxAPI.taskedPlayers.remove(p);
 			}, 1);
-			Bukkit.getScheduler().runTask(main, () -> {
-			main.getServer().getPluginManager().callEvent(e);
-			});
 		}
 }

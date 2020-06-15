@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,13 +42,23 @@ public class PRXAPI {
 	public final List<Player> autoRankupPlayers = new ArrayList<>();
 	public final List<Player> autoPrestigePlayers = new ArrayList<>();
 	public final List<Player> autoRebirthPlayers = new ArrayList<>();
-	public final List<Player> taskedPlayers;
+	public final Set<Player> taskedPlayers;
 	public final Set<String> allRankAddPermissions, allRankDelPermissions, allPrestigeAddPermissions
 	, allPrestigeDelPermissions, allRebirthAddPermissions, allRebirthDelPermissions;
 	private final String increaseType;
 	private final String rebirthIncreaseType;
 	private final String prestigeIncreaseExpression;
 	private final String rebirthIncreaseExpression;
+	
+	public void forceLoadMain() {
+		main = null;
+		try {
+		main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+		} catch (ClassCastException err) {
+			Bukkit.getLogger().info("Couldn't update main field.");
+		}
+	}
+	
 	public void loadMain() {
 		if(main == null) {
 		  try {
@@ -57,6 +68,40 @@ public class PRXAPI {
 		  }
 		}
 	}
+	public PRXAPI(boolean forceLoad) {
+		    forceLoadMain();
+			increaseType = main.globalStorage.getStringData("PrestigeOptions.cost_increase_type");
+			rebirthIncreaseType = main.globalStorage.getStringData("RebirthOptions.cost_increase_type");
+			allRankAddPermissions = new LinkedHashSet<String>();
+			allRankDelPermissions = new LinkedHashSet<String>();
+			allPrestigeAddPermissions = new LinkedHashSet<String>();
+			allPrestigeDelPermissions = new LinkedHashSet<String>();
+			allRebirthAddPermissions = new LinkedHashSet<String>();
+			allRebirthDelPermissions = new LinkedHashSet<String>();
+	        messagesConfig = main.configManager.messagesConfig;
+			rankDataConfig = main.configManager.rankDataConfig;
+			prestigeDataConfig = main.configManager.prestigeDataConfig;
+			customConfig = main.configManager.rankDataConfig;
+			originalConfig = main.getConfig();
+			ranksConfig = main.configManager.ranksConfig;
+			prestigesConfig = main.configManager.prestigesConfig;
+			rebirthDataConfig = main.configManager.rebirthDataConfig;
+			rebirthsConfig = main.configManager.rebirthsConfig;
+			commandsConfig = main.configManager.commandsConfig;
+			taskedPlayers = new HashSet<>();
+	        rankupProgressBar = new MCProgressBar();
+	        rankupProgressBarExtended = new MCProgressBar();
+	        globalProgressBar_rank = new MCProgressBar();
+	        globalProgressBarExtended_rank = new MCProgressBar();
+	        globalProgressBar_prestige = new MCProgressBar();
+	        globalProgressBarExtended_prestige = new MCProgressBar();
+	        globalProgressBar_rebirth = new MCProgressBar();
+	        globalProgressBarExtended_rebirth = new MCProgressBar();
+			numberAPI = new NumberAPI();
+			prestigeIncreaseExpression = main.globalStorage.getStringData("PrestigeOptions.cost_increase_expression");
+			rebirthIncreaseExpression = main.globalStorage.getStringData("RebirthOptions.cost_increase_expression");
+	}
+	
 	public PRXAPI() {
 	    loadMain();
 		increaseType = main.globalStorage.getStringData("PrestigeOptions.cost_increase_type");
@@ -77,7 +122,7 @@ public class PRXAPI {
 		rebirthDataConfig = main.configManager.rebirthDataConfig;
 		rebirthsConfig = main.configManager.rebirthsConfig;
 		commandsConfig = main.configManager.commandsConfig;
-		taskedPlayers = new ArrayList<>();
+		taskedPlayers = new HashSet<>();
         rankupProgressBar = new MCProgressBar();
         rankupProgressBarExtended = new MCProgressBar();
         globalProgressBar_rank = new MCProgressBar();
@@ -1092,6 +1137,7 @@ public class PRXAPI {
 	    *  @param offlinePlayer
 	    *  @return double player rank up cost with prestige increase applied | returns 0.0 if not prestiged
 	    */
+	@Deprecated
 	public Double getPlayerRankupCostWithIncrease(OfflinePlayer offlinePlayer) {
               if(hasPrestiged(offlinePlayer)) {
             	 String nextRank = main.rankStorage.getRankupName(getPlayerRankPath(offlinePlayer));
@@ -1150,6 +1196,38 @@ public class PRXAPI {
 	
 	public int getPlayerRankNumber(UUID uuid) {
 		return Integer.valueOf(getRankNumber(getPlayerRankPath(uuid).getPathName(),getPlayerRank(uuid)));
+	}
+	
+	/**
+	 * 
+	 * @param number (index-1) (so it should start from 1)
+	 * @return can return null
+	 */
+	@Nullable
+	public String getPrestigeNameFromNumber(final int number) {
+		if((number - 1) < 0) {
+			return null;
+		}
+		if((number - 1) >= getPrestigesCollection().size()) {
+			return null;
+		}
+		return getPrestigesCollection().get(number - 1);
+	}
+	
+	/**
+	 * 
+	 * @param number (index-1) (so it should start from 1)
+	 * @return can return null
+	 */
+	@Nullable
+	public String getRebirthNameFromNumber(final int number) {
+		if((number - 1) < 0) {
+			return null;
+		}
+		if((number - 1) >= getRebirthsCollection().size()) {
+			return null;
+		}
+		return getRebirthsCollection().get(number - 1);
 	}
 	
 	   /**
@@ -2006,11 +2084,12 @@ public class PRXAPI {
 		return afterinc;
 	}
 	
-	public double getIncreasedPrestigeCost(final String rebirthName, final String prestigeName) {
+	public double getIncreasedPrestigeCostDummy(final String rebirthName, final String prestigeName) {
 		double eff = getPrestigeCost(prestigeName);
 		if(rebirthName == null || rebirthName.equalsIgnoreCase("none")) {
 			return eff;
 		}
+		
 		double inc = eff / 100;
 		double afterinc;
 		afterinc = inc * getPrestigeCostIncreasePercentage(rebirthName);
@@ -2166,6 +2245,32 @@ public class PRXAPI {
 		return afterinc;
 	}
 	
+	/**
+	 * Recommended Method
+	 * @param rebirthName
+	 * @param prestigeCost
+	 * @return prestige cost with rebirth increase applied | returns only prestige cost if no rebirth
+	 */
+	public double getIncreasedPrestigeCost(String rebirthName, String prestige) {
+		double prestigeCost = this.getPrestigeCost(prestige);
+		if(rebirthName == null || rebirthName.equalsIgnoreCase("null") || getPrestigeCostIncreasePercentage(rebirthName) <= 0) {
+			return prestigeCost;
+		}
+		Double afterinc = main.prxAPI.numberAPI.calculate(rebirthIncreaseExpression
+				.replace("{cost_increase}", String.valueOf(getPrestigeCostIncreasePercentage(rebirthName)))
+				.replace("{rebirthnumber}", String.valueOf(getRebirthNumber(rebirthName)))
+				.replace("{prestigecost}", String.valueOf(main.prxAPI.numberAPI.deleteScientificNotationA(prestigeCost)))
+				.replace("{ranknumber}", String.valueOf(1))
+				);
+		if(afterinc.isNaN()) {
+			return 0.0;
+		}
+		if(afterinc <= 0.0) {
+			return 0.0;
+		}
+		return afterinc;
+	}
+	
 	public boolean isLastRank(OfflinePlayer offlinePlayer) {
 		if(getPlayerRank(offlinePlayer).equalsIgnoreCase(main.globalStorage.getStringData("lastrank"))) {
 			return true;
@@ -2252,6 +2357,7 @@ public class PRXAPI {
 		}
 		return getPlayerPrestigeNumber(offlinePlayer) + rebirthNumber;
 	}
+	
 	
 	/**
 	 * 
@@ -2542,6 +2648,10 @@ public class PRXAPI {
        main.rankupAPI.rankup(player);
 	}
 	
+	   /**
+	    * Execute a rankup to a player for versions below 1.7
+	    * @param player
+	    */
 	public void rankupLegacy(Player player) {
 		main.rankupLegacy.rankup(player);
 	}
@@ -2553,6 +2663,21 @@ public class PRXAPI {
        main.prestigeAPI.prestige(player);
 	}
 	
+	public Rankup getRankupAPI() {
+		return main.rankupAPI;
+	}
+	
+	public Prestige getPrestigeAPI() {
+		return main.prestigeAPI;
+	}
+	
+	public Rebirth getRebirthAPI() {
+		return main.rebirthAPI;
+	}
+	   /**
+	    * Execute a prestige to a player for versions below 1.7
+	    * @param player
+	    */
 	public void prestigeLegacy(Player player) {
 		main.prestigeLegacy.prestige(player);
 	}
@@ -2563,9 +2688,24 @@ public class PRXAPI {
 	public void rankupMax(Player player) {
 		main.rankupMaxAPI.rankupMax(player);
 	}
+	   /**
+	    * Execute a rankupmax to a player for versions below 1.7
+	    * @param player
+	    */
+	public void rankupMaxLegacy(Player player) {
+		main.rankupMaxLegacy.rankupMax(player);
+	}
 	
+	   /**
+	    * Execute a rankupmax rank jump to a specific rank for a player
+	    * @param player
+	    */
 	public void rankupMaxLimit(Player player, String rank) {
 		main.rankupMaxAPI.rankupMax(player, rank);
+	}
+	
+	public void rankupMaxLimitLegacy(Player player, String rank) {
+		main.rankupMaxLegacy.rankupMax(player, rank);
 	}
 	
 	public void rebirth(Player player) {

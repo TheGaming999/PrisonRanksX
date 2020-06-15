@@ -107,6 +107,7 @@ public class Prestige {
 		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		main.getServer().getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
+			prxAPI.taskedPlayers.remove(player);
 			return;
 		}
 		Player p = player;
@@ -269,6 +270,7 @@ public class Prestige {
 			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE, main.globalStorage.getStringData("defaultrank"));
 			Bukkit.getPluginManager().callEvent(e1);
 			if(e1.isCancelled()) {
+				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			main.playerStorage.setPlayerRank(p, main.globalStorage.getStringData("defaultrank"));
@@ -295,25 +297,23 @@ public class Prestige {
 		}
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 		main.playerStorage.setPlayerPrestige(p, prestige);
-		prxAPI.taskedPlayers.remove(player);
+		prxAPI.taskedPlayers.remove(p);
 		
 		}, 1);
 	}
 	
 	public void prestige2(final Player player, final boolean ignoreLastRank) {
 		if(prxAPI.taskedPlayers.contains(player)) {
-			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
-			player.sendMessage(prxAPI.g("commandspam"));
-			}
 			return;
 		}
 		prxAPI.taskedPlayers.add(player);
 		if(player == null) {
 			return;
 		}
-		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
+		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGE_BY_RANKUPMAX);
 		main.getServer().getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
+			prxAPI.taskedPlayers.remove(player);
 			return;
 		}
 		Player p = player;
@@ -478,6 +478,7 @@ public class Prestige {
 			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE, main.globalStorage.getStringData("defaultrank"));
 			Bukkit.getPluginManager().callEvent(e1);
 			if(e1.isCancelled()) {
+				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
 			main.playerStorage.setPlayerRank(p, main.globalStorage.getStringData("defaultrank"));
@@ -527,6 +528,7 @@ public class Prestige {
 		main.getServer().getPluginManager().callEvent(e);
 		});
 		if(e.isCancelled()) {
+			getTaskedPlayers().remove(p);
 			return;
 		}
 		String prestige = prxAPI.getPlayerNextPrestige(p);
@@ -692,6 +694,7 @@ public class Prestige {
 			Bukkit.getScheduler().runTask(main, () -> {
 			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
+				getTaskedPlayers().remove(p);
 				return;
 			}
 			main.playerStorage.setPlayerRank(p, main.globalStorage.getStringData("defaultrank"));

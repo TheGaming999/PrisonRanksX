@@ -83,14 +83,14 @@ public class RebirthDataStorage {
 	}
 	
 	public Double loadDouble(String node) {
-		if(main.configManager.rebirthsConfig.get(node) == null) {
+		if(!main.configManager.rebirthsConfig.isSet(node) || !main.configManager.rebirthsConfig.isDouble(node)) {
 			return 0.0;
 		}
 		return main.configManager.rebirthsConfig.getDouble(node, 0.0);
 	}
 	
 	public Integer loadInt(String node) {
-		if(main.configManager.rebirthsConfig.get(node) == null) {
+		if(!main.configManager.rebirthsConfig.isSet(node) || !main.configManager.rebirthsConfig.isInt(node)) {
 			return 0;
 		}
 		return main.configManager.rebirthsConfig.getInt(node, 0);

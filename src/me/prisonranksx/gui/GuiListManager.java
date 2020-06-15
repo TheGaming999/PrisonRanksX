@@ -129,6 +129,7 @@ public class GuiListManager {
 	public ItemStack parseStack(String itemValue) {
 		ItemStack x = null;
 		itemValue = itemValue.toUpperCase();
+		try {
 		if(itemValue.contains(";")) {
 			// 1.8 - 1.15
 			String[] nameAndData = itemValue.split(";");
@@ -153,6 +154,13 @@ public class GuiListManager {
 			x = XMaterial.matchXMaterial(itemValue).parseItem();
 		}
 		return x;
+		} catch (Exception err) {
+			main.getLogger().warning("Error while parsing an item name! unable to parse item: " + itemValue);
+			main.getLogger().warning("Please try another format from the formats mentioned below current-format section underneath Ranklist-gui in config.yml");
+			err.printStackTrace();
+		   return new ItemStack(Material.BEDROCK, 1);	
+		}
+		
 	}
 	
 	public void openRanksGUI(Player player) {

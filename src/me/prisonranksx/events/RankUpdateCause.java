@@ -6,8 +6,8 @@ package me.prisonranksx.events;
  * @enum RANKUPMAX is before the rankupmax process
  *
  */
-	public enum RankUpdateCause{NORMAL_RANKUP, FORCE_RANKUP, NORMAL_RANKUPMAX, NORMAL_RANKUPBY, RANKSET, RANKSET_BYPRESTIGE, RANKSET_BYCONVERT
-		, RANKUPMAX;
+	public enum RankUpdateCause{NORMAL_RANKUP, FORCE_RANKUP, NORMAL_RANKUPMAX, NORMAL_RANKUPBY, RANKSET, RANKSET_BYPRESTIGE, RANKSET_BYREBIRTH, RANKSET_BYCONVERT
+		, RANKUPMAX, OTHER;
 		
 	private static RankUpdateCause rankUpdateCause;
 	

@@ -206,6 +206,7 @@ public class GlobalDataStorage {
 		boolean isRankupMaxRankupMsgLastRankOnly = registerBooleanData("Options.rankupmax-rankupmsglastrankonly");
 		boolean isRankupVaultGroups = registerBooleanData("Options.rankup-vault-groups");
 		String rankupVaultGroupsPlugin = registerStringData("Options.rankup-vault-groups-plugin");
+		boolean isRankupVaultGroupsCheck = registerBooleanData("Options.rankup-vault-groups-check");
 		boolean isAutoRankup = registerBooleanData("Options.autorankup");
 		boolean rankupMaxWithPrestige = registerBooleanData("Options.rankupmax-with-prestige");
 	    int autoRankupDelay = registerIntegerData("Options.autorankup-delay");

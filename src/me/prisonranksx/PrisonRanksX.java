@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -52,6 +53,7 @@ import me.prisonranksx.api.Prestiges;
 import me.prisonranksx.api.Ranks;
 import me.prisonranksx.api.Rankup;
 import me.prisonranksx.api.RankupLegacy;
+import me.prisonranksx.api.RankupMaxLegacy;
 import me.prisonranksx.api.Rebirth;
 import me.prisonranksx.api.RebirthLegacy;
 import me.prisonranksx.api.Rebirths;
@@ -107,7 +109,10 @@ import com.google.common.io.Files;
 
 import cloutteam.samjakob.gui.types.PaginatedGUI;
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.cacheddata.CachedMetaData;
+import net.luckperms.api.context.ImmutableContextSet;
 import net.luckperms.api.model.user.User;
+import net.luckperms.api.query.QueryOptions;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import ru.tehkode.permissions.PermissionUser;
@@ -130,6 +135,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public Prestige prestigeAPI;
 	public PrestigeLegacy prestigeLegacy;
 	public me.prisonranksx.api.RankupMax rankupMaxAPI;
+	public me.prisonranksx.api.RankupMaxLegacy rankupMaxLegacy;
 	public Ranks ranksAPI;
 	public Prestiges prestigesAPI;
 	public Rebirth rebirthAPI;
@@ -218,6 +224,7 @@ public void setupLuckPerms() {
 	 public Economy econ = null;
 	public boolean isEBProgress;
 	public boolean isSaveOnLeave;
+	public boolean checkVault;
 	//...
 	 
 	    private boolean setupEconomy() {
@@ -253,9 +260,17 @@ public void setupLuckPerms() {
 	    		getPlayerStorage().savePlayersData();
 	    		long timeNow = System.currentTimeMillis() - timeBefore;
 	    		if(getGlobalStorage().getBooleanData("Options.save-notification")) {
-	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved §7& §etook §6(§e" + String.valueOf(timeNow) + " ms§6)§e.");
+	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved §7& §etook §6(§e" + toSeconds(timeNow) + "§6)§e.");
 	    		}
 	    	}, 18000, 18000);
+	    }
+	    
+	    public String toSeconds(final long time) {
+	    	if(time > 1000) {
+	    		return String.valueOf(time / 1000) + " s";
+	    	} else {
+	    		return String.valueOf(time) + " ms";
+	    	}
 	    }
 	   
 	public void onEnable() {
@@ -361,6 +376,7 @@ public void setupLuckPerms() {
 			  setupMySQL();
 			  forceSave = globalStorage.getBooleanData("Options.forcesave");
 			  isRankupMaxWarpFilter = globalStorage.getBooleanData("Options.rankupmax-warp-filter");
+			  checkVault = globalStorage.getBooleanData("Options.rankup-vault-groups-check");
 			  //playerStorage.loadPlayersData();
 		       try {
 				ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
@@ -389,12 +405,14 @@ public void setupLuckPerms() {
 			  rankupAPI = new Rankup();
 			  prestigeAPI = new Prestige();
 			  rebirthAPI = new Rebirth();
+			  rankupMaxAPI = new me.prisonranksx.api.RankupMax();
 			  } else {
 				  rankupLegacy = new RankupLegacy();
 				  prestigeLegacy = new PrestigeLegacy();
 				  rebirthLegacy = new RebirthLegacy();
+				  rankupMaxLegacy = new RankupMaxLegacy();
 			  }
-			  rankupMaxAPI = new me.prisonranksx.api.RankupMax();
+			  
 			  ranksAPI = new Ranks();
 			  ranksAPI.load();
 			  prestigesAPI = new Prestiges();
@@ -873,8 +891,16 @@ public void setupLuckPerms() {
 	    if(!getPlayerStorage().isRegistered(playerUUID)) {
 	    getPlayerStorage().loadPlayerData(playerUUID);
 		 if(isMySql()) {
-			this.updateMySqlData(user.getUUID(), e.getName());
+			this.updateMySqlData(playerUUID, e.getName());
 		 }
+	    }
+	    if(isVaultGroups) {
+	    	if(this.vaultPlugin.equalsIgnoreCase("luckperms")) {
+	    		User lpUser = luckperms.getUserManager().getUser(playerUUID);
+	    		if(!lpUser.getPrimaryGroup().equalsIgnoreCase(prxAPI.getPlayerRank(playerUUID))) {
+	    			prxAPI.setPlayerRank(playerUUID, lpUser.getPrimaryGroup());
+	    		}
+	    	}
 	    }
 		if((getPlayerStorage().isRegistered(playerUUID))) {
 			 return;
@@ -895,6 +921,26 @@ public void setupLuckPerms() {
 			return;
 		}
 		Player p = e.getPlayer();
+		Bukkit.getScheduler().runTaskLater(this, () -> {
+		if(isVaultGroups) {
+			if(vaultPlugin.equalsIgnoreCase("GroupManager")) {
+				String group = groupManager.getGroup(p);
+				if(!group.equalsIgnoreCase(prxAPI.getPlayerRank(p))) {
+					prxAPI.setPlayerRank(p, group);
+				}
+			} else if (vaultPlugin.equalsIgnoreCase("PermissionsEX")) {
+				String group = PermissionsEx.getUser(p).getGroups()[0].getName();
+				if(!group.equalsIgnoreCase(prxAPI.getPlayerRank(p))) {
+					prxAPI.setPlayerRank(p, group);
+				}
+			} else if (vaultPlugin.equalsIgnoreCase("Vault")) {
+				String group = perms.getPrimaryGroup(p);
+				if(!group.equalsIgnoreCase(prxAPI.getPlayerRank(p))) {
+					prxAPI.setPlayerRank(p, group);
+				}
+			}
+		}
+		}, 60);
 		if(isEBProgress) {
 			Bukkit.getScheduler().runTaskLater(this, () -> {
 				this.ebprogress.enable(p);
@@ -1659,7 +1705,7 @@ public void setupLuckPerms() {
 			}
 			}
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth, path);
+				//updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		
@@ -1700,7 +1746,7 @@ public void setupLuckPerms() {
 			}
 			}
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth, path);
+				//updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		
@@ -1741,7 +1787,7 @@ public void setupLuckPerms() {
 			}
 			}
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth, path);
+				//updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		
@@ -1764,7 +1810,7 @@ public void setupLuckPerms() {
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth, path);
+				//updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		
@@ -1787,7 +1833,7 @@ public void setupLuckPerms() {
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			if(isMySql) {
-				updateMySqlData(p, rank, prestige, rebirth, path);
+				//updateMySqlData(p, rank, prestige, rebirth, path);
 			}
 		}
 		

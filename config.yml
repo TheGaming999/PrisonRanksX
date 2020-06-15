@@ -93,6 +93,8 @@ Options:
   rankup-vault-groups: false
   # You can write here "GroupManager" or "PermissionsEX" or "LuckPerms" or "Vault" otherwise you can write the command using these placeholders %player% and %rank%.
   rankup-vault-groups-plugin: "Vault"
+  # Check if player group in the said plugin doesn't match the one in prisonranksx then update it.
+  rankup-vault-groups-check: true
   # enable autorankup task.
   autorankup: true
   # if you want the player to prestige up when he gets enough money to prestige while ranking up using "/rankupmax" command
@@ -252,8 +254,9 @@ Ranklist-gui:
   # ranks item slots if it's above 44 it will be added to the next page. this was made to separate the constant items and rank items
   allowed-slots: "9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55"
   current-format: # placeholders: %currentrank% %currentrank_display% %currentrank_cost% %currentrank_cost_formatted%
+    # each format uses a different way of parsing so if a format is not working try another one till it work.
     # format: <itemname>:[data] | example: WOOL:1
-    # format: <itemname>;[data] | example: WOOL:5
+    # format: <itemname>;[data] | example: WOOL;5
     # format: <itemname>#[data] | example: STAINED_CLAY#2
     # format: <itemname>->[data] | example: STAINED_CLAY->14
     # format: <itemname> | example: DIAMOND

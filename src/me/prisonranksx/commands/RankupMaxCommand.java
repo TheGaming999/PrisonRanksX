@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
 
-public class RankupMaxCommand extends BukkitCommand{
+public class RankupMaxCommand extends BukkitCommand {
 	
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	public RankupMaxCommand(String commandName) {
@@ -32,11 +32,20 @@ public class RankupMaxCommand extends BukkitCommand{
 	      if(!(sender instanceof Player)) {
 	    	  return true;
 	      } 
+	      Player p = (Player)sender;
+	      if(main.isBefore1_7) {
+	    	  main.prxAPI.rankupMaxLegacy(p);
+	    	  return true;
+	      }
        //do rankup max
-	     main.prxAPI.rankupMax((Player)sender);
+	     main.prxAPI.rankupMax(p);
 		} else if (args.length == 1) {
 			String rank = main.manager.matchRank(args[0]);
 			if(!main.prxAPI.rankExists(rank)) {
+				return true;
+			}
+			if(main.isBefore1_7) {
+				main.prxAPI.rankupMaxLimitLegacy((Player)sender, rank);
 				return true;
 			}
 			main.prxAPI.rankupMaxLimit((Player)sender, rank);

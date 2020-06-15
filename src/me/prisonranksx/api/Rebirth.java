@@ -16,7 +16,11 @@ import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RebirthRandomCommands;
 import me.prisonranksx.events.XRebirthUpdateEvent;
+import me.prisonranksx.events.PrestigeUpdateCause;
+import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RebirthUpdateCause;
+import me.prisonranksx.events.XPrestigeUpdateEvent;
+import me.prisonranksx.events.XRankUpdateEvent;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class Rebirth {
@@ -27,7 +31,7 @@ public class Rebirth {
 		this.prxAPI = main.prxAPI;
 	}
 	
-	public void rebirth(Player player) {
+	public void rebirth(final Player player) {
 		if(prxAPI.taskedPlayers.contains(player)) {
 			if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 				return;
@@ -42,6 +46,7 @@ public class Rebirth {
 		XRebirthUpdateEvent e = new XRebirthUpdateEvent(player, RebirthUpdateCause.REBIRTHUP);
 		main.getServer().getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
+			prxAPI.taskedPlayers.remove(player);
 			return;
 		}
 		Player p = player;
@@ -55,23 +60,28 @@ public class Rebirth {
 			return;
 		}
 		if(rebirth.equalsIgnoreCase("LASTREBIRTH")) {
-			if(prxAPI.h("lastrebirth") == null || prxAPI.h("lastrebirth").isEmpty()) {
-				return;
+			if(prxAPI.h("lastrebirth") != null && !prxAPI.h("lastrebirth").isEmpty()) {
+			  for(String line : prxAPI.h("lastrebirth")) {
+				  p.sendMessage(prxAPI.c(line));
+			  }
 			}
-			for(String line : prxAPI.h("lastrebirth")) {
-				p.sendMessage(prxAPI.c(line));
+			prxAPI.taskedPlayers.remove(p);
+			return;
+		}
+		if(!prxAPI.isLastRank(p)) {
+			if(prxAPI.g("norebirth") != null && !prxAPI.g("norebirth").isEmpty()) {
+				p.sendMessage(prxAPI.cp(prxAPI.g("norebirth"), p));
 			}
 			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
 		if(prxAPI.getPlayerNextRebirthCost(p) > prxAPI.getPlayerMoney(p)) {
-			if(prxAPI.h("rebirth-notenoughmoney") == null || prxAPI.h("rebirth-notenoughmoney").isEmpty()) {
-				return;
-			}
+			if(prxAPI.h("rebirth-notenoughmoney") != null && !prxAPI.h("rebirth-notenoughmoney").isEmpty()) {	
 			for(String line : prxAPI.h("rebirth-notenoughmoney")) {
 				p.sendMessage(prxAPI.c(line)
 						.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p)).replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(p))
 						.replace("%nextrebirth_cost%", prxAPI.s(prxAPI.getPlayerNextRebirthCost(p))).replace("%nextrebirth_cost_formatted%", prxAPI.getPlayerNextRebirthCostFormatted(p)));
+			}
 			}
 			prxAPI.taskedPlayers.remove(p);
 			return;
@@ -214,9 +224,23 @@ public class Rebirth {
 			main.econ.withdrawPlayer(p, prxAPI.getPlayerMoney(p));
 		}
 		if(main.globalStorage.getBooleanData("RebirthOptions.ResetRank")) {
+			XRankUpdateEvent xrue = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYREBIRTH, main.globalStorage.getStringData("defaultrank"));
+			Bukkit.getScheduler().runTask(main, () -> {
+				Bukkit.getPluginManager().callEvent(xrue);
+			if(xrue.isCancelled()) {
+				return;
+			}
+			});
 			main.playerStorage.setPlayerRank(p, main.globalStorage.getStringData("defaultrank"));
 		}
 		if(main.globalStorage.getBooleanData("RebirthOptions.ResetPrestige")) {
+			XPrestigeUpdateEvent xpue = new XPrestigeUpdateEvent(p, PrestigeUpdateCause.SETPRESTIGE_BY_REBIRTH);
+			Bukkit.getScheduler().runTask(main, () -> {
+				Bukkit.getPluginManager().callEvent(xpue);
+			if(xpue.isCancelled()) {
+				return;
+			}
+			});
 			main.playerStorage.setPlayerPrestige(p, prxAPI.getFirstPrestige());
 		}
 		List<String> rebirthCommands = main.globalStorage.getStringListData("RebirthOptions.rebirth-cmds");

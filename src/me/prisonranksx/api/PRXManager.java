@@ -542,7 +542,7 @@ public class PRXManager {
     	  main.mvdw.registerPlaceholders();
       }
       main.messagesStorage.loadMessages();
-      main.prxAPI = new PRXAPI();
+      main.prxAPI = new PRXAPI(true);
       main.prxAPI.setup();
       main.prxAPI.loadPermissions();
       main.prxAPI.loadProgressBars();
@@ -568,6 +568,7 @@ public class PRXManager {
       main.forceSave = main.globalStorage.getBooleanData("Options.forcesave");
       main.lbm = new LeaderboardManager(main);
       main.isSaveOnLeave = main.globalStorage.getBooleanData("Options.save-on-leave");
+      main.checkVault = main.globalStorage.getBooleanData("Options.rankup-vault-groups-check");
       if(main.topPrestigesCommand != null) {
       main.topPrestigesCommand.load();
       }
@@ -575,12 +576,20 @@ public class PRXManager {
       main.topRebirthsCommand.load();
       }
       if(main.isABProgress) {
+      main.abprogress.clear(true);
       main.abprogress = new ActionbarProgress(main);
+        for(Player p : OnlinePlayers.getEveryPlayer()) {
+    	  main.abprogress.enable(p);  
+        }
       } else {
     	  main.abprogress.clear(true);
       }
       if(main.isEBProgress) {
+    	  main.ebprogress.clear(true);
       main.ebprogress = new ExpbarProgress(main);
+      for(Player p : OnlinePlayers.getEveryPlayer()) {
+  	  main.ebprogress.enable(p);  
+      }
       } else {
     	  main.ebprogress.clear(true);
       }
@@ -678,38 +687,60 @@ public class PRXManager {
 		main.configManager.saveMainConfig();
 	}
 	
-	public void setPrestigeCost(String name, double cost) {
+	public void setPrestigeCost(final String name, double cost) {
 		if(main.prestigeStorage.getPrestigeData().get(name) == null) {
 			// prestige doesn't exist
 			return;
 		}
-		PrestigeDataHandler pdh = new PrestigeDataHandler(name);
+		PrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(name);
 		pdh.setCost(cost);
 		main.prestigeStorage.putData(name, pdh);
 		main.prestigeStorage.savePrestigeData(name);
 	}
 	
-	public void setPrestigeDisplayName(String name, String displayName) {
+	public void setPrestigeDisplayName(final String name, String displayName) {
 		if(main.prestigeStorage.getPrestigeData().get(name) == null) {
 			// prestige doesn't exist
 			return;
 		}
-		PrestigeDataHandler pdh = new PrestigeDataHandler(name);
-		pdh.setDisplayName(name);
+		PrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(name);
+		pdh.setDisplayName(displayName);
 		main.prestigeStorage.putData(name, pdh);
 		main.prestigeStorage.savePrestigeData(name);
 	}
 	
-	public void delPrestige(String name) {
+	public void delPrestige(final String name) {
 		if(main.prestigeStorage.getPrestigeData().get(name) == null) {
 			// prestige doesn't exist
 			return;
 		}
+		String previousPrestige = this.getPreviousPrestige(name);
+		String nextPrestige = this.getNextPrestige(name);
+		if(previousPrestige != null) {
+			if(nextPrestige != null) {
+				PrestigeDataHandler npdh = main.prestigeStorage.getDataHandler(nextPrestige);
+				PrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(previousPrestige);
+				pdh.setNextPrestigeName(nextPrestige);
+				pdh.setNextPrestigeCost(npdh.getCost());
+				pdh.setNextPrestigeDisplayName(npdh.getDisplayName());
+				main.prestigeStorage.getPrestigeData().put(previousPrestige, pdh);
+				main.prestigeStorage.savePrestigeData(previousPrestige);
+			} else {
+				PrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(previousPrestige);
+				pdh.setNextPrestigeName("LASTPRESTIGE");
+				pdh.setNextPrestigeDisplayName(null);
+				main.prestigeStorage.getPrestigeData().put(previousPrestige, pdh);
+				main.prestigeStorage.savePrestigeData(previousPrestige);
+			}
+		} else {
+              
+		}
 		main.prestigeStorage.getPrestigeData().remove(name);
+		main.prestigeStorage.savePrestigesData();
 		main.configManager.savePrestigesConfig();
 	}
 	
-	public void createRebirth(String name, double cost) {
+	public void createRebirth(final String name, final double cost) {
 	    RebirthDataHandler rdh = new RebirthDataHandler(name);
 		rdh.setName(name);
 		rdh.setCost(cost);
@@ -740,7 +771,7 @@ public class PRXManager {
 		main.configManager.saveMainConfig();
 	}
 	
-	public void createRebirth(String name, double cost, String displayName) {
+	public void createRebirth(final String name, final double cost, final String displayName) {
 	    RebirthDataHandler rdh = new RebirthDataHandler(name);
 		rdh.setName(name);
 		rdh.setCost(cost);
@@ -771,39 +802,60 @@ public class PRXManager {
 		main.configManager.saveMainConfig();
 	}
 	
-	public void setRebirthCost(String name, double cost) {
+	public void setRebirthCost(final String name, final double cost) {
 		if(main.rebirthStorage.getRebirthData().get(name) == null) {
 			// rebirth doesn't exist
 			return;
 		}
-		RebirthDataHandler rdh = new RebirthDataHandler(name);
+		RebirthDataHandler rdh = main.rebirthStorage.getDataHandler(name);
 		rdh.setCost(cost);
 		main.rebirthStorage.putData(name, rdh);
 		main.rebirthStorage.saveRebirthData(name);
 	}
 	
-	public void setRebirthDisplayName(String name, String displayName) {
+	public void setRebirthDisplayName(final String name, final String displayName) {
 		if(main.rebirthStorage.getRebirthData().get(name) == null) {
 			// rebirth doesn't exist
 			return;
 		}
-		RebirthDataHandler rdh = new RebirthDataHandler(name);
+		RebirthDataHandler rdh = main.rebirthStorage.getDataHandler(name);
 		rdh.setDisplayName(displayName);
 		main.rebirthStorage.putData(name, rdh);
 		main.rebirthStorage.saveRebirthData(name);
 	}
 	
 	/**
-	 * Don't use
 	 * @param name
 	 */
-	public void delRebirth(String name) {
+	public void delRebirth(final String name) {
 		if(main.rebirthStorage.getRebirthData().get(name) == null) {
 			// rebirth doesn't exist
 			return;
 		}
+		String previousRebirth = this.getPreviousRebirth(name);
+		String nextRebirth = this.getNextRebirth(name);
+		if(previousRebirth != null) {
+			if(nextRebirth != null) {
+				RebirthDataHandler nrdh = main.rebirthStorage.getDataHandler(nextRebirth);
+				RebirthDataHandler rdh = main.rebirthStorage.getDataHandler(previousRebirth);
+				rdh.setNextRebirthName(nextRebirth);
+				rdh.setNextRebirthCost(nrdh.getCost());
+				rdh.setNextRebirthDisplayName(nrdh.getDisplayName());
+				main.rebirthStorage.getRebirthData().put(previousRebirth, rdh);
+				main.rebirthStorage.saveRebirthData(previousRebirth);
+			} else {
+				RebirthDataHandler rdh = main.rebirthStorage.getDataHandler(previousRebirth);
+				rdh.setNextRebirthName("LASTREBIRTH");
+				rdh.setNextRebirthDisplayName(null);
+				main.rebirthStorage.getRebirthData().put(previousRebirth, rdh);
+				main.rebirthStorage.saveRebirthData(previousRebirth);
+			}
+		} else {
+              
+		}
 		main.rebirthStorage.rebirthData.remove(name);
-		main.rebirthStorage.saveRebirthData(name);
+		main.rebirthStorage.saveRebirthsData();
+		main.configManager.saveRebirthsConfig();
 	}
 	
 	public void delPlayerPrestige(XUser user) {

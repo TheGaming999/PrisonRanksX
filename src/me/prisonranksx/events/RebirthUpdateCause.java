@@ -1,6 +1,6 @@
 package me.prisonranksx.events;
 
-public enum RebirthUpdateCause {REBIRTHUP, SETREBIRTH, DELREBIRTH;
+public enum RebirthUpdateCause {REBIRTHUP, SETREBIRTH, DELREBIRTH, OTHER;
 
 	private static RebirthUpdateCause cause;
 	

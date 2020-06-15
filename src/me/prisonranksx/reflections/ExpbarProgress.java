@@ -8,7 +8,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.Sets;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.prisonranksx.PrisonRanksX;
 
 public class ExpbarProgress {
@@ -75,7 +74,7 @@ public class ExpbarProgress {
 			for(UUID u : players) {
 				Player p = Bukkit.getPlayer(u);
 				int levels = Integer.valueOf(main.prxAPI.getPlayerRankupPercentageSafe(p));
-			    p.setLevel(levels * 1);
+			    p.setLevel(levels * 100);
 				//Experience.changeExp(p, levels);
 				//p.setExp(Float.valueOf(PlaceholderAPI.setPlaceholders(p, expbarFormat)));
 			}

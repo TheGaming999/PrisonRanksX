@@ -17,7 +17,11 @@ import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RebirthRandomCommands;
 import me.prisonranksx.events.XRebirthUpdateEvent;
+import me.prisonranksx.events.PrestigeUpdateCause;
+import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RebirthUpdateCause;
+import me.prisonranksx.events.XPrestigeUpdateEvent;
+import me.prisonranksx.events.XRankUpdateEvent;
 import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
@@ -29,7 +33,7 @@ public class RebirthLegacy {
 		this.prxAPI = main.prxAPI;
 	}
 	
-	public void rebirth(Player player) {
+	public void rebirth(final Player player) {
 		if(prxAPI.taskedPlayers.contains(player)) {
 			if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 				return;
@@ -42,8 +46,9 @@ public class RebirthLegacy {
 			return;
 		}
 		XRebirthUpdateEvent e = new XRebirthUpdateEvent(player, RebirthUpdateCause.REBIRTHUP);
-		
+		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
+			prxAPI.taskedPlayers.remove(player);
 			return;
 		}
 		Player p = player;
@@ -67,6 +72,13 @@ public class RebirthLegacy {
 			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
+		if(!prxAPI.isLastRank(p)) {
+			if(prxAPI.g("norebirth") != null && !prxAPI.g("norebirth").isEmpty()) {
+				p.sendMessage(prxAPI.cp(prxAPI.g("norebirth"), p));
+			}
+			prxAPI.taskedPlayers.remove(p);
+			return;
+		}
 		if(prxAPI.getPlayerNextRebirthCost(u) > prxAPI.getPlayerMoney(p.getName())) {
 			if(prxAPI.h("rebirth-notenoughmoney") == null || prxAPI.h("rebirth-notenoughmoney").isEmpty()) {
 				return;
@@ -80,6 +92,7 @@ public class RebirthLegacy {
 			return;
 		}
 		int requiredPrestiges = prxAPI.getRequiredPrestiges(rebirth);
+		if(requiredPrestiges > 0) {
 		if(requiredPrestiges > prxAPI.getPlayerPrestiges(u)) {
 			// ouh
 			int left = requiredPrestiges - prxAPI.getPlayerPrestiges(u);
@@ -87,6 +100,14 @@ public class RebirthLegacy {
 					.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
 			prxAPI.taskedPlayers.remove(p);
 			return;
+		}
+		} else {
+			if(!prxAPI.hasNextPrestige(u)) {
+				p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", "")
+						.replace("%prestiges_amount%", ""));
+				prxAPI.taskedPlayers.remove(p);
+				return;
+			}
 		}
 		String rebirthMsg = prxAPI.g("rebirth");
 		if(rebirthMsg != null) {
@@ -208,9 +229,23 @@ public class RebirthLegacy {
 			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
 		}
 		if(main.globalStorage.getBooleanData("RebirthOptions.ResetRank")) {
+			XRankUpdateEvent xrue = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYREBIRTH, main.globalStorage.getStringData("defaultrank"));
+			Bukkit.getScheduler().runTask(main, () -> {
+				Bukkit.getPluginManager().callEvent(xrue);
+			if(xrue.isCancelled()) {
+				return;
+			}
+			});
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
 		}
 		if(main.globalStorage.getBooleanData("RebirthOptions.ResetPrestige")) {
+			XPrestigeUpdateEvent xpue = new XPrestigeUpdateEvent(p, PrestigeUpdateCause.SETPRESTIGE_BY_REBIRTH);
+			Bukkit.getScheduler().runTask(main, () -> {
+				Bukkit.getPluginManager().callEvent(xpue);
+			if(xpue.isCancelled()) {
+				return;
+			}
+			});
 			main.playerStorage.setPlayerPrestige(u, prxAPI.getFirstPrestige());
 		}
 		List<String> rebirthCommands = main.globalStorage.getStringListData("RebirthOptions.rebirth-cmds");
@@ -235,10 +270,9 @@ public class RebirthLegacy {
 		}
 		main.playerStorage.setPlayerRebirth(u, rebirth);
 		prxAPI.taskedPlayers.remove(player);
-		main.getServer().getPluginManager().callEvent(e);
 	}
 	
-	public void spawnHologram(List<String> format, int removeTime, int height, Player player) {
+	public void spawnHologram(final List<String> format, final int removeTime, final int height, final Player player) {
 		Player p = player;
 		UUID u = XUUID.tryNameConvert(p.getName());
 		Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
