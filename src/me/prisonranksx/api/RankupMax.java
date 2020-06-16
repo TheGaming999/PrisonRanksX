@@ -94,26 +94,26 @@ public class RankupMax {
         }
         // other values
         List<String> ranksConfigList = prxAPI.getRanksCollection(rp1.getPathName());
-
+        boolean canPrestige = prxAPI.canPrestige(p);
         // if the player is at the latest rank
-        if(nextRank == null && !canPrestigeMap.containsKey(p)) {
+        if(nextRank == null && !canPrestigeMap.containsKey(p) && !canPrestige) {
         	main.sendListMessage(p, lastRankMessage);
         	rankupMaxProcess.remove(p);
         	return;
         }
         // if he had a nextrank
         // player values
-        String nextRankDisplay = !canPrestigeMap.containsKey(p) ? main.getString(prxAPI.getPlayerRankupDisplay(p), name) : "null";
-	    Double nextRankCost = !canPrestigeMap.containsKey(p) ? prxAPI.getPlayerRankupCostWithIncreaseDirect(p) : 0.0;
+        String nextRankDisplay = !canPrestigeMap.containsKey(p) && !canPrestige ? main.getString(prxAPI.getPlayerRankupDisplay(p), name) : "null";
+	    Double nextRankCost = !canPrestigeMap.containsKey(p) && !canPrestige ? prxAPI.getPlayerRankupCostWithIncreaseDirect(p) : 0.0;
 	    String nextRankCostInString = String.valueOf(nextRankCost);
         String nextRankCostFormatted = prxAPI.formatBalance(nextRankCost);
         //other values [2]
     	List<String> allRanksCommands = new ArrayList<>();
     	List<String> rankups = new ArrayList<>();
-    	String rankupMessage = !canPrestigeMap.containsKey(p) ? main.getString(main.messagesStorage.getStringMessage("rankup"), name) : "null";
-    	String rankupNoPermissionMessage = !canPrestigeMap.containsKey(p) ? main.getString(main.messagesStorage.getStringMessage("rankup-nopermission"), name).replace("%nextrank%", nextRank).replace("%rankup%", nextRank).replace("%rankup_display%", nextRankDisplay) : "null";
+    	String rankupMessage = !canPrestigeMap.containsKey(p) && !canPrestige ? main.getString(main.messagesStorage.getStringMessage("rankup"), name) : "null";
+    	String rankupNoPermissionMessage = !canPrestigeMap.containsKey(p) && !canPrestige ? main.getString(main.messagesStorage.getStringMessage("rankup-nopermission"), name).replace("%nextrank%", nextRank).replace("%rankup%", nextRank).replace("%rankup_display%", nextRankDisplay) : "null";
         //if the rank cost is higher than player's balance
-        if(nextRankCost > playerBalance && !canPrestigeMap.containsKey(p)) {
+        if(nextRankCost > playerBalance && !canPrestigeMap.containsKey(p) && !canPrestige) {
             for (String msg : notEnoughMoneyMessage) {
                 p.sendMessage(main.getString(msg, name).replace("%player%", name).replace("%rankup_cost%", nextRankCostInString).replace("%rankup%", nextRank).replace("%rankup_display%", nextRankDisplay).replace("%rankup_cost_formatted%", nextRankCostFormatted));
             }
@@ -121,7 +121,7 @@ public class RankupMax {
         	return;
         }
         //if per rank permission option is enabled and the player dosen't has the required permission
-        if(isPerRankPermission && !p.hasPermission(main.rankupCommand.getPermission() + "." + nextRank) && !canPrestigeMap.containsKey(p)) {
+        if(isPerRankPermission && !p.hasPermission(main.rankupCommand.getPermission() + "." + nextRank) && !canPrestigeMap.containsKey(p) && !canPrestige) {
         	p.sendMessage(rankupNoPermissionMessage);
         	rankupMaxProcess.remove(p);
         	return;

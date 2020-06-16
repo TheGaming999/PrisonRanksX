@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
@@ -520,7 +521,7 @@ public class PRXAPI {
        		return ps;
     	} else { // is last rank
     		if(this.hasNextPrestige(p)) {
-    			double percent = (getPlayerMoney(p) / getPlayerNextPrestigeCost(p)) * 100;
+    			double percent = (getPlayerMoney(p) / getPlayerNextPrestigeCostWithIncreaseDirect(p)) * 100;
            		if(percent >= 100) {
            			ps.setPercentage("100");
            			ps.setLevelType(LevelType.PRESTIGE);
@@ -551,7 +552,7 @@ public class PRXAPI {
     	}
     }
     
-    public PercentageState getPlayerNextPercentageOnline(UUID uuid, String name) {
+    public PercentageState getPlayerNextPercentageOnline(final UUID uuid, final String name) {
     	UUID p = uuid;
     	PercentageState ps = new PercentageState();
     	if(!this.isLastRank(p)) { // is not last rank
@@ -567,7 +568,7 @@ public class PRXAPI {
        		return ps;
     	} else { // is last rank
     		if(this.hasNextPrestige(p)) {
-    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCost(p)) * 100;
+    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCostWithIncreaseDirect(p)) * 100;
            		if(percent >= 100) {
            			ps.setPercentage("100");
            			ps.setLevelType(LevelType.PRESTIGE);
@@ -608,7 +609,7 @@ public class PRXAPI {
        		return intConverted;
     	} else { // is last rank
     		if(this.hasNextPrestige(p)) {
-    			double percent = (getPlayerMoney(p) / getPlayerNextPrestigeCost(p)) * 100;
+    			double percent = (getPlayerMoney(p) / getPlayerNextPrestigeCostWithIncreaseDirect(p)) * 100;
     			String intConverted = numberAPI.toFakeInteger(percent);
     			return intConverted;
     		} else {
@@ -624,7 +625,7 @@ public class PRXAPI {
     }
     
     
-    public String getPlayerNextPercentageNoLimitOnline(UUID uuid, String name) {
+    public String getPlayerNextPercentageNoLimitOnline(final UUID uuid, final String name) {
     	UUID p = uuid;
     	if(!this.isLastRank(p)) { // is not last rank
        		double percent = (getPlayerMoney(name) / getPlayerRankupCostWithIncreaseDirect(p)) * 100;
@@ -632,7 +633,7 @@ public class PRXAPI {
        		return intConverted;
     	} else { // is last rank
     		if(this.hasNextPrestige(p)) {
-    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCost(p)) * 100;
+    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCostWithIncreaseDirect(p)) * 100;
     			String intConverted = numberAPI.toFakeInteger(percent);
     			return intConverted;
     		} else {
@@ -660,7 +661,7 @@ public class PRXAPI {
        		return intConverted;
     	} else { // is last rank
     		if(this.hasNextPrestige(p)) {
-    			double percent = (getPlayerMoney(p) / getPlayerNextPrestigeCost(p)) * 100;
+    			double percent = (getPlayerMoney(p) / getPlayerNextPrestigeCostWithIncreaseDirect(p)) * 100;
            		if(percent >= 100) {
            			return "100.0";
            		}
@@ -692,7 +693,7 @@ public class PRXAPI {
        		return intConverted;
     	} else { // is last rank
     		if(this.hasNextPrestige(p)) {
-    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCost(p)) * 100;
+    			double percent = (getPlayerMoney(name) / getPlayerNextPrestigeCostWithIncreaseDirect(p)) * 100;
            		if(percent >= 100) {
            			return "100.0";
            		}
@@ -2308,6 +2309,12 @@ public class PRXAPI {
 		return Double.valueOf(nextRankCost);
 	}
 	
+	/**
+	 * 
+	 * @param offlinePlayer
+	 * @return 0.0 if something goes wrong
+	 */
+	@Nonnull
 	public Double getPlayerNextPrestigeCostWithIncreaseDirect(final OfflinePlayer offlinePlayer) {
 		if(getPlayerNextPrestige(offlinePlayer) == null) {
 			return 0.0;

@@ -165,16 +165,19 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.startsWith("plaindecimal_")) {
 			String bsed = PlaceholderAPI.setBracketPlaceholders(p, arg1.replace("plaindecimal_", ""));
-			return String.valueOf(prxAPI.numberAPI.keepNumbersWithDots(bsed));
+			if(!prxAPI.numberAPI.isNumber(bsed)) {
+				String.valueOf(prxAPI.numberAPI.keepNumbersWithDots(bsed));
+			}
+			return String.valueOf(prxAPI.numberAPI.keepNumbersWithDots(prxAPI.numberAPI.deleteScientificNotationA(Double.valueOf(bsed))));
 		}
 		if(arg1.startsWith("plain_")) {
 			String bsed = PlaceholderAPI.setBracketPlaceholders(p, arg1.replace("plain_", ""));
 			return String.valueOf(prxAPI.numberAPI.keepNumbers(bsed));
 		}
 		if(arg1.startsWith("integerize_")) {
-			String integerize = PlaceholderAPI.setBracketPlaceholders(p, arg1.replace("integerize_", ""));
+			String integerize = PlaceholderAPI.setBracketPlaceholders(p, prxAPI.numberAPI.keepNumbersWithDots(arg1.replace("integerize_", "")));
 		    if(prxAPI.numberAPI.isNumber(integerize)) {
-		    	double val = Double.valueOf(integerize);
+		    double val = Double.valueOf(integerize);
 			return String.valueOf(prxAPI.numberAPI.toFakeInteger(val));
 		    } else {
 		    	return integerize;
@@ -186,6 +189,9 @@ public class PapiHook extends PlaceholderExpansion {
 			} else {
 				return String.valueOf(prxAPI.getPlayerNextPercentage(p).getPercentage()) + prxAPI.getPercentSign();
 			}
+		}
+		if(arg1.equalsIgnoreCase("next_percentage_plain")) {
+               return String.valueOf(prxAPI.getPlayerNextPercentage(p).getPercentage());
 		}
 		if(arg1.equalsIgnoreCase("next_percentage_decimal")) {
 			if(prxAPI.isPercentSignBehind()) {
@@ -271,6 +277,26 @@ public class PapiHook extends PlaceholderExpansion {
 				return String.valueOf(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
 		}
+		if((arg1.equalsIgnoreCase("rankup_cost_integer"))) {
+			if(prxAPI.getPlayerNextRank(p) == null) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-cost-lastrank"), arg0.getName());
+			}
+			if(prxAPI.isCurrencySymbolBehind()) {
+			return  String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
+			} else {
+				return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p))) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
+			}
+		}
+		if((arg1.equalsIgnoreCase("rankup_cost_plain"))) {
+			if(prxAPI.getPlayerNextRank(p) == null) {
+				return "0.0";
+			}
+           return String.valueOf(prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
+		}
+		if((arg1.equalsIgnoreCase("rankup_cost_integer_plain"))) {
+           return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
+		}
+
 		if((arg1.equalsIgnoreCase("rankup_cost_formatted"))) {
 			if(prxAPI.getPlayerNextRank(p) == null) {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-cost-lastrank"), arg0.getName());
@@ -350,6 +376,18 @@ public class PapiHook extends PlaceholderExpansion {
 				return String.valueOf(prxAPI.getPlayerPrestigeCost(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
 		}
+		if(arg1.equalsIgnoreCase("prestige_cost_plain")) {
+			if(!prxAPI.hasPrestiged(p)) {
+				return "0.0";
+			}
+			return String.valueOf(prxAPI.getPlayerPrestigeCost(p));
+		}
+		if(arg1.equalsIgnoreCase("prestige_cost_integer_plain")) {
+			if(!prxAPI.hasPrestiged(p)) {
+				return "0";
+			}
+			return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerPrestigeCost(p)));
+		}
 		if(arg1.equalsIgnoreCase("prestige_cost_formatted")) {
 			if(!prxAPI.hasPrestiged(p)) {
 				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
@@ -420,6 +458,22 @@ public class PapiHook extends PlaceholderExpansion {
 				return String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol())); 
 			}
 		}
+		if(arg1.equalsIgnoreCase("nextprestige_cost_integer")) {
+			if(!prxAPI.hasNextPrestige(p)) {
+				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
+			}
+			if(prxAPI.isCurrencySymbolBehind()) {
+			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))); 
+			} else {
+				return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol())); 
+			}
+		}
+		if(arg1.equalsIgnoreCase("nextprestige_cost_plain")) {
+			return String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p));
+		}
+		if(arg1.equalsIgnoreCase("nextprestige_cost_integer_plain")) {
+			return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)));
+		}
 		if(arg1.equalsIgnoreCase("nextrebirth_cost")) {
 			if(!prxAPI.hasNextRebirth(p)) {
 				return main.getString(main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
@@ -429,6 +483,28 @@ public class PapiHook extends PlaceholderExpansion {
 			} else {
 				return String.valueOf(prxAPI.getPlayerNextRebirthCost(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
+		}
+		if(arg1.equalsIgnoreCase("nextrebirth_cost_integer")) {
+			if(!prxAPI.hasNextRebirth(p)) {
+				return main.getString(main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
+			}
+			if(prxAPI.isCurrencySymbolBehind()) {
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextRebirthCost(p)));
+			} else {
+				return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextRebirthCost(p))) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
+			}
+		}
+		if(arg1.equalsIgnoreCase("nextrebirth_cost_plain")) {
+			if(!prxAPI.hasNextRebirth(p)) {
+				return "0.0";
+			}
+			return String.valueOf(prxAPI.getPlayerNextRebirthCost(p));
+		}
+		if(arg1.equalsIgnoreCase("nextrebirth_cost_integer_plain")) {
+			if(!prxAPI.hasNextRebirth(p)) {
+				return "0";
+			}
+			return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextRebirthCost(p)));
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_cost_formatted")) {
 			if(!prxAPI.hasNextPrestige(p)) {
@@ -449,6 +525,12 @@ public class PapiHook extends PlaceholderExpansion {
 			} else {
 				return String.valueOf(main.formatBalance(prxAPI.getPlayerNextRebirthCost(p))) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
+		}
+		if(arg1.equalsIgnoreCase("can_prestige")) {
+			return String.valueOf(prxAPI.canPrestige(p.getPlayer()));
+		}
+		if(arg1.equalsIgnoreCase("can_rebirth")) {
+			return String.valueOf(prxAPI.canRebirth(p.getPlayer()));
 		}
 		if(arg1.startsWith("rank_displayname_")) {
 			String rank = arg1.split("_")[2];
