@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -86,6 +87,9 @@ public class RankupMax {
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(p);
         Double playerBalance = main.econ.getBalance(p);
+        Map<String, String> stringRequirements = prxAPI.getRankStringRequirements(rp1);
+		Map<String, Double> numberRequirements = prxAPI.getRankNumberRequirements(rp1);
+		List<String> customRequirementMessage = prxAPI.getRankCustomRequirementMessage(rp1);
         XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
         Bukkit.getPluginManager().callEvent(e);
         if(e.isCancelled()) {
@@ -126,6 +130,35 @@ public class RankupMax {
         	rankupMaxProcess.remove(p);
         	return;
         }
+        boolean failedRequirements = false;
+		if(stringRequirements != null) {
+			for(Entry<String, String> entry : stringRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				String value = prxAPI.cp(entry.getValue(), p);
+				if(!placeholder.equalsIgnoreCase(value)) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(numberRequirements != null) {
+			for(Entry<String, Double> entry : numberRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				double value = entry.getValue();
+				if(Double.valueOf(placeholder) < value) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(failedRequirements) {
+			if(customRequirementMessage != null) {
+				customRequirementMessage.forEach(message -> {
+					p.sendMessage(prxAPI.cp(message, p));
+				});
+			}
+			prxAPI.taskedPlayers.remove(p);
+			rankupMaxProcess.remove(p);
+			return;
+		}
         canPrestigeMap.remove(p);
         //add new player data
  	   rankupMaxMap.put(p, prxAPI.getPlayerRank(p));
@@ -151,7 +184,7 @@ public class RankupMax {
         	List<String> loopNextRankBroadcast = new ArrayList<>();
         	List<String> loopNextRankMsg = new ArrayList<>();
         	List<String> loopNextRankActions = new ArrayList<>();
-        	Double loopPlayerBalance = main.econ.getBalance(p);
+        	double loopPlayerBalance = main.econ.getBalance(p);
         	//temporarily save player data in a map
         	String mapRank = rankupMaxMap.get(p);
         	   RankPath rp = new RankPath(mapRank, main.prxAPI.getDefaultPath());
@@ -190,6 +223,9 @@ public class RankupMax {
                loopNextRankCostFormatted = prxAPI.formatBalance(loopNextRankCost);
                loopNextRankDisplay = main.getString(main.rankStorage.getRankupDisplayName(rp), name);
                String loopRankupNoPermissionMessage = main.getString(main.messagesStorage.getStringMessage("rankup-nopermission"), p.getName()).replace("%nextrank%", loopNextRank).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay);
+               Map<String, String> stringRequirements1 = prxAPI.getRankStringRequirements(rp1);
+       		   Map<String, Double> numberRequirements1 = prxAPI.getRankNumberRequirements(rp1);
+       		   List<String> customRequirementMessage1 = prxAPI.getRankCustomRequirementMessage(rp1);
         	   //check if the next rank cost is higher than player's balance
                if(loopNextRankCost > loopPlayerBalance) {
                    for (String msg : notEnoughMoneyMessage) {
@@ -204,6 +240,35 @@ public class RankupMax {
                	rankupMaxProcess.remove(p);
                	break;
                }
+               boolean failedRequirements1 = false;
+   			if(stringRequirements1 != null) {
+   				for(Entry<String, String> entry : stringRequirements1.entrySet()) {
+   					String placeholder = prxAPI.cp(entry.getKey(), p);
+   					String value = prxAPI.cp(entry.getValue(), p);
+   					if(!placeholder.equalsIgnoreCase(value)) {
+   						failedRequirements1 = true;
+   					}
+   				}
+   			}
+   			if(numberRequirements1 != null) {
+   				for(Entry<String, Double> entry : numberRequirements1.entrySet()) {
+   					String placeholder = prxAPI.cp(entry.getKey(), p);
+   					double value = entry.getValue();
+   					if(Double.valueOf(placeholder) < value) {
+   						failedRequirements1 = true;
+   					}
+   				}
+   			}
+   			if(failedRequirements1) {
+   				if(customRequirementMessage1 != null) {
+   					customRequirementMessage1.forEach(message -> {
+   						p.sendMessage(prxAPI.cp(message, p));
+   					});
+   				}
+   				prxAPI.taskedPlayers.remove(p);
+   				rankupMaxProcess.remove(p);
+   				break;
+   			}
                //after check actions
                loopRankupMsg = main.getString(main.messagesStorage.getStringMessage("rankup"), name).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rankup_cost%", loopNextRankCostInString).replace("%rankup_cost_formatted%", loopNextRankCostFormatted);
                if(!isRankupMsgLastRankOnly) {
@@ -379,6 +444,9 @@ public class RankupMax {
 	    Double nextRankCost = prxAPI.getPlayerRankupCostWithIncreaseDirect(p);
 	    String nextRankCostInString = String.valueOf(nextRankCost);
         String nextRankCostFormatted = prxAPI.formatBalance(nextRankCost);
+        Map<String, String> stringRequirements = prxAPI.getRankStringRequirements(rp1);
+		Map<String, Double> numberRequirements = prxAPI.getRankNumberRequirements(rp1);
+		List<String> customRequirementMessage = prxAPI.getRankCustomRequirementMessage(rp1);
         //other values [2]
     	List<String> allRanksCommands = new ArrayList<>();
     	List<String> rankups = new ArrayList<>();
@@ -399,6 +467,35 @@ public class RankupMax {
         	rankupMaxProcess.remove(p);
         	return;
         }
+        boolean failedRequirements = false;
+		if(stringRequirements != null) {
+			for(Entry<String, String> entry : stringRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				String value = prxAPI.cp(entry.getValue(), p);
+				if(!placeholder.equalsIgnoreCase(value)) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(numberRequirements != null) {
+			for(Entry<String, Double> entry : numberRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				double value = entry.getValue();
+				if(Double.valueOf(placeholder) < value) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(failedRequirements) {
+			if(customRequirementMessage != null) {
+				customRequirementMessage.forEach(message -> {
+					p.sendMessage(prxAPI.cp(message, p));
+				});
+			}
+			prxAPI.taskedPlayers.remove(p);
+			rankupMaxProcess.remove(p);
+			return;
+		}
         //add new player data
  	   rankupMaxMap.put(p, prxAPI.getPlayerRank(p));
         //@@@@@@@@@@@@@@@@@@@@
@@ -446,6 +543,9 @@ public class RankupMax {
                loopNextRankCostFormatted = prxAPI.formatBalance(loopNextRankCost);
                loopNextRankDisplay = main.getString(main.rankStorage.getRankupDisplayName(rp), p.getName());
                String loopRankupNoPermissionMessage = main.getString(main.messagesStorage.getStringMessage("rankup-nopermission"), p.getName()).replace("%nextrank%", loopNextRank).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay);
+               Map<String, String> stringRequirements1 = prxAPI.getRankStringRequirements(rp1);
+       		   Map<String, Double> numberRequirements1 = prxAPI.getRankNumberRequirements(rp1);
+       		   List<String> customRequirementMessage1 = prxAPI.getRankCustomRequirementMessage(rp1);
         	   //check if the next rank cost is higher than player's balance
                if(loopNextRankCost > loopPlayerBalance) {
                    for (String msg : notEnoughMoneyMessage) {
@@ -460,6 +560,35 @@ public class RankupMax {
                	rankupMaxProcess.remove(p);
                	break;
                }
+               boolean failedRequirements1 = false;
+      			if(stringRequirements1 != null) {
+      				for(Entry<String, String> entry : stringRequirements1.entrySet()) {
+      					String placeholder = prxAPI.cp(entry.getKey(), p);
+      					String value = prxAPI.cp(entry.getValue(), p);
+      					if(!placeholder.equalsIgnoreCase(value)) {
+      						failedRequirements1 = true;
+      					}
+      				}
+      			}
+      			if(numberRequirements1 != null) {
+      				for(Entry<String, Double> entry : numberRequirements1.entrySet()) {
+      					String placeholder = prxAPI.cp(entry.getKey(), p);
+      					double value = entry.getValue();
+      					if(Double.valueOf(placeholder) < value) {
+      						failedRequirements1 = true;
+      					}
+      				}
+      			}
+      			if(failedRequirements1) {
+      				if(customRequirementMessage1 != null) {
+      					customRequirementMessage1.forEach(message -> {
+      						p.sendMessage(prxAPI.cp(message, p));
+      					});
+      				}
+      				prxAPI.taskedPlayers.remove(p);
+      				rankupMaxProcess.remove(p);
+      				break;
+      			}
                //after check actions
                loopRankupMsg = main.getString(main.messagesStorage.getStringMessage("rankup"), p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rankup_cost%", loopNextRankCostInString).replace("%rankup_cost_formatted%", loopNextRankCostFormatted);
                if(!isRankupMsgLastRankOnly) {

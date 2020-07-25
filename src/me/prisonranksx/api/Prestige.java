@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -135,13 +136,44 @@ public class Prestige {
 			prxAPI.taskedPlayers.remove(p);
 			return;
 		}
+		Map<String, String> stringRequirements = prxAPI.getPrestigeStringRequirements(prestige);
+		Map<String, Double> numberRequirements = prxAPI.getPrestigeNumberRequirements(prestige);
+		List<String> customRequirementMessage = prxAPI.getPrestigeCustomRequirementMessage(prestige);
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) > prxAPI.getPlayerMoney(p)) {
 			if(prxAPI.h("prestige-notenoughmoney") != null && !prxAPI.h("prestige-notenoughmoney").isEmpty()) {
 			for(String line : prxAPI.h("prestige-notenoughmoney")) {
 				p.sendMessage(prxAPI.c(line)
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p)).replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p))
-						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))).replace("%nextprestige_cost_formatted%", prxAPI.getPlayerNextPrestigeCostFormatted(p)));
+						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))).replace("%nextprestige_cost_formatted%", prxAPI.formatBalance(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))));
 			}
+			}
+			prxAPI.taskedPlayers.remove(p);
+			return;
+		}
+		boolean failedRequirements = false;
+		if(stringRequirements != null) {
+			for(Entry<String, String> entry : stringRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				String value = prxAPI.cp(entry.getValue(), p);
+				if(!placeholder.equalsIgnoreCase(value)) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(numberRequirements != null) {
+			for(Entry<String, Double> entry : numberRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				double value = entry.getValue();
+				if(Double.valueOf(placeholder) < value) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(failedRequirements) {
+			if(customRequirementMessage != null) {
+				customRequirementMessage.forEach(message -> {
+					p.sendMessage(prxAPI.cp(message, p));
+				});
 			}
 			prxAPI.taskedPlayers.remove(p);
 			return;
@@ -343,13 +375,46 @@ public class Prestige {
 			return;
 		}
 		}
+		double nextPrestigeCost = prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p);
+		String nextPrestigeDisplay = prxAPI.getPlayerNextPrestigeDisplayNoFallbackR(p);
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) > prxAPI.getPlayerMoney(p)) {
 			if(prxAPI.h("prestige-notenoughmoney") != null && !prxAPI.h("prestige-notenoughmoney").isEmpty()) {
 			for(String line : prxAPI.h("prestige-notenoughmoney")) {
 				p.sendMessage(prxAPI.c(line)
-						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p)).replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p))
-						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))).replace("%nextprestige_cost_formatted%", prxAPI.getPlayerNextPrestigeCostFormatted(p)));
+						.replace("%nextprestige%", prestige).replace("%nextprestige_display%", nextPrestigeDisplay)
+						.replace("%nextprestige_cost%", prxAPI.s(nextPrestigeCost)).replace("%nextprestige_cost_formatted%", prxAPI.formatBalance(nextPrestigeCost)));
 			}
+			}
+			prxAPI.taskedPlayers.remove(p);
+			return;
+		}
+		Map<String, String> stringRequirements = prxAPI.getPrestigeStringRequirements(prestige);
+		Map<String, Double> numberRequirements = prxAPI.getPrestigeNumberRequirements(prestige);
+		List<String> customRequirementMessage = prxAPI.getPrestigeCustomRequirementMessage(prestige);
+		boolean failedRequirements = false;
+		if(stringRequirements != null) {
+			for(Entry<String, String> entry : stringRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				String value = prxAPI.cp(entry.getValue(), p);
+				if(!placeholder.equalsIgnoreCase(value)) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(numberRequirements != null) {
+			for(Entry<String, Double> entry : numberRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				double value = entry.getValue();
+				if(Double.valueOf(placeholder) < value) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(failedRequirements) {
+			if(customRequirementMessage != null) {
+				customRequirementMessage.forEach(message -> {
+					p.sendMessage(prxAPI.cp(message, p));
+				});
 			}
 			prxAPI.taskedPlayers.remove(p);
 			return;
@@ -359,8 +424,8 @@ public class Prestige {
 			if(!prestigeMsg.isEmpty()) {
 				if(main.globalStorage.getBooleanData("Options.send-prestigemsg")) {
 				p.sendMessage(prxAPI.cp(prestigeMsg
-						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
-						.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p)), p));
+						.replace("%nextprestige%", prestige)
+						.replace("%nextprestige_display%", nextPrestigeDisplay), p));
 				}
 			}
 		}
@@ -370,8 +435,8 @@ public class Prestige {
 				for(String permission : addPermissionList) {
 				main.perm.addPermission(p, permission
 						.replace("%player%", p.getName())
-						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
-						.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p)));
+						.replace("%nextprestige%", prestige)
+						.replace("%nextprestige_display%", nextPrestigeDisplay));
 				}
 			}
 		}
@@ -381,8 +446,8 @@ public class Prestige {
 				for(String permission : delPermissionList) {
 					main.perm.delPermission(p, permission
 							.replace("%player%", p.getName())
-							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
-							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p)));
+							.replace("%nextprestige%", prestige)
+							.replace("%nextprestige_display%", nextPrestigeDisplay));
 				}
 			}
 		}
@@ -391,9 +456,9 @@ public class Prestige {
 			if(!nextPrestigeCommands.isEmpty()) {
 				List<String> newPrestigeCommands = new ArrayList<>();
 				for(String command : nextPrestigeCommands) {
-					newPrestigeCommands.add(command.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
-							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p))
-							.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))));
+					newPrestigeCommands.add(command.replace("%nextprestige%", prestige)
+							.replace("%nextprestige_display%", nextPrestigeDisplay)
+							.replace("%nextprestige_cost%", prxAPI.s(nextPrestigeCost)));
 				}
 				main.executeCommands(p, newPrestigeCommands);
 			}
@@ -409,8 +474,8 @@ public class Prestige {
 			if(!actionbarText.isEmpty()) {
 				List<String> newActionbarText = new LinkedList<>();
 	            for(String line : actionbarText) {
-	            	newActionbarText.add(line.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
-	            			.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallbackR(p)));
+	            	newActionbarText.add(line.replace("%nextprestige%", prestige)
+	            			.replace("%nextprestige_display%", nextPrestigeDisplay));
 	            }
 			     int actionbarInterval = main.prestigeStorage.getActionbarInterval(prestige);
 			     main.animateActionbar(p, actionbarInterval, newActionbarText);
@@ -422,8 +487,8 @@ public class Prestige {
 				for(String messageLine : broadcastMessages) {
 					Bukkit.broadcastMessage(prxAPI.cp(messageLine
 							.replace("%player%", p.getName())
-							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
-							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p)), p));
+							.replace("%nextprestige%", prestige)
+							.replace("%nextprestige_display%", nextPrestigeDisplay), p));
 				}
 			}
 		}
@@ -432,8 +497,8 @@ public class Prestige {
 			if(!messages.isEmpty()) {
 				for(String messageLine : messages) {
 					p.sendMessage(prxAPI.cp(messageLine
-							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
-							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p)), p));
+							.replace("%nextprestige%", prestige)
+							.replace("%nextprestige_display%", nextPrestigeDisplay), p));
 				}
 			}
 		}
@@ -450,7 +515,7 @@ public class Prestige {
 		List<String> commands = prc.getCommands(randomSection);
 		List<String> replacedCommands = new ArrayList<>();
 		  for(String cmd : commands) {
-			String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p)), p);
+			String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%nextprestige%", prestige), p);
 			replacedCommands.add(pCMD);
 		  }
 		main.executeCommands(p, replacedCommands);
@@ -470,7 +535,7 @@ public class Prestige {
 			spawnHologram(nextPrestigeHologramFormat, nextPrestigeHologramRemoveTime, nextPrestigeHologramHeight, p);
 		}
 		main.sendPrestigeFirework(p);
-		main.econ.withdrawPlayer(p, prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p));
+		main.econ.withdrawPlayer(p, nextPrestigeCost);
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetMoney")) {
 			main.econ.withdrawPlayer(p, prxAPI.getPlayerMoney(p));
 		}
@@ -514,8 +579,6 @@ public class Prestige {
 	 * 
 	 * @param player
 	 * @param silent
-	 * @description
-	 * PermissionsEX {@link https://hastebin.com/hopuwomocu.bash} 
 	 */
 	public void prestige(Player player, boolean silent) {
 		Player p = player;
@@ -548,6 +611,37 @@ public class Prestige {
 			getTaskedPlayers().remove(p);
 			return;
 		}
+		Map<String, String> stringRequirements = prxAPI.getPrestigeStringRequirements(prestige);
+		Map<String, Double> numberRequirements = prxAPI.getPrestigeNumberRequirements(prestige);
+		List<String> customRequirementMessage = prxAPI.getPrestigeCustomRequirementMessage(prestige);
+		boolean failedRequirements = false;
+		if(stringRequirements != null) {
+			for(Entry<String, String> entry : stringRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				String value = prxAPI.cp(entry.getValue(), p);
+				if(!placeholder.equalsIgnoreCase(value)) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(numberRequirements != null) {
+			for(Entry<String, Double> entry : numberRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				double value = entry.getValue();
+				if(Double.valueOf(placeholder) < value) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(failedRequirements) {
+			if(customRequirementMessage != null) {
+				customRequirementMessage.forEach(message -> {
+					p.sendMessage(prxAPI.cp(message, p));
+				});
+			}
+			prxAPI.taskedPlayers.remove(p);
+			return;
+		}
 		String prestigeMsg = prxAPI.g("prestige");
 		if(prestigeMsg != null) {
 			if(!prestigeMsg.isEmpty()) {
@@ -561,7 +655,7 @@ public class Prestige {
 		List<String> addPermissionList = main.prestigeStorage.getAddPermissionList(prestige);
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
-				if(main.vaultPlugin.equalsIgnoreCase("permissionsex")) {
+				if(main.isVaultGroups && main.vaultPlugin.equalsIgnoreCase("permissionsex")) {
 					Bukkit.getScheduler().runTask(main, () -> {
 					for(String permission : addPermissionList) {
 						main.perm.addPermission(p, permission
@@ -583,7 +677,7 @@ public class Prestige {
 		List<String> delPermissionList = main.prestigeStorage.getDelPermissionList(prestige);
 		if(delPermissionList != null) {
 			if(!delPermissionList.isEmpty()) {
-				if(main.vaultPlugin.equalsIgnoreCase("permissionsex")) {
+				if(main.isVaultGroups && main.vaultPlugin.equalsIgnoreCase("permissionsex")) {
 					Bukkit.getScheduler().runTask(main, () -> {
 					for(String permission : delPermissionList) {
 						main.perm.delPermission(p, permission

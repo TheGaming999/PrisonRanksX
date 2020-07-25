@@ -10,6 +10,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.GlobalDataStorage;
+import me.prisonranksx.data.GlobalDataStorage1_16;
+import me.prisonranksx.data.GlobalDataStorage1_8;
 import me.prisonranksx.data.PrestigeDataHandler;
 import me.prisonranksx.data.PrestigeDataStorage;
 import me.prisonranksx.data.RankDataHandler;
@@ -164,7 +167,8 @@ public class PRXManager {
 	 * @param cost
 	 * @param pathName
 	 */
-	public void createRank(final String name, final double cost, final String pathName) {
+	public void createRank(final String name, final double cost, String pathName) {
+		pathName = pathName.equals("") ? defaultPath : pathName;
 		RankDataHandler rdh = new RankDataHandler(name, pathName);
 		//FireworkManager fm = new FireworkManager(name, LevelType.RANK, defaultPath);
 		//RankRandomCommands rrc = new RankRandomCommands(name, false, defaultPath, false);
@@ -212,7 +216,8 @@ public class PRXManager {
 	 * @param pathName
 	 * @param displayName
 	 */
-	public void createRank(final String name, final double cost, final String pathName, final String displayName) {
+	public void createRank(final String name, final double cost, String pathName, final String displayName) {
+		pathName = pathName.equals("") ? defaultPath : pathName;
 		RankDataHandler rdh = new RankDataHandler(name, pathName);
 		//FireworkManager fm = new FireworkManager(name, LevelType.RANK, defaultPath);
 		//RankRandomCommands rrc = new RankRandomCommands(name, false, defaultPath, false);
@@ -522,6 +527,11 @@ public class PRXManager {
 	  main.configManager.reloadMainConfig();
       main.configManager.reloadConfigs();
       main.configManager.loadConfigs();
+      if(Bukkit.getVersion().contains("1.16")) {
+      main.globalStorage = new GlobalDataStorage1_16(main);
+      } else {
+    	  main.globalStorage = new GlobalDataStorage1_8(main);
+      }
       main.globalStorage.loadGlobalData();
       main.rankStorage = new RankDataStorage(main);
       main.rankStorage.loadRanksData();
@@ -531,18 +541,18 @@ public class PRXManager {
       main.rebirthStorage.loadRebirthsData();
       if(main.ishooked) {
     	  Bukkit.getScheduler().runTask(main, () -> {
-      main.papi = null;
       main.papi = new PapiHook(main);
       main.papi.register();
     	  });
       }
       if(main.isMvdw) {
-    	  main.mvdw = null;
     	  main.mvdw = new MVdWPapiHook(main);
     	  main.mvdw.registerPlaceholders();
       }
       main.messagesStorage.loadMessages();
-      main.prxAPI = new PRXAPI(true);
+      main.isApiLoaded = false;
+      main.autoSaveTime = main.getGlobalStorage().getIntegerData("Options.autosave-time");
+      main.prxAPI = new PRXAPI();
       main.prxAPI.setup();
       main.prxAPI.loadPermissions();
       main.prxAPI.loadProgressBars();
@@ -568,6 +578,10 @@ public class PRXManager {
       main.forceSave = main.globalStorage.getBooleanData("Options.forcesave");
       main.lbm = new LeaderboardManager(main);
       main.isSaveOnLeave = main.globalStorage.getBooleanData("Options.save-on-leave");
+	  main.isVaultGroups = main.globalStorage.getBooleanData("Options.rankup-vault-groups");
+	  if(main.isVaultGroups) {
+		  this.main.vaultPlugin = main.globalStorage.getStringData("Options.rankup-vault-groups-plugin");
+	  }
       main.checkVault = main.globalStorage.getBooleanData("Options.rankup-vault-groups-check");
       if(main.topPrestigesCommand != null) {
       main.topPrestigesCommand.load();
@@ -575,6 +589,7 @@ public class PRXManager {
       if(main.topRebirthsCommand != null) {
       main.topRebirthsCommand.load();
       }
+      try {
       if(main.isABProgress) {
       main.abprogress.clear(true);
       main.abprogress = new ActionbarProgress(main);
@@ -592,6 +607,9 @@ public class PRXManager {
       }
       } else {
     	  main.ebprogress.clear(true);
+      }
+      } catch (Exception err) {
+    	  
       }
       main.isRankupMaxWarpFilter = main.globalStorage.getBooleanData("Options.rankupmax-warp-filter");
       main.getPlayerStorage().savePlayersData();
@@ -961,7 +979,7 @@ public class PRXManager {
 	 * @itwillreturn the rankup commands of B, C, D, E, and F
 	 */
 	public List<String> getRankupCommandsBetween(String rank1, String rank2) {
-	 List<String> cleanList = main.prxAPI.getRanksCollection();
+	 List<String> cleanList = main.prxAPI.getRanksCollection(defaultPath);
 	 List<String> editedList = new ArrayList<>(cleanList);
 	 List<String> rankupCommands = new ArrayList<>();
 	 for(int i = cleanList.indexOf(rank1) - 1 ; i > -1 ; i--) {

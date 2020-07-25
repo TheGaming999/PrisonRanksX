@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -96,10 +97,9 @@ public class Rankup {
 	
 	    public void forceRankup(final Player player, final CommandSender sender) {
 	    	if(prxAPI.taskedPlayers.contains(player)) {
-				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
-					return;
-				}
+				if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {	
 				player.sendMessage(prxAPI.g("commandspam"));
+				}
 				return;
 			}
 			prxAPI.taskedPlayers.add(player);
@@ -127,10 +127,12 @@ public class Rankup {
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
 				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(p)) && !p.hasPermission("*")) {
 					if(prxAPI.g("rankup-nopermission") == null || prxAPI.g("rankup-nopermission").isEmpty()) {
+						if(sender != null)
 						sender.sendMessage(prxAPI.g("forcerankup-nopermission").replace("%player%", p.getName()));
 						prxAPI.taskedPlayers.remove(p);
 						return;
 					}
+					if(sender != null)
 					sender.sendMessage(prxAPI.g("forcerankup-nopermission").replace("%player%", p.getName()));
 					p.sendMessage(prxAPI.g("rankup-nopermission")
 							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
@@ -140,6 +142,7 @@ public class Rankup {
 				}
 			}
 			if(main.rankStorage.getRankupName(rp).equalsIgnoreCase("LASTRANK")) {
+				if(sender != null)
 				sender.sendMessage(prxAPI.g("forcerankup-lastrank").replace("%player%", p.getName()));
 				for(String line : prxAPI.h("lastrank")) {
 					p.sendMessage(prxAPI.c(line));
@@ -157,6 +160,7 @@ public class Rankup {
 					}
 				}
 			}
+			if(sender != null)
 			sender.sendMessage(prxAPI.g("forcerankup-msg").replace("%player%", p.getName()).replace("%rankup%", prxAPI.getPlayerNextRank(p))
 					.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
 			List<String> addPermissionList = main.rankStorage.getAddPermissionList(rp);
@@ -188,7 +192,7 @@ public class Rankup {
 					for(String command : rankupCommands) {
 						newRankupCommands.add(command.replace("%rankup%", prxAPI.getPlayerNextRank(p))
 								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p))
-								.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncrease(p))));
+								.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncreaseDirect(p))));
 					}
 					main.executeCommands(p, newRankupCommands);
 				}
@@ -274,10 +278,9 @@ public class Rankup {
 		public void rankup(final Player player) {
 			Bukkit.getScheduler().runTask(main, () -> {
 			if(prxAPI.taskedPlayers.contains(player)) {
-				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
-					return;
-				}
+				if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
 				player.sendMessage(prxAPI.g("commandspam"));
+				}
 				return;
 			}
 			prxAPI.taskedPlayers.add(player);
@@ -316,6 +319,10 @@ public class Rankup {
 			}
 			String nextRankDisplay = prxAPI.getPlayerRankupDisplayR(p);
 			double rankupCostWithIncrease = prxAPI.getPlayerRankupCostWithIncreaseDirect(p);
+			Map<String, String> stringRequirements = prxAPI.getRankStringRequirements(rp);
+			Map<String, Double> numberRequirements = prxAPI.getRankNumberRequirements(rp);
+			List<String> customRequirementMessage = prxAPI.getRankCustomRequirementMessage(rp);
+			
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
 				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + nextRank) && !p.hasPermission("*")) {
 					if(prxAPI.g("rankup-nopermission") != null && !prxAPI.g("rankup-nopermission").isEmpty()) {
@@ -330,13 +337,40 @@ public class Rankup {
 			}
 
 			if(rankupCostWithIncrease > prxAPI.getPlayerMoney(p)) {
-				if(prxAPI.h("notenoughmoney") == null || prxAPI.h("notenoughmoney").isEmpty()) {
-					return;
-				}
+				if(prxAPI.h("notenoughmoney") != null && !prxAPI.h("notenoughmoney").isEmpty()) {	
 				for(String line : prxAPI.h("notenoughmoney")) {
 					p.sendMessage(prxAPI.c(line)
 							.replace("%rankup%", nextRank).replace("%rankup_display%", nextRankDisplay).replace("%rank%", currentRank)
 							.replace("%rankup_cost%", prxAPI.s(rankupCostWithIncrease)).replace("%rankup_cost_formatted%", prxAPI.formatBalance(rankupCostWithIncrease)));
+				}
+				}
+				prxAPI.taskedPlayers.remove(p);
+				return;
+			}
+			boolean failedRequirements = false;
+			if(stringRequirements != null) {
+				for(Entry<String, String> entry : stringRequirements.entrySet()) {
+					String placeholder = prxAPI.cp(entry.getKey(), p);
+					String value = prxAPI.cp(entry.getValue(), p);
+					if(!placeholder.equalsIgnoreCase(value)) {
+						failedRequirements = true;
+					}
+				}
+			}
+			if(numberRequirements != null) {
+				for(Entry<String, Double> entry : numberRequirements.entrySet()) {
+					String placeholder = prxAPI.cp(entry.getKey(), p);
+					double value = entry.getValue();
+					if(Double.valueOf(placeholder) < value) {
+						failedRequirements = true;
+					}
+				}
+			}
+			if(failedRequirements) {
+				if(customRequirementMessage != null) {
+					customRequirementMessage.forEach(message -> {
+						p.sendMessage(prxAPI.cp(message, p));
+					});
 				}
 				prxAPI.taskedPlayers.remove(p);
 				return;
@@ -546,7 +580,32 @@ public class Rankup {
 			}
 			String nextRankDisplay = prxAPI.getPlayerRankupDisplayR(p);
 			double rankupCostWithIncrease = prxAPI.getPlayerRankupCostWithIncreaseDirect(p);
+			Map<String, String> stringRequirements = prxAPI.getRankStringRequirements(rp);
+			Map<String, Double> numberRequirements = prxAPI.getRankNumberRequirements(rp);
 			if(rankupCostWithIncrease > prxAPI.getPlayerMoney(p)) {
+				getTaskedPlayers().remove(p);
+				return;
+			}
+			boolean failedRequirements = false;
+			if(stringRequirements != null) {
+				for(Entry<String, String> entry : stringRequirements.entrySet()) {
+					String placeholder = prxAPI.cp(entry.getKey(), p);
+					String value = prxAPI.cp(entry.getValue(), p);
+					if(!placeholder.equalsIgnoreCase(value)) {
+						failedRequirements = true;
+					}
+				}
+			}
+			if(numberRequirements != null) {
+				for(Entry<String, Double> entry : numberRequirements.entrySet()) {
+					String placeholder = prxAPI.cp(entry.getKey(), p);
+					double value = entry.getValue();
+					if(Double.valueOf(placeholder) < value) {
+						failedRequirements = true;
+					}
+				}
+			}
+			if(failedRequirements) {
 				getTaskedPlayers().remove(p);
 				return;
 			}

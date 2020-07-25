@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -90,7 +91,8 @@ public class Rebirth {
 		if(requiredPrestiges > 0) {
 		if(requiredPrestiges > prxAPI.getPlayerPrestiges(p)) {
 			// ouh
-			int left = requiredPrestiges - prxAPI.getPlayerPrestiges(p);
+			int rebirthNumber = prxAPI.getPlayerRebirthNumber(p) <= 0 ? 1 : prxAPI.getPlayerRebirthNumber(p);
+			int left = (requiredPrestiges - prxAPI.getPlayerPrestiges(p)) / rebirthNumber;
 			p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
 					.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
 			prxAPI.taskedPlayers.remove(p);
@@ -98,11 +100,44 @@ public class Rebirth {
 		}
 		} else {
 			if(!prxAPI.hasNextPrestige(p)) {
-				p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", "")
-						.replace("%prestiges_amount%", ""));
+				int rebirthNumber = prxAPI.getPlayerRebirthNumber(p) <= 0 ? 1 : prxAPI.getPlayerRebirthNumber(p);
+				int left = (prxAPI.getPrestigesCollection().size() - prxAPI.getPlayerPrestiges(p) / rebirthNumber);
+				p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
+						.replace("%prestiges_amount%", prxAPI.s(prxAPI.getPrestigesCollection().size())));
 				prxAPI.taskedPlayers.remove(p);
 				return;
 			}
+		}
+		Map<String, String> stringRequirements = prxAPI.getRebirthStringRequirements(rebirth);
+		Map<String, Double> numberRequirements = prxAPI.getRebirthNumberRequirements(rebirth);
+		List<String> customRequirementMessage = prxAPI.getRebirthCustomRequirementMessage(rebirth);
+		boolean failedRequirements = false;
+		if(stringRequirements != null) {
+			for(Entry<String, String> entry : stringRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				String value = prxAPI.cp(entry.getValue(), p);
+				if(!placeholder.equalsIgnoreCase(value)) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(numberRequirements != null) {
+			for(Entry<String, Double> entry : numberRequirements.entrySet()) {
+				String placeholder = prxAPI.cp(entry.getKey(), p);
+				double value = entry.getValue();
+				if(Double.valueOf(placeholder) < value) {
+					failedRequirements = true;
+				}
+			}
+		}
+		if(failedRequirements) {
+			if(customRequirementMessage != null) {
+				customRequirementMessage.forEach(message -> {
+					p.sendMessage(prxAPI.cp(message, p));
+				});
+			}
+			prxAPI.taskedPlayers.remove(p);
+			return;
 		}
 		String rebirthMsg = prxAPI.g("rebirth");
 		if(rebirthMsg != null) {

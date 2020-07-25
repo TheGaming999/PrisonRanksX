@@ -199,7 +199,7 @@ public class Ranks {
 			for(String rank : ranksCollection) {
 				if(currentRankIndex == ranksCollection.indexOf(rank)) {
 					// save rank current format {
-					RankPath rankPath = RankPath.getRankPath(rank + "#~#"  + pathName);
+					RankPath rankPath = RankPath.getRankPath(rank, pathName);
 					if(!main.rankStorage.getRankupName(rankPath).equalsIgnoreCase("lastrank")) {
 					String format = main.prxAPI.cp(rankCurrentFormat.replace("%rank_name%", rank)
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
@@ -213,7 +213,7 @@ public class Ranks {
 					// }
 				} if (currentRankIndex > ranksCollection.indexOf(rank)) {
 					// save rank completed format {
-					RankPath rankPath = RankPath.getRankPath(rank + "#~#"  + pathName);
+					RankPath rankPath = RankPath.getRankPath(rank, pathName);
 					if(!main.rankStorage.getRankupName(rankPath).equalsIgnoreCase("lastrank")) {
 					String format = main.prxAPI.cp(rankCompletedFormat.replace("%rank_name%", rank)
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
@@ -227,7 +227,7 @@ public class Ranks {
 					// }
 				} if (currentRankIndex < ranksCollection.indexOf(rank)) {
 					// save rank other format {
-					RankPath rankPath = RankPath.getRankPath(rank + "#~#"  + pathName);
+					RankPath rankPath = RankPath.getRankPath(rank, pathName);
 					if(!main.rankStorage.getRankupName(rankPath).equalsIgnoreCase("lastrank")) {
 					String format = main.prxAPI.cp(rankOtherFormat.replace("%rank_name%", rank)
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
@@ -300,7 +300,7 @@ public class Ranks {
 			for(String rank : ranksCollection) {
 				if(currentRankIndex == ranksCollection.indexOf(rank)) {
 					// save rank current format {
-					RankPath rankPath = RankPath.getRankPath(rank + "#~#"  + pathName);
+					RankPath rankPath = RankPath.getRankPath(rank, pathName);
 					if(!main.rankStorage.getRankupName(rankPath).equalsIgnoreCase("lastrank")) {
 					String format = main.prxAPI.cp(rankCurrentFormat.replace("%rank_name%", rank)
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
@@ -314,7 +314,7 @@ public class Ranks {
 					// }
 				} if (currentRankIndex > ranksCollection.indexOf(rank)) {
 					// save rank completed format {
-					RankPath rankPath = RankPath.getRankPath(rank + "#~#"  + pathName);
+					RankPath rankPath = RankPath.getRankPath(rank, pathName);
 					if(!main.rankStorage.getRankupName(rankPath).equalsIgnoreCase("lastrank")) {
 					String format = main.prxAPI.cp(rankCompletedFormat.replace("%rank_name%", rank)
 							.replace("%rank_displayname%", main.rankStorage.getDisplayName(rankPath))
@@ -328,7 +328,7 @@ public class Ranks {
 					// }
 				} if (currentRankIndex < ranksCollection.indexOf(rank)) {
 					// save rank other format {
-					RankPath rankPath = RankPath.getRankPath(rank + "#~#"  + pathName);
+					RankPath rankPath = RankPath.getRankPath(rank, pathName);
                     //main.debug("&3from RanksAPI: &f" + main.rankStorage.getDataHandler(rankPath.get()).readImportantValues());
 					if(!main.rankStorage.getRankupName(rankPath).equalsIgnoreCase("lastrank")) {
 					String format = main.prxAPI.cp(rankOtherFormat.replace("%rank_name%", rank)
