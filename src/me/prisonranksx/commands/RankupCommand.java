@@ -40,7 +40,11 @@ public class RankupCommand extends BukkitCommand {
 	      }
        main.prxAPI.rankup((Player)sender);
 		} else if (args.length == 1) {
+			if(args[0].equalsIgnoreCase("max")) {
+				main.rankupMaxCommand.execute(sender, label, args);
+			} else {
 			// do rankup other
+			}
 		}
 		return true;
 	}

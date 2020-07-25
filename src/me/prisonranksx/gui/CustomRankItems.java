@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.GlobalDataStorage;
 import me.prisonranksx.data.LevelType;
 import me.prisonranksx.data.RankPath;
 
@@ -16,6 +17,10 @@ public class CustomRankItems {
 	
 	public Map<String, RankItem> getCustomRankItems() {
 		return this.customRankItems;
+	}
+	
+	public GlobalDataStorage gds() {
+		return main.getGlobalStorage();
 	}
 	
 	public void setup() {
@@ -31,11 +36,11 @@ public class CustomRankItems {
 					rs.setRankPath(rankPath);
 					ri.setMaterial(main.cim.readCustomLevelItemName(LevelType.RANK, ls, rank));
 					ri.setAmount(main.cim.readCustomLevelItemAmount(LevelType.RANK, ls, rank));
-					ri.setDisplayName(main.cim.readCustomLevelItemDisplayName(LevelType.RANK, ls, rank));
-					ri.setLore(main.cim.readCustomLevelItemLore(LevelType.RANK, ls, rank));
+					ri.setDisplayName(gds().translateHexColorCodes(main.cim.readCustomLevelItemDisplayName(LevelType.RANK, ls, rank)));
+					ri.setLore(gds().translateHexColorCodes(main.cim.readCustomLevelItemLore(LevelType.RANK, ls, rank)));
 					ri.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.RANK, ls, rank));
 					ri.setFlags(main.cim.readCustomLevelItemFlags(LevelType.RANK, ls, rank));
-					ri.setCommands(main.cim.readCustomLevelItemCommands(LevelType.RANK, ls, rank));
+					ri.setCommands(gds().translateHexColorCodes(main.cim.readCustomLevelItemCommands(LevelType.RANK, ls, rank)));
 					customRankItems.put(rs.toString(), ri);
 				}
 			}

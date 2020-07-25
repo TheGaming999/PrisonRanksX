@@ -111,10 +111,11 @@ public class CustomItemsManager {
 				if(itemNameWithData.contains(":")) {
 					String itemName = itemNameWithData.split(":")[0];
 					byte itemData = Byte.parseByte(itemNameWithData.split(":")[1]);
-					stringStack = XMaterial.matchXMaterial(itemName, itemData).parseItem(true);
+					
+					stringStack = XMaterial.matchDefinedXMaterial(itemName, itemData).get().parseItem(true);
 				} else {
 					String itemName = itemNameWithData;
-					stringStack = XMaterial.matchXMaterial(itemName).parseItem(true);
+					stringStack = XMaterial.matchXMaterial(itemName).get().parseItem(true);
 				}
 				stackMeta = stringStack.getItemMeta();
 			} //item stack check
@@ -189,5 +190,22 @@ public class CustomItemsManager {
 			}
 		}
 		return 1;
+	}
+	
+	public List<String> readCustomItemCommands(String stringValue) {
+		List<String> commands = new ArrayList<>();
+		for(String stringMeta : stringValue.split(" ")) {
+			if(stringMeta.startsWith("commands=")) {
+				String fullMeta = stringMeta.substring(9);
+				if(fullMeta.contains("@")) {
+					for(String command : fullMeta.split("@")) {
+						commands.add(command);
+					}
+				} else {
+					commands.add(fullMeta);
+				}
+			}
+		}
+		return commands.isEmpty() ? null : commands;
 	}
 }

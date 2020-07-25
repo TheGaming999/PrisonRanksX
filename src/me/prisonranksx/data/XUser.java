@@ -6,7 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.utils.XUUID;
 
 public class XUser {

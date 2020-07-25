@@ -142,7 +142,37 @@ public class TopPrestigesCommand extends BukkitCommand {
 			return true;
 		}
 		if(args.length == 0) {
-            this.paginate(sender, leaderboardLines, 1, header, footer, main.lbm.getPrestigeLeaderboard().size());		
+			//int page = 1;
+			//int totalEntries = main.lbm.getPrestigeLeaderboard().size();
+			//double pagesCounter = Double.valueOf(totalEntries) / Double.valueOf(prestigePerPage);
+		//	int totalPages = main.prxAPI.numberAPI.isDouble(String.valueOf(pagesCounter)) ? main.prxAPI.numberAPI.toExactInteger(pagesCounter) + 1 : main.prxAPI.numberAPI.toExactInteger(pagesCounter);
+            this.paginate(sender, leaderboardLines, 1, header, footer, main.lbm.getPrestigeLeaderboard().size());	
+           // if(header != null) {
+           // 	main.prxAPI.cl(header).forEach(line -> {
+           // //		sender.sendMessage(line.replace("%page%", String.valueOf(page)).replace("%totalpages%", String.valueOf(totalPages)));
+            //	});
+           // }
+           // int cpos = (prestigePerPage * (page - 1));
+           // for(int i = 0; i < prestigePerPage ; i++) {
+            //	String entries = leaderboardLines.get(i);
+            //	sender.sendMessage(main.prxAPI.c(entries)
+              //		  .replace("%name1%", getName(1 + cpos)).replace("%value1%", getValue(1 + cpos))
+              	//	  .replace("%name2%", getName(2 + cpos)).replace("%value2%", getValue(2 + cpos))
+              //		  .replace("%name3%", getName(3 + cpos)).replace("%value3%", getValue(3 + cpos))
+              //		  .replace("%name4%", getName(4 + cpos)).replace("%value4%", getValue(4 + cpos))
+              //		  .replace("%name5%", getName(5 + cpos)).replace("%value5%", getValue(5 + cpos))
+             // 		  .replace("%name6%", getName(6 + cpos)).replace("%value6%", getValue(6 + cpos))
+              //		  .replace("%name7%", getName(7 + cpos)).replace("%value7%", getValue(7 + cpos))
+              //		  .replace("%name8%", getName(8 + cpos)).replace("%value8%", getValue(8 + cpos))
+              //		  .replace("%name9%", getName(9 + cpos)).replace("%value9%", getValue(9 + cpos))
+            //  		  .replace("%name10%", getName(10 + cpos)).replace("%value10%", getValue(10 + cpos))
+           //   		  );
+          //  }
+           // if(footer != null) {
+            //	main.prxAPI.cl(footer).forEach(line -> {
+            //		sender.sendMessage(line.replace("%page%", String.valueOf(page)).replace("%totalpages%", String.valueOf(totalPages)));
+            //	});
+            //}
 		} else if (args.length == 1) {
 			this.paginate(sender, leaderboardLines, Integer.valueOf(args[0]), header, footer, main.lbm.getPrestigeLeaderboard().size());
 		}

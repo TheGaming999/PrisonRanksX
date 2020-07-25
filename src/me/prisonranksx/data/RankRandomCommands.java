@@ -23,13 +23,13 @@ public class RankRandomCommands {
 	
 	private static PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	
-	public RankRandomCommands(String rankName, boolean withKeys, String pathName) {this.rankName = rankName; this.withKeys = withKeys; this.pathName = pathName;
+	public RankRandomCommands(String rankName, boolean withKeys, String pathName) {this.setRankName(rankName); this.withKeys = withKeys; this.setPathName(pathName);
 	this.commandsList = new ArrayList<>();
 	this.chances = new ArrayList<>();
 	this.randomCommandsMap = new HashMap<String, Object>();
 	}
 	
-	public RankRandomCommands(String rankName, boolean withKeys, String pathName, boolean loadSections) {this.rankName = rankName; this.withKeys = withKeys; this.pathName = pathName;
+	public RankRandomCommands(String rankName, boolean withKeys, String pathName, boolean loadSections) {this.setRankName(rankName); this.withKeys = withKeys; this.setPathName(pathName);
 	this.commandsList = new ArrayList<>();
 	this.chances = new ArrayList<>();
 	this.randomCommandsMap = new HashMap<String, Object>();
@@ -96,6 +96,22 @@ public class RankRandomCommands {
 	
 	public Double getChance(String section) {
 		return ((ConfigurationSection)randomCommandsMap.get(section)).getDouble("chance");
+	}
+
+	public String getRankName() {
+		return rankName;
+	}
+
+	public void setRankName(String rankName) {
+		this.rankName = rankName;
+	}
+
+	public String getPathName() {
+		return pathName;
+	}
+
+	public void setPathName(String pathName) {
+		this.pathName = pathName;
 	}
 	
 }

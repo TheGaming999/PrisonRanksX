@@ -12,7 +12,7 @@ import me.prisonranksx.PrisonRanksX;
 
 public class XUUID {
 
-	private static UUID uuid;
+	private UUID uuid;
 	private static final PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	private static final Map<UUID, String> legacyPlayers = new HashMap<>();
 	
@@ -52,29 +52,11 @@ public class XUUID {
 	 * @return Real UUID for versions beyond 1.7 | otherwise it will return a fake UUID for 1.6/1.5/1.4 etc...
 	 */
 	public static UUID getXUUID(OfflinePlayer player) {
-		UUID u;
-		if(main.isBefore1_7) {
-			String playerName = player.getName();
-			u = UUID.nameUUIDFromBytes(playerName.getBytes());
-			legacyPlayers.put(u, playerName);
-		} else {
-			u = player.getUniqueId();
-		}
-		uuid = u;
-		return u;
+		return new XUUID(player).getUUID();
 	}
 	
 	public static UUID getXUUID(Player player) {
-		UUID u;
-		if(main.isBefore1_7) {
-			String playerName = player.getName();
-			u = UUID.nameUUIDFromBytes(playerName.getBytes());
-			legacyPlayers.put(u, playerName);
-		} else {
-			u = player.getUniqueId();
-		}
-		uuid = u;
-		return u;
+		return new XUUID(player).getUUID();
 	}
 	
 	public static String getNameFromUUID(UUID uuid) {

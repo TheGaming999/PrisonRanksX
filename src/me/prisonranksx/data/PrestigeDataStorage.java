@@ -2,17 +2,14 @@ package me.prisonranksx.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.bukkit.Bukkit;
 
 import me.prisonranksx.PrisonRanksX;
 
@@ -30,6 +27,10 @@ public class PrestigeDataStorage {
 	
 	public PrestigeDataHandler getDataHandler(String name) {
 		return prestigeData.get(name);
+	}
+	
+	public GlobalDataStorage gds() {
+		return this.main.globalStorage;
 	}
 	/**
 	 * Should only be used onEnable()
@@ -49,7 +50,7 @@ public class PrestigeDataStorage {
 				List<String> actionbarMessages = loadStringList("Prestiges." + prestigeName + ".actionbar.text");
 				Integer actionbarInterval = loadInt("Prestiges." + prestigeName + ".actionbar.interval");
 				List<String> broadcastMessages = loadStringList("Prestiges." + prestigeName + ".broadcast");
-				List<String> messages = loadStringList("Prestiges." + prestigeName + ".text");
+				List<String> messages = loadStringList("Prestiges." + prestigeName + ".msg");
 				List<String> actions = loadStringList("Prestiges." + prestigeName + ".actions");
 				List<String> addPermissionList = loadStringList("Prestiges." + prestigeName + ".addpermission");
 				List<String> delPermissionList = loadStringList("Prestiges." + prestigeName + ".delpermission");
@@ -57,19 +58,51 @@ public class PrestigeDataStorage {
 				FireworkManager fireworkManager = new FireworkManager(prestigeName, LevelType.PRESTIGE, "prestige");
 				Boolean sendFirework = loadBoolean("Prestiges." + prestigeName + ".send-firework");
 				PrestigeDataHandler pdh = new PrestigeDataHandler(prestigeName);
+				Map<String, Double> numberRequirements = new HashMap<>();
+				Map<String, String> stringRequirements = new HashMap<>();
+				List<String> customRequirementMessage = new ArrayList<>();
+				if(main.configManager.prestigesConfig.isSet("Prestiges." + prestigeName + ".requirements")) {
+					for(String requirementCondition : main.configManager.prestigesConfig.getStringList("Prestiges." + prestigeName + ".requirements")) {
+						if(requirementCondition.contains("->")) {
+							String[] splitter = requirementCondition.split("->");
+							String requirement = splitter[0];
+							String value = splitter[1];
+							stringRequirements.put(requirement, value);
+						} else if (requirementCondition.contains(">>")) {
+							String[] splitter = requirementCondition.split(">>");
+							String requirement = splitter[0];
+							double value = Double.valueOf(splitter[1]);
+							numberRequirements.put(requirement, value);
+						}
+					}
+				}
+				if(main.configManager.prestigesConfig.isSet("Prestiges." + prestigeName + ".custom-requirement-message")) {
+					for(String messageLine : main.configManager.prestigesConfig.getStringList("Prestiges." + prestigeName + ".custom-requirement-message")) {
+						customRequirementMessage.add(gds().parseHexColorCodes(messageLine));
+					}
+				}
+				if(!stringRequirements.isEmpty()) {
+					pdh.setStringRequirements(stringRequirements);
+				}
+				if(!numberRequirements.isEmpty()) {
+					pdh.setNumberRequirements(numberRequirements);
+				}
+				if(!customRequirementMessage.isEmpty()) {
+					pdh.setCustomRequirementMessage(customRequirementMessage);
+				}
 				pdh.setName(prestigeName);
-                pdh.setDisplayName(prestigeDisplayName);
+                pdh.setDisplayName(gds().parseHexColorCodes(prestigeDisplayName));
                 pdh.setCost(prestigeCost);
                 pdh.setNextPrestigeName(nextPrestigeName);
                 //pdh.setNextPrestigeCost(nextPrestigeCost);
                 //pdh.setNextPrestigeDisplayName(nextPrestigeDisplayName);
                 pdh.setRankupCostIncreasePercentage(rankupCostIncreasePercentage);
-                pdh.setPrestigeCommands(prestigeCommands);
-                pdh.setActionbarMessages(actionbarMessages);
+                pdh.setPrestigeCommands(gds().parseHexColorCodes(prestigeCommands));
+                pdh.setActionbarMessages(gds().parseHexColorCodes(actionbarMessages));
                 pdh.setActionbarInterval(actionbarInterval);
-                pdh.setBroadcastMessages(broadcastMessages);
-                pdh.setMsg(messages);
-                pdh.setActions(actions);
+                pdh.setBroadcastMessages(gds().parseHexColorCodes(broadcastMessages));
+                pdh.setMsg(gds().parseHexColorCodes(messages));
+                pdh.setActions(gds().parseHexColorCodes(actions));
                 pdh.setAddPermissionList(addPermissionList);
                 pdh.setDelPermissionList(delPermissionList);
                 pdh.setRandomCommandsManager(randomCommandsManager);
@@ -111,7 +144,7 @@ public class PrestigeDataStorage {
 		return main.configManager.prestigesConfig.getDouble(node, 0.0);
 	}
 	
-	public void loadPrestigeData(String prestigeName) {
+	public void loadPrestigeData(final String prestigeName) {
 		String nextPrestigeName = loadString("Prestiges." + prestigeName + ".nextprestige");
 		String prestigeDisplayName = loadString("Prestiges." + prestigeName + ".display");
 		Double prestigeCost = loadDouble("Prestiges." + prestigeName + ".cost");
@@ -165,6 +198,14 @@ public class PrestigeDataStorage {
 	 */
 	public List<String> getPrestigesCollection() {
 		return Arrays.asList(prestigeData.keySet().toArray(new String[0]));
+	}
+	
+	public Set<String> getOriginalPrestigesCollection() {
+		return prestigeData.keySet();
+	}
+	
+	public List<String> getLinkedPrestigesCollection() {
+		return new LinkedList<String>(prestigeData.keySet());
 	}
 	
 	public String getNextPrestigeName(String prestigeName) {
@@ -267,6 +308,7 @@ public class PrestigeDataStorage {
            // setData("Prestiges." + prestige + ".firework", getPrestigeData().get(prestigeName).getFireworkManager());
            // setData("Prestiges." + prestige + ".send-firework", getPrestigeData().get(prestigeName).getSendFirework());
 	}
+	@SuppressWarnings("unchecked")
 	public void setData(String node, Object value) {
 		if(value == null || node.contains("LASTPRESTIGE")) {
 			return;
@@ -306,7 +348,7 @@ public class PrestigeDataStorage {
 			return;
 		}
 			for(Entry<String, PrestigeDataHandler> prestige : prestigeData.entrySet()) {
-				String nextPrestige = getPrestigeData().get(prestige.getKey()).getNextPrestigeName();
+				// String nextPrestige = getPrestigeData().get(prestige.getKey()).getNextPrestigeName();
                  setData("Prestiges." + prestige.getKey() + ".nextprestige", prestige.getValue().getNextPrestigeName());
                  setData("Prestiges." + prestige.getKey() + ".cost", prestige.getValue().getCost());
                  setData("Prestiges." + prestige.getKey() + ".display", prestige.getValue().getDisplayName());

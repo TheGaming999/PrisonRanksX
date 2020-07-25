@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.Sets;
@@ -97,6 +96,7 @@ public class ActionbarProgress {
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	public boolean isHoldingDiamondPickaxe(Player player) {
 		Player p = player;
 		if(p == null || !p.isOnline()) {
@@ -115,7 +115,15 @@ public class ActionbarProgress {
 					return;
 				}
 				Player p = Bukkit.getPlayer(u);
-				Actionbar.sendActionBar(p, main.getString(actionbarMessage, p.getName()));
+				if(p == null || !p.isOnline()) {
+					main.debug("[actionbar] player is null");
+					return;
+				}
+				try {
+				main.getActionbar().sendActionBar(p, main.getString(actionbarMessage, p.getName()));
+				} catch (NullPointerException error) {
+					main.debug("[actionbar] Actionbar message send failed.");
+				}
 			}
 		}, actionbarUpdater, actionbarUpdater);
 	}
@@ -128,7 +136,7 @@ public class ActionbarProgress {
 				}
 				Player p = Bukkit.getPlayer(u);
 				if(isHoldingDiamondPickaxe(p)) {
-				Actionbar.sendActionBar(p, main.getString(actionbarMessage, p.getName()));
+				main.getActionbar().sendActionBar(p, main.getString(actionbarMessage, p.getName()));
 				}
 			}
 		}, actionbarUpdater, actionbarUpdater);

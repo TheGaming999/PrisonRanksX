@@ -1,10 +1,5 @@
 package me.prisonranksx.data;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.concurrent.LinkedBlockingDeque;
-
 public class RankPath {
 
 	private String rankName;
@@ -20,10 +15,15 @@ public class RankPath {
 	/**
 	 * 
 	 * @param fullPath { "%rank%#~#%path%" } example: { "A#~#default" }
-	 * @return RankPath
+	 * @return RankPath from String by splitting
+	 * @deprecated use: new RankPath(String rankName, String pathName);
 	 */
 	public static RankPath getRankPath(String fullPath) {
 		return new RankPath(fullPath.split("#~#")[0], fullPath.split("#~#")[1]);
+	}
+	
+	public static RankPath getRankPath(String rank, String path) {
+		return new RankPath(rank, path);
 	}
 	
 	public void set(String rankName, String pathName) {
@@ -39,6 +39,7 @@ public class RankPath {
 	/**
 	 * 
 	 * @return rank by splitting
+	 * @deprecated
 	 */
 	public String getRank() {
 		return get().split("#~#")[0];
@@ -47,6 +48,7 @@ public class RankPath {
 	/**
 	 * 
 	 * @return path by splitting
+	 * @deprecated
 	 */
 	public String getPath() {
 		return get().split("#~#")[1];
@@ -54,7 +56,7 @@ public class RankPath {
 
 	/**
 	 * 
-	 * @return path from var
+	 * @return path from variable
 	 */
 	public String getPathName() {
 		return pathName;
@@ -66,7 +68,7 @@ public class RankPath {
 	
 	/**
 	 * 
-	 * @return rank from var
+	 * @return rank from variable
 	 */
 	public String getRankName() {
 		return rankName;

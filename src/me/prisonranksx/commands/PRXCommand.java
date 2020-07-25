@@ -1,6 +1,8 @@
 package me.prisonranksx.commands;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -9,9 +11,11 @@ import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.PrestigeDataHandler;
+import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
+import me.prisonranksx.data.RebirthDataHandler;
 import me.prisonranksx.data.XUser;
 import me.prisonranksx.events.PrestigeUpdateCause;
 import me.prisonranksx.events.RankUpdateCause;
@@ -19,11 +23,15 @@ import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.events.XPrestigeUpdateEvent;
 import me.prisonranksx.events.XRankUpdateEvent;
 import me.prisonranksx.events.XRebirthUpdateEvent;
+import me.prisonranksx.utils.CollectionUtils;
+import me.prisonranksx.utils.CollectionUtils.ReplaceableList;
 
 public class PRXCommand extends BukkitCommand {
 	
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	private String ver = "1.0";
+	private List<String> placeholders;
+	private boolean is1_16;
 	public PRXCommand(String commandName) {
 		super(commandName);
 		this.setDescription(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".description", "Manage ranks,prestiges,rebirths settings")));
@@ -32,8 +40,56 @@ public class PRXCommand extends BukkitCommand {
 		this.setPermissionMessage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
 		this.setAliases(main.configManager.commandsConfig.getStringList("commands." + commandName + ".aliases"));
 		ver = main.getDescription().getVersion();
+		is1_16 = Bukkit.getVersion().contains("1.16");
+		placeholders = Arrays.asList(
+				"%prisonranksx_currentrank_name%", "%prisonranksx_currentrank_displayname%"
+				,"%prisonranksx_rankup_percentage%", "%prisonranksx_rankup_percentage_decimal%"
+				,"%prisonranksx_rankup_percentage_nolimit%", "%prisonranksx_rankup_percentage_decimal_nolimit%"
+				,"%prisonranksx_rankup_percentage_plain%", "%prisonranksx_rankup_progress%"
+				,"%prisonranksx_rankup_progress_double%", "%prisonranksx_rankup_name%"
+				,"%prisonranksx_rankup_displayname%", "%prisonranksx_rankup_cost%"
+				,"%prisonranksx_rankup_cost_formatted%", "%prisonranksx_rank_displayname_<rank>%"
+				,"%prisonranksx_rank_cost_<rank>%", "%prisonranksx_rank_costformatted_<rank>%"
+				,"%prisonranksx_currentrank_lastcolors%", "%prisonranksx_currentrank_afterbracketcolor%"
+				,"%prisonranksx_currentrank_afterspacecolor%", "%prisonranksx_currentrank_colors%"
+				,"%prisonranksx_currentrank_name_<playername>%", "%prisonranksx_rankup_name_<playername>%"
+				,"%prisonranksx_rankup_cost_plain%", "%prisonranksx_rankup_cost_integer%"
+				,"%prisonranksx_rankup_cost_integer_plain%", "%prisonranksx_prestige_name%"
+				,"%prisonranksx_prestige_displayname%", "%prisonranksx_prestige_cost%"
+				,"%prisonranksx_prestige_cost_formatted%", "%prisonranksx_nextprestige_name%"
+				,"%prisonranksx_nextprestige_displayname%", "%prisonranksx_nextprestige_cost%"
+				,"%prisonranksx_nextprestige_cost_formatted%", "%prisonranksx_prestige_displayname_<prestige>%"
+				,"%prisonranksx_prestige_cost_<prestige%", "%prisonranksx_prestige_costformatted_<prestige>%"
+				,"%prisonranksx_has_prestiged%", "%prisonranksx_prestige_name_<playername>%"
+				,"%prisonranksx_nextprestige_name_<playername>%", "%prisonranksx_nextprestige_cost_plain%"
+				,"%prisonranksx_nextprestige_cost_integer%", "%prisonranksx_nextprestige_cost_integer_plain%"
+				,"%prisonranksx_rebirth_name%", "%prisonranksx_rebirth_displayname%"
+				,"%prisonranksx_nextrebirth_name%" ,"%prisonranksx_nextrebirth_displayname%"
+				,"%prisonranksx_nextrebirth_cost%", "%prisonranksx_nextrebirth_cost_formatted%"
+				,"%prisonranksx_rebirth_displayname_<rebirth>%", "%prisonranksx_rebirth_cost_<rebirth>%"
+				,"%prisonranksx_rebirth_costformatted_<rebirth>%", "%prisonranksx_has_rebirthed%"
+				,"%prisonranksx_rebirth_name_<playername>%", "%prisonranksx_nextrebirth_name_<playername>%"
+				,"%prisonranksx_nextrebirth_cost_plain%", "%prisonranksx_nextrebirth_cost_integer%"
+				,"%prisonranksx_nextrebirth_cost_integer_plain%", "%prisonranksx_name_rank_<number>%"
+				,"%prisonranksx_value_rank_<number>%", "%prisonranksx_name_prestige_<number>%"
+				,"%prisonranksx_value_prestige_<number>%", "%prisonranksx_name_rebirth_<number>%"
+				,"%prisonranksx_value_rebirth_<number>%", "%prisonranksx_money%"
+				,"%prisonranksx_money_nonformatted%", "%prisonranksx_money_decimalformatted%"
+				,"%prisonranksx_next_percentage%", "%prisonranksx_next_percentage_decimal%"
+				,"%prisonranksx_next_progress%", "%prisonranksx_next_progress_double%"
+				,"%prisonranksx_plain_{placeholder}%", "%prisonranksx_current_displayname%"
+				, "%prisonranksx_name_stage_<number>%", "%prisonranksx_value_stage_<number>%", ".");
+		placeholders = CollectionUtils.columnizeList(placeholders, 3, ", ", ".");
 	}
 
+	public String getRandomHexColors() {
+		StringBuilder sb = new StringBuilder("#");
+		for(int i = 0 ; i < 6 ; i++) {
+			sb.append(getRandomColor());
+		}
+		return sb.toString();
+	}
+	
 	public String getRandomColor() {
 		int rand = main.prxAPI.numberAPI.getRandomInteger(0, 15);
 			switch (rand) {
@@ -58,9 +114,19 @@ public class PRXCommand extends BukkitCommand {
 		}
 	}
 	
+	public String getRandomBasicFormat() {
+		int rand = main.prxAPI.numberAPI.getRandomInteger(0, 2);
+		switch (rand) {
+		case 0: return "l";
+		case 1: return "n";
+		default: return "o";
+		}
+	}
+	
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
 		if(!sender.hasPermission(this.getPermission())) {
+			
 			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
@@ -81,14 +147,68 @@ public class PRXCommand extends BukkitCommand {
         	sender.sendMessage(main.prxAPI.c("&c/&6prx setrank <player> <rank> [pathname] &7⎟ &3set the player rank"));
         	sender.sendMessage(main.prxAPI.c("&c/&6prx resetrank <player> [pathname] &7⎟ &3reset the player rank"));
         	sender.sendMessage(main.prxAPI.c("&c/&6forcerankup <player>"));
-            sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3)"));
+            sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3&7)"));
             sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         } else if (args.length == 1) {
         	if(args[0].equalsIgnoreCase("banana")) {
         		Bukkit.broadcastMessage(main.prxAPI.c("&e&lBANANA!"));
         	}
+        	else if (args[0].equalsIgnoreCase("info")) {
+        		sender.sendMessage(main.prxAPI.c("&6&lPRX&r &7&lINFO:"));
+        		sender.sendMessage(main.prxAPI.c("&eRanks: &b" + main.rankStorage.getEntireData().size()));
+        		sender.sendMessage(main.prxAPI.c("&ePrestiges: &b" + main.prestigeStorage.getPrestigeData().size()));
+        		sender.sendMessage(main.prxAPI.c("&eRebirths: &b" + main.rebirthStorage.getRebirthData().size()));
+        		sender.sendMessage(main.prxAPI.c("&eRegistered players: &b" + main.playerStorage.getPlayerData().size()));
+        	}
+        	else if (args[0].equalsIgnoreCase("runtask")) {
+        		main.prxAPI.allRankAddPermissions.forEach(string -> {
+        			sender.sendMessage(string);
+        		});
+        	} else if (args[0].equalsIgnoreCase("placeholders")) {
+        		if(is1_16) {
+        			placeholders.forEach(placeholder -> {
+        				sender.sendMessage(main.globalStorage.translateHexColorCodes("&" + getRandomHexColors() + placeholder));
+        			});
+        			return true;
+        		}
+        		placeholders.forEach(placeholder -> {
+        			sender.sendMessage(main.prxAPI.c("&" + getRandomColor() + "&" + getRandomBasicFormat() + placeholder));
+        		});
+        	}
+        	else if (args[0].equalsIgnoreCase("pathrank")) {
+        		List<String> pathRanks = CollectionUtils.columnizeList(main.rankStorage.getPathRanksMap().get("default"), 3, ", ", ".");
+        		pathRanks.forEach(line -> {sender.sendMessage(line);});
+        	}
         	else if(args[0].equalsIgnoreCase("getprestiges")) {
-        		sender.sendMessage(String.valueOf(main.prxAPI.getPlayerPrestiges((Player)sender)));
+        		sender.sendMessage("Your prestiges: " + String.valueOf(main.prxAPI.getPlayerPrestiges((Player)sender)));
+        	}
+        	else if(args[0].equalsIgnoreCase("players")) {
+        		main.getPlayerStorage().getPlayerData().entrySet().forEach(entry -> {
+        			sender.sendMessage(main.prxAPI.c("&7" + entry.getKey() + "&9:" + entry.getValue().getName()));
+        		});
+        	}
+        	else if(args[0].equalsIgnoreCase("players2")) {
+        		main.getPlayerStorage().getPlayerData().entrySet().forEach(entry -> {
+        			sender.sendMessage(main.prxAPI.c("&7" + entry.getValue().getUUID().toString() + "&9:" + entry.getValue().getName()));
+        		});
+        	}
+        	else if(args[0].equalsIgnoreCase("players_prestiges")) {
+        		main.getPlayerStorage().getPlayerData().entrySet().forEach(entry -> {
+        			sender.sendMessage(main.prxAPI.c("&7" + entry.getValue().getName() + "&9:" + entry.getValue().getPrestige()));
+        		});
+        	}
+        	
+        	else if(args[0].equalsIgnoreCase("players_ranks")) {
+        		main.getPlayerStorage().getPlayerData().entrySet().forEach(entry -> {
+        			sender.sendMessage(main.prxAPI.c("&7" + entry.getValue().getName() + "&9:" + entry.getValue().getRankPath().getRankName()));
+        		});
+        	}
+        	else if(args[0].equalsIgnoreCase("players_rebirths")) {
+        		main.getPlayerStorage().getPlayerData().entrySet().forEach(entry -> {
+        			sender.sendMessage(main.prxAPI.c("&7&m---------------------------------------"));
+        			sender.sendMessage(main.prxAPI.c("&7" + entry.getValue().getName() + "&9:" + entry.getValue().getRebirth()));
+        			sender.sendMessage(main.prxAPI.c("&7&m---------------------------------------"));
+        		});
         	}
         	else if(args[0].equalsIgnoreCase("playerdata")) {
         		main.playerStorage.getPlayerData().keySet().forEach(data -> {
@@ -154,7 +274,7 @@ public class PRXCommand extends BukkitCommand {
             	sender.sendMessage(main.prxAPI.c("&c/&6prx setlastrank <name> &7⎟ &3set the last rank in the default path"));
             	sender.sendMessage(main.prxAPI.c("&c/&6prx setrank <player> <rank> [pathname] &7⎟ &3set the player rank"));
             	sender.sendMessage(main.prxAPI.c("&c/&6prx resetrank <player> [pathname] &7⎟ &3reset the player rank"));
-                sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3)"));
+                sender.sendMessage(main.prxAPI.c("&3[&6Page&3] &7(&f1&7/&f3&7)"));
                 sender.sendMessage(main.prxAPI.c("&c&m                                                                      &c"));
         	} else if (args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("rl")) {
         		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
@@ -184,7 +304,11 @@ public class PRXCommand extends BukkitCommand {
         		sender.sendMessage(main.prxAPI.c("&c&k~&r &4&l&o&nTask limit cleared&r &c&k~"));
         	} else if (args[0].equalsIgnoreCase("errors")) {
         		if(main.errorInspector.getErrors().isEmpty()) {
+        			if(is1_16) {
+        			sender.sendMessage(main.globalStorage.translateHexColorCodes("&" + getRandomHexColors() + main.prxAPI.c("&l&oNo errors were found.")));
+        			} else {
         			sender.sendMessage(main.prxAPI.c("&" + getRandomColor() + "&l&oNo errors were found."));
+        			}
         			return true;
         		}
         		main.errorInspector.getErrors().forEach(error -> {
@@ -431,7 +555,7 @@ public class PRXCommand extends BukkitCommand {
         		main.prxAPI.resetPlayerRank(p);
         		sender.sendMessage(main.prxAPI.g("resetrank").replace("%target%", p.getName())
         				.replace("%firstrank%", main.prxAPI.getDefaultRank()));
-        		if(main.getGlobalStorage().getStringListMap().containsKey("RankOptions.rank-reset-cmds")) {
+        		if(!main.getGlobalStorage().getStringListMap().containsKey("RankOptions.rank-reset-cmds")) {
         		  return true;
         		}
         		if(main.globalStorage.getStringListMap().get("RankOptions.rank-reset-cmds").contains("[rankpermissions]")) {
@@ -649,7 +773,7 @@ public class PRXCommand extends BukkitCommand {
         		main.configManager.saveRebirthsConfig();
         		sender.sendMessage(main.prxAPI.g("createrebirth").replace("%createdrebirth%", args[1])
         		        .replace("%rebirthcost%", args[2]));
-        	} else  if (args[0].equalsIgnoreCase("setrankcost")) {
+        	} else if (args[0].equalsIgnoreCase("setrankcost")) {
           		double costy;
         		if(!main.prxAPI.numberAPI.isNumber(args[2])) {
         			costy = main.prxAPI.numberAPI.parseBalance(args[2]);
@@ -717,15 +841,30 @@ public class PRXCommand extends BukkitCommand {
         			sender.sendMessage(main.prxAPI.g("rank-notfound").replace("%rank%", newRank));
         			return true;
         		}
+        		try {
         		XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKSET, newRank);
         		Bukkit.getPluginManager().callEvent(e);
         		if(e.isCancelled()) {
         			return true;
         		}
         		main.prxAPI.setPlayerRank(p, newRank);
+        		RankDataHandler rdh = main.prxAPI.getRank(RankPath.getRankPath(newRank, main.prxAPI.getDefaultPath()));
+                main.executeCommands(p, rdh.getRankCommands()); 
+                if(rdh.getCurrentAddPermissionList() != null) {rdh.getCurrentAddPermissionList().forEach(line -> {
+                	main.perm.addPermission(p, line);
+                });}
+                if(rdh.getCurrentDelPermissionList() != null) {rdh.getCurrentDelPermissionList().forEach(line -> {
+                	main.perm.delPermission(p, line);
+                });}
+        		} catch (Exception exception) {
+        			main.getLogger().warning(p.getName() + " data went wrong. possible reasons:");
+        			main.getLogger().warning("some ranks on ranks.yml has an invalid nextrank, (not matching case, rank doesn't exist)");
+        			main.getLogger().warning("player has old/wrong rankdata in rankdata.yml therefore rankdata.yml must be deleted while the server is offline to prevent data loss");
+        			main.getLogger().warning("rankup-vault-groups option on config.yml is enabled while you don't use it (not having groups in the permission plugin that match prisonranksx ranks on the main track)");
+        		}
         		sender.sendMessage(main.prxAPI.g("setrank").replace("%target%", p.getName())
         				.replace("%settedrank%", newRank));
-
+                
         	} else if (args[0].equalsIgnoreCase("setpath")) {
         		if(Bukkit.getPlayer(args[1]) == null) {
         			sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
@@ -785,6 +924,18 @@ public class PRXCommand extends BukkitCommand {
         	        			return true;
         	        		}
         	        		main.prxAPI.setPlayerPrestige(p, prestige);
+        	        		PrestigeDataHandler pdh = main.prxAPI.getPrestige(prestige);
+        	        		main.executeCommands(p, pdh.getPrestigeCommands());
+        	        		if(pdh.getAddPermissionList() != null) {
+        	        		pdh.getAddPermissionList().forEach(line -> {
+        	        			main.perm.addPermission(p, line);
+        	        		});
+        	        		}
+        	        		if(pdh.getDelPermissionList() != null) {
+        	        			pdh.getDelPermissionList().forEach(line -> {
+        	        				main.perm.delPermission(p, line);
+        	        			});
+        	        		}
         	        		sender.sendMessage(main.prxAPI.g("setprestige").replace("%target%", p.getName())
         	        				.replace("%settedprestige%", prestige));
         					return true;
@@ -799,6 +950,18 @@ public class PRXCommand extends BukkitCommand {
         			return true;
         		}
         		main.prxAPI.setPlayerPrestige(p, newPrestige);
+        		PrestigeDataHandler pdh = main.prxAPI.getPrestige(newPrestige);
+        		main.executeCommands(p, pdh.getPrestigeCommands());
+        		if(pdh.getAddPermissionList() != null) {
+        		pdh.getAddPermissionList().forEach(line -> {
+        			main.perm.addPermission(p, line);
+        		});
+        		}
+        		if(pdh.getDelPermissionList() != null) {
+        			pdh.getDelPermissionList().forEach(line -> {
+        				main.perm.delPermission(p, line);
+        			});
+        		}
         		sender.sendMessage(main.prxAPI.g("setprestige").replace("%target%", p.getName())
         				.replace("%settedprestige%", newPrestige));
         		
@@ -819,6 +982,14 @@ public class PRXCommand extends BukkitCommand {
     			return true;
     		}
       		main.prxAPI.setPlayerRebirth(p, newRebirth);
+      		RebirthDataHandler rdh = main.prxAPI.getRebirth(newRebirth);
+      		main.executeCommands(p, rdh.getRebirthCommands());
+      		if(rdh.getAddPermissionList() != null) {rdh.getAddPermissionList().forEach(line -> {
+      			main.perm.addPermission(p, line);
+      		});}
+      		if(rdh.getDelPermissionList() != null) {rdh.getDelPermissionList().forEach(line -> {
+      			main.perm.delPermission(p, line);
+      		});}
       		sender.sendMessage(main.prxAPI.g("setrebirth").replace("%target%", p.getName())
       				.replace("%settedrebirth%", newRebirth));
       		
@@ -837,7 +1008,7 @@ public class PRXCommand extends BukkitCommand {
         		}
         		Player p = Bukkit.getPlayer(args[1]);
         		String newRank = main.manager.matchRank(args[2]);
-        		if(!main.prxAPI.rankExists(newRank)) {
+        		if(!main.prxAPI.rankExists(newRank, true)) {
         			sender.sendMessage(main.prxAPI.g("rank-notfound").replace("%rank%", newRank));
         			return true;
         		}
@@ -875,7 +1046,7 @@ public class PRXCommand extends BukkitCommand {
         		path = main.manager.matchPath(path);
         		}
         		String displayName = multiArgs.replace("-path:" + path, "");
-        		main.manager.createRank(args[1], Double.valueOf(costy), main.globalStorage.getStringData("defaultpath"), displayName);
+        		main.manager.createRank(args[1], Double.valueOf(costy), path, displayName);
         		main.configManager.saveRanksConfig();
         		sender.sendMessage(main.prxAPI.g("createrank").replace("%createdrank%", args[1])
         				.replace("%rankcost%", args[2]));

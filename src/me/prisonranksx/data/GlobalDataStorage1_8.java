@@ -5,65 +5,74 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
-
 import me.prisonranksx.PrisonRanksX;
 
-public interface GlobalDataStorage {
+public class GlobalDataStorage1_8 implements GlobalDataStorage {
+
+	private Map<String, String> stringData;
+	private Map<String, Integer> integerData;
+	private Map<String, Double> doubleData;
+	private Map<String, Boolean> booleanData;
+	private Map<String, List<String>> stringListData;
+	private Map<String, Set<String>> stringSetData;
+	private Map<String, Map<String, Object>> mapData;
+	private Map<String, Object> globalData;
+	private PrisonRanksX main;
+	public boolean isRankEnabled;
+	public String rankupProgressStyle;
 	
-	Map<String, String> stringData = new HashMap<>();
-	Map<String, Integer> integerData = new HashMap<>();
-	Map<String, Double> doubleData = new HashMap<>();
-	Map<String, Boolean> booleanData = new HashMap<>();
-	Map<String, List<String>> stringListData = new HashMap<>();
-	Map<String, Set<String>> stringSetData = new HashMap<>();
-	Map<String, Map<String, Object>> mapData = new HashMap<>();
-	Map<String, Object> globalData = new HashMap<>();
-	PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+	/**
+	 * If you want to register your config thing just use one of register#### methods onEnable of your plugin
+	 */
+	public GlobalDataStorage1_8(PrisonRanksX main) {
+		this.main = main;
+	    this.stringData = new HashMap<String, String>();
+	    this.integerData = new HashMap<String, Integer>();
+	    this.doubleData = new HashMap<String, Double>();
+	    this.booleanData = new HashMap<String, Boolean>();
+	    this.stringListData = new HashMap<String, List<String>>();
+	    this.stringSetData = new HashMap<String, Set<String>>();
+	    this.mapData = new HashMap<String, Map<String, Object>>();
+	    this.globalData = new HashMap<String, Object>();
+	}
 	
-	String translateHexColorCodes(final String message);
-	String parseHexColorCodes(final String message);
-	List<String> translateHexColorCodes(final List<String> message);
-	List<String> parseHexColorCodes(final List<String> message);
-	
-	public default Map<String, String> getStringMap() {
+	public Map<String, String> getStringMap() {
 		return this.stringData;
 	}
 	
-	public default Map<String, Integer> getIntegerMap() {
+	public Map<String, Integer> getIntegerMap() {
 		return this.integerData;
 	}
 	
-	public default Map<String, Double> getDoubleMap() {
+	public Map<String, Double> getDoubleMap() {
 		return this.doubleData;
 	}
 	
-	public default Map<String, Boolean> getBooleanMap() {
+	public Map<String, Boolean> getBooleanMap() {
 		return this.booleanData;
 	}
 	
-	public default Map<String, List<String>> getStringListMap() {
+	public Map<String, List<String>> getStringListMap() {
 		return this.stringListData;
 	}
 	
-	public default Map<String, Set<String>> getStringSetMap() {
+	public Map<String, Set<String>> getStringSetMap() {
 		return this.stringSetData;
 	}
 	
-	public default Map<String, Map<String, Object>> getMap() {
+	public Map<String, Map<String, Object>> getMap() {
 		return this.mapData;
 	}
 	
-	public default Map<String, Object> getGlobalMap() {
+	public Map<String, Object> getGlobalMap() {
 		return this.globalData;
 	}
-	
 	/**
 	 * 
 	 * @param configNode
 	 * @return loaded string
 	 */
-	public default String registerStringData(String configNode) {
+	public String registerStringData(String configNode) {
 		getStringMap().put(configNode, main.getConfig().getString(configNode));
 		getGlobalMap().put(configNode, main.getConfig().getString(configNode));
 		return main.getConfig().getString(configNode);
@@ -74,7 +83,7 @@ public interface GlobalDataStorage {
 	 * @param configNode
 	 * @return loaded integer
 	 */
-	public default Integer registerIntegerData(String configNode) {
+	public Integer registerIntegerData(String configNode) {
 		getIntegerMap().put(configNode, main.getConfig().getInt(configNode));
 		getGlobalMap().put(configNode, main.getConfig().getInt(configNode));
 		return main.getConfig().getInt(configNode);
@@ -85,7 +94,7 @@ public interface GlobalDataStorage {
 	 * @param configNode
 	 * @return loaded double
 	 */
-	public default double registerDoubleData(String configNode) {
+	public double registerDoubleData(String configNode) {
 		getDoubleMap().put(configNode, main.getConfig().getDouble(configNode));
 		getGlobalMap().put(configNode, main.getConfig().getDouble(configNode));
 		return main.getConfig().getDouble(configNode);
@@ -96,7 +105,7 @@ public interface GlobalDataStorage {
 	 * @param configNode
 	 * @return loaded boolean
 	 */
-	public default boolean registerBooleanData(String configNode) {
+	public boolean registerBooleanData(String configNode) {
 		getBooleanMap().put(configNode, main.getConfig().getBoolean(configNode));
 		getGlobalMap().put(configNode, main.getConfig().getBoolean(configNode));
 		return main.getConfig().getBoolean(configNode);
@@ -107,7 +116,7 @@ public interface GlobalDataStorage {
 	 * @param configNode
 	 * @return loaded string list
 	 */
-	public default List<String> registerStringListData(String configNode) {
+	public List<String> registerStringListData(String configNode) {
 		getStringListMap().put(configNode, main.getConfig().getStringList(configNode));
 		getGlobalMap().put(configNode, main.getConfig().getStringList(configNode));
 		return main.getConfig().getStringList(configNode);
@@ -118,7 +127,7 @@ public interface GlobalDataStorage {
 	 * @param configNode
 	 * @return loaded string set
 	 */
-	public default Set<String> registerStringSetData(String configNode) {
+	public Set<String> registerStringSetData(String configNode) {
 		getStringSetMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getKeys(false));
 		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getKeys(false));
 		return main.getConfig().getConfigurationSection(configNode).getKeys(false);
@@ -130,13 +139,13 @@ public interface GlobalDataStorage {
 	 * @param withKeys
 	 * @return loaded string set
 	 */
-	public default Set<String> registerStringSetData(String configNode, boolean withKeys) {
+	public Set<String> registerStringSetData(String configNode, boolean withKeys) {
 		getStringSetMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getKeys(withKeys));
 		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getKeys(withKeys));
 		return main.getConfig().getConfigurationSection(configNode).getKeys(withKeys);
 	}
 	
-	public default Map<String, Object> registerMapData(String configNode, boolean withKeys) {
+	public Map<String, Object> registerMapData(String configNode, boolean withKeys) {
 		if(main.getConfig().getConfigurationSection(configNode) != null) {
 		getMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
 		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
@@ -151,7 +160,7 @@ public interface GlobalDataStorage {
 	 * @param configNode
 	 * @return loaded object
 	 */
-	public default Object registerData(String configNode) {
+	public Object registerData(String configNode) {
 		getGlobalMap().put(configNode, main.getConfig().get(configNode));
 		return main.getConfig().get(configNode);
 	}
@@ -160,10 +169,10 @@ public interface GlobalDataStorage {
 	 * must be run onEnable()
 	 */
 	@SuppressWarnings("unused")
-	public default void loadGlobalData() {
+	public void loadGlobalData() {
 		List<String> worlds = registerStringListData("worlds");
 		//Under Options
-		boolean isRankEnabled = registerBooleanData("Options.rank-enabled");
+		isRankEnabled = registerBooleanData("Options.rank-enabled");
 		boolean isPrestigeEnabled = registerBooleanData("Options.prestige-enabled");
 		boolean isRebirthEnabled = registerBooleanData("Options.rebirth-enabled");
 		String forceDisplayOrder = registerStringData("Options.force-display-order");
@@ -400,7 +409,7 @@ public interface GlobalDataStorage {
 		List<String> rankOptionRankDeleteCMDS = registerStringListData("RankOptions.rank-delete-cmds");
 		List<String> rankOptionRankResetCMDS = registerStringListData("RankOptions.rank-reset-cmds");
 		//Under PlaceholderAPI
-		String rankupProgressStyle = registerStringData("PlaceholderAPI.rankup-progress-style");
+		rankupProgressStyle = registerStringData("PlaceholderAPI.rankup-progress-style");
 		String rankupProgressFilled = registerStringData("PlaceholderAPI.rankup-progress-filled");
 		String rankupProgressNeeded = registerStringData("PlaceholderAPI.rankup-progress-needed");
 		boolean rankupProgressFullEnabled = registerBooleanData("PlaceholderAPI.rankup-progress-full-enabled");
@@ -469,32 +478,54 @@ public interface GlobalDataStorage {
 	    String lastRebirth = registerStringData("lastrebirth");
 	}
 	
-	public default String getStringData(String configNode) {
+	public String getStringData(String configNode) {
 		return getStringMap().get(configNode);
 	}
 	
-	public default int getIntegerData(String configNode) {
+	public int getIntegerData(String configNode) {
 		return getIntegerMap().get(configNode);
 	}
 	
-	public default double getDoubleData(String configNode) {
+	public double getDoubleData(String configNode) {
 		return getDoubleMap().get(configNode);
 	}
 	
-	public default boolean getBooleanData(String configNode) {
+	public boolean getBooleanData(String configNode) {
 		return getBooleanMap().get(configNode);
 	}
 	
-	public default List<String> getStringListData(String configNode) {
+	public List<String> getStringListData(String configNode) {
 		return getStringListMap().get(configNode);
 	}
 	
-	public default Set<String> getStringSetData(String configNode) {
+	public Set<String> getStringSetData(String configNode) {
 		return getStringSetMap().get(configNode);
 	}
 	
-	public default Object getData(String configNode) {
+	public Object getData(String configNode) {
 		return getGlobalMap().get(configNode);
+	}
+
+	@Override
+	public String translateHexColorCodes(String message) {
+		return message;
+	}
+
+	@Override
+	public List<String> translateHexColorCodes(List<String> message) {
+		return message;
+	}
+
+	@Override
+	public String parseHexColorCodes(String message) {
+		// TODO Auto-generated method stub
+		return message;
+	}
+
+	@Override
+	public List<String> parseHexColorCodes(List<String> message) {
+		// TODO Auto-generated method stub
+		return message;
 	}
 	
 }

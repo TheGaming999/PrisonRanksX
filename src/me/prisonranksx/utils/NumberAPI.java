@@ -158,17 +158,18 @@ public class NumberAPI {
         String newVal = numBeforeDot + numBetweenDotAndE + getZeros(eNewCount);
         return newVal;
 	}
-	public String getZeros(int amountOfZeros) {
+	public String getZeros(final int amountOfZeros) {
 		String x = "";
+		StringBuilder sb = new StringBuilder(x);
 		for(int i = 0; i < amountOfZeros + 1; i++) {
-			x = x + "0";
+			sb.append("0");
 		}
-		return x;
+		return sb.toString();
 	}
 	public Long getZerosAsLong(int amountOfZeros) {
 		String x = "";
 		for(int i = 0; i < amountOfZeros + 1; i++) {
-			x = x + "0";
+			x += "0";
 		}
 		return Long.valueOf(x);
 	}
@@ -179,10 +180,38 @@ public class NumberAPI {
 		return nP;
 	}
 	@SuppressWarnings({"unused"})
-	public Boolean isNumber(String value) {
-		Double x = null;
+	public boolean isNumber(String value) {
+		double x = 0.0;
 		try {
 			x = Double.valueOf(value);
+			return true;
+		} catch (NumberFormatException ex) {
+			return false;
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	public boolean isInteger(final String value) {
+		if(value.contains("\\.")) {
+			return false;
+		}
+		int x = 0;
+		try {
+			x = Integer.valueOf(value);
+			return true;
+		} catch (NumberFormatException ex) {
+			return false;
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	public boolean isDouble(final String value) {
+		if(!value.contains("\\.")) {
+			return false;
+		}
+		double x = 0.0;
+		try {
+			x = Double.valueOf(value);	
 			return true;
 		} catch (NumberFormatException ex) {
 			return false;
@@ -277,7 +306,50 @@ public class NumberAPI {
         String numBeforeDot = strValue.split("#")[0];
         return numBeforeDot;
     }
-    public Double parseBalance(String doubleStringValue) {
+    
+    // 1.20M
+    // 1.5k
+    // 1.25M -> 1,250,000
+    //
+    public Double parseBalance(final String doubleStringValue) {
+    	if(doubleStringValue.contains("\\.")) {
+    		StringBuilder sb = new StringBuilder("0");
+    		String[] splitter = doubleStringValue.split("\\.");
+    		String beforeComma = splitter[0];
+    		String afterComma = splitter[1];
+    		String lastChar = afterComma.substring(afterComma.length() - 1);
+    		if(lastChar.equalsIgnoreCase("k")) {
+    			String parsedNumbers = afterComma.replaceAll("(?i)k", "");
+    			int afterCommaNumbers = parsedNumbers.length();
+    			int zeros = 4 - afterCommaNumbers;
+    			sb = new StringBuilder(beforeComma);
+    			return Double.valueOf(sb.append(parsedNumbers).append(getZeros(zeros)).toString());
+    		} else if (lastChar.equalsIgnoreCase("m")) {
+    			String parsedNumbers = afterComma.replaceAll("(?i)m", "");
+    			int afterCommaNumbers = parsedNumbers.length();
+    			int zeros = 7 - afterCommaNumbers;
+    			sb = new StringBuilder(beforeComma);
+    			return Double.valueOf(sb.append(parsedNumbers).append(getZeros(zeros)).toString());
+    		} else if (lastChar.equalsIgnoreCase("b")) {
+    			String parsedNumbers = afterComma.replaceAll("(?i)b", "");
+    			int afterCommaNumbers = parsedNumbers.length();
+    			int zeros = 10 - afterCommaNumbers;
+    			sb = new StringBuilder(beforeComma);
+    			return Double.valueOf(sb.append(parsedNumbers).append(getZeros(zeros)).toString());
+    		} else if (lastChar.equalsIgnoreCase("t")) {
+    			String parsedNumbers = afterComma.replaceAll("(?i)t", "");
+    			int afterCommaNumbers = parsedNumbers.length();
+    			int zeros = 13 - afterCommaNumbers;
+    			sb = new StringBuilder(beforeComma);
+    			return Double.valueOf(sb.append(parsedNumbers).append(getZeros(zeros)).toString());
+    		} else if (lastChar.equalsIgnoreCase("q")) {
+    			String parsedNumbers = afterComma.replaceAll("(?i)q", "");
+    			int afterCommaNumbers = parsedNumbers.length();
+    			int zeros = 16 - afterCommaNumbers;
+    			sb = new StringBuilder(beforeComma);
+    			return Double.valueOf(sb.append(parsedNumbers).append(getZeros(zeros)).toString());
+    		}
+    	}
     	String parsed = doubleStringValue.replaceAll("(?i)k", "000").replaceAll("(?i)m", "000000").replaceAll("(?i)b", "000000000")
     			.replaceAll("(?i)t", "000000000000").replaceAll("(?i)q", "000000000000000").replace(",", "").replace("#", "");
     	Double balance = Double.valueOf(parsed);

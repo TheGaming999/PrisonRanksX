@@ -21,13 +21,13 @@ public class RebirthRandomCommands {
 	
 	private static PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	
-	public RebirthRandomCommands(String rebirthName, boolean withKeys) {this.rebirthName = rebirthName; this.withKeys = withKeys;
+	public RebirthRandomCommands(String rebirthName, boolean withKeys) {this.setRebirthName(rebirthName); this.withKeys = withKeys;
 	this.commandsList = new ArrayList<>();
 	this.chances = new ArrayList<>();
 	this.randomCommandsMap = new HashMap<String, Object>();
 	}
 	
-	public RebirthRandomCommands(String rebirthName, boolean withKeys, boolean loadSections) {this.rebirthName = rebirthName; this.withKeys = withKeys;
+	public RebirthRandomCommands(String rebirthName, boolean withKeys, boolean loadSections) {this.setRebirthName(rebirthName); this.withKeys = withKeys;
 	this.commandsList = new ArrayList<>();
 	this.chances = new ArrayList<>();
 	this.randomCommandsMap = new HashMap<String, Object>();
@@ -91,5 +91,13 @@ public class RebirthRandomCommands {
 	
 	public Double getChance(String section) {
 		return ((ConfigurationSection)randomCommandsMap.get(section)).getDouble("chance");
+	}
+
+	public String getRebirthName() {
+		return rebirthName;
+	}
+
+	public void setRebirthName(String rebirthName) {
+		this.rebirthName = rebirthName;
 	}
 }

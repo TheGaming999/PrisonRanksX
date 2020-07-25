@@ -1,5 +1,6 @@
 package me.prisonranksx.data;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -30,6 +31,10 @@ public class RebirthDataStorage {
 	public RebirthDataHandler getDataHandler(String name) {
 		return getRebirthData().get(name);
 	}
+	
+	public GlobalDataStorage gds() {
+		return this.main.globalStorage;
+	}
 	/**
 	 * Should only be used onEnable()
 	 * can be used as a reload
@@ -48,7 +53,7 @@ public class RebirthDataStorage {
 				List<String> actionbarMessages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actionbar.text");
 				int actionbarInterval = main.configManager.rebirthsConfig.getInt("Rebirths." + rebirthName + ".actionbar.interval");
 				List<String> broadcastMessages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".broadcast");
-				List<String> messages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".text");
+				List<String> messages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".msg");
 				List<String> actions = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actions");
 				List<String> addPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".addpermission");
 				List<String> delPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".delpermission");
@@ -58,20 +63,52 @@ public class RebirthDataStorage {
 				FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
 				boolean sendFirework = main.configManager.rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
 				RebirthDataHandler rbdh = new RebirthDataHandler(rebirthName);
+				Map<String, Double> numberRequirements = new HashMap<>();
+				Map<String, String> stringRequirements = new HashMap<>();
+				List<String> customRequirementMessage = new ArrayList<>();
+				if(main.configManager.rebirthsConfig.isSet("Rebirths." + rebirthName + ".requirements")) {
+					for(String requirementCondition : main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".requirements")) {
+						if(requirementCondition.contains("->")) {
+							String[] splitter = requirementCondition.split("->");
+							String requirement = splitter[0];
+							String value = splitter[1];
+							stringRequirements.put(requirement, value);
+						} else if (requirementCondition.contains(">>")) {
+							String[] splitter = requirementCondition.split(">>");
+							String requirement = splitter[0];
+							double value = Double.valueOf(splitter[1]);
+							numberRequirements.put(requirement, value);
+						}
+					}
+				}
+				if(main.configManager.rebirthsConfig.isSet("Rebirths." + rebirthName + ".custom-requirement-message")) {
+					for(String messageLine : main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".custom-requirement-message")) {
+						customRequirementMessage.add(gds().parseHexColorCodes(messageLine));
+					}
+				}
+				if(!stringRequirements.isEmpty()) {
+					rbdh.setStringRequirements(stringRequirements);
+				}
+				if(!numberRequirements.isEmpty()) {
+					rbdh.setNumberRequirements(numberRequirements);
+				}
+				if(!customRequirementMessage.isEmpty()) {
+					rbdh.setCustomRequirementMessage(customRequirementMessage);
+				}
 				rbdh.setName(rebirthName);
-                rbdh.setDisplayName(rebirthDisplayName);
+                rbdh.setDisplayName(gds().parseHexColorCodes(rebirthDisplayName));
                 rbdh.setCost(rebirthCost);
                 rbdh.setNextRebirthName(nextRebirthName);
                 rbdh.setPrestigeCostIncreasePercentage(prestigeIncrease);
                 //rbdh.setNextRebirthCost(nextRebirthCost);
                 //rbdh.setNextRebirthDisplayName(nextRebirthDisplayName);
-                rbdh.setRebirthCommands(rebirthCommands);
+                rbdh.setRebirthCommands(gds().parseHexColorCodes(rebirthCommands));
                 //rbdh.setNextRebirthCommands(nextRebirthCommands);
-                rbdh.setActionbarMessages(actionbarMessages);
+                rbdh.setActionbarMessages(gds().parseHexColorCodes(actionbarMessages));
                 rbdh.setActionbarInterval(actionbarInterval);
-                rbdh.setBroadcastMessages(broadcastMessages);
-                rbdh.setMsg(messages);
-                rbdh.setActions(actions);
+                rbdh.setBroadcastMessages(gds().parseHexColorCodes(broadcastMessages));
+                rbdh.setMsg(gds().parseHexColorCodes(messages));
+                rbdh.setActions(gds().parseHexColorCodes(actions));
                 rbdh.setAddPermissionList(addPermissionList);
                 rbdh.setDelPermissionList(delPermissionList);
                 rbdh.setRandomCommandsManager(randomCommandsManager);
@@ -233,6 +270,7 @@ public class RebirthDataStorage {
 		return rebirthData.get(rebirthName).getRequiredPrestiges();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void setData(String node, Object value) {
 		if(value == null || node.contains("LASTREBIRTH")) {
 			return;
@@ -275,7 +313,7 @@ public class RebirthDataStorage {
 	 * use the method loadRebirthData(String rebirthName) to load the data in game
 	 */
 	public void saveRebirthData(String rebirthName) {
-			String nextRebirth = rebirthData.get(rebirthName).getNextRebirthName();
+			
 			String rebirth = rebirthName;
             setData("Rebirths." + rebirth + ".nextrebirth", rebirthData.get(rebirthName).getNextRebirthName());
             setData("Rebirths." + rebirth + ".cost", rebirthData.get(rebirthName).getCost());
@@ -303,7 +341,7 @@ public class RebirthDataStorage {
 			return;
 		}
 			for(Entry<String, RebirthDataHandler> rebirth : rebirthData.entrySet()) {
-				String nextRebirth = rebirthData.get(rebirth.getKey()).getNextRebirthName();
+				// String nextRebirth = rebirthData.get(rebirth.getKey()).getNextRebirthName();
                  setData("Rebirths." + rebirth.getKey() + ".nextrebirth", rebirth.getValue().getNextRebirthName());
                  setData("Rebirths." + rebirth.getKey() + ".cost", rebirth.getValue().getCost());
                  setData("Rebirths." + rebirth.getKey() + ".executecmds", rebirth.getValue().getRebirthCommands());

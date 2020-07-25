@@ -2,6 +2,9 @@ package me.prisonranksx.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 public class RankDataHandler {
 
@@ -13,17 +16,23 @@ public class RankDataHandler {
 	private Double rankupCost;
 	private boolean allowPrestige;
 	private List<String> rankupCommands;
+	private List<String> rankCommands; 
 	private List<String> actionbarMessages;
 	private int actionbarInterval;
 	private List<String> actions;
 	private List<String> broadcastMessages;
 	private List<String> messages;
 	private List<String> addPermissionList;
+	private List<String> currentAddPermissionList;
 	private List<String> delPermissionList;
+	private List<String> currentDelPermissionList;
 	private boolean sendFirework;
 	private RankRandomCommands randomCommandsManager;
 	private FireworkManager fireworkManager;
 	private String pathName;
+	private @Nullable Map<String, Double> numberRequirements;
+	private @Nullable Map<String, String> stringRequirements;
+	private List<String> customRequirementMessage;
 	
 	/**
 	 * Never touch this, everything will go wrong if you did. that is applied to all data handlers <!>
@@ -224,6 +233,54 @@ public class RankDataHandler {
 	
 	public void setPathName(String pathName) {
 		this.pathName = pathName;
+	}
+
+	public Map<String, Double> getNumberRequirements() {
+		return numberRequirements;
+	}
+
+	public void setNumberRequirements(Map<String, Double> numberRequirements) {
+		this.numberRequirements = numberRequirements;
+	}
+
+	public Map<String, String> getStringRequirements() {
+		return stringRequirements;
+	}
+
+	public void setStringRequirements(Map<String, String> stringRequirements) {
+		this.stringRequirements = stringRequirements;
+	}
+
+	public List<String> getCustomRequirementMessage() {
+		return customRequirementMessage;
+	}
+
+	public void setCustomRequirementMessage(List<String> customRequirementMessage) {
+		this.customRequirementMessage = customRequirementMessage;
+	}
+
+	public List<String> getRankCommands() {
+		return rankCommands;
+	}
+
+	public void setRankCommands(List<String> rankCommands) {
+		this.rankCommands = rankCommands;
+	}
+
+	public List<String> getCurrentAddPermissionList() {
+		return currentAddPermissionList;
+	}
+
+	public void setCurrentAddPermissionList(List<String> currentAddPermissionList) {
+		this.currentAddPermissionList = currentAddPermissionList;
+	}
+
+	public List<String> getCurrentDelPermissionList() {
+		return currentDelPermissionList;
+	}
+
+	public void setCurrentDelPermissionList(List<String> currentDelPermissionList) {
+		this.currentDelPermissionList = currentDelPermissionList;
 	}
 	
 }

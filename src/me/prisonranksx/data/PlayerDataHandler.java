@@ -14,6 +14,7 @@ public class PlayerDataHandler {
 	private RankPath rankPath;
 	private String rebirth;
 	private UUID uuid;
+	private String name;
 	
 	public PlayerDataHandler(XUser player) {this.player = player;}
 	
@@ -37,7 +38,7 @@ public class PlayerDataHandler {
 	
 	@Deprecated
 	public String getRank() {
-		return rank;
+		return rankPath.getRankName();
 	}
 	
 	public String getPrestige() {
@@ -46,7 +47,7 @@ public class PlayerDataHandler {
 	
 	@Deprecated
 	public String getPath() {
-		return path;
+		return rankPath.getPathName();
 	}
 	
 	public RankPath getRankPath() {
@@ -81,5 +82,13 @@ public class PlayerDataHandler {
 	
 	public XUser getUser() {
 		return this.player;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

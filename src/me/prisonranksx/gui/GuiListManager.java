@@ -14,6 +14,7 @@ import cloutteam.samjakob.gui.buttons.GUIButton;
 import cloutteam.samjakob.gui.types.PaginatedGUI;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
+import me.prisonranksx.utils.SkullCreator;
 import me.prisonranksx.utils.XMaterial;
 
 public class GuiListManager {
@@ -66,7 +67,10 @@ public class GuiListManager {
 			List<String> constantItems = main.globalStorage.getStringListData("Ranklist-gui.constant-items");
 			for(String item : constantItems) {
 				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
-				button.setListener(event -> {event.setCancelled(true);});
+				button.setListener(event -> {
+					event.setCancelled(true);
+					main.executeCommands((Player)event.getWhoClicked(), main.cim.readCustomItemCommands(item));
+				});
 				int slot = main.cim.readCustomItemSlot(item);
 				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				ranksGUI.setButton(slot + page, button);
@@ -83,7 +87,9 @@ public class GuiListManager {
 			List<String> constantItems = main.globalStorage.getStringListData("Prestigelist-gui.constant-items");
 			for(String item : constantItems) {
 				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
-				button.setListener(event -> {event.setCancelled(true);});
+				button.setListener(event -> {event.setCancelled(true);
+				main.executeCommands((Player)event.getWhoClicked(), main.cim.readCustomItemCommands(item));
+				});
 				int slot = main.cim.readCustomItemSlot(item);
 				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				prestigesGUI.setButton(slot + page, button);
@@ -100,7 +106,9 @@ public class GuiListManager {
 			List<String> constantItems = main.globalStorage.getStringListData("Rebirthlist-gui.constant-items");
 			for(String item : constantItems) {
 				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
-				button.setListener(event -> {event.setCancelled(true);});
+				button.setListener(event -> {event.setCancelled(true);
+				main.executeCommands((Player)event.getWhoClicked(), main.cim.readCustomItemCommands(item));
+				});
 				int slot = main.cim.readCustomItemSlot(item);
 				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				rebirthsGUI.setButton(slot + page, button);
@@ -126,46 +134,76 @@ public class GuiListManager {
 		return main.crri.getCustomRebirthItems().containsKey(rebirthState.toString()) ? main.crri.getCustomRebirthItems().get(rebirthState.toString()) : emptyRebirthItem;
 	}
 	
-	public ItemStack parseStack(String itemValue) {
-		ItemStack x = null;
-		itemValue = itemValue.toUpperCase();
-		try {
-		if(itemValue.contains(";")) {
-			// 1.8 - 1.15
-			String[] nameAndData = itemValue.split(";");
-			String name = nameAndData[0];
-			short data = Short.parseShort(nameAndData[1]);
-			x = new ItemStack(XMaterial.matchXMaterial(name).parseMaterial());
-			x.setDurability(data);
-		} else if (itemValue.contains("#")) {
-			// 1.8 - 1.15
-			String[] nameAndData = itemValue.split("#");
-			String name = nameAndData[0];
-			byte data = Byte.parseByte(nameAndData[1]);
-			x = XMaterial.matchXMaterial(name, data).parseItem();
-		} else if (itemValue.contains("->")) {
-			// 1.8 - 1.12 || 1.8 - 1.15 (ViaVersion)
-			String[] nameAndData = itemValue.split("->");
-			String name = nameAndData[0];
-			byte data = Byte.parseByte(nameAndData[1]);
-			x = new ItemStack(Material.matchMaterial(name), 1, data);
-		} else {
-			// 1.8 - 1.15 Direct Parse => {itemname:itemdata}
-			x = XMaterial.matchXMaterial(itemValue).parseItem();
+	    
+		@SuppressWarnings("deprecation")
+		public ItemStack parseStack(String itemValue) {
+			ItemStack x = null;
+			String originalValue = itemValue;
+			itemValue = itemValue.toUpperCase();
+			try {
+				
+			if(itemValue.contains(";")) {
+				// 1.8 - 1.15
+				String[] nameAndData = itemValue.split(";");
+				String name = nameAndData[0];
+				short data = Short.parseShort(nameAndData[1]);
+				x = new ItemStack(XMaterial.matchXMaterial(name).get().parseMaterial());
+				x.setDurability(data);
+			} else if (itemValue.contains("#")) {
+				// 1.8 - 1.15
+				String[] nameAndData = itemValue.split("#");
+				String name = nameAndData[0];
+				byte data = Byte.parseByte(nameAndData[1]);
+				x = XMaterial.matchXMaterial(Integer.valueOf(name), data).get().parseItem();
+			} else if (itemValue.contains("->")) {
+				// 1.8 - 1.12 || 1.8 - 1.15 (ViaVersion)
+				String[] nameAndData = itemValue.split("->");
+				String name = nameAndData[0];
+				byte data = Byte.parseByte(nameAndData[1]);
+				x = new ItemStack(Material.matchMaterial(name), 1, data);
+			} else if (itemValue.contains("@HEAD@")) {
+				String[] nameAndData = originalValue.split("@HEAD@");
+				String data = nameAndData[1];
+				x = XMaterial.PLAYER_HEAD.parseItem(true);
+				if(data.length() > 16) {
+					if(data.contains("net")) {
+						main.debug("from url: " + data);
+					x = SkullCreator.itemWithUrl(x, data);
+					} else {
+						main.debug("from base64: " + data);
+						if(data.contains("=")) {
+					x = SkullCreator.itemWithBase64(x, data);
+						} else {
+							main.debug("from url: " + data);
+							x = SkullCreator.itemWithUrl(x, "http://textures.minecraft.net/texture/" + data);
+						}
+					}
+				} else {
+					   main.debug("from name: " + data);
+					x = SkullCreator.itemFromName(data);
+				}
+			} else {
+				// 1.8 - 1.15 Direct Parse => {itemname:itemdata}
+				x = XMaterial.matchXMaterial(itemValue).get().parseItem();
+			}
+			return x;
+			} catch (Exception err) {
+			    main.getLogger().warning("Error while parsing an item name! unable to parse item: " + itemValue);
+			    main.getLogger().warning("Please try another format from the formats mentioned below current-format section underneath Ranklist-gui in config.yml");
+				err.printStackTrace();
+			   return new ItemStack(Material.BEDROCK, 1);	
+			}
+			
 		}
-		return x;
-		} catch (Exception err) {
-			main.getLogger().warning("Error while parsing an item name! unable to parse item: " + itemValue);
-			main.getLogger().warning("Please try another format from the formats mentioned below current-format section underneath Ranklist-gui in config.yml");
-			err.printStackTrace();
-		   return new ItemStack(Material.BEDROCK, 1);	
+	
+		public String tr(String string) {
+			return main.getGlobalStorage().translateHexColorCodes(string);
 		}
 		
-	}
-	
 	public void openRanksGUI(Player player) {
 		Player p = player;
 		PaginatedGUI playerGUI = ranksGUI;
+		playerGUI.previousPage();
 		RankPath rp = main.prxAPI.getPlayerRankPath(p);
 		String playerRank = rp.getRankName();
 		String playerPath = rp.getPathName();
@@ -179,7 +217,7 @@ public class GuiListManager {
 			if(playerRankIndex > rankIndex) { // if completed
 				// placeholders {
 				String rankName = rank;
-				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
+				RankPath xrp = RankPath.getRankPath(rankName, playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
 				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostX(playerRebirth, playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
@@ -249,7 +287,7 @@ public class GuiListManager {
 			if(playerRankIndex == rankIndex) { // if current
 				// placeholders {
 				String rankName = rank;
-				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
+				RankPath xrp = RankPath.getRankPath(rankName, playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
 				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostX(playerRebirth, playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
@@ -318,7 +356,7 @@ public class GuiListManager {
 			if(playerRankIndex < rankIndex) { // if not completed
 				// placeholders {
 				String rankName = rank;
-				RankPath xrp = RankPath.getRankPath(rankName + "#~#" + playerPath);
+				RankPath xrp = RankPath.getRankPath(rankName, playerPath);
 				String rankDisplayName = main.prxAPI.c(main.prxAPI.getRankDisplay(xrp));
 				double rankCostNumber = (main.prxAPI.getIncreasedRankupCostX(playerRebirth, playerPrestige, xrp));
 				String rankCost = String.valueOf(rankCostNumber);
@@ -391,6 +429,7 @@ public class GuiListManager {
 	public void openPrestigesGUI(Player player) {
 		Player p = player;
 		PaginatedGUI playerGUI = prestigesGUI;
+		playerGUI.previousPage();
 		String playerPrestige = main.prxAPI.getPlayerPrestige(p);
 		List<String> prestigesCollection = main.prxAPI.getPrestigesCollection();
 		int playerPrestigeIndex = prestigesCollection.indexOf(playerPrestige);
@@ -596,6 +635,7 @@ public class GuiListManager {
 	public void openRebirthsGUI(Player player) {
 		Player p = player;
 		PaginatedGUI playerGUI = rebirthsGUI;
+		playerGUI.previousPage();
 		String playerRebirth = main.prxAPI.getPlayerRebirth(p);
 		List<String> rebirthsCollection = main.prxAPI.getRebirthsCollection();
 		int playerRebirthIndex = rebirthsCollection.indexOf(playerRebirth);

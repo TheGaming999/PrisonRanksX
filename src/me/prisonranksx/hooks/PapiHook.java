@@ -1,7 +1,6 @@
 package me.prisonranksx.hooks;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 import javax.annotation.Nonnull;
 
@@ -16,6 +15,7 @@ import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.api.PRXAPI;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.leaderboard.LeaderboardManager;
+import me.prisonranksx.utils.CollectionUtils;
 
 public class PapiHook extends PlaceholderExpansion {
 	
@@ -96,6 +96,13 @@ public class PapiHook extends PlaceholderExpansion {
     @Override
 	public String onRequest(OfflinePlayer arg0, String arg1) {
         OfflinePlayer p = arg0;
+        if(arg1.equalsIgnoreCase("current_displayname")) {
+        	return prxAPI.getStageDisplay(p.getPlayer(), " ", true);
+        }
+        if(arg1.startsWith("current_displayname_customspace_")) {
+        	String spaceChar = arg1.replace("current_displayname_customspace_", "");
+        	return prxAPI.getStageDisplay(p.getPlayer(), spaceChar, true);
+        }
 		if(arg1.equalsIgnoreCase("currentrank_name")) {
 			if(prxAPI.isLastRank(p) && prxAPI.main.globalStorage.getBooleanData("PlaceholderAPI.currentrank-lastrank-enabled")) {
 				return prxAPI.getPluginMainClass().getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.currentrank-lastrank"), arg0.getName());
@@ -291,7 +298,7 @@ public class PapiHook extends PlaceholderExpansion {
 			if(prxAPI.getPlayerNextRank(p) == null) {
 				return "0.0";
 			}
-           return String.valueOf(prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
+           return String.valueOf(prxAPI.numberAPI.deleteScientificNotationA(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
 		}
 		if((arg1.equalsIgnoreCase("rankup_cost_integer_plain"))) {
            return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
@@ -469,7 +476,7 @@ public class PapiHook extends PlaceholderExpansion {
 			}
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_cost_plain")) {
-			return String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p));
+			return String.valueOf(prxAPI.numberAPI.deleteScientificNotationA(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)));
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_cost_integer_plain")) {
 			return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)));
@@ -498,7 +505,7 @@ public class PapiHook extends PlaceholderExpansion {
 			if(!prxAPI.hasNextRebirth(p)) {
 				return "0.0";
 			}
-			return String.valueOf(prxAPI.getPlayerNextRebirthCost(p));
+			return String.valueOf(prxAPI.numberAPI.deleteScientificNotationA(prxAPI.getPlayerNextRebirthCost(p)));
 		}
 		if(arg1.equalsIgnoreCase("nextrebirth_cost_integer_plain")) {
 			if(!prxAPI.hasNextRebirth(p)) {
@@ -537,25 +544,43 @@ public class PapiHook extends PlaceholderExpansion {
 			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
 			return prxAPI.getRankDisplay(rp);
 		}
+		if(arg1.startsWith("rank_cost_integer_")) {
+			String rank = arg1.split("_")[3];
+			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
+			String prestige = prxAPI.getPlayerPrestige(p);
+			String rebirth = prxAPI.getPlayerRebirth(p);
+			double rankCost = prxAPI.getRankCost(rp);
+			double increasedRankCost = prxAPI.getIncreasedRankupCostX(rebirth, prestige, rankCost);
+			return String.valueOf(prxAPI.numberAPI.toFakeInteger(increasedRankCost));
+		}
 		if(arg1.startsWith("rank_cost_")) {
 			String rank = arg1.split("_")[2];
 			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
 			String prestige = prxAPI.getPlayerPrestige(p);
+			String rebirth = prxAPI.getPlayerRebirth(p);
 			double rankCost = prxAPI.getRankCost(rp);
-			String increasedRankCost = String.valueOf(prxAPI.getIncreasedRankupCost(prestige, rankCost));
+			String increasedRankCost = String.valueOf(prxAPI.getIncreasedRankupCostX(rebirth, prestige, rankCost));
 			return String.valueOf(increasedRankCost);
 		}
 		if(arg1.startsWith("rank_costformatted_")) {
 			String rank = arg1.split("_")[2];
 			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
 			String prestige = prxAPI.getPlayerPrestige(p);
+			String rebirth = prxAPI.getPlayerRebirth(p);
 			double rankCost = prxAPI.getRankCost(rp);
-			double increasedRankCost = prxAPI.getIncreasedRankupCost(prestige, rankCost);
+			double increasedRankCost = prxAPI.getIncreasedRankupCostX(rebirth, prestige, rankCost);
 			return String.valueOf(prxAPI.formatBalance(increasedRankCost));
 		}
 		if(arg1.startsWith("prestige_displayname_")) {
 			String prestige = arg1.split("_")[2];
 			return String.valueOf(prxAPI.getPrestigeDisplay(prestige));
+		}
+		if(arg1.startsWith("prestige_cost_integer_")) {
+			String prestige = arg1.split("_")[3];
+			String rebirth = prxAPI.getPlayerRebirth(p);
+			double prestigeCost = prxAPI.getPrestigeCost(prestige);
+			double increasedPrestigeCost = prxAPI.getIncreasedPrestigeCost(rebirth, prestigeCost);
+			return String.valueOf(prxAPI.numberAPI.toFakeInteger(increasedPrestigeCost));
 		}
 		if(arg1.startsWith("prestige_cost_")) {
 			String prestige = arg1.split("_")[2];
@@ -575,6 +600,10 @@ public class PapiHook extends PlaceholderExpansion {
 			String rebirth = arg1.split("_")[2];
 			return prxAPI.getRebirthDisplay(rebirth);
 		}
+		if(arg1.startsWith("rebirth_cost_integer_")) {
+			String rebirth = arg1.split("_")[3];
+			return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getRebirthCost(rebirth)));
+		}
 		if(arg1.startsWith("rebirth_cost_")) {
 			String rebirth = arg1.split("_")[2];
 			return String.valueOf(prxAPI.getRebirthCost(rebirth));
@@ -591,6 +620,10 @@ public class PapiHook extends PlaceholderExpansion {
 			int position = Integer.valueOf(arg1.split("_")[2]);
 			return String.valueOf(lbm.getPlayerPrestigeFromPosition(position, getNullValuePrestige()));
 		}
+		if(arg1.startsWith("valuedisplay_prestige_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(lbm.getPlayerPrestigeDisplayNameFromPosition(position, getNullValuePrestige()));
+		}
 		if(arg1.startsWith("name_rebirth_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
 			return String.valueOf(lbm.getPlayerNameFromPositionRebirth(position, getNullNameRebirth()));
@@ -599,6 +632,10 @@ public class PapiHook extends PlaceholderExpansion {
 			int position = Integer.valueOf(arg1.split("_")[2]);
 			return String.valueOf(lbm.getPlayerRebirthFromPosition(position, getNullValueRebirth()));
 		}
+		if(arg1.startsWith("valuedisplay_rebirth_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(lbm.getPlayerRebirthDisplayNameFromPosition(position, getNullValueRebirth()));
+		}
 		if(arg1.startsWith("name_rank_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
 			return String.valueOf(lbm.getPlayerNameFromPositionRank(position, getNullNameRank()));
@@ -606,6 +643,22 @@ public class PapiHook extends PlaceholderExpansion {
 		if(arg1.startsWith("value_rank_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
 			return String.valueOf(lbm.getPlayerRankFromPosition(position, getNullValueRank()));
+		}
+		if(arg1.startsWith("valuedisplay_rank_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(lbm.getPlayerRankDisplayNameFromPosition(position, getNullValueRank()));
+		}
+		if(arg1.startsWith("name_stage_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+            return String.valueOf(lbm.getPlayerNameFromPositionGlobal(position, getNullNameRank()));
+		}
+		if(arg1.startsWith("value_stage_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(lbm.getPlayerStageFromPosition(position, getNullValueRank()));
+		}
+		if(arg1.startsWith("valuedisplay_stage_")) {
+			int position = Integer.valueOf(arg1.split("_")[2]);
+			return String.valueOf(lbm.getPlayerStageDisplayNameFromPosition(position, getNullValueRank()));
 		}
 		if(arg1.startsWith("has_prestiged")) {
 			return String.valueOf(prxAPI.hasPrestiged(p));
@@ -622,7 +675,7 @@ public class PapiHook extends PlaceholderExpansion {
 
 	@Override
 	public String getAuthor() {
-		return main.getDescription().getAuthors().get(0);
+		return CollectionUtils.collectionToString(main.getDescription().getAuthors(), ", ");
 	}
 
 	@Override

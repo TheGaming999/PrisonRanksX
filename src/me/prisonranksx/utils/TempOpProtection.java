@@ -7,8 +7,6 @@ import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
 
-import me.prisonranksx.PrisonRanksX;
-
 public class TempOpProtection {
 
 	private List<String> allowedCommands;

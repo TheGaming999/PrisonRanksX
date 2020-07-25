@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.GlobalDataStorage;
 import me.prisonranksx.data.LevelType;
 
 public class CustomRebirthItems {
@@ -17,6 +18,10 @@ public class CustomRebirthItems {
 		return this.customRebirthItems;
 	}
 	
+	public GlobalDataStorage gds() {
+		return main.getGlobalStorage();
+	}
+	
 	public void setup() {
 		for(String rebirth : main.rebirthStorage.getRebirthData().keySet()) {
 			for(int i = 0; i < 3; i++) {
@@ -28,11 +33,11 @@ public class CustomRebirthItems {
 					rs.setRebirth(rebirth);
 					ri.setMaterial(main.cim.readCustomLevelItemName(LevelType.REBIRTH, ls, rebirth));
 					ri.setAmount(main.cim.readCustomLevelItemAmount(LevelType.REBIRTH, ls, rebirth));
-					ri.setDisplayName(main.cim.readCustomLevelItemDisplayName(LevelType.REBIRTH, ls, rebirth));
-					ri.setLore(main.cim.readCustomLevelItemLore(LevelType.REBIRTH, ls, rebirth));
+					ri.setDisplayName(gds().translateHexColorCodes(main.cim.readCustomLevelItemDisplayName(LevelType.REBIRTH, ls, rebirth)));
+					ri.setLore(gds().translateHexColorCodes(main.cim.readCustomLevelItemLore(LevelType.REBIRTH, ls, rebirth)));
 					ri.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.REBIRTH, ls, rebirth));
 					ri.setFlags(main.cim.readCustomLevelItemFlags(LevelType.REBIRTH, ls, rebirth));
-					ri.setCommands(main.cim.readCustomLevelItemCommands(LevelType.REBIRTH, ls, rebirth));
+					ri.setCommands(gds().translateHexColorCodes(main.cim.readCustomLevelItemCommands(LevelType.REBIRTH, ls, rebirth)));
 					customRebirthItems.put(rs.toString(), ri);
 				}
 			}

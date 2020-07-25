@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.GlobalDataStorage;
 import me.prisonranksx.data.LevelType;
 
 public class CustomPrestigeItems {
@@ -17,6 +18,10 @@ public class CustomPrestigeItems {
 		return this.customPrestigeItems;
 	}
 	
+	public GlobalDataStorage gds() {
+		return main.getGlobalStorage();
+	}
+	
 	public void setup() {
 		for(String prestige : main.prestigeStorage.getPrestigeData().keySet()) {
 			for(int i = 0; i < 3; i++) {
@@ -28,11 +33,11 @@ public class CustomPrestigeItems {
 					ps.setPrestige(prestige);
 					pi.setMaterial(main.cim.readCustomLevelItemName(LevelType.PRESTIGE, ls, prestige));
 					pi.setAmount(main.cim.readCustomLevelItemAmount(LevelType.PRESTIGE, ls, prestige));
-					pi.setDisplayName(main.cim.readCustomLevelItemDisplayName(LevelType.PRESTIGE, ls, prestige));
-					pi.setLore(main.cim.readCustomLevelItemLore(LevelType.PRESTIGE, ls, prestige));
+					pi.setDisplayName(gds().translateHexColorCodes(main.cim.readCustomLevelItemDisplayName(LevelType.PRESTIGE, ls, prestige)));
+					pi.setLore(gds().translateHexColorCodes(main.cim.readCustomLevelItemLore(LevelType.PRESTIGE, ls, prestige)));
 					pi.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.PRESTIGE, ls, prestige));
 					pi.setFlags(main.cim.readCustomLevelItemFlags(LevelType.PRESTIGE, ls, prestige));
-					pi.setCommands(main.cim.readCustomLevelItemCommands(LevelType.PRESTIGE, ls, prestige));
+					pi.setCommands(gds().translateHexColorCodes(main.cim.readCustomLevelItemCommands(LevelType.PRESTIGE, ls, prestige)));
 					customPrestigeItems.put(ps.toString(), pi);
 				}
 			}

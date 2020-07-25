@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -71,6 +71,8 @@ import me.prisonranksx.commands.RebirthsCommand;
 import me.prisonranksx.commands.TopPrestigesCommand;
 import me.prisonranksx.commands.TopRebirthsCommand;
 import me.prisonranksx.data.GlobalDataStorage;
+import me.prisonranksx.data.GlobalDataStorage1_16;
+import me.prisonranksx.data.GlobalDataStorage1_8;
 import me.prisonranksx.data.MessagesDataStorage;
 import me.prisonranksx.data.PlayerDataStorage;
 import me.prisonranksx.data.PrestigeDataStorage;
@@ -96,6 +98,8 @@ import me.prisonranksx.hooks.PapiHook;
 import me.prisonranksx.leaderboard.LeaderboardManager;
 import me.prisonranksx.permissions.PermissionManager;
 import me.prisonranksx.reflections.Actionbar;
+import me.prisonranksx.reflections.Actionbar1_16;
+import me.prisonranksx.reflections.ActionbarLegacy;
 import me.prisonranksx.reflections.ActionbarProgress;
 import me.prisonranksx.reflections.ExpbarProgress;
 import me.prisonranksx.utils.TempOpProtection;
@@ -103,16 +107,17 @@ import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.CommandLoader;
 import me.prisonranksx.utils.ConfigManager;
 import me.prisonranksx.utils.ConfigUpdater;
+import me.prisonranksx.utils.LuckPermsUtils;
 import me.prisonranksx.utils.MySqlUtils;
 
 import com.google.common.io.Files;
 
 import cloutteam.samjakob.gui.types.PaginatedGUI;
+import co.aikar.taskchain.BukkitTaskChainFactory;
+import co.aikar.taskchain.TaskChain;
+import co.aikar.taskchain.TaskChainFactory;
 import net.luckperms.api.LuckPerms;
-import net.luckperms.api.cacheddata.CachedMetaData;
-import net.luckperms.api.context.ImmutableContextSet;
 import net.luckperms.api.model.user.User;
-import net.luckperms.api.query.QueryOptions;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import ru.tehkode.permissions.PermissionUser;
@@ -121,6 +126,8 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
 @SuppressWarnings("deprecation")
 public class PrisonRanksX extends JavaPlugin implements Listener{
 	public boolean isMvdw;
+	public boolean isApiLoaded;
+	public int autoSaveTime;
 	public PermissionManager perm;
 	public PlayerDataStorage playerStorage;
 	public RankDataStorage rankStorage;
@@ -169,6 +176,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public String vaultPlugin;
 	public boolean isVaultGroups;
 	public LuckPerms luckperms;
+	public LuckPermsUtils lpUtils;
 	public GMHook groupManager;
 	public List<String> ignoredSections;
 	public boolean isBefore1_7;
@@ -185,6 +193,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 	public Set<UUID> actionbarInUse; 
 	BukkitTask ar = null;
 	public ErrorInspector errorInspector;
+	public Actionbar actionBar;
 	//MySQL
 	private boolean isMySql, useSSL, autoReconnect;
     public Connection connection;
@@ -198,8 +207,18 @@ public class PrisonRanksX extends JavaPlugin implements Listener{
 		return integer + 1;
 	}
 
-	public File originalYml = new File("plugins/PrisonRanksX/config.yml");
-
+    private static TaskChainFactory taskChainFactory;
+    
+    public static <T> TaskChain<T> newChain() {
+        return taskChainFactory.newChain();
+    }
+    public static <T> TaskChain<T> newSharedChain(String name) {
+        return taskChainFactory.newSharedChain(name);
+    }
+	
+	public Actionbar getActionbar() {
+		return this.actionBar;
+	}
 	
 	public FileConfiguration rankDataConfig;
 	public FileConfiguration prestigeDataConfig;
@@ -225,6 +244,9 @@ public void setupLuckPerms() {
 	public boolean isEBProgress;
 	public boolean isSaveOnLeave;
 	public boolean checkVault;
+	public boolean isSimpleLuckPerms;
+	public String luckPermsTrack;
+	TaskChain<?> tc;
 	//...
 	 
 	    private boolean setupEconomy() {
@@ -248,6 +270,9 @@ public void setupLuckPerms() {
 	        return perms;
 	    }
 	    
+	    public LinkedBlockingQueue<UUID> queue;
+		private BukkitTask bukkitTask;
+	    
 	    /**
 	     * data update every 15 minutes.
 	     */
@@ -262,7 +287,22 @@ public void setupLuckPerms() {
 	    		if(getGlobalStorage().getBooleanData("Options.save-notification")) {
 	    		Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved §7& §etook §6(§e" + toSeconds(timeNow) + "§6)§e.");
 	    		}
-	    	}, 18000, 18000);
+	    	}, autoSaveTime, autoSaveTime);
+	    }
+	    
+	    
+	    
+	    public void saveData(UUID u) {
+	    	TaskChain <?> tc = taskChainFactory.newSharedChain("dataSave");
+		    tc.delay(40)
+		    .async(() -> {
+		    playerStorage.savePlayerData(u);
+			configManager.saveRankDataConfig();
+			configManager.savePrestigeDataConfig();
+			configManager.saveRebirthDataConfig(); 
+	        })
+		    .sync(() -> {debug("data saved for: " + u.toString());})
+		    .execute();
 	    }
 	    
 	    public String toSeconds(final long time) {
@@ -273,8 +313,12 @@ public void setupLuckPerms() {
 	    	}
 	    }
 	   
+
+	    
 	public void onEnable() {
-		  
+		taskChainFactory = BukkitTaskChainFactory.create(this);
+		
+		queue = new LinkedBlockingQueue<>();
         String version = Bukkit.getVersion();
         commandLoader = new CommandLoader();
     	if(version.contains("1.5") || version.contains("1.6") || version.contains("1.4") || version.contains("1.3") || version.contains("1.2") || version.endsWith("1.1)") || version.contains("1.0")) {
@@ -311,7 +355,11 @@ public void setupLuckPerms() {
 			  setupPermissions();
 			  perm = new PermissionManager(this);
 			  configManager = new ConfigManager(this);
-			  globalStorage = new GlobalDataStorage(this);
+			  if(Bukkit.getVersion().contains("1.16")) {
+			  globalStorage = new GlobalDataStorage1_16(this);
+			  } else {
+				  globalStorage = new GlobalDataStorage1_8(this);
+			  }
 			  playerStorage = new PlayerDataStorage(this);
 			  rankStorage = new RankDataStorage(this);
 			  prestigeStorage = new PrestigeDataStorage(this);
@@ -372,8 +420,9 @@ public void setupLuckPerms() {
 			  prestigeStorage.loadPrestigesData();
 			  rebirthStorage.loadRebirthsData();
 			  messagesStorage.loadMessages();
-
+              
 			  setupMySQL();
+			  autoSaveTime = globalStorage.getIntegerData("Options.autosave-time");
 			  forceSave = globalStorage.getBooleanData("Options.forcesave");
 			  isRankupMaxWarpFilter = globalStorage.getBooleanData("Options.rankupmax-warp-filter");
 			  checkVault = globalStorage.getBooleanData("Options.rankup-vault-groups-check");
@@ -388,6 +437,8 @@ public void setupLuckPerms() {
 			  if(isVaultGroups) {
 				  this.vaultPlugin = globalStorage.getStringData("Options.rankup-vault-groups-plugin");
 			  }
+			  //isSimpleLuckPerms = globalStorage.getStringData("Options.luckperms-util-type").equalsIgnoreCase("SIMPLE") ? true : false;
+			  // luckPermsTrack = globalStorage.getStringData("Options.luckperms-track");
 			  // API Setup {
 			  prxAPI = new PRXAPI();
 			  prxAPI.setup();
@@ -468,6 +519,7 @@ public void setupLuckPerms() {
 		  }
 		  if(Bukkit.getPluginManager().isPluginEnabled("LuckPerms") && isVaultGroups) {
               setupLuckPerms();
+              lpUtils = new LuckPermsUtils(luckperms);
 		  } else if (Bukkit.getPluginManager().isPluginEnabled("GroupManager") && isVaultGroups) {
 			  groupManager = new GMHook(this);
 		  }
@@ -489,6 +541,11 @@ public void setupLuckPerms() {
 				  playerStorage.loadPlayersData();
 				  if(getGlobalStorage().getBooleanData("Options.autosave")) {
 				  startAsyncUpdateTask();
+				  }
+				  if(Bukkit.getVersion().contains("1.16")) {
+					  this.actionBar = new Actionbar1_16();
+				  } else {
+					  this.actionBar = new ActionbarLegacy();
 				  }
 	}
 	
@@ -650,7 +707,7 @@ public void setupLuckPerms() {
     	Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 		try {
 			UUID uu = XUser.getXUser(uuid).getUUID();
-			String name = Bukkit.getOfflinePlayer(uuid).getName();
+			String name = prxAPI.getPlayerNameFromUUID(uu);
 			String u = uu.toString();
 			String rankName = prxAPI.getPlayerRank(uu) == null ? prxAPI.getDefaultRank() : prxAPI.getPlayerRank(uu);
 			String prestigeName = prxAPI.getPlayerPrestige(uu) == null ? "none" : prxAPI.getPlayerPrestige(uu);
@@ -681,7 +738,7 @@ public void setupLuckPerms() {
      * 1.0 - 1.15 mc versions
      * @param uuid
      */
-    public void updateMySqlData(UUID uuid, String name) {
+    public void updateMySqlData(UUID uuid, final String name) {
     	Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 		try {
 			UUID uu = XUser.getXUser(uuid).getUUID();
@@ -773,6 +830,12 @@ public void setupLuckPerms() {
 			} else if (message instanceof Set) {
 				Set<String> msg = (HashSet)message;
 				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + msg.toString()));
+			} else if (message instanceof RankPath) {
+				RankPath msg = (RankPath)message;
+				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + msg.get()));
+			} else if (message instanceof Number) {
+				Number msg = (Number)message;
+				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + String.valueOf(msg)));
 			} else {
 				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + message.toString()));
 			}
@@ -882,36 +945,21 @@ public void setupLuckPerms() {
 		  return;
 		}
 		XUser user;
+		String name = e.getName();
 		if(!isBefore1_7) {
 		user = new XUser(e.getUniqueId());
 		} else {
-			user = new XUser(XUUID.tryNameConvert(e.getName()));
+			user = new XUser(XUUID.tryNameConvert(name));
 		}
 	    UUID playerUUID = user.getUUID();
 	    if(!getPlayerStorage().isRegistered(playerUUID)) {
-	    getPlayerStorage().loadPlayerData(playerUUID);
+	    getPlayerStorage().register(playerUUID, name, true);
+	    prxAPI.setPlayerRankPath(playerUUID, RankPath.getRankPath(prxAPI.getDefaultRank(), prxAPI.getDefaultPath()));
 		 if(isMySql()) {
-			this.updateMySqlData(playerUUID, e.getName());
+			this.updateMySqlData(playerUUID, name);
 		 }
 	    }
-	    if(isVaultGroups) {
-	    	if(this.vaultPlugin.equalsIgnoreCase("luckperms")) {
-	    		User lpUser = luckperms.getUserManager().getUser(playerUUID);
-	    		if(!lpUser.getPrimaryGroup().equalsIgnoreCase(prxAPI.getPlayerRank(playerUUID))) {
-	    			prxAPI.setPlayerRank(playerUUID, lpUser.getPrimaryGroup());
-	    		}
-	    	}
-	    }
-		if((getPlayerStorage().isRegistered(playerUUID))) {
-			 return;
-		}
-			if((!getPlayerStorage().isRegistered(playerUUID))) {
-			 getPlayerStorage().register(playerUUID);
-			 RankPath rankPath = new RankPath(getGlobalStorage().getStringData("defaultrank"), getGlobalStorage().getStringData("defaultpath"));
-			 getPlayerStorage().setPlayerRankPath(playerUUID, rankPath);
-		     getPlayerStorage().setPlayerRank(playerUUID, new RankPath(getGlobalStorage().getStringData("defaultrank"), getGlobalStorage().getStringData("defaultpath")));
-            return;
-			}
+		//getPlayerStorage().fixNulls(playerUUID, name);
 		});
 	}
 	
@@ -922,8 +970,15 @@ public void setupLuckPerms() {
 		}
 		Player p = e.getPlayer();
 		Bukkit.getScheduler().runTaskLater(this, () -> {
-		if(isVaultGroups) {
-			if(vaultPlugin.equalsIgnoreCase("GroupManager")) {
+		if(isVaultGroups && checkVault) {
+			if(this.vaultPlugin.equalsIgnoreCase("LuckPerms")) {
+				UUID playerUUID = p.getUniqueId();
+	    		User lpUser = luckperms.getUserManager().getUser(playerUUID);
+	    		if(!lpUser.getPrimaryGroup().equalsIgnoreCase(prxAPI.getPlayerRank(playerUUID))) {
+	    			prxAPI.setPlayerRank(playerUUID, lpUser.getPrimaryGroup());
+	    		}
+	    	}
+			else if(vaultPlugin.equalsIgnoreCase("GroupManager")) {
 				String group = groupManager.getGroup(p);
 				if(!group.equalsIgnoreCase(prxAPI.getPlayerRank(p))) {
 					prxAPI.setPlayerRank(p, group);
@@ -1013,7 +1068,7 @@ public void setupLuckPerms() {
          actionbarInUse.add(p.getUniqueId());
          List<String> actionBar = actionbar;
 		if(actionBar.size() == 1) {
-			Actionbar.sendActionBar(p, getString(actionBar.get(0), p.getName()).replace("%rankup%", getString(prxAPI.getPlayerRank(p), p.getName())).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), p.getName())));
+			getActionbar().sendActionBar(p, getString(actionBar.get(0), p.getName()).replace("%rankup%", getString(prxAPI.getPlayerRank(p), p.getName())).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), p.getName())));
 			return;
 		}
         if (actionbar_task.get(p) != null) {
@@ -1039,7 +1094,7 @@ public void setupLuckPerms() {
 		        	}
 		        	String currentLine = actionBar.get(actionbar_animation.get(p).intValue());
 		        	
-		        	Actionbar.sendActionBar(p, getString(currentLine, p.getName()).replace("%rankup%", getString(playerStorage.getPlayerRank(p), p.getName())).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), p.getName())));
+		        	getActionbar().sendActionBar(p, getString(currentLine, p.getName()).replace("%rankup%", getString(playerStorage.getPlayerRank(p), p.getName())).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), p.getName())));
 					actionbar_animation.put(p, plus(actionbar_animation.get(p)));
         	 }
          }.runTaskTimer(this, 1L, interval);
@@ -1204,11 +1259,11 @@ public void setupLuckPerms() {
 		String eventFormat = e.getFormat();
 		String formatUEdit = globalStorage.getStringData("Options.force-display-order")
 				.replace("#", "");
-		if(prxAPI.getPlayerRankDisplay(p) == null && isRankEnabled) {
-			prxAPI.setPlayerRank(p, prxAPI.getDefaultRank());
-			p.sendMessage(prxAPI.c("&cInvalid rank, your rank has been set to ") + prxAPI.getDefaultRank());
-			e.setCancelled(true);
-			return;
+		if(isRankEnabled && !rankStorage.getEntireData().containsKey(prxAPI.getPlayerRankPath(p).get())) {
+			prxAPI.setPlayerRankPath(p, new RankPath(prxAPI.getDefaultRank(), prxAPI.getDefaultPath()));
+			//p.sendMessage(prxAPI.c("&cInvalid rank, your rank has been set to ") + prxAPI.getDefaultRank());
+			//e.setCancelled(true);
+			//return;
 		}
 		RankPath playerRankPath = null;
 		if(isRankEnabled) {
@@ -1427,9 +1482,10 @@ public void setupLuckPerms() {
 	}
 	
 	public String v(String string) {
-		String Z = globalStorage.getStringData("Moneyformatter.zillion");
+		String Z = globalStorage.getStringData("MoneyFormatter.zillion");
 		return Z + string;
 	}
+	
 	public String formatBalance(double y)
     {
 		String k = globalStorage.getStringData("MoneyFormatter.thousand");
@@ -1447,9 +1503,9 @@ public void setupLuckPerms() {
 		String D = globalStorage.getStringData("MoneyFormatter.Duodecillion");
 		String Z = globalStorage.getStringData("MoneyFormatter.zillion");
 		// ## k, ##, ###
-        String[] abbrivations ={"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, Z + "II",Z + "III",v("IV"),v("V"),v("VI"),v("VII"), v("VIII"), v("IX"), v("X")
-        		, "Z11", "Z12", "Z13", "Z14", "Z15", "Z16", "Z17" , "Z18" , "Z19", "Z20", "Z21", "Z22", "Z23", "Z24", "Z25", "Z26"
-        		, "Z27", "Z28", "Z29", "Z30", "~", "~!", "~?", "~@", "#", "^", "&", "*", "-", "+", "+2", "+3", "+4", "+5", "+6"
+        String[] abbrivations = {"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, v("II"), v("III"), v("IV"), v("V"), v("VI"), v("VII"), v("VIII"), v("IX"), v("X")
+        		, v("11"), v("12"), v("13"), v("14"), v("15"), v("16"), v("17") , v("18") , v("19"), v("20"), v("21"), v("22"), v("23"), v("24"), v("25"), v("26")
+        		, v("27"), v("28"), v("29"), v("30"), "~", "~!", "~?", "~@", "#", "^", "&", "*", "-", "+", "+2", "+3", "+4", "+5", "+6"
         };
         DecimalFormat abb = new DecimalFormat("0.##");
         if(y > 999) {
@@ -1458,6 +1514,7 @@ public void setupLuckPerms() {
         }
         return String.valueOf(y);
     }
+	
 	public String getArgs(String[] args, int num){ //You can use a method if you want
 	    StringBuilder sb = new StringBuilder(); //We make a String Builder
 	    for(int i = num; i < args.length; i++) { //We get all the arguments with a for loop
@@ -1675,12 +1732,7 @@ public void setupLuckPerms() {
 			}
 			Player p = e.getPlayer();
 			if(isForceSave()) {
-				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
-				playerStorage.savePlayerData(p);
-				configManager.saveRankDataConfig();
-				configManager.savePrestigeDataConfig();
-				configManager.saveRebirthDataConfig();
-				}, 20);
+				saveData(p.getUniqueId());
 			}
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
@@ -1716,12 +1768,7 @@ public void setupLuckPerms() {
 			}
 			Player p = e.getPlayer();
 			if(isForceSave()) {
-				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
-				playerStorage.savePlayerData(p);
-				configManager.saveRankDataConfig();
-				configManager.savePrestigeDataConfig();
-				configManager.saveRebirthDataConfig();
-				}, 20);
+				saveData(p.getUniqueId());
 			}
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
@@ -1757,12 +1804,7 @@ public void setupLuckPerms() {
 			}
 			Player p = e.getPlayer();
 			if(isForceSave()) {
-				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
-				playerStorage.savePlayerData(p);
-				configManager.saveRankDataConfig();
-				configManager.savePrestigeDataConfig();
-				configManager.saveRebirthDataConfig();
-				}, 20);
+				saveData(p.getUniqueId());
 			}
 			UUID uuid = p.getUniqueId();
 			String rank = prxAPI.getPlayerRank(p);
@@ -1798,12 +1840,7 @@ public void setupLuckPerms() {
 			}
 			Player p = e.getPlayer();
 			if(isForceSave()) {
-				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
-				playerStorage.savePlayerData(p);
-				configManager.saveRankDataConfig();
-				configManager.savePrestigeDataConfig();
-				configManager.saveRebirthDataConfig();
-				}, 20);
+				saveData(p.getUniqueId());
 			}
 			String rank = prxAPI.getPlayerRank(p);
 			String path = prxAPI.getPlayerRankPath(p).getPathName();
@@ -1821,12 +1858,7 @@ public void setupLuckPerms() {
 			}
 			Player p = e.getPlayer();
 			if(isForceSave()) {
-				Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
-				playerStorage.savePlayerData(p);
-				configManager.saveRankDataConfig();
-				configManager.savePrestigeDataConfig();
-				configManager.saveRebirthDataConfig();
-				}, 20);
+				saveData(p.getUniqueId());
 			}
 			String rank = prxAPI.getPlayerRank(p);
 			String path = prxAPI.getPlayerRankPath(p).getPathName();

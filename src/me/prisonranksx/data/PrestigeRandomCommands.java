@@ -20,13 +20,13 @@ public class PrestigeRandomCommands {
 	
 	private static PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	
-	public PrestigeRandomCommands(String prestigeName, boolean withKeys) {this.prestigeName = prestigeName; this.withKeys = withKeys;
+	public PrestigeRandomCommands(String prestigeName, boolean withKeys) {this.setPrestigeName(prestigeName); this.withKeys = withKeys;
 	this.commandsList = new ArrayList<>();
 	this.chances = new ArrayList<>();
 	this.randomCommandsMap = new HashMap<String, Object>();
 	}
 	
-	public PrestigeRandomCommands(String prestigeName, boolean withKeys, boolean loadSections) {this.prestigeName = prestigeName; this.withKeys = withKeys;
+	public PrestigeRandomCommands(String prestigeName, boolean withKeys, boolean loadSections) {this.setPrestigeName(prestigeName); this.withKeys = withKeys;
 	this.commandsList = new ArrayList<>();
 	this.chances = new ArrayList<>();
 	this.randomCommandsMap = new HashMap<String, Object>();
@@ -90,6 +90,14 @@ public class PrestigeRandomCommands {
 	
 	public Double getChance(String section) {
 		return ((ConfigurationSection)randomCommandsMap.get(section)).getDouble("chance");
+	}
+
+	public String getPrestigeName() {
+		return prestigeName;
+	}
+
+	public void setPrestigeName(String prestigeName) {
+		this.prestigeName = prestigeName;
 	}
 	
 }

@@ -1,6 +1,7 @@
 package me.prisonranksx.data;
 
 import java.util.List;
+import java.util.Map;
 
 public class RebirthDataHandler {
   
@@ -23,6 +24,9 @@ public class RebirthDataHandler {
 	private RebirthRandomCommands randomCommandsManager;
 	private FireworkManager fireworkManager;
 	private int requiredPrestiges;
+	private Map<String, Double> numberRequirements;
+	private Map<String, String> stringRequirements;
+	private List<String> customRequirementMessage;
 	
 	/**
 	 * 
@@ -210,6 +214,30 @@ public class RebirthDataHandler {
 	
 	public void setRequiredPrestiges(int requiredPrestiges) {
 		this.requiredPrestiges = requiredPrestiges;
+	}
+
+	public Map<String, Double> getNumberRequirements() {
+		return numberRequirements;
+	}
+
+	public void setNumberRequirements(Map<String, Double> numberRequirements) {
+		this.numberRequirements = numberRequirements;
+	}
+
+	public Map<String, String> getStringRequirements() {
+		return stringRequirements;
+	}
+
+	public void setStringRequirements(Map<String, String> stringRequirements) {
+		this.stringRequirements = stringRequirements;
+	}
+
+	public List<String> getCustomRequirementMessage() {
+		return customRequirementMessage;
+	}
+
+	public void setCustomRequirementMessage(List<String> customRequirementMessage) {
+		this.customRequirementMessage = customRequirementMessage;
 	}
 	
 }

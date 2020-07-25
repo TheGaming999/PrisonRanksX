@@ -1,10 +1,7 @@
 package me.prisonranksx.data;
 
 import java.util.List;
-
-import javax.annotation.Nonnull;
-
-import jdk.nashorn.internal.objects.annotations.Getter;
+import java.util.Map;
 
 public class PrestigeDataHandler {
 	private String prestigeName;
@@ -25,6 +22,9 @@ public class PrestigeDataHandler {
 	private Boolean sendFirework;
 	private PrestigeRandomCommands randomCommandsManager;
 	private FireworkManager fireworkManager;
+	private Map<String, Double> numberRequirements;
+	private Map<String, String> stringRequirements;
+	private List<String> customRequirementMessage;
 	
 	public PrestigeDataHandler(String prestigeName) {this.prestigeName = prestigeName;
 	this.sendFirework = false;}
@@ -219,5 +219,29 @@ public class PrestigeDataHandler {
 		if(sendFirework) {
 		this.sendFirework = sendFirework;
 		}
+	}
+
+	public Map<String, Double> getNumberRequirements() {
+		return numberRequirements;
+	}
+
+	public void setNumberRequirements(Map<String, Double> numberRequirements) {
+		this.numberRequirements = numberRequirements;
+	}
+
+	public Map<String, String> getStringRequirements() {
+		return stringRequirements;
+	}
+
+	public void setStringRequirements(Map<String, String> stringRequirements) {
+		this.stringRequirements = stringRequirements;
+	}
+
+	public List<String> getCustomRequirementMessage() {
+		return customRequirementMessage;
+	}
+
+	public void setCustomRequirementMessage(List<String> customRequirementMessage) {
+		this.customRequirementMessage = customRequirementMessage;
 	}
 }

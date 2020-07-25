@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
+import me.prisonranksx.utils.OnlinePlayers;
 
 public class ErrorInspector {
 
@@ -33,7 +34,7 @@ public class ErrorInspector {
 	}
 	
 	/**
-	 * ! start searching for errors.
+	 * ! start searching for errors asynchronously.
 	 */
 	public void inspect() {
 		errors.clear();
@@ -43,7 +44,7 @@ public class ErrorInspector {
         String[] arrayList = rankList.toArray(new String[0]);
         String firstRank = arrayList[0];
         String lastRank = arrayList[rankList.size()-1];
-        if(!lastRank.equals(main.prxAPI.getLastRank())) {
+        if(!lastRank.equals(main.prxAPI.getLastRank(main.prxAPI.getDefaultPath()))) {
         	main.getLogger().warning("Last rank on ranks.yml doesn't match lastrank on config.yml, type '/prx errors' for more info.");
         	errors.add("&4(0x0)Error: &clast rank on ranks.yml doesn't match lastrank on config.yml"
         			+ " &cthis may result into an unexpected behavior");
@@ -52,7 +53,7 @@ public class ErrorInspector {
         if(!main.rankStorage.getRankupName(new RankPath(lastRank, main.prxAPI.getDefaultPath())).equalsIgnoreCase("LASTRANK")) {
         	main.getLogger().warning("Last rank in ranks.yml 'nextrank:' field value is not LASTRANK, type '/prx errors' for more info.");
         	errors.add("&4(0x1)Error: &cthe rank at the very bottom of ranks.yml next rank is not assigned to the value: LASTRANK");
-        	errors.add("&e(0x2)Solution: goto ranks.yml the lastrank in the config change nextrank to this &7nextrank: LASTRANK");
+        	errors.add("&e(0x1)Solution: goto ranks.yml the lastrank in the config change nextrank to this &7nextrank: LASTRANK");
         }
         main.playerStorage.getPlayerData().keySet().forEach(player -> {
         	if(main.prxAPI.getRankDisplay(main.playerStorage.getPlayerData().get(player).getRankPath()) == null) {
@@ -68,6 +69,26 @@ public class ErrorInspector {
         		errors.add("&4(0x3)Error: &c" + Bukkit.getOfflinePlayer(UUID.fromString(player)).getName() + " has a rank-with-path that doesn't exist in ranks.yml"
         				+ " with UUID:" + player);
         		errors.add("&e(0x3)Solution: delete rankdata.yml while the server is offline OR edit player data inside rankdata.yml manually while the server is offline.");
+        	}
+        	if(main.playerStorage.getPlayerData().get(player).getRankPath() == null) {
+        		main.getLogger().warning("Player rank path is null, type '/prx errors' for more info.");
+        		errors.add("&4(0x8)Error: &c" + Bukkit.getOfflinePlayer(UUID.fromString(player)).getName() + " has a rank-with-path that has invalid or null values"
+        				+ " with UUID:" + player);
+        		errors.add("&e(0x8)Solution: Make sure your server is offline and check on your rankdata.yml for player with a missing rank data");
+        	}
+        	if(main.playerStorage.getPlayerData().get(player).getRankPath() != null) {
+        		if(main.playerStorage.getPlayerData().get(player).getRankPath().getPathName() == null) {
+        			main.getLogger().warning("Player path name is null, type '/prx errors' for more info.");
+        			errors.add("&4(0x9)Error: &c" + Bukkit.getOfflinePlayer(UUID.fromString(player)).getName() + " has a rank path name that has invalid or null values"
+            				+ " with UUID:" + player);
+            		errors.add("&e(0x9)Solution: Make sure your server is offline and check on your rankdata.yml for player with a missing path name");
+        		}
+        		if(main.playerStorage.getPlayerData().get(player).getRankPath().getPathName() == null) {
+        			main.getLogger().warning("Player rank name is null, type '/prx errors' for more info.");
+        			errors.add("&4(0x10)Error: &c" + Bukkit.getOfflinePlayer(UUID.fromString(player)).getName() + " has a rank name that has invalid or null values"
+            				+ " with UUID:" + player);
+            		errors.add("&e(0x10)Solution: Make sure your server is offline and check on your rankdata.yml for player with a missing rank name");
+        		}
         	}
         });
         if(!firstRank.equals(main.prxAPI.getDefaultRank())) {
@@ -97,6 +118,12 @@ public class ErrorInspector {
         		errors.add("&e(0x7)Solution: change &nmsg: 'example'&e to the following format:");
         		errors.add("&emsg:");
         		errors.add("&e- 'example'");
+        	}
+        });
+        main.playerStorage.getPlayerData().entrySet().forEach(entry -> {
+        	if(main.prxAPI.getRankDisplay(entry.getValue().getRankPath()) == null) {
+        		main.getLogger().warning("Detected invalid old data for: " + entry.getValue().getName() + ", fixing...");
+        		main.prxAPI.setPlayerRankPath(entry.getValue().getUUID(), new RankPath(main.prxAPI.getDefaultRank(), main.prxAPI.getDefaultPath()));
         	}
         });
        if(main.isMySql()) {

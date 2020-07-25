@@ -1,7 +1,6 @@
 package me.prisonranksx.data;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -10,7 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
+import javax.annotation.Nullable;
+
 
 import me.prisonranksx.PrisonRanksX;
 
@@ -23,6 +23,7 @@ public class RankDataStorage {
 	private Map<String, List<String>> consoleCommands;
 	private Map<String, List<String>> playerCommands;
 	private Map<String, List<String>> opCommands;
+	private Map<String, String> lastRankMap;
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
 	   this.rankData = new LinkedHashMap<String, RankDataHandler>();
@@ -31,6 +32,11 @@ public class RankDataStorage {
 	   this.consoleCommands = new LinkedHashMap<>();
 	   this.playerCommands = new LinkedHashMap<>();
 	   this.opCommands = new LinkedHashMap<>();
+	   this.lastRankMap = new HashMap<>();
+	}
+	
+	public GlobalDataStorage gds() {
+		return this.main.globalStorage;
 	}
 	
 	/**
@@ -54,7 +60,7 @@ public class RankDataStorage {
 	}
 	
 	
-	public void putPathRank(String path, String rank) {
+	public void putPathRank(final String path, final String rank) {
 		if(!pathRanks.containsKey(path)) {
 			pathRanks.put(path, new ArrayList<>());
 		}
@@ -102,7 +108,7 @@ public class RankDataStorage {
 				List<String> actionbarMessages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
 				int actionbarInterval = main.configManager.ranksConfig.getInt("Ranks." + pathName + "." +  rankupName + ".actionbar.interval");
 				List<String> broadcastMessages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".broadcast");
-				List<String> messages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".text");
+				List<String> messages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".msg");
 				List<String> actions = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actions");
 				List<String> addPermissionList = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".addpermission");
 				List<String> delPermissionList = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
@@ -111,29 +117,65 @@ public class RankDataStorage {
 				boolean sendFirework = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 				RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 				RankPath rankPath = new RankPath(rankName, pathName);
+				Map<String, Double> numberRequirements = new HashMap<>();
+				Map<String, String> stringRequirements = new HashMap<>();
+				List<String> customRequirementMessage = new ArrayList<>();
+				if(main.configManager.ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".requirements")) {
+					for(String requirementCondition : main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".requirements")) {
+						if(requirementCondition.contains("->")) {
+							String[] splitter = requirementCondition.split("->");
+							String requirement = splitter[0];
+							String value = splitter[1];
+							stringRequirements.put(requirement, value);
+						} else if (requirementCondition.contains(">>")) {
+							String[] splitter = requirementCondition.split(">>");
+							String requirement = splitter[0];
+							double value = Double.valueOf(splitter[1]);
+							numberRequirements.put(requirement, value);
+						}
+					}
+				}
+				if(main.configManager.ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".custom-requirement-message")) {
+					for(String messageLine : main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".custom-requirement-message")) {
+						customRequirementMessage.add(gds().parseHexColorCodes(messageLine));
+					}
+				}
+				if(!stringRequirements.isEmpty()) {
+					rdh.setStringRequirements(stringRequirements);
+				}
+				if(!numberRequirements.isEmpty()) {
+					rdh.setNumberRequirements(numberRequirements);
+				}
+				if(!customRequirementMessage.isEmpty()) {
+					rdh.setCustomRequirementMessage(customRequirementMessage);
+				}
 				rdh.setName(rankName);
-                rdh.setDisplayName(rankDisplayName);
+                rdh.setDisplayName(gds().parseHexColorCodes(rankDisplayName));
                 rdh.setCost(rankCost);
                 rdh.setRankupName(rankupName);
                 rdh.setRankupCost(rankupCost);
-                rdh.setRankupDisplayName(rankupDisplayName);
+                rdh.setRankupDisplayName(gds().parseHexColorCodes(rankupDisplayName));
                 rdh.setAllowPrestige(allowPrestige);
-                rdh.setRankupCommands(rankupCommands);
-                rdh.setActionbarMessages(actionbarMessages);
+                rdh.setRankupCommands(gds().parseHexColorCodes(rankupCommands));
+                rdh.setActionbarMessages(gds().parseHexColorCodes(actionbarMessages));
                 rdh.setActionbarInterval(actionbarInterval);
-                rdh.setBroadcastMessages(broadcastMessages);
-                rdh.setMsg(messages);
-                rdh.setActions(actions);
+                rdh.setBroadcastMessages(gds().parseHexColorCodes(broadcastMessages));
+                rdh.setMsg(gds().parseHexColorCodes(messages));
+                rdh.setActions(gds().parseHexColorCodes(actions));
                 rdh.setAddPermissionList(addPermissionList);
                 rdh.setDelPermissionList(delPermissionList);
                 rdh.setRandomCommandsManager(randomCommandsManager);
                 rdh.setFireworkManager(fireworkManager);
                 rdh.setSendFirework(sendFirework);
                 rdh.setPathName(pathName);
+                rdh.setRankCommands(getList("Ranks." + pathName + "." +  rankName + ".executecmds"));
+                rdh.setCurrentAddPermissionList(main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankName + ".addpermission"));
+                rdh.setCurrentDelPermissionList(main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankName + ".delpermission"));
+                lastRankMap.put(pathName, rankName);
                 rankData.put(rankPath.get(), rdh);
                 paths.add(pathName);
                 putPathRank(pathName, rankName);
-    			List<String> commands = rankupCommands;
+    			List<String> commands = gds().parseHexColorCodes(rankupCommands);
     			List<String> consoleCommands = new ArrayList<>();
     			List<String> opCommands = new ArrayList<>();
     			List<String> playerCommands = new ArrayList<>();
@@ -224,6 +266,7 @@ public class RankDataStorage {
 	 * @return latest rank name found, so if there is 2 ranks with the same name in different paths this will return the one in the latest path
 	 * 
 	 */
+	@Nullable
 	public RankPath getRankPath(String rankName) {
 		for(String rankPaths : rankData.keySet()) {
 			if(rankPaths.split("#~#")[0].equals(rankName)) {
@@ -233,10 +276,11 @@ public class RankDataStorage {
 		return null;
 	}
 	
+	@Nullable
 	public String getRankName(RankPath rankPath) {
 		for(String rankPaths : rankData.keySet()) {
 			if(rankPaths.split("#~#")[1] == rankPath.get().split("#~#")[1]) {
-				return rankPath.getRank();
+				return rankPath.getRankName();
 			}
 		}
 		return null;
@@ -341,6 +385,7 @@ public class RankDataStorage {
 		return rankData.get(rankPath.get()).isSendFirework();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void setData(String node, Object value) {
 		if(value == null || node.contains("LASTRANK")) {
 			return;
@@ -434,5 +479,32 @@ public class RankDataStorage {
                  setData("Ranks." + pathName + "." +  rankup + ".send-firework", rank.getValue().isSendFirework());
                  }
 			}
+	}
+
+	public Map<String, String> getLastRankMap() {
+		return lastRankMap;
+	}
+    
+	public boolean isLastRank(String pathName, String rankName) {
+		if(getLastRankMap().get(pathName).equalsIgnoreCase(rankName)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isLastRank(RankPath rankPath) {
+	    return lastRankMap.get(rankPath.getPathName()).equalsIgnoreCase(rankPath.getRankName());
+	}
+	
+	public boolean isSetToLastRank(String rankName) {
+        return lastRankMap.containsValue(rankName);
+	}
+	
+	public String getLastRank(String pathName) {
+		return lastRankMap.get(pathName);
+	}
+	
+	public void setLastRankMap(Map<String, String> lastRankMap) {
+		this.lastRankMap = lastRankMap;
 	}
 }

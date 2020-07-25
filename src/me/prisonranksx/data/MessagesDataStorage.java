@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
-
 import me.prisonranksx.PrisonRanksX;
 
 public class MessagesDataStorage {
@@ -17,14 +15,18 @@ public class MessagesDataStorage {
 	
 	public MessagesDataStorage(PrisonRanksX main) {this.main = main;}
 	
+	public GlobalDataStorage gds() {
+		return main.getGlobalStorage();
+	}
+	
 	public String registerStringMessage(final String configNode) {
-		stringData.put(configNode, main.configManager.messagesConfig.getString("Messages." + configNode));
-		return main.configManager.messagesConfig.getString("Messages." + configNode);
+		stringData.put(configNode, gds().translateHexColorCodes(main.configManager.messagesConfig.getString("Messages." + configNode)));
+		return gds().translateHexColorCodes(main.configManager.messagesConfig.getString("Messages." + configNode));
 	}
 	
 	public List<String> registerStringListMessage(final String configNode) {
-		stringListData.put(configNode, main.configManager.messagesConfig.getStringList("Messages." + configNode));
-		return main.configManager.messagesConfig.getStringList("Messages." + configNode);
+		stringListData.put(configNode, gds().translateHexColorCodes(main.configManager.messagesConfig.getStringList("Messages." + configNode)));
+		return gds().translateHexColorCodes(main.configManager.messagesConfig.getStringList("Messages." + configNode));
 	}
 	
 	@SuppressWarnings("unused")
@@ -122,7 +124,7 @@ public class MessagesDataStorage {
 	}
 	
 	public String getStringMessage(String configMessage) {
-		return stringData.get(configMessage);
+		return stringData.get(configMessage).replace("\\n", "\n");
 	}
 	
 	public List<String> getStringListMessage(String configMessage) {
