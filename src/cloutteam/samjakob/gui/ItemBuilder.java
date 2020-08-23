@@ -74,6 +74,11 @@ public class ItemBuilder {
     public static ItemBuilder start(Material material){
         return new ItemBuilder(new ItemStack(material));
     }
+    
+    public static ItemBuilder start(ItemStack itemStack) {
+    	return new ItemBuilder(itemStack);
+    }
+    
 
     /**
      * Sets the display name of the item.
@@ -107,16 +112,16 @@ public class ItemBuilder {
 		return this;
     	
     }
-    public ItemBuilder setenchantments(Map<Enchantment,Integer> EnchantmentMap) {
-    	if(EnchantmentMap != null) {
-    	stack.addUnsafeEnchantments(EnchantmentMap);
+    public ItemBuilder setEnchantments(Map<Enchantment,Integer> enchantmentMap) {
+    	if(enchantmentMap != null) {
+    	stack.addUnsafeEnchantments(enchantmentMap);
     	}
 		return this;
     	
     }
-    public ItemBuilder setenchantmentsfromlist(List<String> EnchantmentList) {
-    	if(EnchantmentList != null) {
-    		for(String el : EnchantmentList) {
+    public ItemBuilder setEnchantmentsFromList(final List<String> enchantmentList) {
+    	if(enchantmentList != null && !enchantmentList.isEmpty()) {
+    		for(String el : enchantmentList) {
     			String enchantment = el.split(" ")[0];
     			String enchlvl = el.split(" ")[1];
     			Integer lvl = Integer.valueOf(enchlvl);
@@ -125,9 +130,9 @@ public class ItemBuilder {
     	}
     	return this;
     }
-    public ItemBuilder setitemflagsfromlist(List<String> ItemFlagList) {
-    	if(ItemFlagList != null) {
-    		for(String ifl : ItemFlagList) {
+    public ItemBuilder setItemFlagsFromList(final List<String> itemFlagList) {
+    	if(itemFlagList != null && !itemFlagList.isEmpty()) {
+    		for(String ifl : itemFlagList) {
     			ItemMeta stackMeta = stack.getItemMeta();
     			stackMeta.addItemFlags(ItemFlag.valueOf(ifl.toUpperCase()));
     			stack.setItemMeta(stackMeta);
@@ -135,26 +140,26 @@ public class ItemBuilder {
     	}
     	return this;
     }
-    public ItemBuilder setitemflags(Set<ItemFlag> ItemFlags) {
-    	if(ItemFlags != null) {
+    public ItemBuilder setItemFlags(final Set<ItemFlag> itemFlags) {
+    	if(itemFlags != null) {
     	ItemMeta stackMeta = stack.getItemMeta();
-         for(ItemFlag flag : ItemFlags) {
+         for(ItemFlag flag : itemFlags) {
         	 stackMeta.addItemFlags(flag);
          }
          stack.setItemMeta(stackMeta);
     	}
     	return this;
     }
-  public ItemBuilder additemflag(String itemflag) {
-	  if(itemflag != null) {
+  public ItemBuilder addItemFlag(final String itemFlag) {
+	  if(itemFlag != null && !itemFlag.isEmpty()) {
 	  ItemMeta stackMeta = stack.getItemMeta();
-	  stackMeta.addItemFlags(ItemFlag.valueOf(itemflag));
+	  stackMeta.addItemFlags(ItemFlag.valueOf(itemFlag));
 	  stack.setItemMeta(stackMeta);
 	  }
 	  return this;
   }
-  public ItemBuilder addenchantment(String enchant, Integer lvl) {
-	  if(enchant != null) {
+  public ItemBuilder addEnchantment(final String enchant, final int lvl) {
+	  if(enchant != null && !enchant.isEmpty()) {
 	  stack.addUnsafeEnchantment(Enchantment.getByName(enchant), lvl);
 	  }
 	  return this;
@@ -182,7 +187,7 @@ public class ItemBuilder {
      * @return The updated {@link ItemBuilder} object.
      */
     public ItemBuilder lore(String... lore){
-    	if(lore != null) {
+    	if(lore != null && lore.length != 0) {
         for(int i = 0; i < lore.length; i++){
             lore[i] = ChatColor.translateAlternateColorCodes('&', lore[i]);
         }
@@ -208,8 +213,8 @@ public ItemBuilder stringnize(String... ls) {
      * @param lore The desired lore of the item.
      * @return The updated {@link ItemBuilder} object.
      */
-    public ItemBuilder lore(List<String> lore){
-    	if(lore != null) {
+    public ItemBuilder lore(final List<String> lore){
+    	if(lore != null && !lore.isEmpty()) {
         for(int i = 0; i < lore.size(); i++){
             lore.set(i, ChatColor.translateAlternateColorCodes('&', lore.get(i)));
             
@@ -221,10 +226,10 @@ public ItemBuilder stringnize(String... ls) {
     	}
         return this;
     }
-    public ItemBuilder Xlore(List<String> lore) {
+    public ItemBuilder Xlore(final List<String> lore) {
     	List<String> coloredlore = new ArrayList<String>();
     	ItemMeta stackMeta = stack.getItemMeta();
-    	if(lore != null) {
+    	if(lore != null && !lore.isEmpty()) {
     		for(String lr : lore) {
     			
     			coloredlore.add(ChatColor.translateAlternateColorCodes('&', lr));

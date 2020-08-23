@@ -29,6 +29,7 @@ import cloutteam.samjakob.gui.ItemBuilder;
 import cloutteam.samjakob.gui.buttons.GUIButton;
 import cloutteam.samjakob.gui.buttons.InventoryListenerGUI;
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.SkullCreator;
 import me.prisonranksx.utils.XMaterial;
 
 import org.bukkit.Bukkit;
@@ -39,14 +40,24 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.material.Skull;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class PaginatedGUI implements InventoryHolder {
@@ -282,7 +293,75 @@ public class PaginatedGUI implements InventoryHolder {
         holder.closeInventory();
         holder.openInventory(getInventory());
     }
-
+    private final Random random = new Random();
+    private final String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public String getRandomString(int length) {
+    	StringBuilder b = new StringBuilder(length);
+    	for(int j = 0; j < length; j++)
+    	b.append(chars.charAt(random.nextInt(chars.length())));
+    	return b.toString();
+    }
+    
+    
+	public ItemStack parseStack(String itemValue) {
+		ItemStack x = null;
+		String originalValue = itemValue;
+		itemValue = itemValue.toUpperCase();
+		try {
+		if(itemValue.contains(";")) {
+			// 1.8 - 1.15
+			String[] nameAndData = itemValue.split(";");
+			String name = nameAndData[0];
+			short data = Short.parseShort(nameAndData[1]);
+			x = new ItemStack(XMaterial.matchXMaterial(name).get().parseMaterial());
+			x.setDurability(data);
+		} else if (itemValue.contains("#")) {
+			// 1.8 - 1.15
+			String[] nameAndData = itemValue.split("#");
+			String name = nameAndData[0];
+			byte data = Byte.parseByte(nameAndData[1]);
+			x = XMaterial.matchXMaterial(Integer.valueOf(name), data).get().parseItem();
+		} else if (itemValue.contains("->")) {
+			// 1.8 - 1.12 || 1.8 - 1.15 (ViaVersion)
+			String[] nameAndData = itemValue.split("->");
+			String name = nameAndData[0];
+			byte data = Byte.parseByte(nameAndData[1]);
+			x = new ItemStack(Material.matchMaterial(name), 1, data);
+		} else if (itemValue.contains("@HEAD@")) {
+			String[] nameAndData = originalValue.split("@HEAD@");
+			String data = nameAndData[1];
+			x = XMaterial.PLAYER_HEAD.parseItem(true);
+			if(data.length() > 16) {
+				if(data.contains("net")) {
+					
+				x = SkullCreator.itemWithUrl(x, data);
+				} else {
+					
+					if(data.contains("=")) {
+				x = SkullCreator.itemWithBase64(x, data);
+					} else {
+						
+						x = SkullCreator.itemWithUrl(x, "http://textures.minecraft.net/texture/" + data);
+					}
+				}
+			} else {
+				  
+				x = SkullCreator.itemFromName(data);
+			}
+		} else {
+			// 1.8 - 1.15 Direct Parse => {itemname:itemdata}
+			x = XMaterial.matchXMaterial(itemValue).get().parseItem();
+		}
+		return x;
+		} catch (Exception err) {
+		    pluginx.getLogger().warning("Error while parsing an item name! unable to parse item: " + itemValue);
+		    pluginx.getLogger().warning("Please try another format from the formats mentioned below current-format section underneath Ranklist-gui in config.yml");
+			err.printStackTrace();
+		   return new ItemStack(Material.BEDROCK, 1);	
+		}
+		
+	}
+    
     /**
      * Returns the Spigot {@link Inventory} that represents the PaginatedGUI.
      * This can then by shown to a player using {@link HumanEntity#openInventory(Inventory)}.
@@ -297,27 +376,27 @@ public class PaginatedGUI implements InventoryHolder {
     @Override
     public Inventory getInventory() {
     
-    	String mainguioptions = "Main-GUIOptions.";
+    	String mainGuiOptions = "Main-GUIOptions.";
         // Create an inventory (and set an appropriate size.)
         // TODO: Allow customisation of inventory size. Maybe at first, only if the inventory is not paginated.
         Inventory inventory = Bukkit.createInventory(this, (getFinalPage() > 0) ? 54 : 45, name);
-        NO_ADDITIONAL_PAGES = pluginx.globalStorage.getStringData(mainguioptions + "no-additional-pages");
-        NO_PREVIOUS_PAGES = pluginx.globalStorage.getStringData(mainguioptions + "no-previous-pages");
-        PREVIOUS_PAGE = pluginx.globalStorage.getStringData(mainguioptions + "previouspage-itemDISPLAYNAME");
-        NEXT_PAGE = pluginx.globalStorage.getStringData(mainguioptions + "nextpage-itemDISPLAYNAME");
-        CURRENT_PAGE = pluginx.globalStorage.getStringData(mainguioptions + "currentpage-itemDISPLAYNAME");
+        NO_ADDITIONAL_PAGES = pluginx.globalStorage.getStringData(mainGuiOptions + "no-additional-pages");
+        NO_PREVIOUS_PAGES = pluginx.globalStorage.getStringData(mainGuiOptions + "no-previous-pages");
+        PREVIOUS_PAGE = pluginx.globalStorage.getStringData(mainGuiOptions + "previouspage-itemDISPLAYNAME");
+        NEXT_PAGE = pluginx.globalStorage.getStringData(mainGuiOptions + "nextpage-itemDISPLAYNAME");
+        CURRENT_PAGE = pluginx.globalStorage.getStringData(mainGuiOptions + "currentpage-itemDISPLAYNAME");
         //List<String> xx = pluginx.globalStorage.getStringListData(mainguioptions + "previouspage-itemFLAGS");
         //List<String> zz = pluginx.globalStorage.getStringListData(mainguioptions + "nextpage-itemFLAGS");
         /* BEGIN PAGINATION */
-        GUIButton backButton = new GUIButton(ItemBuilder.start(Material.matchMaterial(pluginx.globalStorage.getStringData(mainguioptions + "previouspage-itemNAME"))).durability((short) config.getInt(mainguioptions + "previouspage-itemDATA")).Xlore(pluginx.globalStorage.getStringListData("previouspage-itemLORE")).setenchantmentsfromlist(pluginx.globalStorage.getStringListData(mainguioptions + "previouspage-itemENCHANTMENTS")).name(PREVIOUS_PAGE).build());
-        GUIButton pageIndicator = new GUIButton(ItemBuilder.start(XMaterial.matchXMaterial(pluginx.globalStorage.getStringData(mainguioptions + "currentpage-itemNAME")).parseMaterial(true))
+        GUIButton backButton = new GUIButton(ItemBuilder.start(parseStack(pluginx.globalStorage.getStringData(mainGuiOptions + "previouspage-itemNAME"))).durability((short) pluginx.getGlobalStorage().getIntegerData(mainGuiOptions + "previouspage-itemDATA")).Xlore(pluginx.globalStorage.getStringListData(mainGuiOptions + "previouspage-itemLORE")).setEnchantmentsFromList(pluginx.globalStorage.getStringListData(mainGuiOptions + "previouspage-itemENCHANTMENTS")).setItemFlagsFromList(pluginx.getGlobalStorage().getStringListData(mainGuiOptions + "previouspage-itemFLAGS")).amount(pluginx.getGlobalStorage().getIntegerData(mainGuiOptions + "previouspage-itemAMOUNT")).name(PREVIOUS_PAGE).build());
+        GUIButton pageIndicator = new GUIButton(ItemBuilder.start(parseStack(pluginx.globalStorage.getStringData(mainGuiOptions + "currentpage-itemNAME"))).durability((short) pluginx.getGlobalStorage().getIntegerData(mainGuiOptions + "currentpage-itemDATA")).Xlore(pluginx.getGlobalStorage().getStringListData(mainGuiOptions + "currentpage-itemLORE")).setEnchantmentsFromList(pluginx.getGlobalStorage().getStringListData(mainGuiOptions + "currentpage-itemENCHANTMENTS")).setItemFlagsFromList(pluginx.getGlobalStorage().getStringListData(mainGuiOptions + "currentpage-itemFLAGS")).amount(pluginx.getGlobalStorage().getIntegerData(mainGuiOptions + "currentpage-itemAMOUNT"))
                 .name(
                         CURRENT_PAGE
                                 .replaceAll(Pattern.quote("{currentpage}"), String.valueOf(currentPage + 1))
                                 .replaceAll(Pattern.quote("{maxpages}"), String.valueOf(getFinalPage() + 1))
                 )
                 .build());
-        GUIButton nextButton = new GUIButton(ItemBuilder.start(Material.matchMaterial(pluginx.globalStorage.getStringData(mainguioptions + "nextpage-itemNAME"))).durability((short) config.getInt(mainguioptions + "nextpage-itemDATA")).Xlore(pluginx.globalStorage.getStringListData("nextpage-itemLORE")).setenchantmentsfromlist(pluginx.globalStorage.getStringListData(mainguioptions + "nextpage-itemENCHANTMENTS")).name(NEXT_PAGE).build());
+        GUIButton nextButton = new GUIButton(ItemBuilder.start(parseStack(pluginx.globalStorage.getStringData(mainGuiOptions + "nextpage-itemNAME"))).durability((short) pluginx.getGlobalStorage().getIntegerData(mainGuiOptions + "nextpage-itemDATA")).Xlore(pluginx.globalStorage.getStringListData(mainGuiOptions + "nextpage-itemLORE")).setEnchantmentsFromList(pluginx.globalStorage.getStringListData(mainGuiOptions + "nextpage-itemENCHANTMENTS")).setItemFlagsFromList(pluginx.getGlobalStorage().getStringListData(mainGuiOptions + "nextpage-itemFLAGS")).amount(pluginx.getGlobalStorage().getIntegerData(mainGuiOptions + "nextpage-itemAMOUNT")).name(NEXT_PAGE).build());
 
         backButton.setListener(event -> {
             event.setCancelled(true);
