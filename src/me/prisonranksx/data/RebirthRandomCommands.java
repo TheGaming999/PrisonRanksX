@@ -38,16 +38,16 @@ public class RebirthRandomCommands {
 	
 	public void loadSections(String rebirthName) {
 		Map<String, Object> randomCommandsMap = new HashMap<String, Object>();
-		if(main.configManager.rebirthsConfig.getConfigurationSection("Rebirths."  + rebirthName + ".randomcmds") != null &&
-				!main.configManager.rebirthsConfig.getConfigurationSection("Rebirths." + rebirthName + ".randomcmds").getKeys(false).isEmpty()) {
-		randomCommandsMap = main.configManager.rebirthsConfig.getConfigurationSection("Rebirths." + rebirthName + ".randomcmds").getValues(withKeys);
+		if(main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths."  + rebirthName + ".randomcmds") != null &&
+				!main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths." + rebirthName + ".randomcmds").getKeys(false).isEmpty()) {
+		randomCommandsMap = main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths." + rebirthName + ".randomcmds").getValues(withKeys);
 		}
 		List<List<String>> commandsList = new ArrayList<>();
 		List<Double> chances = new ArrayList<>();
 		if(!randomCommandsMap.isEmpty()) {
 		  for(String section : randomCommandsMap.keySet()) {
-			  commandsList.add(main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".randomcmds." + section + ".commands"));
-			  chances.add(main.configManager.rebirthsConfig.getDouble("Rebirths." + rebirthName + ".randomcmds." + section + ".chance"));
+			  commandsList.add(main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".randomcmds." + section + ".commands"));
+			  chances.add(main.getConfigManager().rebirthsConfig.getDouble("Rebirths." + rebirthName + ".randomcmds." + section + ".chance"));
 		  }
 		}
 		setRandomCommandsMap(randomCommandsMap);
@@ -55,7 +55,7 @@ public class RebirthRandomCommands {
 		setChances(chances);
 	}
 	//public Map<String, Object> getCommandSections() {
-		//return main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getValues(false);
+		//return main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getValues(false);
 	//}
 	
 	public void setRandomCommandsMap(Map<String, Object> randomCommandsMap) {

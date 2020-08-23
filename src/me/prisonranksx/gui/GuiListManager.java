@@ -1,12 +1,16 @@
 package me.prisonranksx.gui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -28,6 +32,7 @@ public class GuiListManager {
 	public RebirthItem emptyRebirthItem;
 	public List<Integer> allowedRankSlots, allowedPrestigeSlots, allowedRebirthSlots;
 	public Map<String, List<String>> allowedRankSlotsMap;
+	public Map<String, InventoryHolder> guiViewers;
 	public GuiListManager(PrisonRanksX main) {this.main = main;
 	ranksGUI = new PaginatedGUI(this.main.prxAPI.c(this.main.globalStorage.getStringData("Ranklist-gui.title")));
 	prestigesGUI = new PaginatedGUI(this.main.prxAPI.c(this.main.globalStorage.getStringData("Prestigelist-gui.title")));
@@ -59,6 +64,7 @@ public class GuiListManager {
 	emptyRebirthItem.setEnchantments(null);
 	emptyRebirthItem.setFlags(null);
 	emptyRebirthItem.setCommands(null);
+	guiViewers = new HashMap<>();
 	}
 
 	
@@ -66,13 +72,13 @@ public class GuiListManager {
 		if(!this.main.globalStorage.getStringListData("Ranklist-gui.constant-items").isEmpty()) {
 			List<String> constantItems = main.globalStorage.getStringListData("Ranklist-gui.constant-items");
 			for(String item : constantItems) {
-				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
+				GUIButton button = new GUIButton(main.getCustomItemsManager().readCustomItem(item));
 				button.setListener(event -> {
 					event.setCancelled(true);
-					main.executeCommands((Player)event.getWhoClicked(), main.cim.readCustomItemCommands(item));
+					main.executeCommands((Player)event.getWhoClicked(), main.getCustomItemsManager().readCustomItemCommands(item));
 				});
-				int slot = main.cim.readCustomItemSlot(item);
-				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
+				int slot = main.getCustomItemsManager().readCustomItemSlot(item);
+				int page = 0; page = main.getCustomItemsManager().readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				ranksGUI.setButton(slot + page, button);
 			}
 			for(String str : main.globalStorage.getStringData("Ranklist-gui.allowed-slots").split(",")) {
@@ -86,12 +92,12 @@ public class GuiListManager {
 		if(!this.main.globalStorage.getStringListData("Prestigelist-gui.constant-items").isEmpty()) {
 			List<String> constantItems = main.globalStorage.getStringListData("Prestigelist-gui.constant-items");
 			for(String item : constantItems) {
-				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
+				GUIButton button = new GUIButton(main.getCustomItemsManager().readCustomItem(item));
 				button.setListener(event -> {event.setCancelled(true);
-				main.executeCommands((Player)event.getWhoClicked(), main.cim.readCustomItemCommands(item));
+				main.executeCommands((Player)event.getWhoClicked(), main.getCustomItemsManager().readCustomItemCommands(item));
 				});
-				int slot = main.cim.readCustomItemSlot(item);
-				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
+				int slot = main.getCustomItemsManager().readCustomItemSlot(item);
+				int page = 0; page = main.getCustomItemsManager().readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				prestigesGUI.setButton(slot + page, button);
 			}
 			for(String str : main.globalStorage.getStringData("Prestigelist-gui.allowed-slots").split(",")) {
@@ -105,12 +111,12 @@ public class GuiListManager {
 		if(!this.main.globalStorage.getStringListData("Rebirthlist-gui.constant-items").isEmpty()) {
 			List<String> constantItems = main.globalStorage.getStringListData("Rebirthlist-gui.constant-items");
 			for(String item : constantItems) {
-				GUIButton button = new GUIButton(main.cim.readCustomItem(item));
+				GUIButton button = new GUIButton(main.getCustomItemsManager().readCustomItem(item));
 				button.setListener(event -> {event.setCancelled(true);
-				main.executeCommands((Player)event.getWhoClicked(), main.cim.readCustomItemCommands(item));
+				main.executeCommands((Player)event.getWhoClicked(), main.getCustomItemsManager().readCustomItemCommands(item));
 				});
-				int slot = main.cim.readCustomItemSlot(item);
-				int page = 0; page = main.cim.readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
+				int slot = main.getCustomItemsManager().readCustomItemSlot(item);
+				int page = 0; page = main.getCustomItemsManager().readCustomItemPage(item); if(page!=1) {page = page * 44;} else {page = 0;}
 				rebirthsGUI.setButton(slot + page, button);
 			}
 			for(String str : main.globalStorage.getStringData("Rebirthlist-gui.allowed-slots").split(",")) {
@@ -123,15 +129,15 @@ public class GuiListManager {
 	}
 	
 	public RankItem getCustomItem(final RankState rankState) {
-		return main.cri.getCustomRankItems().containsKey(rankState.toString()) ? main.cri.getCustomRankItems().get(rankState.toString()) : emptyRankItem;
+		return main.getCustomRankItems().getCustomRankItems().containsKey(rankState.toString()) ? main.getCustomRankItems().getCustomRankItems().get(rankState.toString()) : emptyRankItem;
 	}
 	
 	public PrestigeItem getCustomItem(final PrestigeState prestigeState) {
-		return main.cpi.getCustomPrestigeItems().containsKey(prestigeState.toString()) ? main.cpi.getCustomPrestigeItems().get(prestigeState.toString()) : emptyPrestigeItem;
+		return main.getCustomPrestigeItems().getCustomPrestigeItems().containsKey(prestigeState.toString()) ? main.getCustomPrestigeItems().getCustomPrestigeItems().get(prestigeState.toString()) : emptyPrestigeItem;
 	}
 	
 	public RebirthItem getCustomItem(final RebirthState rebirthState) {
-		return main.crri.getCustomRebirthItems().containsKey(rebirthState.toString()) ? main.crri.getCustomRebirthItems().get(rebirthState.toString()) : emptyRebirthItem;
+		return main.getCustomRebirthItems().getCustomRebirthItems().containsKey(rebirthState.toString()) ? main.getCustomRebirthItems().getCustomRebirthItems().get(rebirthState.toString()) : emptyRebirthItem;
 	}
 	
 	    

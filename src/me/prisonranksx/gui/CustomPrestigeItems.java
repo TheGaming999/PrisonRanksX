@@ -26,18 +26,18 @@ public class CustomPrestigeItems {
 		for(String prestige : main.prestigeStorage.getPrestigeData().keySet()) {
 			for(int i = 0; i < 3; i++) {
 				LevelState ls = LevelState.values()[i];
-				if(main.cim.hasCustomLevelItem(LevelType.PRESTIGE, ls) && main.cim.hasCustomFormat(LevelType.PRESTIGE, ls, prestige)) {
+				if(main.getCustomItemsManager().hasCustomLevelItem(LevelType.PRESTIGE, ls) && main.getCustomItemsManager().hasCustomFormat(LevelType.PRESTIGE, ls, prestige)) {
 					PrestigeItem pi = new PrestigeItem();
 					PrestigeState ps = new PrestigeState();
 					ps.setLevelState(ls);
 					ps.setPrestige(prestige);
-					pi.setMaterial(main.cim.readCustomLevelItemName(LevelType.PRESTIGE, ls, prestige));
-					pi.setAmount(main.cim.readCustomLevelItemAmount(LevelType.PRESTIGE, ls, prestige));
-					pi.setDisplayName(gds().translateHexColorCodes(main.cim.readCustomLevelItemDisplayName(LevelType.PRESTIGE, ls, prestige)));
-					pi.setLore(gds().translateHexColorCodes(main.cim.readCustomLevelItemLore(LevelType.PRESTIGE, ls, prestige)));
-					pi.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.PRESTIGE, ls, prestige));
-					pi.setFlags(main.cim.readCustomLevelItemFlags(LevelType.PRESTIGE, ls, prestige));
-					pi.setCommands(gds().translateHexColorCodes(main.cim.readCustomLevelItemCommands(LevelType.PRESTIGE, ls, prestige)));
+					pi.setMaterial(main.getCustomItemsManager().readCustomLevelItemName(LevelType.PRESTIGE, ls, prestige));
+					pi.setAmount(main.getCustomItemsManager().readCustomLevelItemAmount(LevelType.PRESTIGE, ls, prestige));
+					pi.setDisplayName(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemDisplayName(LevelType.PRESTIGE, ls, prestige)));
+					pi.setLore(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemLore(LevelType.PRESTIGE, ls, prestige)));
+					pi.setEnchantments(main.getCustomItemsManager().readCustomLevelItemEnchantments(LevelType.PRESTIGE, ls, prestige));
+					pi.setFlags(main.getCustomItemsManager().readCustomLevelItemFlags(LevelType.PRESTIGE, ls, prestige));
+					pi.setCommands(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemCommands(LevelType.PRESTIGE, ls, prestige)));
 					customPrestigeItems.put(ps.toString(), pi);
 				}
 			}

@@ -244,4 +244,13 @@ public class PrestigeDataHandler {
 	public void setCustomRequirementMessage(List<String> customRequirementMessage) {
 		this.customRequirementMessage = customRequirementMessage;
 	}
+	
+	/**
+	 * @return prestige data as string
+	 */
+	@Override
+	public String toString() {
+		return getValues();
+	}
+	
 }

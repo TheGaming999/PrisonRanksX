@@ -29,18 +29,18 @@ public class CustomRankItems {
 			String rank = rankPath.getRankName();
 			for(int i = 0; i < 3; i++) {
 				LevelState ls = LevelState.values()[i];
-				if(main.cim.hasCustomLevelItem(LevelType.RANK, ls) && main.cim.hasCustomFormat(LevelType.RANK, ls, rank)) {
+				if(main.getCustomItemsManager().hasCustomLevelItem(LevelType.RANK, ls) && main.getCustomItemsManager().hasCustomFormat(LevelType.RANK, ls, rank)) {
 					RankItem ri = new RankItem();
 					RankState rs = new RankState();
 					rs.setLevelState(ls);
 					rs.setRankPath(rankPath);
-					ri.setMaterial(main.cim.readCustomLevelItemName(LevelType.RANK, ls, rank));
-					ri.setAmount(main.cim.readCustomLevelItemAmount(LevelType.RANK, ls, rank));
-					ri.setDisplayName(gds().translateHexColorCodes(main.cim.readCustomLevelItemDisplayName(LevelType.RANK, ls, rank)));
-					ri.setLore(gds().translateHexColorCodes(main.cim.readCustomLevelItemLore(LevelType.RANK, ls, rank)));
-					ri.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.RANK, ls, rank));
-					ri.setFlags(main.cim.readCustomLevelItemFlags(LevelType.RANK, ls, rank));
-					ri.setCommands(gds().translateHexColorCodes(main.cim.readCustomLevelItemCommands(LevelType.RANK, ls, rank)));
+					ri.setMaterial(main.getCustomItemsManager().readCustomLevelItemName(LevelType.RANK, ls, rank));
+					ri.setAmount(main.getCustomItemsManager().readCustomLevelItemAmount(LevelType.RANK, ls, rank));
+					ri.setDisplayName(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemDisplayName(LevelType.RANK, ls, rank)));
+					ri.setLore(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemLore(LevelType.RANK, ls, rank)));
+					ri.setEnchantments(main.getCustomItemsManager().readCustomLevelItemEnchantments(LevelType.RANK, ls, rank));
+					ri.setFlags(main.getCustomItemsManager().readCustomLevelItemFlags(LevelType.RANK, ls, rank));
+					ri.setCommands(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemCommands(LevelType.RANK, ls, rank)));
 					customRankItems.put(rs.toString(), ri);
 				}
 			}

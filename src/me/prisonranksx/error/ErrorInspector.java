@@ -40,7 +40,7 @@ public class ErrorInspector {
 		errors.clear();
 		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 		try {
-		Set<String> rankList = main.configManager.ranksConfig.getConfigurationSection("Ranks." + main.prxAPI.getDefaultPath()).getKeys(false);
+		Set<String> rankList = main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + main.prxAPI.getDefaultPath()).getKeys(false);
         String[] arrayList = rankList.toArray(new String[0]);
         String firstRank = arrayList[0];
         String lastRank = arrayList[rankList.size()-1];
@@ -98,21 +98,21 @@ public class ErrorInspector {
         	errors.add("&e(0x4)Solution: goto config.yml at the very bottom change defaultrank to the one in ranks.yml while the server is &loffline&e remember: it's (CASE SENSITIVE)");
         }
         rankList.forEach(rank -> {
-        	if(main.configManager.ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".executecmds")) {
+        	if(main.getConfigManager().ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".executecmds")) {
         		main.getLogger().warning("Rank " + rank + " executecmds uses a wrong format! please change to the list format instead, type '/prx errors' for more info.");
         		errors.add("&4(0x5)Error: " + rank + " uses the string format '' instead of the list format - string");
         		errors.add("&e(0x5)Solution: change &nexecutecmds: 'example'&e to the following format:");
         		errors.add("&eexecutecmds:");
         		errors.add("&e- 'example'");
         	}
-        	if(main.configManager.ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".broadcast")) {
+        	if(main.getConfigManager().ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".broadcast")) {
         		main.getLogger().warning("Rank " + rank + " broadcast uses a wrong format! please change to the list format instead, type '/prx errors' for more info.");
         		errors.add("&4(0x6)Error: " + rank + " uses the string format '' instead of the list format - string");
         		errors.add("&e(0x6)Solution: change &nbroadcast: 'example'&e to the following format:");
         		errors.add("&ebroadcast:");
         		errors.add("&e- 'example'");
         	}
-        	if(main.configManager.ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".msg")) {
+        	if(main.getConfigManager().ranksConfig.isString("Ranks." + main.prxAPI.getDefaultPath() + "." + rank + ".msg")) {
         		main.getLogger().warning("Rank " + rank + " msg uses a wrong format! please change to the list format instead, type '/prx errors' for more info.");
         		errors.add("&4(0x7)Error: " + rank + " uses the string format '' instead of the list format - string");
         		errors.add("&e(0x7)Solution: change &nmsg: 'example'&e to the following format:");
@@ -129,45 +129,45 @@ public class ErrorInspector {
        if(main.isMySql()) {
     	   return;
        }
-       main.configManager.rankDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
-    	   String rank = main.configManager.rankDataConfig.getString("players." + player + ".rank");
-    	   String path = main.configManager.rankDataConfig.getString("players." + player + ".path");
+       main.getConfigManager().rankDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
+    	   String rank = main.getConfigManager().rankDataConfig.getString("players." + player + ".rank");
+    	   String path = main.getConfigManager().rankDataConfig.getString("players." + player + ".path");
     	   if(main.rankStorage.getRankupName(new RankPath(rank, path)) == null) {
     		   main.getLogger().warning("Player rank doesn't have a rankup name. Repairing...");
-    		   main.configManager.rankDataConfig.set("players." + player + ".rank", main.prxAPI.getDefaultRank());
+    		   main.getConfigManager().rankDataConfig.set("players." + player + ".rank", main.prxAPI.getDefaultRank());
     		   rankSave = true;
     		   main.getLogger().warning("Please restart your server to avoid future problems.");
     	   }
        });
-       main.configManager.prestigeDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
-    	   String prestige = main.configManager.prestigeDataConfig.getString("players." + player);
+       main.getConfigManager().prestigeDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
+    	   String prestige = main.getConfigManager().prestigeDataConfig.getString("players." + player);
     	   if(main.prestigeStorage.getNextPrestigeName(prestige) == null) {
     		   main.getLogger().warning("Player prestige doesn't have a next prestige name. Repairing...");
-    		   main.configManager.prestigeDataConfig.set("players." + player, main.prxAPI.getFirstPrestige());
+    		   main.getConfigManager().prestigeDataConfig.set("players." + player, main.prxAPI.getFirstPrestige());
     		   prestigeSave = true;
     		   main.getLogger().warning("Please restart your server to avoid future problems.");
     	   }
        });
-       main.configManager.rebirthDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
-    	   String rebirth = main.configManager.rebirthDataConfig.getString("players." + player);
+       main.getConfigManager().rebirthDataConfig.getConfigurationSection("players").getKeys(false).forEach(player -> {
+    	   String rebirth = main.getConfigManager().rebirthDataConfig.getString("players." + player);
     	   if(main.rebirthStorage.getNextRebirthName(rebirth) == null) {
     		   main.getLogger().warning("Player rebirth doesn't have a next rebirth name. Repairing...");
-    		   main.configManager.rebirthDataConfig.set("players." + player, main.prxAPI.getFirstRebirth());
+    		   main.getConfigManager().rebirthDataConfig.set("players." + player, main.prxAPI.getFirstRebirth());
     		   rebirthSave = true;
     		   main.getLogger().warning("Please restart your server to avoid future problems.");
     	   }
        });
        if(rankSave) {
     	   rankSave = false;
-    	   main.configManager.saveRankDataConfig();
+    	   main.getConfigManager().saveRankDataConfig();
        }
        if(prestigeSave) {
     	   prestigeSave = false;
-    	   main.configManager.savePrestigeDataConfig();
+    	   main.getConfigManager().savePrestigeDataConfig();
        }
        if(rebirthSave) {
     	   rebirthSave = false;
-    	   main.configManager.saveRebirthDataConfig();
+    	   main.getConfigManager().saveRebirthDataConfig();
        }
 		} catch (Exception err) {
 			

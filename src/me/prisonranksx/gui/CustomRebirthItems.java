@@ -26,18 +26,18 @@ public class CustomRebirthItems {
 		for(String rebirth : main.rebirthStorage.getRebirthData().keySet()) {
 			for(int i = 0; i < 3; i++) {
 				LevelState ls = LevelState.values()[i];
-				if(main.cim.hasCustomLevelItem(LevelType.REBIRTH, ls) && main.cim.hasCustomFormat(LevelType.REBIRTH, ls, rebirth)) {
+				if(main.getCustomItemsManager().hasCustomLevelItem(LevelType.REBIRTH, ls) && main.getCustomItemsManager().hasCustomFormat(LevelType.REBIRTH, ls, rebirth)) {
 					RebirthItem ri = new RebirthItem();
 					RebirthState rs = new RebirthState();
 					rs.setLevelState(ls);
 					rs.setRebirth(rebirth);
-					ri.setMaterial(main.cim.readCustomLevelItemName(LevelType.REBIRTH, ls, rebirth));
-					ri.setAmount(main.cim.readCustomLevelItemAmount(LevelType.REBIRTH, ls, rebirth));
-					ri.setDisplayName(gds().translateHexColorCodes(main.cim.readCustomLevelItemDisplayName(LevelType.REBIRTH, ls, rebirth)));
-					ri.setLore(gds().translateHexColorCodes(main.cim.readCustomLevelItemLore(LevelType.REBIRTH, ls, rebirth)));
-					ri.setEnchantments(main.cim.readCustomLevelItemEnchantments(LevelType.REBIRTH, ls, rebirth));
-					ri.setFlags(main.cim.readCustomLevelItemFlags(LevelType.REBIRTH, ls, rebirth));
-					ri.setCommands(gds().translateHexColorCodes(main.cim.readCustomLevelItemCommands(LevelType.REBIRTH, ls, rebirth)));
+					ri.setMaterial(main.getCustomItemsManager().readCustomLevelItemName(LevelType.REBIRTH, ls, rebirth));
+					ri.setAmount(main.getCustomItemsManager().readCustomLevelItemAmount(LevelType.REBIRTH, ls, rebirth));
+					ri.setDisplayName(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemDisplayName(LevelType.REBIRTH, ls, rebirth)));
+					ri.setLore(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemLore(LevelType.REBIRTH, ls, rebirth)));
+					ri.setEnchantments(main.getCustomItemsManager().readCustomLevelItemEnchantments(LevelType.REBIRTH, ls, rebirth));
+					ri.setFlags(main.getCustomItemsManager().readCustomLevelItemFlags(LevelType.REBIRTH, ls, rebirth));
+					ri.setCommands(gds().translateHexColorCodes(main.getCustomItemsManager().readCustomLevelItemCommands(LevelType.REBIRTH, ls, rebirth)));
 					customRebirthItems.put(rs.toString(), ri);
 				}
 			}

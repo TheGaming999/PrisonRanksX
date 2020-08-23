@@ -20,13 +20,13 @@ public class MessagesDataStorage {
 	}
 	
 	public String registerStringMessage(final String configNode) {
-		stringData.put(configNode, gds().translateHexColorCodes(main.configManager.messagesConfig.getString("Messages." + configNode)));
-		return gds().translateHexColorCodes(main.configManager.messagesConfig.getString("Messages." + configNode));
+		stringData.put(configNode, gds().translateHexColorCodes(main.getConfigManager().messagesConfig.getString("Messages." + configNode)));
+		return gds().translateHexColorCodes(main.getConfigManager().messagesConfig.getString("Messages." + configNode));
 	}
 	
 	public List<String> registerStringListMessage(final String configNode) {
-		stringListData.put(configNode, gds().translateHexColorCodes(main.configManager.messagesConfig.getStringList("Messages." + configNode)));
-		return gds().translateHexColorCodes(main.configManager.messagesConfig.getStringList("Messages." + configNode));
+		stringListData.put(configNode, gds().translateHexColorCodes(main.getConfigManager().messagesConfig.getStringList("Messages." + configNode)));
+		return gds().translateHexColorCodes(main.getConfigManager().messagesConfig.getStringList("Messages." + configNode));
 	}
 	
 	@SuppressWarnings("unused")
@@ -105,6 +105,7 @@ public class MessagesDataStorage {
 		List<String> lastRebirth = registerStringListMessage("lastrebirth");
 		String commandSpam = registerStringMessage("commandspam");
 		String rankupMaxIsOn = registerStringMessage("rankupmax-is-on");
+		String prestigeMaxIsOn = registerStringMessage("prestigemax-is-on");
 		String rankListLastPageReached = registerStringMessage("ranklist-last-page-reached");
 		String rankListInvalidPage = registerStringMessage("ranklist-invalid-page");
 		String prestigeListLastPageReached = registerStringMessage("prestigelist-last-page-reached");

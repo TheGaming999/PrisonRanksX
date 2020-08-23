@@ -20,20 +20,20 @@ public class FireworkManager {
 	
 	public Map<String, Object> getFireworkBuilder() {
 		if(levelType == LevelType.RANK) {
-			if(main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + levelName + ".firework-builder") == null) {
+			if(main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + levelName + ".firework-builder") == null) {
 				return new HashMap<String, Object>();
 			}
-		return main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + levelName + ".firework-builder").getValues(false);
+		return main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + levelName + ".firework-builder").getValues(false);
 		} else if (levelType == LevelType.PRESTIGE) {
-			if(main.configManager.prestigesConfig.getConfigurationSection("Prestiges." + levelName + ".firework-builder") == null) {
+			if(main.getConfigManager().prestigesConfig.getConfigurationSection("Prestiges." + levelName + ".firework-builder") == null) {
 				return new HashMap<String, Object>();
 			}
-			return main.configManager.prestigesConfig.getConfigurationSection("Prestiges." + levelName + ".firework-builder").getValues(false);
+			return main.getConfigManager().prestigesConfig.getConfigurationSection("Prestiges." + levelName + ".firework-builder").getValues(false);
 		} else if (levelType == LevelType.REBIRTH) {
-			if(main.configManager.rebirthsConfig.getConfigurationSection("Rebirths." + levelName + ".firework-builder") == null) {
+			if(main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths." + levelName + ".firework-builder") == null) {
 				return new HashMap<String, Object>();
 			}
-			return main.configManager.rebirthsConfig.getConfigurationSection("Rebirths." + levelName + ".firework-builder").getValues(false);
+			return main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths." + levelName + ".firework-builder").getValues(false);
 		} else if (levelType == LevelType.OTHER) {
 			FileConfiguration x = callOtherConfig(main.getDataFolder() + "/" + levelName + "s" + ".yml");
 			return x.getConfigurationSection(levelName + "s." + levelName + ".firework-builder").getValues(true);

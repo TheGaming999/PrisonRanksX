@@ -214,6 +214,7 @@ public interface GlobalDataStorage {
 	    boolean forceSave = registerBooleanData("Options.forcesave");
 	    boolean saveOnLeave = registerBooleanData("Options.save-on-leave");
 	    boolean rankupMaxWarpFilter = registerBooleanData("Options.rankupmax-warp-filter");
+	    boolean allowEasterEggs = registerBooleanData("Options.allow-easter-eggs");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");

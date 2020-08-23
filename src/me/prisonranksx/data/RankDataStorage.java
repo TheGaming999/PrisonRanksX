@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,7 +20,7 @@ public class RankDataStorage {
 	private Map<String, RankDataHandler> rankData;
 	private PrisonRanksX main;
 	private Set<String> paths;
-	private Map<String, List<String>> pathRanks;
+	public Map<String, List<String>> pathRanks;
 	private Map<String, List<String>> consoleCommands;
 	private Map<String, List<String>> playerCommands;
 	private Map<String, List<String>> opCommands;
@@ -28,7 +29,7 @@ public class RankDataStorage {
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
 	   this.rankData = new LinkedHashMap<String, RankDataHandler>();
 	   this.paths = new HashSet<>();
-	   this.pathRanks = new LinkedHashMap<>();
+	   this.pathRanks = new LinkedHashMap<String, List<String>>();
 	   this.consoleCommands = new LinkedHashMap<>();
 	   this.playerCommands = new LinkedHashMap<>();
 	   this.opCommands = new LinkedHashMap<>();
@@ -62,13 +63,14 @@ public class RankDataStorage {
 	
 	public void putPathRank(final String path, final String rank) {
 		if(!pathRanks.containsKey(path)) {
-			pathRanks.put(path, new ArrayList<>());
+			pathRanks.put(path, new LinkedList<>());
 		}
 		if(pathRanks.get(path).contains(rank)) {
 			return;
 		}
 		List<String> ranks = pathRanks.get(path);
 		ranks.add(rank);
+		main.debugPreEnable("added rank: " + rank + " to path: " + path);
 		pathRanks.put(path, ranks);
 	}
 	
@@ -96,32 +98,32 @@ public class RankDataStorage {
 	 * can be used as a reload
 	 */
 	public void loadRanksData() {
-		for(String pathName : main.configManager.ranksConfig.getConfigurationSection("Ranks").getKeys(false)) {
-			for(String rankName : main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName).getKeys(false)) {
-				String rankupName = main.configManager.ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".nextrank");
-				String rankDisplayName = main.configManager.ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".display");
-				Double rankCost = main.configManager.ranksConfig.getDouble("Ranks." + pathName + "." +  rankName + ".cost", 0.0);
-				Double rankupCost = main.configManager.ranksConfig.getDouble("Ranks." + pathName + "." +  rankupName + ".cost", 0.0);
-				String rankupDisplayName = main.configManager.ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display");
-				boolean allowPrestige = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".allow-prestige");
+		for(String pathName : main.getConfigManager().ranksConfig.getConfigurationSection("Ranks").getKeys(false)) {
+			for(String rankName : main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName).getKeys(false)) {
+				String rankupName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".nextrank");
+				String rankDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".display");
+				Double rankCost = main.getConfigManager().ranksConfig.getDouble("Ranks." + pathName + "." +  rankName + ".cost", 0.0);
+				Double rankupCost = main.getConfigManager().ranksConfig.getDouble("Ranks." + pathName + "." +  rankupName + ".cost", 0.0);
+				String rankupDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display");
+				boolean allowPrestige = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".allow-prestige");
 				List<String> rankupCommands = getList("Ranks." + pathName + "." +  rankupName + ".executecmds");
-				List<String> actionbarMessages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
-				int actionbarInterval = main.configManager.ranksConfig.getInt("Ranks." + pathName + "." +  rankupName + ".actionbar.interval");
-				List<String> broadcastMessages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".broadcast");
-				List<String> messages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".msg");
-				List<String> actions = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actions");
-				List<String> addPermissionList = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".addpermission");
-				List<String> delPermissionList = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
+				List<String> actionbarMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
+				int actionbarInterval = main.getConfigManager().ranksConfig.getInt("Ranks." + pathName + "." +  rankupName + ".actionbar.interval");
+				List<String> broadcastMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".broadcast");
+				List<String> messages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".msg");
+				List<String> actions = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actions");
+				List<String> addPermissionList = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".addpermission");
+				List<String> delPermissionList = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
 				RankRandomCommands randomCommandsManager = new RankRandomCommands(rankupName, false, pathName, true);
 				FireworkManager fireworkManager = new FireworkManager(rankupName, LevelType.RANK, pathName);
-				boolean sendFirework = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
+				boolean sendFirework = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 				RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 				RankPath rankPath = new RankPath(rankName, pathName);
 				Map<String, Double> numberRequirements = new HashMap<>();
 				Map<String, String> stringRequirements = new HashMap<>();
 				List<String> customRequirementMessage = new ArrayList<>();
-				if(main.configManager.ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".requirements")) {
-					for(String requirementCondition : main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".requirements")) {
+				if(main.getConfigManager().ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".requirements")) {
+					for(String requirementCondition : main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
 							String[] splitter = requirementCondition.split("->");
 							String requirement = splitter[0];
@@ -135,8 +137,8 @@ public class RankDataStorage {
 						}
 					}
 				}
-				if(main.configManager.ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".custom-requirement-message")) {
-					for(String messageLine : main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".custom-requirement-message")) {
+				if(main.getConfigManager().ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".custom-requirement-message")) {
+					for(String messageLine : main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".custom-requirement-message")) {
 						customRequirementMessage.add(gds().parseHexColorCodes(messageLine));
 					}
 				}
@@ -169,8 +171,8 @@ public class RankDataStorage {
                 rdh.setSendFirework(sendFirework);
                 rdh.setPathName(pathName);
                 rdh.setRankCommands(getList("Ranks." + pathName + "." +  rankName + ".executecmds"));
-                rdh.setCurrentAddPermissionList(main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankName + ".addpermission"));
-                rdh.setCurrentDelPermissionList(main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankName + ".delpermission"));
+                rdh.setCurrentAddPermissionList(main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankName + ".addpermission"));
+                rdh.setCurrentDelPermissionList(main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankName + ".delpermission"));
                 lastRankMap.put(pathName, rankName);
                 rankData.put(rankPath.get(), rdh);
                 paths.add(pathName);
@@ -199,40 +201,43 @@ public class RankDataStorage {
     			}
 			 }
 			}
+		pathRanks.get("default").forEach(line -> {
+			main.debugPreEnable(line);
+		});
 	}
 	
 	public int getInteger(String node) {
-		if(node == null || main.configManager.ranksConfig.get(node) == null) {
+		if(node == null || main.getConfigManager().ranksConfig.get(node) == null) {
 			return 0;
 		}
-		return main.configManager.ranksConfig.getInt(node);
+		return main.getConfigManager().ranksConfig.getInt(node);
 	}
 	
 	public List<String> getList(String node) {
-		if(node == null || main.configManager.ranksConfig.get(node) == null) {
+		if(node == null || main.getConfigManager().ranksConfig.get(node) == null) {
 			return new ArrayList<>();
 		}
-		return main.configManager.ranksConfig.getStringList(node);
+		return main.getConfigManager().ranksConfig.getStringList(node);
 	}
 	
 	public void loadRankData(String rankName, String pathName) {
-		String rankupName = main.configManager.ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".nextrank");
-		String rankDisplayName = main.configManager.ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".display");
-		Double rankCost = main.configManager.ranksConfig.getDouble("Ranks." + pathName + "." +  rankName + ".cost", 0.0);
-		Double rankupCost = main.configManager.ranksConfig.getDouble("Ranks." + pathName + "." +  rankupName + ".cost", 0.0);
-		String rankupDisplayName = main.configManager.ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display");
-		boolean allowPrestige = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".allow-prestige");
-		List<String> rankupCommands = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".executecmds");
-		List<String> actionbarMessages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
+		String rankupName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".nextrank");
+		String rankDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".display");
+		Double rankCost = main.getConfigManager().ranksConfig.getDouble("Ranks." + pathName + "." +  rankName + ".cost", 0.0);
+		Double rankupCost = main.getConfigManager().ranksConfig.getDouble("Ranks." + pathName + "." +  rankupName + ".cost", 0.0);
+		String rankupDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display");
+		boolean allowPrestige = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".allow-prestige");
+		List<String> rankupCommands = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".executecmds");
+		List<String> actionbarMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
 		int actionbarInterval = getInteger("Ranks." + pathName + "." +  rankupName + ".actionbar.interval");
-		List<String> broadcastMessages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".broadcast");
-		List<String> messages = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".text");
-		List<String> actions = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actions");
-		List<String> addPermissionList = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".addpermission");
-		List<String> delPermissionList = main.configManager.ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
+		List<String> broadcastMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".broadcast");
+		List<String> messages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".text");
+		List<String> actions = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actions");
+		List<String> addPermissionList = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".addpermission");
+		List<String> delPermissionList = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
 		RankRandomCommands randomCommandsManager = new RankRandomCommands(rankupName, false, pathName, true);
 		FireworkManager fireworkManager = new FireworkManager(rankupName, LevelType.RANK, pathName);
-		boolean sendFirework = main.configManager.ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
+		boolean sendFirework = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 		RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 		rdh.setName(rankName);
         rdh.setPathName(pathName);
@@ -410,7 +415,7 @@ public class RankDataStorage {
 				return;
 			}
 		}
-		main.configManager.ranksConfig.set(node, value);
+		main.getConfigManager().ranksConfig.set(node, value);
 	}
 	/**
 	 * 
@@ -450,8 +455,8 @@ public class RankDataStorage {
 				String rankName = rank.getKey().split("#~#")[0];
 				String rankup = rankData.get(rank.getKey()).getRankupName();
 				String pathName = rank.getKey().split("#~#")[1];
-				//if(main.configManager.ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName) == null) {
-					//main.configManager.ranksConfig.createSection("Ranks." + pathName + "." + rankName);
+				//if(main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName) == null) {
+					//main.getConfigManager().ranksConfig.createSection("Ranks." + pathName + "." + rankName);
 				//}
                  setData("Ranks." + pathName + "." +  rankName + ".nextrank", rank.getValue().getRankupName());
                  setData("Ranks." + pathName + "." +  rankName + ".cost", rank.getValue().getCost());

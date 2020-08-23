@@ -1,6 +1,8 @@
 package me.prisonranksx.hooks;
 
 import java.text.DecimalFormat;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
@@ -33,7 +35,7 @@ public class PapiHook extends PlaceholderExpansion {
 		super();
 		this.main = main;
 		prxAPI = this.main.prxAPI;
-		lbm = new LeaderboardManager(main);
+		lbm = this.main.lbm;
 		nullNameRank = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-name-rank-null");
 		nullValueRank = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-value-rank-null");
 		nullNamePrestige = this.main.globalStorage.getStringData("PlaceholderAPI.leaderboard-name-prestige-null");
@@ -96,6 +98,12 @@ public class PapiHook extends PlaceholderExpansion {
     @Override
 	public String onRequest(OfflinePlayer arg0, String arg1) {
         OfflinePlayer p = arg0;
+        if(arg1.equalsIgnoreCase("currentrank_number")) {
+        	return String.valueOf(prxAPI.getPlayerRankNumber(p));
+        }
+        if(arg1.equalsIgnoreCase("currentprestige_number")) {
+        	return String.valueOf(prxAPI.getPlayerPrestigeNumber(p));
+        }
         if(arg1.equalsIgnoreCase("current_displayname")) {
         	return prxAPI.getStageDisplay(p.getPlayer(), " ", true);
         }
@@ -542,11 +550,17 @@ public class PapiHook extends PlaceholderExpansion {
 		if(arg1.startsWith("rank_displayname_")) {
 			String rank = arg1.split("_")[2];
 			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
+			if(!prxAPI.rankPathExists(rp)) {
+				return rank + " is not available";
+			}
 			return prxAPI.getRankDisplay(rp);
 		}
 		if(arg1.startsWith("rank_cost_integer_")) {
 			String rank = arg1.split("_")[3];
 			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
+			if(!prxAPI.rankPathExists(rp)) {
+				return rank + " is not available";
+			}
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			double rankCost = prxAPI.getRankCost(rp);
@@ -556,6 +570,9 @@ public class PapiHook extends PlaceholderExpansion {
 		if(arg1.startsWith("rank_cost_")) {
 			String rank = arg1.split("_")[2];
 			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
+			if(!prxAPI.rankPathExists(rp)) {
+				return rank + " is not available";
+			}
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			double rankCost = prxAPI.getRankCost(rp);
@@ -565,6 +582,9 @@ public class PapiHook extends PlaceholderExpansion {
 		if(arg1.startsWith("rank_costformatted_")) {
 			String rank = arg1.split("_")[2];
 			RankPath rp = new RankPath(rank, prxAPI.getDefaultPath());
+			if(!prxAPI.rankPathExists(rp)) {
+				return rank + " is not available";
+			}
 			String prestige = prxAPI.getPlayerPrestige(p);
 			String rebirth = prxAPI.getPlayerRebirth(p);
 			double rankCost = prxAPI.getRankCost(rp);
@@ -659,6 +679,17 @@ public class PapiHook extends PlaceholderExpansion {
 		if(arg1.startsWith("valuedisplay_stage_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
 			return String.valueOf(lbm.getPlayerStageDisplayNameFromPosition(position, getNullValueRank()));
+		}
+		if(arg1.startsWith("prestigerebirth_stage_")) {
+			int position = Integer.valueOf(arg1.replace("prestigerebirth_stage_", ""));
+			Entry<UUID, Integer> playerPosition = lbm.getPlayerFromPositionGlobal(position);
+			String display = "";
+			if(playerPosition == null) {
+				display = "";
+			} else {
+				display = prxAPI.getPrestigeAndRebirthDisplay(playerPosition.getKey(), " ");
+			}
+			return String.valueOf(display);
 		}
 		if(arg1.startsWith("has_prestiged")) {
 			return String.valueOf(prxAPI.hasPrestiged(p));

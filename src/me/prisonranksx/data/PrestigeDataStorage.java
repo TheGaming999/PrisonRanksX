@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 
@@ -16,9 +17,12 @@ import me.prisonranksx.PrisonRanksX;
 public class PrestigeDataStorage {
 	private Map<String, PrestigeDataHandler> prestigeData;
 	private PrisonRanksX main;
+	private List<String> prestiges;
+	
 	public PrestigeDataStorage(PrisonRanksX main) {
 		this.main = main;
 		this.prestigeData = new LinkedHashMap<String, PrestigeDataHandler>();
+		this.prestiges = new LinkedList<>();
 	}
 	
 	public void putData(String name, PrestigeDataHandler prestigeDataHandler) {
@@ -38,7 +42,7 @@ public class PrestigeDataStorage {
 	 */
 	public void loadPrestigesData() {
 
-			for(String prestigeName : main.configManager.prestigesConfig.getConfigurationSection("Prestiges").getKeys(false)) {
+			for(String prestigeName : main.getConfigManager().prestigesConfig.getConfigurationSection("Prestiges").getKeys(false)) {
 				String nextPrestigeName = loadString("Prestiges." + prestigeName + ".nextprestige");
 				String prestigeDisplayName = loadString("Prestiges." + prestigeName + ".display");
 				Double prestigeCost = loadDouble("Prestiges." + prestigeName + ".cost");
@@ -61,8 +65,8 @@ public class PrestigeDataStorage {
 				Map<String, Double> numberRequirements = new HashMap<>();
 				Map<String, String> stringRequirements = new HashMap<>();
 				List<String> customRequirementMessage = new ArrayList<>();
-				if(main.configManager.prestigesConfig.isSet("Prestiges." + prestigeName + ".requirements")) {
-					for(String requirementCondition : main.configManager.prestigesConfig.getStringList("Prestiges." + prestigeName + ".requirements")) {
+				if(main.getConfigManager().prestigesConfig.isSet("Prestiges." + prestigeName + ".requirements")) {
+					for(String requirementCondition : main.getConfigManager().prestigesConfig.getStringList("Prestiges." + prestigeName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
 							String[] splitter = requirementCondition.split("->");
 							String requirement = splitter[0];
@@ -76,8 +80,8 @@ public class PrestigeDataStorage {
 						}
 					}
 				}
-				if(main.configManager.prestigesConfig.isSet("Prestiges." + prestigeName + ".custom-requirement-message")) {
-					for(String messageLine : main.configManager.prestigesConfig.getStringList("Prestiges." + prestigeName + ".custom-requirement-message")) {
+				if(main.getConfigManager().prestigesConfig.isSet("Prestiges." + prestigeName + ".custom-requirement-message")) {
+					for(String messageLine : main.getConfigManager().prestigesConfig.getStringList("Prestiges." + prestigeName + ".custom-requirement-message")) {
 						customRequirementMessage.add(gds().parseHexColorCodes(messageLine));
 					}
 				}
@@ -109,39 +113,42 @@ public class PrestigeDataStorage {
                 pdh.setFireworkManager(fireworkManager);
                 pdh.setSendFirework(sendFirework);
                 getPrestigeData().put(prestigeName, pdh);
+                if(!prestiges.contains(prestigeName)) {
+                prestiges.add(prestigeName);
+                }
 			}
 	}
 	
 	public String loadString(String node) {
-		if(main.configManager.prestigesConfig.getString(node) == null || main.configManager.prestigesConfig.getString(node).isEmpty()) {
+		if(main.getConfigManager().prestigesConfig.getString(node) == null || main.getConfigManager().prestigesConfig.getString(node).isEmpty()) {
 			return "null";
 		}
-		return main.configManager.prestigesConfig.getString(node, "null");
+		return main.getConfigManager().prestigesConfig.getString(node, "null");
 	}
 	
 	public List<String> loadStringList(String node) {
-		if(main.configManager.prestigesConfig.getStringList(node) == null || main.configManager.prestigesConfig.getStringList(node).isEmpty()) {
+		if(main.getConfigManager().prestigesConfig.getStringList(node) == null || main.getConfigManager().prestigesConfig.getStringList(node).isEmpty()) {
 			return new ArrayList<String>();
 		}
-		return main.configManager.prestigesConfig.getStringList(node);
+		return main.getConfigManager().prestigesConfig.getStringList(node);
 	}
 	
 	public Integer loadInt(String node) {
-		if(!main.configManager.prestigesConfig.isSet(node) || !main.configManager.prestigesConfig.isInt(node)) {
+		if(!main.getConfigManager().prestigesConfig.isSet(node) || !main.getConfigManager().prestigesConfig.isInt(node)) {
 			return 0;
 		}
-		return main.configManager.prestigesConfig.getInt(node, 0);
+		return main.getConfigManager().prestigesConfig.getInt(node, 0);
 	}
 	
 	public Boolean loadBoolean(String node) {
-		return main.configManager.prestigesConfig.getBoolean(node, false);
+		return main.getConfigManager().prestigesConfig.getBoolean(node, false);
 	}
 	
 	public Double loadDouble(String node) {
-		if(!main.configManager.prestigesConfig.isSet(node) || !main.configManager.prestigesConfig.isDouble(node)) {
+		if(!main.getConfigManager().prestigesConfig.isSet(node) || !main.getConfigManager().prestigesConfig.isDouble(node)) {
 			return 0.0;
 		}
-		return main.configManager.prestigesConfig.getDouble(node, 0.0);
+		return main.getConfigManager().prestigesConfig.getDouble(node, 0.0);
 	}
 	
 	public void loadPrestigeData(final String prestigeName) {
@@ -194,18 +201,38 @@ public class PrestigeDataStorage {
 	
 	/**
 	 * 
-	 * @return prestiges collection
+	 * @return array prestiges collection
 	 */
 	public List<String> getPrestigesCollection() {
 		return Arrays.asList(prestigeData.keySet().toArray(new String[0]));
 	}
 	
+	/**
+	 * 
+	 * @return set prestiges collection taken directly from the map
+	 */
 	public Set<String> getOriginalPrestigesCollection() {
 		return prestigeData.keySet();
 	}
 	
+	/**
+	 * 
+	 * @return construct a new linked prestiges collection.
+	 */
 	public List<String> getLinkedPrestigesCollection() {
 		return new LinkedList<String>(prestigeData.keySet());
+	}
+	
+	/**
+	 * 
+	 * @return the cached linked list of prestiges
+	 */
+	public List<String> getNativeLinkedPrestigesCollection() {
+		return prestiges;
+	}
+	
+	public void addToNativeLinkedList(String name) {
+		prestiges.add(name);
 	}
 	
 	public String getNextPrestigeName(String prestigeName) {
@@ -338,7 +365,7 @@ public class PrestigeDataStorage {
 				return;
 			}
 		}
-		main.configManager.prestigesConfig.set(node, value);
+		main.getConfigManager().prestigesConfig.set(node, value);
 	}
 	/**
 	 * Should only be used onDisable()

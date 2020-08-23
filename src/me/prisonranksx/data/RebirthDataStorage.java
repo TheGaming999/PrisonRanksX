@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +14,7 @@ import me.prisonranksx.PrisonRanksX;
 
 public class RebirthDataStorage {
 	
-	public HashMap<String, RebirthDataHandler> rebirthData;
+	public Map<String, RebirthDataHandler> rebirthData;
 	private PrisonRanksX main;
 	public RebirthDataStorage(PrisonRanksX main) {
 		this.main = main;
@@ -40,34 +41,34 @@ public class RebirthDataStorage {
 	 * can be used as a reload
 	 */
 	public void loadRebirthsData() {
-			for(String rebirthName : main.configManager.rebirthsConfig.getConfigurationSection("Rebirths").getKeys(false)) {
-				String nextRebirthName = main.configManager.rebirthsConfig.getString("Rebirths." + rebirthName + ".nextrebirth");
-				String rebirthDisplayName = main.configManager.rebirthsConfig.getString("Rebirths." + rebirthName + ".display");
-				Double rebirthCost = main.configManager.rebirthsConfig.getDouble("Rebirths." + rebirthName + ".cost", 0.0);
-				//Double nextRebirthCost = main.configManager.rebirthsConfig.getDouble("Rebirths." + nextRebirthName + ".cost", 0.0);
-				//String nextRebirthDisplayName = main.configManager.rebirthsConfig.getString("Rebirths." + nextRebirthName + ".display");
+			for(String rebirthName : main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths").getKeys(false)) {
+				String nextRebirthName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + rebirthName + ".nextrebirth");
+				String rebirthDisplayName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + rebirthName + ".display");
+				Double rebirthCost = main.getConfigManager().rebirthsConfig.getDouble("Rebirths." + rebirthName + ".cost", 0.0);
+				//Double nextRebirthCost = main.getConfigManager().rebirthsConfig.getDouble("Rebirths." + nextRebirthName + ".cost", 0.0);
+				//String nextRebirthDisplayName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + nextRebirthName + ".display");
 				Double prestigeIncrease = 0.0;
                 prestigeIncrease = loadDouble("Rebirths." + rebirthName + ".prestige_cost_increase_percentage");
-				List<String> rebirthCommands = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".executecmds");
-				//List<String> nextRebirthCommands = main.configManager.rebirthsConfig.getStringList("Rebirths." + nextRebirthName + ".executecmds");
-				List<String> actionbarMessages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actionbar.text");
-				int actionbarInterval = main.configManager.rebirthsConfig.getInt("Rebirths." + rebirthName + ".actionbar.interval");
-				List<String> broadcastMessages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".broadcast");
-				List<String> messages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".msg");
-				List<String> actions = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actions");
-				List<String> addPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".addpermission");
-				List<String> delPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".delpermission");
+				List<String> rebirthCommands = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".executecmds");
+				//List<String> nextRebirthCommands = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + nextRebirthName + ".executecmds");
+				List<String> actionbarMessages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actionbar.text");
+				int actionbarInterval = main.getConfigManager().rebirthsConfig.getInt("Rebirths." + rebirthName + ".actionbar.interval");
+				List<String> broadcastMessages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".broadcast");
+				List<String> messages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".msg");
+				List<String> actions = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actions");
+				List<String> addPermissionList = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".addpermission");
+				List<String> delPermissionList = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".delpermission");
                 int requiredPrestiges = 0;
                 requiredPrestiges = loadInt("Rebirths." + rebirthName + ".required_prestiges");
 				RebirthRandomCommands randomCommandsManager = new RebirthRandomCommands(rebirthName, false, true);
 				FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
-				boolean sendFirework = main.configManager.rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
+				boolean sendFirework = main.getConfigManager().rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
 				RebirthDataHandler rbdh = new RebirthDataHandler(rebirthName);
 				Map<String, Double> numberRequirements = new HashMap<>();
 				Map<String, String> stringRequirements = new HashMap<>();
 				List<String> customRequirementMessage = new ArrayList<>();
-				if(main.configManager.rebirthsConfig.isSet("Rebirths." + rebirthName + ".requirements")) {
-					for(String requirementCondition : main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".requirements")) {
+				if(main.getConfigManager().rebirthsConfig.isSet("Rebirths." + rebirthName + ".requirements")) {
+					for(String requirementCondition : main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
 							String[] splitter = requirementCondition.split("->");
 							String requirement = splitter[0];
@@ -81,8 +82,8 @@ public class RebirthDataStorage {
 						}
 					}
 				}
-				if(main.configManager.rebirthsConfig.isSet("Rebirths." + rebirthName + ".custom-requirement-message")) {
-					for(String messageLine : main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".custom-requirement-message")) {
+				if(main.getConfigManager().rebirthsConfig.isSet("Rebirths." + rebirthName + ".custom-requirement-message")) {
+					for(String messageLine : main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".custom-requirement-message")) {
 						customRequirementMessage.add(gds().parseHexColorCodes(messageLine));
 					}
 				}
@@ -120,37 +121,37 @@ public class RebirthDataStorage {
 	}
 	
 	public Double loadDouble(String node) {
-		if(!main.configManager.rebirthsConfig.isSet(node) || !main.configManager.rebirthsConfig.isDouble(node)) {
+		if(!main.getConfigManager().rebirthsConfig.isSet(node) || !main.getConfigManager().rebirthsConfig.isDouble(node)) {
 			return 0.0;
 		}
-		return main.configManager.rebirthsConfig.getDouble(node, 0.0);
+		return main.getConfigManager().rebirthsConfig.getDouble(node, 0.0);
 	}
 	
 	public Integer loadInt(String node) {
-		if(!main.configManager.rebirthsConfig.isSet(node) || !main.configManager.rebirthsConfig.isInt(node)) {
+		if(!main.getConfigManager().rebirthsConfig.isSet(node) || !main.getConfigManager().rebirthsConfig.isInt(node)) {
 			return 0;
 		}
-		return main.configManager.rebirthsConfig.getInt(node, 0);
+		return main.getConfigManager().rebirthsConfig.getInt(node, 0);
 	}
 	
 	public void loadRebirthData(String rebirthName) {
-		String nextRebirthName = main.configManager.rebirthsConfig.getString("Rebirths." + rebirthName + ".nextrebirth");
-		String rebirthDisplayName = main.configManager.rebirthsConfig.getString("Rebirths." + rebirthName + ".display");
-		Double rebirthCost = main.configManager.rebirthsConfig.getDouble("Rebirths." + rebirthName + ".cost", 0.0);
-		Double nextRebirthCost = main.configManager.rebirthsConfig.getDouble("Rebirths." + nextRebirthName + ".cost", 0.0);
-		String nextRebirthDisplayName = main.configManager.rebirthsConfig.getString("Rebirths." + nextRebirthName + ".display");
-		List<String> rebirthCommands = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".executecmds");
-		//List<String> nextRebirthCommands = main.configManager.rebirthsConfig.getStringList("Rebirths." + nextRebirthName + ".executecmds");
-		List<String> actionbarMessages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actionbar.text");
-		int actionbarInterval = main.configManager.rebirthsConfig.getInt("Rebirths." + rebirthName + ".actionbar.interval");
-		List<String> broadcastMessages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".broadcast");
-		List<String> messages = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".text");
-		List<String> actions = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actions");
-		List<String> addPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".addpermission");
-		List<String> delPermissionList = main.configManager.rebirthsConfig.getStringList("Rebirths." + rebirthName + ".delpermission");
+		String nextRebirthName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + rebirthName + ".nextrebirth");
+		String rebirthDisplayName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + rebirthName + ".display");
+		Double rebirthCost = main.getConfigManager().rebirthsConfig.getDouble("Rebirths." + rebirthName + ".cost", 0.0);
+		Double nextRebirthCost = main.getConfigManager().rebirthsConfig.getDouble("Rebirths." + nextRebirthName + ".cost", 0.0);
+		String nextRebirthDisplayName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + nextRebirthName + ".display");
+		List<String> rebirthCommands = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".executecmds");
+		//List<String> nextRebirthCommands = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + nextRebirthName + ".executecmds");
+		List<String> actionbarMessages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actionbar.text");
+		int actionbarInterval = main.getConfigManager().rebirthsConfig.getInt("Rebirths." + rebirthName + ".actionbar.interval");
+		List<String> broadcastMessages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".broadcast");
+		List<String> messages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".text");
+		List<String> actions = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actions");
+		List<String> addPermissionList = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".addpermission");
+		List<String> delPermissionList = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".delpermission");
 		RebirthRandomCommands randomCommandsManager = new RebirthRandomCommands(rebirthName, true);
 		FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
-		boolean sendFirework = main.configManager.rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
+		boolean sendFirework = main.getConfigManager().rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
 		RebirthDataHandler rbdh = new RebirthDataHandler(rebirthName);
 		rbdh.setName(rebirthName);
         rbdh.setDisplayName(rebirthDisplayName);
@@ -178,7 +179,7 @@ public class RebirthDataStorage {
 	 * @return rebirths collection
 	 */
 	public List<String> getRebirthsCollection() {
-		return Arrays.asList(this.rebirthData.keySet().toArray(new String[0]));
+		return new LinkedList<>(this.rebirthData.keySet());
 	}
 	
 	public String getNextRebirthName(String rebirthName) {
@@ -192,7 +193,6 @@ public class RebirthDataStorage {
 	public String getDisplayName(String rebirthName) {
 		return rebirthData.get(rebirthName).getDisplayName();
 	}
-	
 	
 	public Double getNextRebirthCost(String rebirthName) {
 		return rebirthData.get(rebirthData.get(rebirthName).getNextRebirthName()).getCost();
@@ -305,7 +305,7 @@ public class RebirthDataStorage {
 				return;
 			}
 		}
-		main.configManager.rebirthsConfig.set(node, value);
+		main.getConfigManager().rebirthsConfig.set(node, value);
 	}
 	/**
 	 * 
