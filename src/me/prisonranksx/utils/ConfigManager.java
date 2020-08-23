@@ -66,7 +66,7 @@ public class ConfigManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(!commandsConfig.contains("commands")) {
+		if(!commandsConfig.contains("commands.prestigemax.enable")) {
 			commandsConfig.options().copyDefaults(true);
 		}
 		if(!rankDataConfig.contains("players")) {

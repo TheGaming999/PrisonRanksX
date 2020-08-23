@@ -2,12 +2,15 @@ package me.prisonranksx.utils;
 
 import java.util.Collection;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
+import net.luckperms.api.model.user.UserManager;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.InheritanceNode;
@@ -36,6 +39,48 @@ public class LuckPermsUtils {
         });
     }
 	
+    /**
+     * 
+     * @param uniqueId
+     * @return a User from CompletableFuture
+     * <p><i>should be called from an async task
+     */
+    public User getUser(UUID uniqueId) {
+    	UserManager userManager = luckperms.getUserManager();
+        CompletableFuture<User> userFuture = userManager.loadUser(uniqueId);
+        return userFuture.join();
+    }
+    
+    /**
+     * 
+     * @param uniqueId
+     * @param groupName
+     * <p><i>should be called from an async task
+     */
+    public void setGroup(UUID uniqueId, String groupName) {
+    	UserManager userManager = luckperms.getUserManager();
+        CompletableFuture<User> userFuture = userManager.loadUser(uniqueId);
+        User user = userFuture.join();
+        user.setPrimaryGroup(groupName);
+    }
+    
+    /**
+     * 
+     * @param uniqueId
+     * @param groupName
+     * @param save
+     * <p><i>should be called from an async task
+     */
+    public void setGroup(UUID uniqueId, String groupName, boolean save) {
+    	UserManager userManager = luckperms.getUserManager();
+        CompletableFuture<User> userFuture = userManager.loadUser(uniqueId);
+        User user = userFuture.join();
+        user.setPrimaryGroup(groupName);
+        if(save) {
+        userManager.saveUser(user);
+        }
+    }
+    
     public Collection<Group> getGroups(final Player player) {
         PlayerAdapter<Player> playerAdapter = luckperms.getPlayerAdapter(Player.class);
         
@@ -62,11 +107,12 @@ public class LuckPermsUtils {
     	return isLoaded;
     }
     
-    public void setGroupInTrack(final Player player, final Group group, final String track) {
+    public void setGroupOnTrack(final Player player, final Group group, final String track) {
     	User user = luckperms.getUserManager().getUser(player.getUniqueId());
     	Track tracc = luckperms.getTrackManager().getTrack(track);
     	tracc.promote(user, group.getQueryOptions().context());
         luckperms.getTrackManager().saveTrack(tracc);
+        luckperms.getUserManager().saveUser(user);
     }
     
 }

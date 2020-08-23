@@ -15,17 +15,25 @@ public class PermissionManager {
 	public PermissionManager(PrisonRanksX main) {
 		this.main = main;
 	}
-	
+
 	public void addPermission(final Player player, final String perm) {
 		String permission = perm;
 		if(permission.startsWith("[") && permission.contains("]")) {
 			int worldIndex = permission.lastIndexOf("]");
-			String world = permission.substring(worldIndex, permission.length()).replace("[", "");
-			String node = permission.substring(0, worldIndex + 1);
-		    main.getPermissions().playerAdd(Bukkit.getWorld(world).getName(), player, node);
+			String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+			String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+		    addPermission(player, node, world);
 		    return;
 		}
+		main.newSharedChain("permission").async(() -> {
         main.getPermissions().playerAdd(null, player, permission);
+		}).execute();
+	}
+	
+	private void addPermission(final Player player, final String permission, final String world) {
+		main.newSharedChain("permission").async(() -> {
+		main.getPermissions().playerAdd(Bukkit.getWorld(world).getName().trim(), player, permission.trim());
+		}).execute();
 	}
 	
 	@Deprecated
@@ -49,12 +57,20 @@ public class PermissionManager {
 		String permission = perm;
 		if(permission.startsWith("[") && permission.contains("]")) {
 			int worldIndex = permission.lastIndexOf("]");
-			String world = permission.substring(worldIndex, permission.length()).replace("[", "");
-			String node = permission.substring(0, worldIndex + 1);
-		    main.getPermissions().playerRemove(Bukkit.getWorld(world).getName(), player, node);
+			String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+			String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+		    delPermission(player, node, world);
 		    return;
 		}
+		main.newSharedChain("permission").async(() -> {
         main.getPermissions().playerRemove(null, player, permission);
+		}).execute();
+	}
+	
+	public void delPermission(final Player player, final String permission, final String world) {
+		main.newSharedChain("permission").async(() -> {
+			main.getPermissions().playerRemove(Bukkit.getWorld(world).getName().trim(), player, permission.trim());
+		}).execute();
 	}
 	
 	@Deprecated

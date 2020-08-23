@@ -1,9 +1,10 @@
 package me.prisonranksx.utils;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.prisonranksx.PrisonRanksX;
 
 public class ChatColorReplacer1_8 implements ChatColorReplacer {
@@ -13,78 +14,26 @@ public class ChatColorReplacer1_8 implements ChatColorReplacer {
 		this.main = main;
 	}
 	
-	@Override
-	public String getString(String player, String configstring) {
-		if(main.ishooked) {
-			String configholdedstring;
- if(Bukkit.getPlayer(player) == null) {
-	 configholdedstring = configstring;
- } else {
-	 configholdedstring = PlaceholderAPI.setPlaceholders(Bukkit.getPlayer(player), configstring);
+	private String c(String textToTranslate) {
+		return ChatColor.translateAlternateColorCodes('&', textToTranslate);
+	}
 	
- }
-			
-			return configholdedstring.replace("&", "§")
-					
-					.replace("[>>]", "»")
-					.replace("[<<]", "«")
-					.replace("[coolarrow]", "➤")
-					.replace("[<3]", "�?�")
-					.replace("[shadowarrow]", "➢")
-					.replace("[shadowarrow_2]", "➣")
-					.replace("[shadowarrow_down]", "⧨")
-					.replace("[shadowsquare]", "�?�")
-					.replace("[nuke]", "☢")
-					.replace("[+]", "✚")
-					.replace("[correct]", "✔")
-					.replace("[incorrect]", "✖")
-					.replace("[bowarrow]", "➸")
-					.replace("[squaredot]", "◼")
-					.replace("[square]", "■")
-					.replace("[happyface]", "☺")
-					.replace("[|]", "⎟");
-		}
-		return configstring.replace("&", "§")
-				
-		.replace("[>>]", "»")
-		.replace("[<<]", "«")
-		.replace("[coolarrow]", "➤")
-		.replace("[<3]", "�?�")
-		.replace("[shadowarrow]", "➢")
-		.replace("[shadowarrow_2]", "➣")
-		.replace("[shadowarrow_down]", "⧨")
-		.replace("[shadowsquare]", "�?�")
-		.replace("[nuke]", "☢")
-		.replace("[+]", "✚")
-		.replace("[correct]", "✔")
-		.replace("[incorrect]", "✖")
-		.replace("[bowarrow]", "➸")
-		.replace("[squaredot]", "◼")
-		.replace("[square]", "■")
-		.replace("[happyface]", "☺")
-		.replace("[|]", "⎟");
-	}
-
 	@Override
-	public String getStringWithoutPAPI(String configstring) {
-		return configstring.replace("&", "§")
-		.replace("[>>]", "»")
-		.replace("[<<]", "«")
-		.replace("[coolarrow]", "➤")
-		.replace("[<3]", "�?�")
-		.replace("[shadowarrow]", "➢")
-		.replace("[shadowarrow_2]", "➣")
-		.replace("[shadowarrow_down]", "⧨")
-		.replace("[shadowsquare]", "�?�")
-		.replace("[nuke]", "☢")
-		.replace("[+]", "✚")
-		.replace("[correct]", "✔")
-		.replace("[incorrect]", "✖")
-		.replace("[bowarrow]", "➸")
-		.replace("[squaredot]", "◼")
-		.replace("[square]", "■")
-		.replace("[happyface]", "☺")
-		.replace("[|]", "⎟");
+	public String parsePlaceholders(String message) {
+		return main.getPlaceholderReplacer().parseCached(c(message));
 	}
+	@Override
+	public String parsePlaceholders(String message, Player player) {
+		return main.getPlaceholderReplacer().parse(c(message), player);
+	}
+	@Override
+	public String parsePlaceholders(String message, OfflinePlayer offlinePlayer) {
+		return main.getPlaceholderReplacer().parse(c(message), offlinePlayer);
+	}
+	@Override
+	public String parsePlaceholders(String message, String playerName) {
+		return main.getPlaceholderReplacer().parse(c(message), Bukkit.getPlayer(playerName));
+	}
+	
 
 }

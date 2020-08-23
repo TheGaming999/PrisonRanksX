@@ -4,53 +4,193 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 
 public class CollectionUtils {
 	
-	private static int f(int a, int b) {
-		String c = String.valueOf((Double.valueOf(a) / Double.valueOf(b)));
-		if(c.contains("//.")) {
-			int n = Integer.valueOf(c.split(".")[1]);
-			int f = Integer.valueOf(c);
-			if(n >= 5) {
-				return f + 1;
-			} else {
-				return f;
-			}
+	
+	private static boolean isNearPointer(final int number, final int divideBy) {
+		double converted = ((double)number / (double)divideBy);
+		String stringDecimal = String.valueOf(converted);
+		int pointIndex = stringDecimal.indexOf('.');
+		int startIndex = ++pointIndex;
+		String decimalValue = stringDecimal.substring(startIndex, stringDecimal.length());
+		int decimalFirst = Integer.parseInt(String.valueOf(decimalValue.charAt(0)));
+		switch(decimalFirst) {
+		case 0:
+			return decimalValue.length() > 1 ? false : true;
+		default:
+			return true;
 		}
-		return a / b;
 	}
 	
+	/**
+	 * 
+	 * @param a collection size
+	 * @param b elements per page
+	 * @return accurate final page number
+	 */
+	private static int fixPages(final int a, final int b) {
+		int mathConverted = (int) Math.ceil((double)a / (double)b);
+		return isNearPointer(a, b) ? mathConverted : mathConverted-1;
+	}
+    
+    private static int paginateIndex(final int index, final int entryPerPage, final int page) {	
+    	return page > 1 ? index + (entryPerPage*(page-1)) : index;
+    }
+    
 	public static class PaginatedList {
 		
 		private List<String> list;
+		private List<String> entireList;
 		private PaginatedList pl;
 		private int currentPage;
 		private int finalPage;
+		private int elementsPerPage;
 		
-		public PaginatedList(List<String> list, int currentPage, int finalPage) {
+		public PaginatedList(List<String> list, int currentPage, int finalPage, List<String> entireList, int elementsPerPage) {
 			this.list = list;
 			this.currentPage = currentPage;
 			this.finalPage = finalPage;
+			this.entireList = entireList;
+			this.elementsPerPage = elementsPerPage;
 			this.pl = this;
+		}		
+		
+		/**
+		 * <i>
+		 * @return the current page you are viewing
+		 */
+		public int getCurrentPage() {
+			return pl.currentPage;
+		}	
+		
+		/**
+		 * <i>
+		 * @return the final page which has at least one element
+		 */
+		public int getFinalPage() {
+			return pl.finalPage;
 		}
 
+		/**
+		 * <p><i>the result is the same as when you initiate a new paginated list
+		 * <p>the only benefit is flexibilty
+		 * @return move to the next page
+		 */
+		public PaginatedList next() {
+			return pl = CollectionUtils.paginateListCollectable(pl.entireList, pl.elementsPerPage, pl.getCurrentPage()+1);
+		}
+		
+		/**
+		 * <p><i>the result is the same as when you initiate a new paginated list
+		 * <p>the only benefit is flexibilty
+		 * @return go to the previous page
+		 */
+		public PaginatedList back() {
+			return pl = CollectionUtils.paginateListCollectable(pl.entireList, pl.elementsPerPage, pl.getCurrentPage()-1);
+		}
+		
+		/**
+		 * <p><i>the result is the same as when you initiate a new paginated list
+		 * <p>the only benefit is flexibilty
+		 * @param page the page that you will be moved to
+		 * @return navigate to a specific page
+		 */
+		public PaginatedList navigate(int page) {
+			return pl = CollectionUtils.paginateListCollectable(pl.entireList, pl.elementsPerPage, page);
+		}
+		
+		/**
+		 * 
+		 * @return a linked list of current page elements | will return an empty list when
+		 * <p>there are not any elements on the current page | which means it will never return null
+		 */
+		@Nonnull
+		public List<String> collect() {
+			return pl.list;
+		}
+        
+		/**
+		 * @deprecated
+		 * @return all elements (no pagination)
+		 */
+		public List<String> collectAll() {
+			return pl.entireList;
+		}
+		
+		/**
+		 * 
+		 * @return how many elements will be shown on one page.
+		 */
+		public int getElementsPerPage() {
+			return pl.elementsPerPage;
+		}
+		
+		@Deprecated
+		public boolean addElement(String element) {
+			return pl.entireList.add(element);
+		}
+		
+		@Deprecated
+		public PaginatedList update() {
+			return this.pl = CollectionUtils.paginateListCollectable(pl.entireList, pl.elementsPerPage, getCurrentPage());
+		}
+		
+		public PaginatedList getPaginatedList() {
+			return pl;
+		}
+		
+	}
+	
+	public static class PaginatedCollection {
+		
+		private Collection<String> collection;
+		private PaginatedCollection pc;
+		private int currentPage;
+		private int finalPage;
+		
+		public PaginatedCollection(Collection<String> collection, int currentPage, int finalPage) {
+			this.collection = collection;
+			this.currentPage = currentPage;
+			this.finalPage = finalPage;
+			this.pc = this;
+		}		
+		
+		/**
+		 * 
+		 * @return the current page you are viewing
+		 */
 		public int getCurrentPage() {
 			return currentPage;
 		}
 
+		/**
+		 * 
+		 * @return the final page which has elements
+		 */
 		public int getFinalPage() {
 			return finalPage;
 		}
 
-		public List<String> getList() {
-			return list;
+		/**
+		 * 
+		 * @return a collection of current page elements | will return an empty collection when
+		 * <p>there are not any elements on the current page | which means it will never return null
+		 */
+		@Nonnull
+		public Collection<String> collect() {
+			return collection;
 		}
 
-		public PaginatedList getPaginatedList() {
-			return pl;
+		public PaginatedCollection getPaginatedCollection() {
+			return pc;
 		}
 		
 	}
@@ -346,7 +486,7 @@ public class CollectionUtils {
     	  if(counter >= maxElements) {
     		  break;
     	  }
-    	  int elementIndex = i + page;
+    	  int elementIndex = paginateIndex(counter, maxElements, page);
     	  if(elementIndex < 0 || elementIndex >= size) {
     		  break;
     	  }
@@ -355,23 +495,89 @@ public class CollectionUtils {
 	  return newCollection;
 	}
 	
+	/**
+	 * 
+	 * @param stringList that you want to paginate
+	 * @param maxElements elements per page
+	 * @param page page number
+	 * @return A PaginatedList with the same insertion order that has the following methods:
+	 * <i><p>collect(), getCurrentPage(), getFinalPage(), and this method parameters.
+	 */
 	public static PaginatedList paginateListCollectable(List<String> stringList, final int maxElements, final int page) {
 	      int counter = 0;
 	      List<String> oldCollection = stringList;
 	      List<String> newCollection = Lists.newLinkedList();
 	      int size = oldCollection.size();
 			for(int i = 0; i < size; i++) {
-	    	  counter++;
 	    	  if(counter >= maxElements) {
 	    		  break;
 	    	  }
-	    	  int elementIndex = i + page;
+	    	  int elementIndex = paginateIndex(counter, maxElements, page);
 	    	  if(elementIndex < 0 || elementIndex >= size) {
 	    		  break;
 	    	  }
 	    	  newCollection.add(oldCollection.get(elementIndex));
+	    	  counter++;
 	        }
-		  return new PaginatedList(newCollection, page, f(size, maxElements));
+		  return new PaginatedList(newCollection, page, fixPages(size, maxElements), oldCollection, maxElements);
+	}
+	
+	/**
+	 * 
+	 * @param stringList that you want to paginate
+	 * @param maxElements elements per page
+	 * @param page page number
+	 * @return A PaginatedCollection that has the following methods:
+	 * <i><p>collect(), getCurrentPage(), getFinalPage() and this method parameters.
+	 * <p> difference between this and PaginatedList is the collection can't have an
+	 * <p> element twice. also it doesn't keep track of the insertion order
+	 */
+	public static PaginatedCollection paginateCollectionCollectable(Collection<String> stringList, final int maxElements, final int page) {
+	      int counter = 0;
+	      String[] oldCollection = stringList.toArray(new String[0]);
+	      Set<String> newCollection = Sets.newHashSet();
+	      int size = oldCollection.length;
+			for(int i = 0; i < size; i++) {
+	    	  if(counter >= maxElements) {
+	    		  break;
+	    	  }
+	    	  int elementIndex = paginateIndex(counter, maxElements, page);
+	    	  if(elementIndex < 0 || elementIndex >= size) {
+	    		  break;
+	    	  }
+	    	  newCollection.add(oldCollection[elementIndex]);
+	    	  counter++;
+	        }
+		  return new PaginatedCollection(newCollection, page, fixPages(size, maxElements));
+	}
+	
+	/**
+	 * 
+	 * @param stringList that you want to paginate
+	 * @param maxElements elements per page
+	 * @param page page number
+	 * @return A PaginatedCollection with the same insertion order that has the following methods:
+	 * <i><p>collect(), getCurrentPage(), getFinalPage() and this method parameters.
+	 * <p> difference between this and PaginatedList is the collection can't have an
+	 * <p> element twice
+	 */
+	public static PaginatedCollection paginateLinkedCollectionCollectable(Collection<String> stringList, final int maxElements, final int page) {
+	      int counter = 0;
+	      String[] oldCollection = stringList.toArray(new String[0]);
+	      Set<String> newCollection = Sets.newLinkedHashSet();
+	      int size = oldCollection.length;
+			for(int i = 0; i < size; i++) {
+	    	  if(counter >= maxElements) {
+	    		  break;
+	    	  }
+	    	  int elementIndex = paginateIndex(counter, maxElements, page);
+	    	  if(elementIndex < 0 || elementIndex >= size) {
+	    		  break;
+	    	  }
+	    	  newCollection.add(oldCollection[elementIndex]);
+	    	  counter++;
+	        }
+		  return new PaginatedCollection(newCollection, page, fixPages(size, maxElements));
 	}
 	
 	public static List<String> stringToList(String string, String seperator) {

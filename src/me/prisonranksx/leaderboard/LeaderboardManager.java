@@ -1,5 +1,6 @@
 package me.prisonranksx.leaderboard;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -12,8 +13,12 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemorySection;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.PlayerDataStorage.PlayerDataType;
+import me.prisonranksx.utils.MySqlStreamer;
 
 public class LeaderboardManager {
 
@@ -26,10 +31,6 @@ public class LeaderboardManager {
 	private List<UUID> playersp;
 	private List<UUID> playersr;
 	private List<UUID> playersGlobal;
-	private Map<UUID, Integer> values;
-	private Map<UUID, Integer> valuesp;
-	private Map<UUID, Integer> valuesr;
-	private Map<UUID, Integer> valuesGlobal;
 	private Map<UUID, Integer> updatedValues;
 	private Map<UUID, Integer> updatedValuesP;
 	private Map<UUID, Integer> updatedValuesR;
@@ -46,14 +47,22 @@ public class LeaderboardManager {
 		playersp = Collections.synchronizedList(new LinkedList<>());
 		playersr = Collections.synchronizedList(new LinkedList<>());
 		playersGlobal = Collections.synchronizedList(new LinkedList<>());
-		values = Collections.synchronizedMap(new LinkedHashMap<>());
-		valuesp = Collections.synchronizedMap(new LinkedHashMap<>());
-		valuesr = Collections.synchronizedMap(new LinkedHashMap<>());
-		valuesGlobal = Collections.synchronizedMap(new LinkedHashMap<>());
+		updatedValues = Collections.synchronizedMap(new LinkedHashMap<>());
+		updatedValuesP = Collections.synchronizedMap(new LinkedHashMap<>());
+		updatedValuesR = Collections.synchronizedMap(new LinkedHashMap<>());
+		updatedValuesGlobal = Collections.synchronizedMap(new LinkedHashMap<>());
 		setUpdate(true);
-		Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
+		getRankLeaderboard();
+		getPrestigeLeaderboard();
+		getRebirthLeaderboard();
+		getGlobalLeaderboard();
+		Bukkit.getScheduler().runTaskTimerAsynchronously(this.main, () -> {
 			setUpdate(true);
-		}, 60 * 5, 60 * 5);
+			getRankLeaderboard();
+			getPrestigeLeaderboard();
+			getRebirthLeaderboard();
+			getGlobalLeaderboard();
+		}, 20 * 60, 20 * 60);
 	}
 	
 	private boolean indexExists(final List<?> list, final int index) {
@@ -70,8 +79,6 @@ public class LeaderboardManager {
 	 *  @null  null if there is not a player in that position || no player joined to take this position.
 	 */
 	public Entry<UUID, Integer> getPlayerFromPositionPrestige(final int position) {
-		listp.clear();
-		listp.addAll(getPrestigeLeaderboard().entrySet());
 		return indexExists(listp, position - 1) ? listp.get(position - 1) : null;
 	}
 	
@@ -82,14 +89,12 @@ public class LeaderboardManager {
 	 *  @null  null if there is not a player in that position || no player joined to take this position.
 	 */
 	public Entry<UUID, Integer> getPlayerFromPositionRank(final int position) {
-		list.clear();
-		list.addAll(getRankLeaderboard().entrySet());
+		main.debug(list);
 		return indexExists(list, position - 1) ? list.get(position - 1) : null;
 	}
 	
 	public Entry<UUID, Integer> getPlayerFromPositionGlobal(final int position) {
-		listGlobal.clear();
-		listGlobal.addAll(getGlobalLeaderboard().entrySet());
+		main.debug(listGlobal);
 		return indexExists(listGlobal, position - 1) ? listGlobal.get(position - 1) : null;
 	}
 	
@@ -199,8 +204,6 @@ public class LeaderboardManager {
 	}
 	
 	public Entry<UUID, Integer> getPlayerFromPositionRebirth(final int position) {
-		listr.clear();
-		listr.addAll(getRebirthLeaderboard().entrySet());
 		return indexExists(listr, position - 1) ? listr.get(position - 1) : null;
 	}
 	
@@ -228,6 +231,9 @@ public class LeaderboardManager {
 		}
 	
 	public String getPlayerNameFromUUID(UUID uuid) {
+		if(!main.getPlayerStorage().isRegistered(uuid)) {
+			return Bukkit.getOfflinePlayer(uuid).getName();
+		}
 		return main.getPlayerStorage().getPlayerData().get(uuid.toString()).getName();
 	}
 	
@@ -272,88 +278,232 @@ public class LeaderboardManager {
 	}
 	
 	public Map<UUID, Integer> getRankLeaderboard() {
-		if(!update && updatedValues != null) {
+		if(!update && !updatedValues.isEmpty()) {
 			return updatedValues;
 		}
-	    values.clear();
-	    Set<String> playerUUIDs = main.playerStorage.getPlayerData().keySet();
-	    synchronized(playerUUIDs) {
-	    for (String player : playerUUIDs) {
-	    	UUID u = UUID.fromString(player);
-	        values.put(u, main.prxAPI.getPlayerRankNumber(u));
-	    }
-	    }
-	    Map<UUID, Integer> linked = Collections.synchronizedMap(values.entrySet()
-	            .stream()
-	            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-	            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (i, i2) -> i, LinkedHashMap::new)));
-	    updatedValues = linked;
-	    update = false;
-	    return linked;
+		updatedValues.clear();
+		main.getPlayerStorage().storePlayersData(PlayerDataType.RANK);
+		if(main.isMySql()) {
+			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable();
+			MySqlStreamer mySqlStreamer = new MySqlStreamer(main.getConnection());
+			try {
+				mySqlStreamer.streamQuery(sql)
+				.sorted((a1, a2) -> {
+					String rank1 = (String)a1.get("rank");
+					String path1 = (String)a1.get("path");
+					String rank2 = (String)a2.get("rank");
+					String path2 = (String)a2.get("path");
+					int number1 = Integer.valueOf(main.prxAPI.getRankNumber(path1, rank1));
+					int number2 = Integer.valueOf(main.prxAPI.getRankNumber(path2, rank2));
+					return number2 - number1;
+				})
+				.limit(25)
+				.forEach(f -> {
+					UUID uuid = UUID.fromString((String)f.get("uuid"));
+					int finalNumber = Integer.valueOf(main.prxAPI.getRankNumber((String)f.get("path"), (String)f.get("rank")));
+					updatedValues.put(uuid, finalNumber);
+				});
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return updatedValues;
+		}
+		ConfigurationSection cf = main.getConfigManager().rankDataConfig.getConfigurationSection("players");
+		cf.getValues(false)
+		  .entrySet()
+		  .stream()
+		  .sorted((a1, a2) -> {
+			MemorySection uuidMemory1 = null;
+			uuidMemory1 = (MemorySection) a1.getValue();
+			MemorySection uuidMemory2 = null;
+			uuidMemory2 = (MemorySection) a2.getValue();
+			int number1 = 0; 
+			int number2 = 0;
+		    number1 = Integer.valueOf(main.prxAPI.getRankNumber(uuidMemory1.getString("path"), uuidMemory1.getString("rank")));
+		    number2 = Integer.valueOf(main.prxAPI.getRankNumber(uuidMemory2.getString("path"), uuidMemory2.getString("rank")));
+		    return number2 - number1;
+		  })
+		  .limit(25)
+		  .forEach(f -> {
+			UUID uuid = UUID.fromString(f.getKey());
+			MemorySection value = (MemorySection)f.getValue();
+			int finalNumber = Integer.valueOf(main.prxAPI.getRankNumber(value.getString("path"), value.getString("rank")));
+		    updatedValues.put(uuid, finalNumber);
+		  });
+	   update = false;
+	   list.clear();
+	   list.addAll(updatedValues.entrySet());
+	   return updatedValues;
 	}
 	
 	public Map<UUID, Integer> getPrestigeLeaderboard() {
-		if(!update && updatedValuesP != null) {
+		if(!update && !updatedValuesP.isEmpty()) {
 			return updatedValuesP;
 		}
-	    valuesp.clear();
-	    Set<String> playerUUIDs = main.playerStorage.getPlayerData().keySet();
-	    synchronized(playerUUIDs) {
-	    for (String player : playerUUIDs) {
-	    	UUID u = UUID.fromString(player);
-	        valuesp.put(u, main.prxAPI.getPlayerPrestigeNumber(u));
-	    }
-	    }
-	    Map<UUID, Integer> linked = Collections.synchronizedMap(valuesp.entrySet()
-	            .stream()
-	            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-	            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (i, i2) -> i, LinkedHashMap::new)));
-	    updatedValuesP = linked;
-	    update = false;
-	    return linked;
+		updatedValuesP.clear();
+		main.getPlayerStorage().storePlayersData(PlayerDataType.PRESTIGE);
+		if(main.isMySql()) {
+			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable();
+			MySqlStreamer mySqlStreamer = new MySqlStreamer(main.getConnection());
+			try {
+				mySqlStreamer.streamQuery(sql)
+				.sorted((a1, a2) -> {
+					String prestige1 = (String)a1.get("prestige");
+					String prestige2 = (String)a2.get("prestige");
+					int number1 = Integer.valueOf(main.prxAPI.getPrestigeNumber(prestige1));
+					int number2 = Integer.valueOf(main.prxAPI.getPrestigeNumber(prestige2));
+					return number2 - number1;
+				})
+				.limit(25)
+				.forEach(f -> {
+					UUID uuid = UUID.fromString((String)f.get("uuid"));
+					int finalNumber = Integer.valueOf(main.prxAPI.getPrestigeNumber((String)f.get("prestige")));
+					updatedValuesP.put(uuid, finalNumber);
+				});
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return updatedValuesP;
+		}
+		ConfigurationSection cf = main.getConfigManager().prestigeDataConfig.getConfigurationSection("players");
+		cf.getValues(false)
+		  .entrySet()
+		  .stream()
+		  .sorted((a1, a2) -> {
+			String value1 = (String)a1.getValue();
+			String value2 = (String)a2.getValue();
+			main.debug("prestige value: " + value1);
+			main.debug("prestige key: " + a1.getKey());
+			int number1 = 0; 
+			int number2 = 0;
+		    number1 = Integer.valueOf(main.prxAPI.getPrestigeNumber(value1));
+		    number2 = Integer.valueOf(main.prxAPI.getPrestigeNumber(value2));
+		    return number2 - number1;
+		  })
+		  .limit(25)
+		  .forEach(f -> {
+			UUID uuid = UUID.fromString(f.getKey());
+			String value = (String)f.getValue();
+			int finalNumber = Integer.valueOf(main.prxAPI.getPrestigeNumber(value));
+		    updatedValuesP.put(uuid, finalNumber);
+		  });
+	   update = false;
+	   listp.clear();
+	   listp.addAll(updatedValuesP.entrySet());
+	   return updatedValuesP;
 	}
 	
 	public Map<UUID, Integer> getRebirthLeaderboard() {
-		if(!update && updatedValuesR != null) {
+		if(!update && !updatedValuesR.isEmpty()) {
 			return updatedValuesR;
 		}
-	    valuesr.clear();
-	    Set<String> playerUUIDs = main.playerStorage.getPlayerData().keySet();
-	    synchronized(playerUUIDs) {
-	    for (String player : playerUUIDs) {
-	    	UUID u = UUID.fromString(player);
-	        valuesr.put(u, main.prxAPI.getPlayerRebirthNumber(u));
-	    }
-	    }
-	    Map<UUID, Integer> linked = Collections.synchronizedMap(valuesr.entrySet()
-	            .stream()
-	            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-	            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (i, i2) -> i, LinkedHashMap::new)));
-	    updatedValuesR = linked;
-	    update = false;
-	    return linked;
+		updatedValuesR.clear();
+		main.getPlayerStorage().storePlayersData(PlayerDataType.REBIRTH);
+		if(main.isMySql()) {
+			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable();
+			MySqlStreamer mySqlStreamer = new MySqlStreamer(main.getConnection());
+			try {
+				mySqlStreamer.streamQuery(sql)
+				.sorted((a1, a2) -> {
+					String rebirth1 = (String)a1.get("rebirth");
+					String rebirth2 = (String)a2.get("rebirth");
+					int number1 = Integer.valueOf(main.prxAPI.getRebirthNumber(rebirth1));
+					int number2 = Integer.valueOf(main.prxAPI.getRebirthNumber(rebirth2));
+					return number2 - number1;
+				})
+				.limit(25)
+				.forEach(f -> {
+					UUID uuid = UUID.fromString((String)f.get("uuid"));
+					int finalNumber = Integer.valueOf(main.prxAPI.getRebirthNumber((String)f.get("rebirth")));
+					updatedValuesR.put(uuid, finalNumber);
+				});
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return updatedValuesR;
+		}
+		ConfigurationSection cf = main.getConfigManager().rebirthDataConfig.getConfigurationSection("players");
+		cf.getValues(false)
+		  .entrySet()
+		  .stream()
+		  .sorted((a1, a2) -> {
+			String value1 = (String)a1.getValue();
+			String value2 = (String)a2.getValue();
+			int number1 = 0; 
+			int number2 = 0;
+		    number1 = Integer.valueOf(main.prxAPI.getRebirthNumber(value1));
+		    number2 = Integer.valueOf(main.prxAPI.getRebirthNumber(value2));
+		    return number2 - number1;
+		  })
+		  .limit(25)
+		  .forEach(f -> {
+			UUID uuid = UUID.fromString(f.getKey());
+			String value = (String)f.getValue();
+			int finalNumber = Integer.valueOf(main.prxAPI.getRebirthNumber(value));
+		    updatedValuesR.put(uuid, finalNumber);
+		  });
+	   update = false;
+	   listr.clear();
+	   listr.addAll(updatedValuesR.entrySet());
+	   return updatedValuesR;
 	}
 	
 	public Map<UUID, Integer> getGlobalLeaderboard() {
-		if(!update && updatedValuesGlobal != null) {
+		if(!update && !updatedValuesGlobal.isEmpty()) {
 			return updatedValuesGlobal;
 		}
-		valuesGlobal.clear();
-		Set<String> playerUUIDs = main.playerStorage.getPlayerData().keySet();
-		synchronized(playerUUIDs) {
-		for (String player : playerUUIDs) {
-			UUID u = UUID.fromString(player);
-			valuesGlobal.put(u, main.prxAPI.getPlayerPromotionsAmount(u));
+		updatedValuesGlobal.clear();
+		main.getPlayerStorage().storePlayersData(PlayerDataType.ALL);
+		if(main.isMySql()) {
+			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable();
+			MySqlStreamer mySqlStreamer = new MySqlStreamer(main.getConnection());
+			try {
+				mySqlStreamer.streamQuery(sql)
+				.sorted((a1, a2) -> {
+					UUID uuid1 = UUID.fromString((String)a1.get("uuid"));
+					UUID uuid2 = UUID.fromString((String)a2.get("uuid"));
+					int number1 = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(uuid1));
+					int number2 = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(uuid2));
+					return number2 - number1;
+				})
+				.limit(25)
+				.forEach(f -> {
+					UUID uuid = UUID.fromString((String)f.get("uuid"));
+					int finalNumber = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(UUID.fromString((String)f.get("uuid"))));
+					updatedValuesGlobal.put(uuid, finalNumber);
+				});
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return updatedValuesGlobal;
 		}
-		}
-		Map<UUID, Integer> linked = Collections.synchronizedMap(valuesGlobal.entrySet()
-				.stream()
-				.sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (i, i2) -> i, LinkedHashMap::new)));
-		updatedValuesGlobal = linked;
-		update = false;
-		return linked;
-		
+		ConfigurationSection cf = main.getConfigManager().rankDataConfig.getConfigurationSection("players");
+		cf.getValues(false)
+		.entrySet()
+		  .stream()
+		  .sorted((a1, a2) -> {
+			MemorySection uuidMemory1 = null;
+			uuidMemory1 = (MemorySection) a1.getValue();
+			MemorySection uuidMemory2 = null;
+			uuidMemory2 = (MemorySection) a2.getValue();
+			main.debug(uuidMemory1.getName());
+			main.debug(uuidMemory2.getName());
+			int number1 = 0; 
+			int number2 = 0;
+		    number1 = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(UUID.fromString(uuidMemory1.getName())));
+		    number2 = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(UUID.fromString(uuidMemory2.getName())));
+		    return number2 - number1;
+		  })
+		  .limit(25)
+		  .forEach(f -> {
+			UUID uuid = UUID.fromString(f.getKey());
+			int finalNumber = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(uuid));
+		    updatedValuesGlobal.put(uuid, finalNumber);
+		  });
+	   update = false;
+	   listGlobal.clear();
+	   listGlobal.addAll(updatedValuesGlobal.entrySet());
+	   return updatedValuesGlobal;
 	}
 
 	public boolean isUpdate() {
