@@ -127,6 +127,7 @@ Options:
   save-on-leave: false
   # if you want /warp commands to be ignored on rankupmax till the last rank you rankup to. only commands that start with '[player] <command>' will be filtered
   rankupmax-warp-filter: false
+  allow-easter-eggs: true
 Ranklist-text: # text based ranks list
   # placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted%
   rank-current-format: "%rank_displayname% &a> %nextrank_displayname% &a| &2$&e%nextrank_cost_formatted% &a<&m---"
