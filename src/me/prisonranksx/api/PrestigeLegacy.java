@@ -16,8 +16,8 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.PrestigeRandomCommands;
-import me.prisonranksx.events.XPrestigeUpdateEvent;
-import me.prisonranksx.events.XRankUpdateEvent;
+import me.prisonranksx.events.PrestigeUpdateEvent;
+import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.events.PrestigeUpdateCause;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.utils.XUUID;
@@ -42,21 +42,22 @@ public class PrestigeLegacy {
 		}
 		isAutoPrestigeTaskEnabled = true;
 		Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
-			for(Player player : prxAPI.autoPrestigePlayers) {
-				this.prestige(player, true);
+			for(String playerName : prxAPI.autoPrestigePlayers) {
+				this.prestige(Bukkit.getPlayer(playerName), true);
 			}
 		}, autoPrestigeDelay, autoPrestigeDelay);
 	}
 	
 	public void autoPrestige(Player player) {
 		Player p = player;
+		String name = p.getName();
 		if(prxAPI.isAutoPrestigeEnabled(p)) {
-			prxAPI.autoPrestigePlayers.remove(p);
+			prxAPI.autoPrestigePlayers.remove(name);
 			if(prxAPI.g("autoprestige-disabled") != null && !prxAPI.g("autoprestige-disabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autoprestige-disabled"));
 			}
 		} else {
-			prxAPI.autoPrestigePlayers.add(p);
+			prxAPI.autoPrestigePlayers.add(name);
 			startAutoPrestigeTask();
 			if(prxAPI.g("autoprestige-enabled") != null && !prxAPI.g("autoprestige-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autoprestige-enabled"));
@@ -66,9 +67,10 @@ public class PrestigeLegacy {
 	
 	public void autoPrestige(Player player, boolean enable) {
 		Player p = player;
+		String name = p.getName();
 		if(prxAPI.isAutoPrestigeEnabled(p)) {
 			if(!enable) {
-			prxAPI.autoPrestigePlayers.remove(p);
+			prxAPI.autoPrestigePlayers.remove(name);
 			if(prxAPI.g("autoprestige-disabled") != null && !prxAPI.g("autoprestige-disabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autoprestige-disabled"));
 			}
@@ -84,7 +86,7 @@ public class PrestigeLegacy {
 				}
 				return;
 			}
-			prxAPI.autoPrestigePlayers.add(p);
+			prxAPI.autoPrestigePlayers.add(name);
 			startAutoPrestigeTask();
 			if(prxAPI.g("autoprestige-enabled") != null && !prxAPI.g("autoprestige-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autoprestige-enabled"));
@@ -93,31 +95,29 @@ public class PrestigeLegacy {
 	}
 	
 	public void prestige(final Player player) {
-		if(prxAPI.taskedPlayers.contains(player)) {
+		String name = player.getName();
+		if(prxAPI.taskedPlayers.contains(name)) {
 			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
 			player.sendMessage(prxAPI.g("commandspam"));
 			}
 			return;
 		}
-		prxAPI.taskedPlayers.add(player);
-		if(player == null) {
-			return;
-		}
-		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
+		prxAPI.taskedPlayers.add(name);
+		PrestigeUpdateEvent e = new PrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(player);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		Player p = player;
-		UUID u = XUUID.tryNameConvert(p.getName());
+		UUID u = XUUID.tryNameConvert(name);
 		String prestige = prxAPI.getPlayerNextPrestige(u);
 		if(!p.hasPermission(main.prestigeCommand.getPermission()) && !p.hasPermission("*")) {
 			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(prestige.equalsIgnoreCase("LASTPRESTIGE")) {
@@ -126,26 +126,26 @@ public class PrestigeLegacy {
 				p.sendMessage(prxAPI.c(line));
 			}
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(!prxAPI.isLastRank(u) && !main.rankStorage.isAllowPrestige(prxAPI.getPlayerRankPath(u))) {
 			if(prxAPI.g("noprestige") != null && !prxAPI.g("noprestige").isEmpty()) {
 				p.sendMessage(prxAPI.g("noprestige"));
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
-			if(prxAPI.h("prestige-notenoughmoney") == null || prxAPI.h("prestige-notenoughmoney").isEmpty()) {
-				return;
-			}
+			if(prxAPI.h("prestige-notenoughmoney") != null && !prxAPI.h("prestige-notenoughmoney").isEmpty()) {
+			
 			for(String line : prxAPI.h("prestige-notenoughmoney")) {
 				p.sendMessage(prxAPI.c(line)
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u)).replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u))
 						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u))).replace("%nextprestige_cost_formatted%", prxAPI.getPlayerNextPrestigeCostFormatted(u)));
 			}
-			prxAPI.taskedPlayers.remove(p);
+			}
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		String prestigeMsg = prxAPI.g("prestige");
@@ -162,8 +162,8 @@ public class PrestigeLegacy {
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
-				main.perm.addPermission(p.getName(), permission
-						.replace("%player%", p.getName())
+				main.perm.addPermission(name, permission
+						.replace("%player%", name)
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 						.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
 				}
@@ -173,8 +173,8 @@ public class PrestigeLegacy {
 		if(delPermissionList != null) {
 			if(!delPermissionList.isEmpty()) {
 				for(String permission : delPermissionList) {
-					main.perm.delPermission(p.getName(), permission
-							.replace("%player%", p.getName())
+					main.perm.delPermission(name, permission
+							.replace("%player%", name)
 							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
 				}
@@ -264,15 +264,15 @@ public class PrestigeLegacy {
 			spawnHologram(nextPrestigeHologramFormat, nextPrestigeHologramRemoveTime, nextPrestigeHologramHeight, p);
 		}
 		main.sendPrestigeFirework(p);
-		main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
+		main.econ.withdrawPlayer(name, prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetMoney")) {
-			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
+			main.econ.withdrawPlayer(name, prxAPI.getPlayerMoney(name));
 		}
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
 			Bukkit.getScheduler().runTask(main, () -> {
-			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
+			RankUpdateEvent e1 = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
-				prxAPI.taskedPlayers.remove(p);
+				prxAPI.taskedPlayers.remove(name);
 				return;
 			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
@@ -284,15 +284,15 @@ public class PrestigeLegacy {
            prestigeCommands.forEach(cmd -> {
         	   if(cmd.startsWith("[rankpermissions]")) {
         		   prxAPI.allRankAddPermissions.forEach(permission -> {
-        		   main.perm.delPermission(p.getName(), permission);
+        		   main.perm.delPermission(name, permission);
         		   });
         	   } else if (cmd.startsWith("[prestigepermissions]")) {
         		   prxAPI.allPrestigeAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p.getName(), permission);
+        			   main.perm.delPermission(name, permission);
         		   });
         	   } else if (cmd.startsWith("[rebirthpermissions]")) {
         		   prxAPI.allRebirthAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p.getName(), permission);
+        			   main.perm.delPermission(name, permission);
         		   });
         	   } else {
         		   main.executeCommand(p, cmd);
@@ -300,35 +300,33 @@ public class PrestigeLegacy {
            });
 		}
 		main.playerStorage.setPlayerPrestige(u, prestige);
-		prxAPI.taskedPlayers.remove(p);
+		prxAPI.taskedPlayers.remove(name);
 	}
 	
 	public void prestige2(final Player player, boolean ignoreLastRank) {
-		if(prxAPI.taskedPlayers.contains(player)) {
+		String name = player.getName();
+		if(prxAPI.taskedPlayers.contains(name)) {
 			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
 			player.sendMessage(prxAPI.g("commandspam"));
 			}
 			return;
 		}
-		prxAPI.taskedPlayers.add(player);
-		if(player == null) {
-			return;
-		}
-		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
+		prxAPI.taskedPlayers.add(name);
+		PrestigeUpdateEvent e = new PrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(player);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		Player p = player;
-		UUID u = XUUID.tryNameConvert(p.getName());
+		UUID u = XUUID.tryNameConvert(name);
 		String prestige = prxAPI.getPlayerNextPrestige(u);
 		if(!p.hasPermission(main.prestigeCommand.getPermission()) && !p.hasPermission("*")) {
 			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(prestige.equalsIgnoreCase("LASTPRESTIGE")) {
@@ -337,7 +335,7 @@ public class PrestigeLegacy {
 				p.sendMessage(prxAPI.c(line));
 			}
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
@@ -349,7 +347,7 @@ public class PrestigeLegacy {
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u)).replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u))
 						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u))).replace("%nextprestige_cost_formatted%", prxAPI.getPlayerNextPrestigeCostFormatted(u)));
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		String prestigeMsg = prxAPI.g("prestige");
@@ -366,8 +364,8 @@ public class PrestigeLegacy {
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
-				main.perm.addPermission(p.getName(), permission
-						.replace("%player%", p.getName())
+				main.perm.addPermission(name, permission
+						.replace("%player%", name)
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 						.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
 				}
@@ -377,8 +375,8 @@ public class PrestigeLegacy {
 		if(delPermissionList != null) {
 			if(!delPermissionList.isEmpty()) {
 				for(String permission : delPermissionList) {
-					main.perm.delPermission(p.getName(), permission
-							.replace("%player%", p.getName())
+					main.perm.delPermission(name, permission
+							.replace("%player%", name)
 							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
 				}
@@ -468,15 +466,15 @@ public class PrestigeLegacy {
 			spawnHologram(nextPrestigeHologramFormat, nextPrestigeHologramRemoveTime, nextPrestigeHologramHeight, p);
 		}
 		main.sendPrestigeFirework(p);
-		main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
+		main.econ.withdrawPlayer(name, prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetMoney")) {
-			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
+			main.econ.withdrawPlayer(name, prxAPI.getPlayerMoney(name));
 		}
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
 			Bukkit.getScheduler().runTask(main, () -> {
-			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
+			RankUpdateEvent e1 = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
-				prxAPI.taskedPlayers.remove(p);
+				prxAPI.taskedPlayers.remove(name);
 				return;
 			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
@@ -488,15 +486,15 @@ public class PrestigeLegacy {
            prestigeCommands.forEach(cmd -> {
         	   if(cmd.startsWith("[rankpermissions]")) {
         		   prxAPI.allRankAddPermissions.forEach(permission -> {
-        		   main.perm.delPermission(p.getName(), permission);
+        		   main.perm.delPermission(name, permission);
         		   });
         	   } else if (cmd.startsWith("[prestigepermissions]")) {
         		   prxAPI.allPrestigeAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p.getName(), permission);
+        			   main.perm.delPermission(name, permission);
         		   });
         	   } else if (cmd.startsWith("[rebirthpermissions]")) {
         		   prxAPI.allRebirthAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p.getName(), permission);
+        			   main.perm.delPermission(name, permission);
         		   });
         	   } else {
         		   main.executeCommand(p, cmd);
@@ -504,47 +502,45 @@ public class PrestigeLegacy {
            });
 		}
 		main.playerStorage.setPlayerPrestige(u, prestige);
-		prxAPI.taskedPlayers.remove(p);
+		prxAPI.taskedPlayers.remove(name);
 	}
 	
 	public void prestige(final Player player, boolean silent) {
-		if(prxAPI.taskedPlayers.contains(player)) {
+		String name = player.getName();
+		if(prxAPI.taskedPlayers.contains(name)) {
 			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
 			player.sendMessage(prxAPI.g("commandspam"));
 			}
 			return;
 		}
-		prxAPI.taskedPlayers.add(player);
-		if(player == null) {
-			return;
-		}
-		XPrestigeUpdateEvent e = new XPrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
+		prxAPI.taskedPlayers.add(name);
+		PrestigeUpdateEvent e = new PrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(player);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		Player p = player;
-		UUID u = XUUID.tryNameConvert(p.getName());
+		UUID u = XUUID.tryNameConvert(name);
 		String prestige = prxAPI.getPlayerNextPrestige(u);
 		if(!p.hasPermission(main.prestigeCommand.getPermission()) && !p.hasPermission("*")) {
 			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(prestige.equalsIgnoreCase("LASTPRESTIGE")) {
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(!prxAPI.isLastRank(u) && !main.rankStorage.isAllowPrestige(prxAPI.getPlayerRankPath(u))) {
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		String prestigeMsg = prxAPI.g("prestige");
@@ -561,8 +557,8 @@ public class PrestigeLegacy {
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
-				main.perm.addPermission(p.getName(), permission
-						.replace("%player%", p.getName())
+				main.perm.addPermission(name, permission
+						.replace("%player%", name)
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 						.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
 				}
@@ -572,8 +568,8 @@ public class PrestigeLegacy {
 		if(delPermissionList != null) {
 			if(!delPermissionList.isEmpty()) {
 				for(String permission : delPermissionList) {
-					main.perm.delPermission(p.getName(), permission
-							.replace("%player%", p.getName())
+					main.perm.delPermission(name, permission
+							.replace("%player%", name)
 							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)));
 				}
@@ -614,7 +610,7 @@ public class PrestigeLegacy {
 			if(!broadcastMessages.isEmpty()) {
 				for(String messageLine : broadcastMessages) {
 					Bukkit.broadcastMessage(prxAPI.cp(messageLine
-							.replace("%player%", p.getName())
+							.replace("%player%", name)
 							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
 							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u)), p));
 				}
@@ -643,7 +639,7 @@ public class PrestigeLegacy {
 		List<String> commands = prc.getCommands(randomSection);
 		List<String> replacedCommands = new ArrayList<>();
 		  for(String cmd : commands) {
-			String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u)), p);
+			String pCMD = prxAPI.cp(cmd.replace("%player%", name).replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u)), p);
 			replacedCommands.add(pCMD);
 		  }
 		main.executeCommands(p, replacedCommands);
@@ -663,15 +659,15 @@ public class PrestigeLegacy {
 			spawnHologram(nextPrestigeHologramFormat, nextPrestigeHologramRemoveTime, nextPrestigeHologramHeight, p);
 		}
 		main.sendPrestigeFirework(p);
-		main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
+		main.econ.withdrawPlayer(name, prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u));
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetMoney")) {
-			main.econ.withdrawPlayer(p.getName(), prxAPI.getPlayerMoney(p.getName()));
+			main.econ.withdrawPlayer(name, prxAPI.getPlayerMoney(name));
 		}
 		if(main.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
 			Bukkit.getScheduler().runTask(main, () -> {
-			XRankUpdateEvent e1 = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
+			RankUpdateEvent e1 = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
-				prxAPI.taskedPlayers.remove(p);
+				prxAPI.taskedPlayers.remove(name);
 				return;
 			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
@@ -683,15 +679,15 @@ public class PrestigeLegacy {
            prestigeCommands.forEach(cmd -> {
         	   if(cmd.startsWith("[rankpermissions]")) {
         		   prxAPI.allRankAddPermissions.forEach(permission -> {
-        		   main.perm.delPermission(p.getName(), permission);
+        		   main.perm.delPermission(name, permission);
         		   });
         	   } else if (cmd.startsWith("[prestigepermissions]")) {
         		   prxAPI.allPrestigeAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p.getName(), permission);
+        			   main.perm.delPermission(name, permission);
         		   });
         	   } else if (cmd.startsWith("[rebirthpermissions]")) {
         		   prxAPI.allRebirthAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(p.getName(), permission);
+        			   main.perm.delPermission(name, permission);
         		   });
         	   } else {
         		   main.executeCommand(p, cmd);
@@ -699,7 +695,7 @@ public class PrestigeLegacy {
            });
 		}
 		main.playerStorage.setPlayerPrestige(u, prestige);
-		prxAPI.taskedPlayers.remove(p);
+		prxAPI.taskedPlayers.remove(name);
 	}
 	
 	public void spawnHologram(final List<String> format, final int removeTime, final int height, final Player player) {
@@ -711,7 +707,7 @@ public class PrestigeLegacy {
 			String updatedLine = main.getString(line.replace("%player%", player.getName())
 					.replace("%player_display%", player.getDisplayName())
 					.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u))
-					.replace("%nextprestige_display%", main.getStringWithoutPAPI(prxAPI.getPlayerNextPrestigeDisplay(u)))
+					.replace("%nextprestige_display%", main.getString(prxAPI.getPlayerNextPrestigeDisplay(u)))
 					, player.getName());
 			hologram.appendTextLine(updatedLine);
 		}

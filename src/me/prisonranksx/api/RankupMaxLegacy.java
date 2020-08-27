@@ -17,8 +17,8 @@ import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.RankUpdateCause;
-import me.prisonranksx.events.XRankUpdateEvent;
-import me.prisonranksx.events.XRankupMaxEvent;
+import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.events.AsyncRankupMaxEvent;
 import me.prisonranksx.utils.XUUID;
 
 public class RankupMaxLegacy {
@@ -74,7 +74,7 @@ public class RankupMaxLegacy {
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(u);
         Double playerBalance = main.prxAPI.getPlayerMoneyOnline(p);
-        XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
+        RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
         Bukkit.getPluginManager().callEvent(e);
         if(e.isCancelled()) {
         	rankupMaxProcess.remove(p);
@@ -259,7 +259,7 @@ public class RankupMaxLegacy {
    			}
                //rankup things
                main.econ.withdrawPlayer(p, loopNextRankCost);
-               rankupMaxStreak.put(p, main.plus(rankupMaxStreak.get(p)));
+               rankupMaxStreak.put(p, (rankupMaxStreak.get(p)+1));
                rankups.add(loopNextRank);
                rankupMaxMap.put(p, loopNextRank);
         }
@@ -301,9 +301,9 @@ public class RankupMaxLegacy {
 		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
         rankupMaxPassedRanks.put(p, rankups);
-		XRankupMaxEvent x = new XRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
-		Bukkit.getScheduler().runTaskLater(main, () -> {
+		AsyncRankupMaxEvent x = new AsyncRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
 		main.getServer().getPluginManager().callEvent(x);
+		Bukkit.getScheduler().runTaskLater(main, () -> {
         rankupMaxMap.remove(p);
         rankupMaxProcess.remove(p);
         rankupMaxPassedRanks.remove(p);
@@ -352,7 +352,7 @@ public class RankupMaxLegacy {
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(u);
         Double playerBalance = main.prxAPI.getPlayerMoneyOnline(p);
-        XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
+        RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
         Bukkit.getPluginManager().callEvent(e);
         if(e.isCancelled()) {
         	rankupMaxProcess.remove(p);
@@ -522,7 +522,7 @@ public class RankupMaxLegacy {
                //rankup things
    			   main.debug(loopNextRankCost);
                main.econ.withdrawPlayer(p, loopNextRankCost);
-               rankupMaxStreak.put(p, main.plus(rankupMaxStreak.get(p)));
+               rankupMaxStreak.put(p, (rankupMaxStreak.get(p)+1));
                rankups.add(loopNextRank);
                rankupMaxMap.put(p, loopNextRank);
         	   if(loopNextRank.equalsIgnoreCase(limit)) {
@@ -568,9 +568,9 @@ public class RankupMaxLegacy {
 		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
         rankupMaxPassedRanks.put(p, rankups);
-		XRankupMaxEvent x = new XRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
-		Bukkit.getScheduler().runTaskLater(main, () -> {
+	    AsyncRankupMaxEvent x = new AsyncRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
 		main.getServer().getPluginManager().callEvent(x);
+	    Bukkit.getScheduler().runTaskLater(main, () -> {
         rankupMaxMap.remove(p);
         rankupMaxProcess.remove(p);
         rankupMaxPassedRanks.remove(p);

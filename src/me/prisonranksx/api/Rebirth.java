@@ -16,12 +16,12 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RebirthRandomCommands;
-import me.prisonranksx.events.XRebirthUpdateEvent;
+import me.prisonranksx.events.RebirthUpdateEvent;
 import me.prisonranksx.events.PrestigeUpdateCause;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RebirthUpdateCause;
-import me.prisonranksx.events.XPrestigeUpdateEvent;
-import me.prisonranksx.events.XRankUpdateEvent;
+import me.prisonranksx.events.PrestigeUpdateEvent;
+import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class Rebirth {
@@ -33,23 +33,16 @@ public class Rebirth {
 	}
 	
 	public void rebirth(final Player player) {
-		if(prxAPI.taskedPlayers.contains(player)) {
+		String name = player.getName();
+		if(prxAPI.taskedPlayers.contains(name)) {
 			if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 				return;
 			}
 			player.sendMessage(prxAPI.g("commandspam"));
 			return;
 		}
-		prxAPI.taskedPlayers.add(player);
-		if(player == null) {
-			return;
-		}
-		XRebirthUpdateEvent e = new XRebirthUpdateEvent(player, RebirthUpdateCause.REBIRTHUP);
-		main.getServer().getPluginManager().callEvent(e);
-		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(player);
-			return;
-		}
+		prxAPI.taskedPlayers.add(name);
+
 		Player p = player;
 		String rebirth = prxAPI.getPlayerNextRebirth(p);
 		if(!p.hasPermission(main.rebirthCommand.getPermission()) && !p.hasPermission("*")) {
@@ -57,7 +50,7 @@ public class Rebirth {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(rebirth.equalsIgnoreCase("LASTREBIRTH")) {
@@ -66,14 +59,14 @@ public class Rebirth {
 				  p.sendMessage(prxAPI.c(line));
 			  }
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(!prxAPI.isLastRank(p)) {
 			if(prxAPI.g("norebirth") != null && !prxAPI.g("norebirth").isEmpty()) {
 				p.sendMessage(prxAPI.cp(prxAPI.g("norebirth"), p));
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		if(prxAPI.getPlayerNextRebirthCost(p) > prxAPI.getPlayerMoney(p)) {
@@ -84,7 +77,7 @@ public class Rebirth {
 						.replace("%nextrebirth_cost%", prxAPI.s(prxAPI.getPlayerNextRebirthCost(p))).replace("%nextrebirth_cost_formatted%", prxAPI.getPlayerNextRebirthCostFormatted(p)));
 			}
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		int requiredPrestiges = prxAPI.getRequiredPrestiges(rebirth);
@@ -95,7 +88,7 @@ public class Rebirth {
 			int left = (requiredPrestiges - prxAPI.getPlayerPrestiges(p)) / rebirthNumber;
 			p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
 					.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		} else {
@@ -104,7 +97,7 @@ public class Rebirth {
 				int left = (prxAPI.getPrestigesCollection().size() - prxAPI.getPlayerPrestiges(p) / rebirthNumber);
 				p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
 						.replace("%prestiges_amount%", prxAPI.s(prxAPI.getPrestigesCollection().size())));
-				prxAPI.taskedPlayers.remove(p);
+				prxAPI.taskedPlayers.remove(name);
 				return;
 			}
 		}
@@ -136,7 +129,13 @@ public class Rebirth {
 					p.sendMessage(prxAPI.cp(message, p));
 				});
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
+			return;
+		}
+		RebirthUpdateEvent e = new RebirthUpdateEvent(player, RebirthUpdateCause.REBIRTHUP);
+		main.getServer().getPluginManager().callEvent(e);
+		if(e.isCancelled()) {
+			prxAPI.taskedPlayers.remove(name);
 			return;
 		}
 		String rebirthMsg = prxAPI.g("rebirth");
@@ -154,7 +153,7 @@ public class Rebirth {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
 				main.perm.addPermission(player, permission
-						.replace("%player%", p.getName())
+						.replace("%player%", name)
 						.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p))
 						.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(p)));
 				}
@@ -165,7 +164,7 @@ public class Rebirth {
 			if(!delPermissionList.isEmpty()) {
 				for(String permission : delPermissionList) {
 					main.perm.delPermission(p, permission
-							.replace("%player%", p.getName())
+							.replace("%player%", name)
 							.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p))
 							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(p)));
 				}
@@ -206,7 +205,7 @@ public class Rebirth {
 			if(!broadcastMessages.isEmpty()) {
 				for(String messageLine : broadcastMessages) {
 					Bukkit.broadcastMessage(prxAPI.cp(messageLine
-							.replace("%player%", p.getName())
+							.replace("%player%", name)
 							.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p))
 							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(p)), p));
 				}
@@ -234,7 +233,7 @@ public class Rebirth {
 		List<String> commands = rrc.getCommands(randomSection);
 		List<String> replacedCommands = new ArrayList<>();
 		  for(String cmd : commands) {
-			String pCMD = prxAPI.cp(cmd.replace("%player%", p.getName()).replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p)), p);
+			String pCMD = prxAPI.cp(cmd.replace("%player%", name).replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p)), p);
 			replacedCommands.add(pCMD);
 		  }
 		main.executeCommands(p, replacedCommands);
@@ -259,7 +258,7 @@ public class Rebirth {
 			main.econ.withdrawPlayer(p, prxAPI.getPlayerMoney(p));
 		}
 		if(main.globalStorage.getBooleanData("RebirthOptions.ResetRank")) {
-			XRankUpdateEvent xrue = new XRankUpdateEvent(p, RankUpdateCause.RANKSET_BYREBIRTH, main.globalStorage.getStringData("defaultrank"));
+			RankUpdateEvent xrue = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYREBIRTH, main.globalStorage.getStringData("defaultrank"));
 			Bukkit.getScheduler().runTask(main, () -> {
 				Bukkit.getPluginManager().callEvent(xrue);
 			if(xrue.isCancelled()) {
@@ -269,7 +268,7 @@ public class Rebirth {
 			main.playerStorage.setPlayerRank(p, main.globalStorage.getStringData("defaultrank"));
 		}
 		if(main.globalStorage.getBooleanData("RebirthOptions.ResetPrestige")) {
-			XPrestigeUpdateEvent xpue = new XPrestigeUpdateEvent(p, PrestigeUpdateCause.SETPRESTIGE_BY_REBIRTH);
+			PrestigeUpdateEvent xpue = new PrestigeUpdateEvent(p, PrestigeUpdateCause.SETPRESTIGE_BY_REBIRTH);
 			Bukkit.getScheduler().runTask(main, () -> {
 				Bukkit.getPluginManager().callEvent(xpue);
 			if(xpue.isCancelled()) {
@@ -300,21 +299,22 @@ public class Rebirth {
 		}
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 		main.playerStorage.setPlayerRebirth(p, rebirth);
-		prxAPI.taskedPlayers.remove(player);
+		prxAPI.taskedPlayers.remove(name);
 		
 		}, 1);
 	}
 	
 	public void spawnHologram(List<String> format, int removeTime, int height, Player player) {
 		Player p = player;
+		String name = p.getName();
 		Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
 		hologram.setAllowPlaceholders(true);
 		for(String line : format) {
-			String updatedLine = main.getString(line.replace("%player%", p.getName())
+			String updatedLine = main.getString(line.replace("%player%", name)
 					.replace("%player_display%", p.getDisplayName())
 					.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p))
-					.replace("%nextrebirth_display%", main.getStringWithoutPAPI(prxAPI.getPlayerNextRebirthDisplay(p)))
-					, p.getName());
+					.replace("%nextrebirth_display%", main.getString(prxAPI.getPlayerNextRebirthDisplay(p)))
+					, name);
 			hologram.appendTextLine(updatedLine);
 		}
         Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable () {public void run() {

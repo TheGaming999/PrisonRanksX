@@ -1,6 +1,7 @@
 package me.prisonranksx.api;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -10,6 +11,8 @@ import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
+import me.prisonranksx.utils.CollectionUtils;
+import me.prisonranksx.utils.CollectionUtils.PaginatedList;
 
 public class Ranks {
 
@@ -41,6 +44,7 @@ public class Ranks {
 	    * @param page The page number to display.
 	    * @param countAll The count of all available entries 
 	    */
+	@Deprecated
 	  public void paginate(CommandSender sender, List<String> list, int page, List<String> header, List<String> footer)
 	  {
 		  rankPerPage = main.globalStorage.getIntegerData("Ranklist-text.rank-per-page");
@@ -110,7 +114,7 @@ public class Ranks {
 			rankListFormat = main.globalStorage.getStringListData("Ranklist-text.rank-list-format");
 			rankListFormatHeader = new ArrayList<>();
 			rankListFormatFooter = new ArrayList<>();
-			ranksCollection = new ArrayList<>();
+			ranksCollection = new LinkedList<>();
 			currentRanks = new ArrayList<>();
 			completedRanks = new ArrayList<>();
 			otherRanks = new ArrayList<>();
@@ -140,7 +144,7 @@ public class Ranks {
 	 * @param pageNumber put null if you want to send a normal list
 	 * @param sender
 	 */
-	public void send(String pageNumber, CommandSender sender) {
+	public void send(final String pageNumber, final CommandSender sender) {
 		if(!enablePages || pageNumber == null) {
 			sendList(sender);
 		} else {
@@ -149,6 +153,23 @@ public class Ranks {
 				return;
 			}
 			sendPagedList(pageNumber, sender);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param pageNumber put null if you want to send a normal list
+	 * @param player
+	 */
+	public void send(final String pageNumber, final Player player) {
+		if(!enablePages || pageNumber == null) {
+			sendList(player);
+		} else {
+			if(!main.prxAPI.numberAPI.isNumber(pageNumber) || Integer.valueOf(pageNumber) < 1) {
+				player.sendMessage(main.prxAPI.c(rankListInvalidPage).replace("%page%", pageNumber));
+				return;
+			}
+			sendPagedList(pageNumber, player);
 		}
 	}
 	
@@ -255,7 +276,11 @@ public class Ranks {
 	private void sendPagedList(String pageNumber, CommandSender sender) {
 		if(enablePages) {
 			if(isCustomList) {
-				this.paginate(sender, rankWithPagesListFormat, Integer.parseInt(pageNumber), null, null);
+				//this.paginate(sender, rankWithPagesListFormat, Integer.parseInt(pageNumber), null, null);
+				List<String> customList = CollectionUtils.paginateList(rankWithPagesListFormat, rankPerPage, Integer.parseInt(pageNumber));
+				customList.forEach(line -> {
+					sender.sendMessage(main.getString(line, sender.getName()));
+				});
 				return;
 			}
 			Player p = (Player)sender;
@@ -271,6 +296,14 @@ public class Ranks {
 				//main.debug(sender.getName() + " executed '/ranks' ,Max Pages Reached (?:" + finalPage + ")");
 				//return;
 			//}
+			PaginatedList paginatedList = CollectionUtils.paginateListCollectable(ranksCollection, rankPerPage, Integer.parseInt(pageNumber));
+			int currentPage = paginatedList.getCurrentPage();
+			int finalPage = paginatedList.getFinalPage();
+			if(currentPage > finalPage) {
+				  sender.sendMessage(main.prxAPI.c(lastPageReached.replace("%page%", String.valueOf(finalPage))));
+				  return;
+			}
+			ranksCollection = paginatedList.collect();
 			int varIndex = rankWithPagesListFormat.indexOf("[rankslist]");
 			// header and footer setup {
 			if(rankListFormatHeader.isEmpty() && rankListFormatFooter.isEmpty() && rankListFormat.size() > 1) {
@@ -289,16 +322,16 @@ public class Ranks {
 			}
 			header.clear();
 			for(String header : rankListFormatHeader) {
-		       this.header.add(main.prxAPI.c(header.replace("%currentpage%", pageNumber)));
+		       this.header.add(main.prxAPI.c(header.replace("%currentpage%", pageNumber).replace("%totalpages%", String.valueOf(finalPage))));
 			}
 			// }
 			// send ranks list {
 		    currentRanks.clear();
 			completedRanks.clear();
 			otherRanks.clear();
-			int currentRankIndex = ranksCollection.indexOf(rankName);
+			int currentRankIndex = newRanksCollection.indexOf(rankName);
 			for(String rank : ranksCollection) {
-				if(currentRankIndex == ranksCollection.indexOf(rank)) {
+				if(currentRankIndex == newRanksCollection.indexOf(rank)) {
 					// save rank current format {
 					RankPath rankPath = RankPath.getRankPath(rank, pathName);
 					if(!main.rankStorage.getRankupName(rankPath).equalsIgnoreCase("lastrank")) {
@@ -312,7 +345,7 @@ public class Ranks {
 					    currentRanks.add(format);
 					}
 					// }
-				} if (currentRankIndex > ranksCollection.indexOf(rank)) {
+				} if (currentRankIndex > newRanksCollection.indexOf(rank)) {
 					// save rank completed format {
 					RankPath rankPath = RankPath.getRankPath(rank, pathName);
 					if(!main.rankStorage.getRankupName(rankPath).equalsIgnoreCase("lastrank")) {
@@ -326,7 +359,7 @@ public class Ranks {
 					completedRanks.add(format);
 					}
 					// }
-				} if (currentRankIndex < ranksCollection.indexOf(rank)) {
+				} if (currentRankIndex < newRanksCollection.indexOf(rank)) {
 					// save rank other format {
 					RankPath rankPath = RankPath.getRankPath(rank, pathName);
                     //main.debug("&3from RanksAPI: &f" + main.rankStorage.getDataHandler(rankPath.get()).readImportantValues());
@@ -352,9 +385,12 @@ public class Ranks {
 			}
 			footer.clear();
 			for(String footer : rankListFormatFooter) {
-				this.footer.add(main.prxAPI.c(footer.replace("%currentpage%", pageNumber)));
+				this.footer.add(main.prxAPI.c(footer.replace("%currentpage%", pageNumber).replace("%totalpages%", String.valueOf(finalPage))));
 			}
-            paginate(sender, nonPagedRanks, Integer.valueOf(pageNumber), header, footer);
+			this.header.forEach(sender::sendMessage);
+			this.nonPagedRanks.forEach(sender::sendMessage);
+			this.footer.forEach(sender::sendMessage);
+            //paginate(sender, nonPagedRanks, Integer.valueOf(pageNumber), header, footer);
 
 			
 		}

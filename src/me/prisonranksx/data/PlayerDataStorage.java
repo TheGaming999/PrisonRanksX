@@ -146,7 +146,7 @@ public class PlayerDataStorage {
 		if(main.isMySql()) {
 			ResultSet result = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE UUID = " + xu.getUUID().toString() + ";");
+				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + xu.getUUID().toString() + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -199,10 +199,31 @@ public class PlayerDataStorage {
 }
 
 	public boolean hasData(UUID uuid) {
+		if(main.isMySql()) {
+			ResultSet result = null;
+			try {
+				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuid + "';");
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+				return false;
+			}
+			try {
+				if(result.next()) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}
+		} else {
 		if(main.getConfigManager().rankDataConfig.isConfigurationSection("players." + uuid)) {
 			return true;
 		}
 		return false;
+		}
 	}
 	
 	/**
@@ -870,6 +891,7 @@ public class PlayerDataStorage {
 		Entry<String, PlayerDataHandler>[] array = (Entry<String, PlayerDataHandler>[])getPlayerData().entrySet().toArray(new Entry[0]);
 		if(main.isMySql()) {
 			try {
+				main.getConnection().setAutoCommit(false);
 	               String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET name=?,rank=?,prestige=?,rebirth=?,path=? WHERE uuid=?";
 	               PreparedStatement statement = main.getConnection().prepareStatement(sql);
 	         
@@ -905,8 +927,10 @@ public class PlayerDataStorage {
 	            	   }).execute();
 	               }, 1, 1);
 	               statement.executeBatch();
+	               main.getConnection().commit();
 	               Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §9Updated §a" + String.valueOf(i.get()) + " §9" + getWordForm(i.get(), "Entry", "Entries") + ".");
 	               statement.close();
+	               main.getConnection().setAutoCommit(true);
 	           }
 	           catch (SQLException e) {
 	    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -941,7 +965,8 @@ public class PlayerDataStorage {
 		i = 0;
 		if(main.isMySql()) {
 		           try {
-		        	   String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET name=?,rank=?,prestige=?,rebirth=?,path=? WHERE uuid=?";
+		        	   main.getConnection().setAutoCommit(false);
+		        	   String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET `name`=?,`rank`=?,`prestige`=?,`rebirth`=?,`path`=? WHERE uuid=?";
 		               PreparedStatement statement = main.getConnection().prepareStatement(sql);
 		         
 		               getPlayerData().values().stream().filter(val -> !isDummy(val)).forEach(val -> {
@@ -974,9 +999,11 @@ public class PlayerDataStorage {
 				    			main.getLogger().info("<Error> Updating player sql data..");
 			    			}
 		               });
-		               statement.executeBatch();
-		               Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §9Updated §a" + String.valueOf(i) + " §9" + getWordForm(i, "Entry", "Entries") + ".");
+		               int[] updated = statement.executeBatch();
+		               main.getConnection().commit();
+		               Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §9Updated §a" + String.valueOf(updated) + " §9" + getWordForm(i, "Entry", "Entries") + ".");
 		               statement.close();
+		               main.getConnection().setAutoCommit(true);
 		           }
 		           catch (SQLException e) {
 		    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -997,6 +1024,62 @@ public class PlayerDataStorage {
 		main.getConfigManager().rebirthDataConfig.set("players." + key, value.getRebirth());
 				}
 			}
+	}
+	
+	public void savePlayersDataMySql() {
+		if(Bukkit.getOnlinePlayers().size() > 125) {
+			saveLargePlayersData();
+			return;
+		}
+		i = 0;
+		if(main.isMySql()) {
+		           try {
+		        	   main.getConnection().setAutoCommit(false);
+		        	   String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET `name`=?,`rank`=?,`prestige`=?,`rebirth`=?,`path`=? WHERE uuid=?";
+		               PreparedStatement statement = main.getConnection().prepareStatement(sql);
+		         
+		               getPlayerData().values().stream().filter(val -> !isDummy(val)).forEach(val -> {
+		            	   i++;
+		            	   PlayerDataHandler value = val;
+		            	   if(val.getUUID() == null) {
+		            		   val.setUUID(UUID.randomUUID());
+		            	   }
+		            	    String uuid = val.getUUID().toString();
+		            	    if(value.getRankPath() == null) {
+		            	    	value.setRankPath(new RankPath(defaultRank, defaultPath));
+		            	    }
+		            	    RankPath rp = value.getRankPath();
+			    			String rankName = rp.getRankName() == null ? defaultRank : value.getRankPath().getRankName();
+			    			String pathName = rp.getPathName() == null ? defaultPath : value.getRankPath().getPathName();
+			    			String prestigeName = value.getPrestige() == null ? "none" : value.getPrestige();
+			    			String rebirthName = value.getRebirth() == null ? "none" : value.getRebirth();
+			    			String name = value.getName();
+			    			try {
+		                   statement.setString(1, uuid);
+		                   statement.setString(2, name);
+                           statement.setString(3, rankName);
+                           statement.setString(4, prestigeName);
+                           statement.setString(5, rebirthName);
+                           statement.setString(6, pathName);
+		                   statement.addBatch();
+			    			} catch (SQLException ex) {
+			    				Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+				    			ex.printStackTrace();
+				    			main.getLogger().info("<Error> Updating player sql data..");
+			    			}
+		               });
+		               statement.executeBatch();  
+		               main.getConnection().commit();
+		               statement.close();
+		               main.getConnection().setAutoCommit(true);
+		           }
+		           catch (SQLException e) {
+		    			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+		    			e.printStackTrace();
+		    			main.getLogger().info("<Error> Updating player sql data..");
+		           }
+		           return;
+		}
 	}
 	
 	public enum PlayerDataType {
@@ -1032,7 +1115,7 @@ public class PlayerDataStorage {
 	 */
 	public void storePlayersData(PlayerDataType playerDataType) {
 		if(main.isMySql()) {
-			savePlayersData();
+			savePlayersDataMySql();
 			return;
 		}
 		for(Entry<String, PlayerDataHandler> entry : this.getPlayerData().entrySet()) {
@@ -1161,7 +1244,7 @@ public class PlayerDataStorage {
 		    				util.set(u, "rebirth", rebirthName);
 		    				util.set(u, "name", name);
 		    			} else {
-		    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.getDatabase() + "." + main.getTable() +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+		    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.getDatabase() + "." + main.getTable() +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 		    			}
 		    		} catch (SQLException e1) {
 		    			// TODO Auto-generated catch block
@@ -1209,7 +1292,7 @@ public class PlayerDataStorage {
 			    				util.set(u, "rebirth", rebirthName);
 			    				util.set(u, "name", name);
 			    			} else {
-			    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.getDatabase() + "." + main.getTable() +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+			    				main.getMySqlStatement().executeUpdate("INSERT INTO " + main.getDatabase() + "." + main.getTable() +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 			    			}
 			    		} catch (SQLException e1) {
 			    			// TODO Auto-generated catch block

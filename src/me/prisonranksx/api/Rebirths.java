@@ -1,6 +1,7 @@
 package me.prisonranksx.api;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -9,6 +10,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.CollectionUtils;
+import me.prisonranksx.utils.CollectionUtils.PaginatedList;
 
 public class Rebirths {
 	
@@ -110,7 +113,7 @@ public class Rebirths {
 			rebirthListFormat = main.globalStorage.getStringListData("Rebirthlist-text.rebirth-list-format");
 			rebirthListFormatHeader = new ArrayList<>();
 			rebirthListFormatFooter = new ArrayList<>();
-			rebirthsCollection = new ArrayList<>();
+			rebirthsCollection = new LinkedList<>();
 			currentRebirths = new ArrayList<>();
 			completedRebirths = new ArrayList<>();
 			otherRebirths = new ArrayList<>();
@@ -140,7 +143,7 @@ public class Rebirths {
 	 * @param pageNumber put null if you want to send a normal list
 	 * @param sender
 	 */
-	public void send(final String pageNumber, CommandSender sender) {
+	public void send(final String pageNumber, final CommandSender sender) {
 		if(!enablePages || pageNumber == null) {
 			sendList(sender);
 		} else {
@@ -190,6 +193,38 @@ public class Rebirths {
 		    currentRebirths.clear();
 			completedRebirths.clear();
 			otherRebirths.clear();
+			
+				String lastPrestige = main.prxAPI.getLastPrestige();
+				String lastPrestigeDisplay = main.prxAPI.getPrestige(lastPrestige).getDisplayName();
+				String firstRebirth = main.prxAPI.getFirstRebirth();
+				String firstRebirthDisplay = main.rebirthStorage.getDisplayName(firstRebirth);
+				double firstRebirthCost = main.prxAPI.getRebirthCost(firstRebirth);
+				if(rebirthName == null) {
+					otherRebirths.add(main.prxAPI.cp(rebirthOtherFormat.replace("%rebirth_name%", lastPrestige)
+							.replace("%rebirth_displayname%", lastPrestigeDisplay)
+							.replace("%nextrebirth_name%", firstRebirth)
+							.replace("%nextrebirth_displayname%", firstRebirthDisplay)
+							.replace("%nextrebirth_cost%", String.valueOf(firstRebirthCost))
+							.replace("%nextrebirth_cost_formatted%", main.prxAPI.formatBalance(firstRebirthCost))
+							, p));
+				} else if (rebirthName.equals(firstRebirth)) {
+					completedRebirths.add(main.prxAPI.cp(rebirthCompletedFormat.replace("%rebirth_name%", lastPrestige)
+							.replace("%rebirth_displayname%", lastPrestigeDisplay)
+							.replace("%nextrebirth_name%", firstRebirth)
+							.replace("%nextrebirth_displayname%", firstRebirthDisplay)
+							.replace("%nextrebirth_cost%", String.valueOf(firstRebirthCost))
+							.replace("%nextrebirth_cost_formatted%", main.prxAPI.formatBalance(firstRebirthCost))
+							, p));
+				} else {
+					completedRebirths.add(main.prxAPI.cp(rebirthCompletedFormat.replace("%rebirth_name%", lastPrestige)
+							.replace("%rebirth_displayname%", lastPrestigeDisplay)
+							.replace("%nextrebirth_name%", firstRebirth)
+							.replace("%nextrebirth_displayname%", firstRebirthDisplay)
+							.replace("%nextrebirth_cost%", String.valueOf(firstRebirthCost))
+							.replace("%nextrebirth_cost_formatted%", main.prxAPI.formatBalance(firstRebirthCost))
+							, p));
+				}
+				
 			int currentRebirthIndex = rebirthsCollection.indexOf(rebirthName);
 			for(String rebirth : rebirthsCollection) {
 				if(currentRebirthIndex == rebirthsCollection.indexOf(rebirth)) {
@@ -250,7 +285,11 @@ public class Rebirths {
 	private void sendPagedList(String pageNumber, CommandSender sender) {
 		if(enablePages) {
 			if(isCustomList) {
-				this.paginate(sender, rebirthWithPagesListFormat, Integer.parseInt(pageNumber), null, null);
+				//this.paginate(sender, rebirthWithPagesListFormat, Integer.parseInt(pageNumber), null, null);
+				List<String> customList = CollectionUtils.paginateList(rebirthWithPagesListFormat, rebirthPerPage, Integer.parseInt(pageNumber));
+				customList.forEach(line -> {
+					sender.sendMessage(main.getString(line, sender.getName()));
+				});
 				return;
 			}
 			Player p = (Player)sender;
@@ -263,6 +302,14 @@ public class Rebirths {
 			if(rebirthsCollection.size() != newRebirthsCollection.size()) {
 				rebirthsCollection = newRebirthsCollection;
 			}
+			PaginatedList paginatedList = CollectionUtils.paginateListCollectable(rebirthsCollection, rebirthPerPage, Integer.parseInt(pageNumber));
+			int currentPage = paginatedList.getCurrentPage();
+			int finalPage = paginatedList.getFinalPage();
+			if(currentPage > finalPage) {
+				  sender.sendMessage(main.prxAPI.c(lastPageReached.replace("%page%", String.valueOf(finalPage))));
+				  return;
+			}
+			rebirthsCollection = paginatedList.collect();
 			Integer varIndex = rebirthWithPagesListFormat.indexOf("[rebirthslist]");
 			// header and footer setup {
 			if(rebirthListFormatHeader.isEmpty() && rebirthListFormatFooter.isEmpty() && rebirthListFormat.size() > 1) {
@@ -281,16 +328,48 @@ public class Rebirths {
 			}
 			header.clear();
 			for(String header : rebirthListFormatHeader) {
-		       this.header.add(main.prxAPI.c(header.replace("%currentpage%", pageNumber)));
+		       this.header.add(main.prxAPI.c(header.replace("%currentpage%", pageNumber).replace("%totalpages%", String.valueOf(finalPage))));
 			}
 			// }
 			// send rebirths list {
 		    currentRebirths.clear();
 			completedRebirths.clear();
 			otherRebirths.clear();
-			int currentRebirthIndex = rebirthsCollection.indexOf(rebirthName);
+			if(currentPage <= 1) {
+				String lastPrestige = main.prxAPI.getLastPrestige();
+				String lastPrestigeDisplay = main.prxAPI.getPrestige(lastPrestige).getDisplayName();
+				String firstRebirth = main.prxAPI.getFirstRebirth();
+				String firstRebirthDisplay = main.rebirthStorage.getDisplayName(firstRebirth);
+				double firstRebirthCost = main.prxAPI.getRebirthCost(firstRebirth);
+				if(rebirthName == null) {
+					otherRebirths.add(main.prxAPI.cp(rebirthOtherFormat.replace("%rebirth_name%", lastPrestige)
+							.replace("%rebirth_displayname%", lastPrestigeDisplay)
+							.replace("%nextrebirth_name%", firstRebirth)
+							.replace("%nextrebirth_displayname%", firstRebirthDisplay)
+							.replace("%nextrebirth_cost%", String.valueOf(firstRebirthCost))
+							.replace("%nextrebirth_cost_formatted%", main.prxAPI.formatBalance(firstRebirthCost))
+							, p));
+				} else if (rebirthName.equals(firstRebirth)) {
+					completedRebirths.add(main.prxAPI.cp(rebirthCompletedFormat.replace("%rebirth_name%", lastPrestige)
+							.replace("%rebirth_displayname%", lastPrestigeDisplay)
+							.replace("%nextrebirth_name%", firstRebirth)
+							.replace("%nextrebirth_displayname%", firstRebirthDisplay)
+							.replace("%nextrebirth_cost%", String.valueOf(firstRebirthCost))
+							.replace("%nextrebirth_cost_formatted%", main.prxAPI.formatBalance(firstRebirthCost))
+							, p));
+				} else {
+					completedRebirths.add(main.prxAPI.cp(rebirthCompletedFormat.replace("%rebirth_name%", lastPrestige)
+							.replace("%rebirth_displayname%", lastPrestigeDisplay)
+							.replace("%nextrebirth_name%", firstRebirth)
+							.replace("%nextrebirth_displayname%", firstRebirthDisplay)
+							.replace("%nextrebirth_cost%", String.valueOf(firstRebirthCost))
+							.replace("%nextrebirth_cost_formatted%", main.prxAPI.formatBalance(firstRebirthCost))
+							, p));
+				}
+				}
+			int currentRebirthIndex = newRebirthsCollection.indexOf(rebirthName);
 			for(String rebirth : rebirthsCollection) {
-				if(currentRebirthIndex == rebirthsCollection.indexOf(rebirth)) {
+				if(currentRebirthIndex == newRebirthsCollection.indexOf(rebirth)) {
 					// save rebirth current format {
 					String rebirth2 = rebirth;
 					if(!main.rebirthStorage.getNextRebirthName(rebirth2).equalsIgnoreCase("lastrebirth")) {
@@ -304,7 +383,7 @@ public class Rebirths {
 					    currentRebirths.add(format);
 					}
 					// }
-				} if (currentRebirthIndex > rebirthsCollection.indexOf(rebirth)) {
+				} if (currentRebirthIndex > newRebirthsCollection.indexOf(rebirth)) {
 					// save rebirth completed format {
 					String rebirth2 = rebirth;
 					if(!main.rebirthStorage.getNextRebirthName(rebirth2).equalsIgnoreCase("lastrebirth")) {
@@ -318,7 +397,7 @@ public class Rebirths {
 					completedRebirths.add(format);
 					}
 					// }
-				} if (currentRebirthIndex < rebirthsCollection.indexOf(rebirth)) {
+				} if (currentRebirthIndex < newRebirthsCollection.indexOf(rebirth)) {
 					// save rank other format {
 					String rebirth2 = rebirth;
 					if(!main.rebirthStorage.getNextRebirthName(rebirth2).equalsIgnoreCase("lastrebirth")) {
@@ -343,9 +422,12 @@ public class Rebirths {
 			}
 			footer.clear();
 			for(String footer : rebirthListFormatFooter) {
-				this.footer.add(main.prxAPI.c(footer.replace("%currentpage%", pageNumber)));
+				this.footer.add(main.prxAPI.c(footer.replace("%currentpage%", pageNumber).replace("%totalpages%", String.valueOf(finalPage))));
 			}
-            paginate(sender, nonPagedRebirths, Integer.valueOf(pageNumber), header, footer);
+			this.header.forEach(sender::sendMessage);
+			this.nonPagedRebirths.forEach(sender::sendMessage);
+			this.footer.forEach(sender::sendMessage);
+            //paginate(sender, nonPagedRebirths, Integer.valueOf(pageNumber), header, footer);
 
 			
 		}

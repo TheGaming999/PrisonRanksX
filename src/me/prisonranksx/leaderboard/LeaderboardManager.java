@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -306,6 +307,7 @@ public class LeaderboardManager {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+			mySqlStreamer.getStreamQuery().closeStatement();
 			return updatedValues;
 		}
 		ConfigurationSection cf = main.getConfigManager().rankDataConfig.getConfigurationSection("players");
@@ -319,8 +321,12 @@ public class LeaderboardManager {
 			uuidMemory2 = (MemorySection) a2.getValue();
 			int number1 = 0; 
 			int number2 = 0;
-		    number1 = Integer.valueOf(main.prxAPI.getRankNumber(uuidMemory1.getString("path"), uuidMemory1.getString("rank")));
-		    number2 = Integer.valueOf(main.prxAPI.getRankNumber(uuidMemory2.getString("path"), uuidMemory2.getString("rank")));
+			String path1 = uuidMemory1.getString("path");
+			String path2 = uuidMemory2.getString("path");
+			path1 = path1 == null ? main.prxAPI.getDefaultPath() : path1;
+			path2 = path2 == null ? main.prxAPI.getDefaultPath() : path2;
+		    number1 = Integer.valueOf(main.prxAPI.getRankNumber(path1, uuidMemory1.getString("rank")));
+		    number2 = Integer.valueOf(main.prxAPI.getRankNumber(path2, uuidMemory2.getString("rank")));
 		    return number2 - number1;
 		  })
 		  .limit(25)
@@ -363,6 +369,7 @@ public class LeaderboardManager {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+			mySqlStreamer.getStreamQuery().closeStatement();
 			return updatedValuesP;
 		}
 		ConfigurationSection cf = main.getConfigManager().prestigeDataConfig.getConfigurationSection("players");
@@ -420,6 +427,7 @@ public class LeaderboardManager {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+			mySqlStreamer.getStreamQuery().closeStatement();
 			return updatedValuesR;
 		}
 		ConfigurationSection cf = main.getConfigManager().rebirthDataConfig.getConfigurationSection("players");
@@ -475,6 +483,7 @@ public class LeaderboardManager {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+			mySqlStreamer.getStreamQuery().closeStatement();
 			return updatedValuesGlobal;
 		}
 		ConfigurationSection cf = main.getConfigManager().rankDataConfig.getConfigurationSection("players");

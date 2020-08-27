@@ -1,6 +1,7 @@
 package me.prisonranksx.api;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -9,6 +10,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.RankPath;
+import me.prisonranksx.utils.CollectionUtils;
+import me.prisonranksx.utils.CollectionUtils.PaginatedList;
 
 public class Prestiges {
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
@@ -39,6 +43,7 @@ public class Prestiges {
 	    * @param page The page number to display.
 	    * @param countAll The count of all available entries 
 	    */
+	  @Deprecated
 	  public void paginate(CommandSender sender, List<String> list, int page, List<String> header, List<String> footer)
 	  {
 		  prestigePerPage = main.globalStorage.getIntegerData("Prestigelist-text.prestige-per-page");
@@ -108,7 +113,7 @@ public class Prestiges {
 			prestigeListFormat = main.globalStorage.getStringListData("Prestigelist-text.prestige-list-format");
 			prestigeListFormatHeader = new ArrayList<>();
 			prestigeListFormatFooter = new ArrayList<>();
-			prestigesCollection = new ArrayList<>();
+			prestigesCollection = new LinkedList<>();
 			currentPrestiges = new ArrayList<>();
 			completedPrestiges = new ArrayList<>();
 			otherPrestiges = new ArrayList<>();
@@ -160,9 +165,10 @@ public class Prestiges {
 				return;
 			}
 			Player p = (Player)sender;
+			String pathName = main.prxAPI.getPlayerRankPath(p).getPathName();
 			String prestigeName = main.prxAPI.getPlayerPrestige(p);
 			String rebirth = main.prxAPI.getPlayerRebirth(p);
-			List<String> newPrestigesCollection = main.prestigeStorage.getPrestigesCollection();
+			List<String> newPrestigesCollection = main.prestigeStorage.getNativeLinkedPrestigesCollection();
 			if(prestigesCollection.isEmpty()) {
                 prestigesCollection = newPrestigesCollection;
 			}
@@ -191,18 +197,49 @@ public class Prestiges {
 		    currentPrestiges.clear();
 			completedPrestiges.clear();
 			otherPrestiges.clear();
+			String lastRank = main.prxAPI.getLastRank(pathName);
+			String lastRankDisplay = main.prxAPI.getRank(RankPath.getRankPath(lastRank, pathName)).getDisplayName();
+			String firstPrestige = main.prxAPI.getFirstPrestige();
+			String firstPrestigeDisplay = main.prestigeStorage.getDisplayName(firstPrestige);
+			double firstPrestigeCost = main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(firstPrestige));
+			if(prestigeName == null) {
+				otherPrestiges.add(main.prxAPI.cp(prestigeOtherFormat.replace("%prestige_name%", lastRank)
+						.replace("%prestige_displayname%", lastRankDisplay)
+						.replace("%nextprestige_name%", firstPrestige)
+						.replace("%nextprestige_displayname%", firstPrestigeDisplay)
+						.replace("%nextprestige_cost%", String.valueOf(firstPrestigeCost))
+						.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(firstPrestigeCost))
+						, p));
+			} else if (prestigeName.equals(firstPrestige)) {
+				completedPrestiges.add(main.prxAPI.cp(prestigeCompletedFormat.replace("%prestige_name%", lastRank)
+						.replace("%prestige_displayname%", lastRankDisplay)
+						.replace("%nextprestige_name%", firstPrestige)
+						.replace("%nextprestige_displayname%", firstPrestigeDisplay)
+						.replace("%nextprestige_cost%", String.valueOf(firstPrestigeCost))
+						.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(firstPrestigeCost))
+						, p));
+			} else {
+				completedPrestiges.add(main.prxAPI.cp(prestigeCompletedFormat.replace("%prestige_name%", lastRank)
+						.replace("%prestige_displayname%", lastRankDisplay)
+						.replace("%nextprestige_name%", firstPrestige)
+						.replace("%nextprestige_displayname%", firstPrestigeDisplay)
+						.replace("%nextprestige_cost%", String.valueOf(firstPrestigeCost))
+						.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(firstPrestigeCost))
+						, p));
+			}
 			int currentPrestigeIndex = prestigesCollection.indexOf(prestigeName);
 			for(String prestige : prestigesCollection) {
 				if(currentPrestigeIndex == prestigesCollection.indexOf(prestige)) {
 					// save rank current format {
 					String prestige2 = prestige;
 					if(!main.prestigeStorage.getNextPrestigeName(prestige2).equalsIgnoreCase("lastprestige")) {
+					String nextPrestige = main.prestigeStorage.getNextPrestigeName(prestige2);
 					String format = main.prxAPI.cp(prestigeCurrentFormat.replace("%prestige_name%", prestige2)
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
-							.replace("%nextprestige_name%", main.prestigeStorage.getDisplayName(prestige2))
+							.replace("%nextprestige_name%", nextPrestige)
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth ,prestige2)))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, nextPrestige)))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
                             , p);			
 					    currentPrestiges.add(format);
 					}
@@ -211,12 +248,13 @@ public class Prestiges {
 					// save rank completed format {
 					String prestige2 = prestige;
 					if(!main.prestigeStorage.getNextPrestigeName(prestige2).equalsIgnoreCase("lastprestige")) {
+					String nextPrestige = main.prestigeStorage.getNextPrestigeName(prestige2);
 					String format = main.prxAPI.cp(prestigeCompletedFormat.replace("%prestige_name%", prestige2)
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
-							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
+							.replace("%nextprestige_name%", nextPrestige)
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
                             , p);			
 					completedPrestiges.add(format);
 					}
@@ -225,12 +263,13 @@ public class Prestiges {
 					// save rank other format {
 					String prestige2 = prestige;
 					if(!main.prestigeStorage.getNextPrestigeName(prestige2).equalsIgnoreCase("lastprestige")) {
+					String nextPrestige = main.prestigeStorage.getNextPrestigeName(prestige2);
 					String format = main.prxAPI.cp(prestigeOtherFormat.replace("%prestige_name%", prestige2)
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
-							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
+							.replace("%nextprestige_name%", nextPrestige)
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
                             , p);			
 					otherPrestiges.add(format);
 					}
@@ -252,13 +291,18 @@ public class Prestiges {
 		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 		if(enablePages) {
 			if(isCustomList) {
-				this.paginate(sender, prestigeWithPagesListFormat, Integer.parseInt(pageNumber), null, null);
+				List<String> customList = CollectionUtils.paginateList(prestigeWithPagesListFormat, prestigePerPage, Integer.parseInt(pageNumber));
+				customList.forEach(line -> {
+					sender.sendMessage(main.getString(line, sender.getName()));
+				});
+				//this.paginate(sender, prestigeWithPagesListFormat, Integer.parseInt(pageNumber), null, null);
 				return;
 			}
 			Player p = (Player)sender;
+			String pathName = main.prxAPI.getPlayerRankPath(p).getPathName();
             String prestigeName = main.prxAPI.getPlayerPrestige(p);
             String rebirth = main.prxAPI.getPlayerRebirth(p);
-			List<String> newPrestigesCollection = main.prestigeStorage.getPrestigesCollection();
+			List<String> newPrestigesCollection = main.prestigeStorage.getNativeLinkedPrestigesCollection();
 			if(prestigesCollection.isEmpty()) {
                 prestigesCollection = newPrestigesCollection;
 			}
@@ -266,6 +310,14 @@ public class Prestiges {
 			if(prestigesCollection.size() != newPrestigesCollection.size()) {
 				prestigesCollection = newPrestigesCollection;
 			}
+			PaginatedList paginatedList = CollectionUtils.paginateListCollectable(prestigesCollection, prestigePerPage, Integer.parseInt(pageNumber));
+			int finalPage = paginatedList.getFinalPage();
+			int currentPage = paginatedList.getCurrentPage();
+			if(currentPage > finalPage) {
+			  sender.sendMessage(main.prxAPI.c(lastPageReached.replace("%page%", String.valueOf(finalPage))));
+			  return;
+			}
+			prestigesCollection = paginatedList.collect();
 			Integer varIndex = prestigeWithPagesListFormat.indexOf("[prestigeslist]");
 			// header and footer setup {
 			if(prestigeListFormatHeader.isEmpty() && prestigeListFormatFooter.isEmpty() && prestigeListFormat.size() > 1) {
@@ -284,53 +336,88 @@ public class Prestiges {
 			}
 			header.clear();
 			for(String header : prestigeListFormatHeader) {
-		       this.header.add(main.prxAPI.c(header.replace("%currentpage%", pageNumber)));
+		       this.header.add(main.prxAPI.c(header.replace("%currentpage%", pageNumber).replace("%totalpages%", String.valueOf(finalPage))));
 			}
 			// }
 			// send prestiges list {
 		    currentPrestiges.clear();
 			completedPrestiges.clear();
 			otherPrestiges.clear();
-			int currentPrestigeIndex = prestigesCollection.indexOf(prestigeName);
+			if(currentPage <= 1) {
+			String lastRank = main.prxAPI.getLastRank(pathName);
+			String lastRankDisplay = main.prxAPI.getRank(RankPath.getRankPath(lastRank, pathName)).getDisplayName();
+			String firstPrestige = main.prxAPI.getFirstPrestige();
+			String firstPrestigeDisplay = main.prestigeStorage.getDisplayName(firstPrestige);
+			double firstPrestigeCost = main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(firstPrestige));
+			if(prestigeName == null) {
+				otherPrestiges.add(main.prxAPI.cp(prestigeOtherFormat.replace("%prestige_name%", lastRank)
+						.replace("%prestige_displayname%", lastRankDisplay)
+						.replace("%nextprestige_name%", firstPrestige)
+						.replace("%nextprestige_displayname%", firstPrestigeDisplay)
+						.replace("%nextprestige_cost%", String.valueOf(firstPrestigeCost))
+						.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(firstPrestigeCost))
+						, p));
+			} else if (prestigeName.equals(firstPrestige)) {
+				completedPrestiges.add(main.prxAPI.cp(prestigeCompletedFormat.replace("%prestige_name%", lastRank)
+						.replace("%prestige_displayname%", lastRankDisplay)
+						.replace("%nextprestige_name%", firstPrestige)
+						.replace("%nextprestige_displayname%", firstPrestigeDisplay)
+						.replace("%nextprestige_cost%", String.valueOf(firstPrestigeCost))
+						.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(firstPrestigeCost))
+						, p));
+			} else {
+				completedPrestiges.add(main.prxAPI.cp(prestigeCompletedFormat.replace("%prestige_name%", lastRank)
+						.replace("%prestige_displayname%", lastRankDisplay)
+						.replace("%nextprestige_name%", firstPrestige)
+						.replace("%nextprestige_displayname%", firstPrestigeDisplay)
+						.replace("%nextprestige_cost%", String.valueOf(firstPrestigeCost))
+						.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(firstPrestigeCost))
+						, p));
+			}
+			}
+			int currentPrestigeIndex = newPrestigesCollection.indexOf(prestigeName);
 			for(String prestige : prestigesCollection) {
-				if(currentPrestigeIndex == prestigesCollection.indexOf(prestige)) {
+				if(currentPrestigeIndex == newPrestigesCollection.indexOf(prestige)) {
 					// save prestige current format {
 					String prestige2 = prestige;
 					if(!main.prestigeStorage.getNextPrestigeName(prestige2).equalsIgnoreCase("lastprestige")) {
+						String nextPrestige = main.prestigeStorage.getNextPrestigeName(prestige2);
 					String format = main.prxAPI.cp(prestigeCurrentFormat.replace("%prestige_name%", prestige2)
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
-							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
+							.replace("%nextprestige_name%", nextPrestige)
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
                             , p);			
 					    currentPrestiges.add(format);
 					}
 					// }
-				} if (currentPrestigeIndex > prestigesCollection.indexOf(prestige)) {
+				} if (currentPrestigeIndex > newPrestigesCollection.indexOf(prestige)) {
 					// save prestige completed format {
 					String prestige2 = prestige;
 					if(!main.prestigeStorage.getNextPrestigeName(prestige2).equalsIgnoreCase("lastprestige")) {
+						String nextPrestige = main.prestigeStorage.getNextPrestigeName(prestige2);
 					String format = main.prxAPI.cp(prestigeCompletedFormat.replace("%prestige_name%", prestige2)
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
-							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
+							.replace("%nextprestige_name%", nextPrestige)
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
                             , p);			
 					completedPrestiges.add(format);
 					}
 					// }
-				} if (currentPrestigeIndex < prestigesCollection.indexOf(prestige)) {
+				} if (currentPrestigeIndex < newPrestigesCollection.indexOf(prestige)) {
 					// save rank other format {
 					String prestige2 = prestige;
 					if(!main.prestigeStorage.getNextPrestigeName(prestige2).equalsIgnoreCase("lastprestige")) {
+						String nextPrestige = main.prestigeStorage.getNextPrestigeName(prestige2);
 					String format = main.prxAPI.cp(prestigeOtherFormat.replace("%prestige_name%", prestige2)
 							.replace("%prestige_displayname%", main.prestigeStorage.getDisplayName(prestige2))
-							.replace("%nextprestige_name%", main.prestigeStorage.getNextPrestigeName(prestige2))
+							.replace("%nextprestige_name%", nextPrestige)
 							.replace("%nextprestige_displayname%", main.prestigeStorage.getNextPrestigeDisplayName(prestige2))
-							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
-							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(prestige2))))
+							.replace("%nextprestige_cost%", String.valueOf(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
+							.replace("%nextprestige_cost_formatted%", main.prxAPI.formatBalance(main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(nextPrestige))))
                             , p);			
 					otherPrestiges.add(format);
 					}
@@ -338,6 +425,7 @@ public class Prestiges {
 				}
 			}
 			nonPagedPrestiges.clear();
+
             completedPrestiges.forEach(line -> {nonPagedPrestiges.add(line);});
 			currentPrestiges.forEach(line -> {nonPagedPrestiges.add(line);});
 			otherPrestiges.forEach(line -> {nonPagedPrestiges.add(line);});
@@ -346,9 +434,12 @@ public class Prestiges {
 			}
 			footer.clear();
 			for(String footer : prestigeListFormatFooter) {
-				this.footer.add(main.prxAPI.c(footer.replace("%currentpage%", pageNumber)));
+				this.footer.add(main.prxAPI.c(footer.replace("%currentpage%", pageNumber).replace("%totalpages%", String.valueOf(finalPage))));
 			}
-            paginate(sender, nonPagedPrestiges, Integer.valueOf(pageNumber), header, footer);
+			this.header.forEach(sender::sendMessage);
+			this.nonPagedPrestiges.forEach(sender::sendMessage);
+			this.footer.forEach(sender::sendMessage);
+            //paginate(sender, nonPagedPrestiges, Integer.valueOf(pageNumber), header, footer);
 
 			
 		}

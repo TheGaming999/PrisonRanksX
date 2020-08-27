@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
-import me.prisonranksx.data.GlobalDataStorage;
 import me.prisonranksx.data.GlobalDataStorage1_16;
 import me.prisonranksx.data.GlobalDataStorage1_8;
 import me.prisonranksx.data.PrestigeDataHandler;
@@ -60,7 +59,7 @@ public class PRXManager {
 	}
 	
 	public String getPreviousPrestige(final String name) {
-		List<String> prestigesCollection = main.prxAPI.getPrestigesCollection();
+		List<String> prestigesCollection = main.prestigeStorage.getNativeLinkedPrestigesCollection();
 		int previousPrestigeIndex = prestigesCollection.indexOf(name) > 0 ? prestigesCollection.indexOf(name) - 1 : -999;
 		if(previousPrestigeIndex == -999) {
 			return null;
@@ -94,7 +93,7 @@ public class PRXManager {
 	}
 	
 	public String getNextPrestige(final String name) {
-		List<String> prestigesCollection = main.prxAPI.getPrestigesCollection();
+		List<String> prestigesCollection = main.prestigeStorage.getNativeLinkedPrestigesCollection();
 		int count = prestigesCollection.size() - 1; // starting from 0
 		int nextPrestigeIndex = prestigesCollection.indexOf(name) < count ? prestigesCollection.indexOf(name) + 1 : -999;
 		if(nextPrestigeIndex == -999) {
@@ -158,7 +157,7 @@ public class PRXManager {
 		main.rankStorage.saveRankData(rankPath);
 		main.globalStorage.getStringMap().put("lastrank", name);
 		main.getConfig().set("lastrank", name);
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 	}
 	
 	/**
@@ -206,7 +205,7 @@ public class PRXManager {
 		main.rankStorage.saveRankData(rankPath);
 		main.globalStorage.getStringMap().put("lastrank", name);
 		main.getConfig().set("lastrank", name);
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 	}
 	
 	/**
@@ -255,7 +254,7 @@ public class PRXManager {
 		main.rankStorage.saveRankData(rankPath);
 		main.globalStorage.getStringMap().put("lastrank", name);
 		main.getConfig().set("lastrank", name);
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 	}
 	
 	/**
@@ -371,7 +370,7 @@ public class PRXManager {
 	    rdh2.setRankupName(bRankupName);
 	    rdh2.setRankupDisplayName(bRankupDisplayName);
 	    rdh2.setRankupCost(bRankupCost);
-	    main.configManager.ranksConfig.set("Ranks." + defaultPath + "." + prev + ".nextrank", bRankupName);
+	    main.getConfigManager().ranksConfig.set("Ranks." + defaultPath + "." + prev + ".nextrank", bRankupName);
 	    main.rankStorage.putData(rp2.get(), rdh2);
 	    } else { //if it's A (default rank) || there is no previous rank and it's the first rank
 	    	String nextRank = getNextRank(name, defaultPath);
@@ -388,14 +387,14 @@ public class PRXManager {
 	        rdh3.setRankupName("LASTRANK");
 	        rdh3.setRankupDisplayName(null);
 	        rdh3.setRankupCost(0.0);
-	        main.configManager.ranksConfig.set("Ranks." + defaultPath + "." + previousRank + ".nextrank", "LASTRANK");
+	        main.getConfigManager().ranksConfig.set("Ranks." + defaultPath + "." + previousRank + ".nextrank", "LASTRANK");
 	    	main.globalStorage.getStringMap().put("lastrank", previousRank);
 	    	main.getConfig().set("lastrank", previousRank);
 	    }
 		main.rankStorage.removeData(rp.get());
-		main.configManager.ranksConfig.set("Ranks." + defaultPath + "." + name, null);
-		main.configManager.saveRanksConfig();
-		main.configManager.saveMainConfig();
+		main.getConfigManager().ranksConfig.set("Ranks." + defaultPath + "." + name, null);
+		main.getConfigManager().saveRanksConfig();
+		main.getConfigManager().saveMainConfig();
 	}
 	
 	/**
@@ -421,7 +420,7 @@ public class PRXManager {
 	    rdh2.setRankupName(bRankupName);
 	    rdh2.setRankupDisplayName(bRankupDisplayName);
 	    rdh2.setRankupCost(bRankupCost);
-	    main.configManager.ranksConfig.set("Ranks." + pathName + "." + prev + ".nextrank", bRankupName);
+	    main.getConfigManager().ranksConfig.set("Ranks." + pathName + "." + prev + ".nextrank", bRankupName);
 	    main.rankStorage.putData(rp2.get(), rdh2);
 	    } else { //if it's A (default rank) || there is no previous rank and it's the first rank
 	    	String nextRank = getNextRank(name, pathName);
@@ -438,14 +437,14 @@ public class PRXManager {
 	        rdh3.setRankupName("LASTRANK");
 	        rdh3.setRankupDisplayName(null);
 	        rdh3.setRankupCost(0.0);
-	        main.configManager.ranksConfig.set("Ranks." + pathName + "." + previousRank + ".nextrank", "LASTRANK");
+	        main.getConfigManager().ranksConfig.set("Ranks." + pathName + "." + previousRank + ".nextrank", "LASTRANK");
 	    	main.globalStorage.getStringMap().put("lastrank", previousRank);
 	    	main.getConfig().set("lastrank", previousRank);
 	    }
 		main.rankStorage.removeData(rp.get());
-		main.configManager.ranksConfig.set("Ranks." + pathName + "." + name, null);
-		main.configManager.saveRanksConfig();
-		main.configManager.saveMainConfig();
+		main.getConfigManager().ranksConfig.set("Ranks." + pathName + "." + name, null);
+		main.getConfigManager().saveRanksConfig();
+		main.getConfigManager().saveMainConfig();
 	}
 	
 	/**
@@ -457,7 +456,7 @@ public class PRXManager {
 		main.globalStorage.getStringMap().put("defaultrank", name);
 		main.getConfig().set("defaultrank", name);
 		if(save) {
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 		}
 	}
 	
@@ -465,7 +464,7 @@ public class PRXManager {
 		main.globalStorage.getStringMap().put("firstprestige", name);
 		main.getConfig().set("firstprestige", name);
 		if(save) {
-			main.configManager.saveMainConfig();
+			main.getConfigManager().saveMainConfig();
 		}
 	}
 	
@@ -473,7 +472,7 @@ public class PRXManager {
 		main.globalStorage.getStringMap().put("firstrebirth", name);
 		main.getConfig().set("firstrebirth", name);
 		if(save) {
-			main.configManager.saveMainConfig();
+			main.getConfigManager().saveMainConfig();
 		}
 	}
 	/**
@@ -485,7 +484,7 @@ public class PRXManager {
 		main.globalStorage.getStringMap().put("lastrank", name);
 		main.getConfig().set("lastrank", name);
 		if(save) {
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 		}
 	}
 	
@@ -493,7 +492,7 @@ public class PRXManager {
 		main.globalStorage.getStringMap().put("lastprestige", name);
 		main.getConfig().set("lastprestige", name);
 		if(save) {
-			main.configManager.saveMainConfig();
+			main.getConfigManager().saveMainConfig();
 		}
 	}
 	
@@ -501,7 +500,7 @@ public class PRXManager {
 		main.globalStorage.getStringMap().put("lastrebirth", name);
 		main.getConfig().set("lastrebirth", name);
 		if(save) {
-			main.configManager.saveMainConfig();
+			main.getConfigManager().saveMainConfig();
 		}
 	}
 	
@@ -524,9 +523,9 @@ public class PRXManager {
 	main.globalStorage.getIntegerMap().clear();
     main.globalStorage.getStringSetMap().clear();
 	main.globalStorage.getGlobalMap().clear();
-	  main.configManager.reloadMainConfig();
-      main.configManager.reloadConfigs();
-      main.configManager.loadConfigs();
+	  main.getConfigManager().reloadMainConfig();
+      main.getConfigManager().reloadConfigs();
+      main.getConfigManager().loadConfigs();
       if(Bukkit.getVersion().contains("1.16")) {
       main.globalStorage = new GlobalDataStorage1_16(main);
       } else {
@@ -552,6 +551,7 @@ public class PRXManager {
       main.messagesStorage.loadMessages();
       main.isApiLoaded = false;
       main.autoSaveTime = main.getGlobalStorage().getIntegerData("Options.autosave-time");
+      main.allowEasterEggs = main.getGlobalStorage().getBooleanData("Options.allow-easter-eggs");
       main.prxAPI = new PRXAPI();
       main.prxAPI.setup();
       main.prxAPI.loadPermissions();
@@ -567,14 +567,14 @@ public class PRXManager {
       main.rebirthAPI = new Rebirth();
       main.rebirthsAPI = new Rebirths();
       main.rebirthsAPI.load();
-      main.cri.getCustomRankItems().clear();
-      main.cri.setup();
-      main.cpi.getCustomPrestigeItems().clear();
-      main.cpi.setup();
-      main.crri.getCustomRebirthItems().clear();
-      main.crri.setup();
-      main.guiManager = new GuiListManager(main);
-      main.guiManager.setupConstantItems();
+      main.getCustomRankItems().getCustomRankItems().clear();
+      main.getCustomRankItems().setup();
+      main.getCustomPrestigeItems().getCustomPrestigeItems().clear();
+      main.getCustomPrestigeItems().setup();
+      main.getCustomRebirthItems().getCustomRebirthItems().clear();
+      main.getCustomRebirthItems().setup();
+      main.setGuiManager(new GuiListManager(main));
+      main.getGuiManager().setupConstantItems();
       main.forceSave = main.globalStorage.getBooleanData("Options.forcesave");
       main.lbm = new LeaderboardManager(main);
       main.isSaveOnLeave = main.globalStorage.getBooleanData("Options.save-on-leave");
@@ -625,18 +625,18 @@ public class PRXManager {
 		main.prestigeStorage.savePrestigesData();
 		main.rebirthStorage.saveRebirthsData();
 		main.playerStorage.savePlayersData();
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 		if(main.isRankEnabled) {
-		main.configManager.saveRanksConfig();
-		main.configManager.saveRankDataConfig();
+		main.getConfigManager().saveRanksConfig();
+		main.getConfigManager().saveRankDataConfig();
 		}
 		if(main.isPrestigeEnabled) {
-		main.configManager.savePrestigesConfig();
-		main.configManager.savePrestigeDataConfig();
+		main.getConfigManager().savePrestigesConfig();
+		main.getConfigManager().savePrestigeDataConfig();
 		}
 		if(main.isRebirthEnabled) {
-		main.configManager.saveRebirthsConfig();
-		main.configManager.saveRebirthDataConfig();
+		main.getConfigManager().saveRebirthsConfig();
+		main.getConfigManager().saveRebirthDataConfig();
 		}
 	}
 	
@@ -662,6 +662,7 @@ public class PRXManager {
 		pdh.setRandomCommandsManager(null);
         main.prestigeStorage.putData(name, pdh);
         main.prestigeStorage.savePrestigeData(name);
+		main.prestigeStorage.addToNativeLinkedList(name);
 		if(getPreviousPrestige(name) != null) {
 			String prev = getPreviousPrestige(name);
 			main.prestigeStorage.getDataHandler(prev).setNextPrestigeName(name);
@@ -669,7 +670,7 @@ public class PRXManager {
 		}
 		main.globalStorage.getStringMap().put("lastprestige", name);
 		main.getConfig().set("lastprestige", name);
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 	}
 	
 	public void createPrestige(final String name, final double cost, final String displayName) {
@@ -695,6 +696,7 @@ public class PRXManager {
 		pdh.setRandomCommandsManager(null);
         main.prestigeStorage.putData(namec, pdh);
         main.prestigeStorage.savePrestigeData(namec);
+		main.prestigeStorage.addToNativeLinkedList(namec);
 		if(getPreviousPrestige(namec) != null) {
 			String prev = getPreviousPrestige(namec);
 			main.prestigeStorage.getDataHandler(prev).setNextPrestigeName(namec);
@@ -702,7 +704,71 @@ public class PRXManager {
 		}
 		main.globalStorage.getStringMap().put("lastprestige", namec);
 		main.getConfig().set("lastprestige", namec);
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
+	}
+	
+	public void createPrestige(final String name, final double cost, final String displayName, boolean tempMode) {
+		String namec = name;
+	    PrestigeDataHandler pdh = new PrestigeDataHandler(namec);
+		pdh.setName(namec);
+		pdh.setCost(cost);
+		pdh.setNextPrestigeName("LASTPRESTIGE");
+		pdh.setDisplayName(displayName);
+		pdh.setMsg(emptyList);
+		pdh.setBroadcastMessages(emptyList);
+		pdh.setPrestigeCommands(emptyList);
+		pdh.setNextPrestigeCost(0.0);
+		pdh.setNextPrestigeDisplayName(null);
+		pdh.setRankupCostIncreasePercentage(0.0);
+		pdh.setActionbarInterval(0);
+		pdh.setActionbarMessages(emptyList);
+		pdh.setActions(emptyList);
+		pdh.setAddPermissionList(emptyList);
+		pdh.setDelPermissionList(emptyList);
+		pdh.setSendFirework(false);
+		pdh.setFireworkManager(null);
+		pdh.setRandomCommandsManager(null);
+        main.prestigeStorage.putData(namec, pdh);
+        main.prestigeStorage.savePrestigeData(namec);
+		main.prestigeStorage.addToNativeLinkedList(namec);
+		if(getPreviousPrestige(namec) != null) {
+			String prev = getPreviousPrestige(namec);
+			main.prestigeStorage.getDataHandler(prev).setNextPrestigeName(namec);
+			main.prestigeStorage.savePrestigeData(prev);
+		}
+		main.globalStorage.getStringMap().put("lastprestige", namec);
+		main.getConfig().set("lastprestige", namec);
+	}
+	
+	public void createPrestige(final String name, final double cost, final String displayName, boolean tempMode, boolean ignoreLast) {
+		String namec = name;
+	    PrestigeDataHandler pdh = new PrestigeDataHandler(namec);
+		pdh.setName(namec);
+		pdh.setCost(cost);
+		pdh.setNextPrestigeName("LASTPRESTIGE");
+		pdh.setDisplayName(displayName);
+		pdh.setMsg(emptyList);
+		pdh.setBroadcastMessages(emptyList);
+		pdh.setPrestigeCommands(emptyList);
+		pdh.setNextPrestigeCost(0.0);
+		pdh.setNextPrestigeDisplayName(null);
+		pdh.setRankupCostIncreasePercentage(0.0);
+		pdh.setActionbarInterval(0);
+		pdh.setActionbarMessages(emptyList);
+		pdh.setActions(emptyList);
+		pdh.setAddPermissionList(emptyList);
+		pdh.setDelPermissionList(emptyList);
+		pdh.setSendFirework(false);
+		pdh.setFireworkManager(null);
+		pdh.setRandomCommandsManager(null);
+        main.prestigeStorage.putData(namec, pdh);
+        main.prestigeStorage.savePrestigeData(namec);
+		main.prestigeStorage.addToNativeLinkedList(namec);
+		if(getPreviousPrestige(namec) != null) {
+			String prev = getPreviousPrestige(namec);
+			main.prestigeStorage.getDataHandler(prev).setNextPrestigeName(namec);
+			main.prestigeStorage.savePrestigeData(prev);
+		}
 	}
 	
 	public void setPrestigeCost(final String name, double cost) {
@@ -755,7 +821,7 @@ public class PRXManager {
 		}
 		main.prestigeStorage.getPrestigeData().remove(name);
 		main.prestigeStorage.savePrestigesData();
-		main.configManager.savePrestigesConfig();
+		main.getConfigManager().savePrestigesConfig();
 	}
 	
 	public void createRebirth(final String name, final double cost) {
@@ -786,7 +852,7 @@ public class PRXManager {
         }
 		main.globalStorage.getStringMap().put("lastrebirth", name);
 		main.getConfig().set("lastrebirth", name);
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 	}
 	
 	public void createRebirth(final String name, final double cost, final String displayName) {
@@ -817,7 +883,7 @@ public class PRXManager {
         }
 		main.globalStorage.getStringMap().put("lastrebirth", name);
 		main.getConfig().set("lastrebirth", name);
-		main.configManager.saveMainConfig();
+		main.getConfigManager().saveMainConfig();
 	}
 	
 	public void setRebirthCost(final String name, final double cost) {
@@ -873,7 +939,7 @@ public class PRXManager {
 		}
 		main.rebirthStorage.rebirthData.remove(name);
 		main.rebirthStorage.saveRebirthsData();
-		main.configManager.saveRebirthsConfig();
+		main.getConfigManager().saveRebirthsConfig();
 	}
 	
 	public void delPlayerPrestige(XUser user) {
@@ -925,6 +991,21 @@ public class PRXManager {
 			if(str.equalsIgnoreCase(prestigeName)) {
 				matchedPrestige = str;
 			}
+		}
+		return matchedPrestige;
+	}
+	
+	public String matchPrestige(String prestigeName, boolean checkNumbers) {
+		String matchedPrestige = prestigeName;
+		if(main.prxAPI.getNumberAPI().isNumber(matchedPrestige)) {
+			matchedPrestige = main.prxAPI.getPrestigeNameFromNumber(Integer.valueOf(matchedPrestige));
+		} 
+		if(matchedPrestige == null) {
+		 for(String str : main.prxAPI.getPrestigesCollection()) {
+			if(str.equalsIgnoreCase(prestigeName)) {
+				matchedPrestige = str;
+			}
+		 }
 		}
 		return matchedPrestige;
 	}

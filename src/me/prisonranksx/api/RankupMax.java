@@ -16,10 +16,9 @@ import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RankRandomCommands;
+import me.prisonranksx.events.AsyncRankupMaxEvent;
 import me.prisonranksx.events.RankUpdateCause;
-import me.prisonranksx.events.XRankUpdateEvent;
-import me.prisonranksx.events.XRankupMaxEvent;
-
+import me.prisonranksx.events.RankUpdateEvent;
 public class RankupMax {
 
 	
@@ -55,10 +54,10 @@ public class RankupMax {
 		this.rankupMaxPassedRanks = new HashMap<>();
 		this.rankupMaxCost = new HashMap<>();
 		this.canPrestigeMap = new HashMap<>();
-		this.rankupMaxMsg = main.messagesStorage.getStringMessage("rankupmax");
+		this.rankupMaxMsg = main.prxAPI.c(main.messagesStorage.getStringMessage("rankupmax"));
 		this.isRankupMaxMsg = main.globalStorage.getBooleanData("Options.send-rankupmaxmsg");
-		this.lastRankMessage = main.messagesStorage.getStringListMessage("lastrank");
-		this.notEnoughMoneyMessage = main.messagesStorage.getStringListMessage("notenoughmoney");
+		this.lastRankMessage = main.prxAPI.cl(main.messagesStorage.getStringListMessage("lastrank"));
+		this.notEnoughMoneyMessage = main.prxAPI.cl(main.messagesStorage.getStringListMessage("notenoughmoney"));
 		this.isBroadcastLastRankOnly = main.globalStorage.getBooleanData("Options.rankupmax-broadcastlastrankonly");
 		this.isMsgLastRankOnly = main.globalStorage.getBooleanData("Options.rankupmax-msglastrankonly");
 		this.isRankupMsgLastRankOnly = main.globalStorage.getBooleanData("Options.rankupmax-rankupmsglastrankonly");
@@ -90,7 +89,7 @@ public class RankupMax {
         Map<String, String> stringRequirements = prxAPI.getRankStringRequirements(rp1);
 		Map<String, Double> numberRequirements = prxAPI.getRankNumberRequirements(rp1);
 		List<String> customRequirementMessage = prxAPI.getRankCustomRequirementMessage(rp1);
-        XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
+        RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
         Bukkit.getPluginManager().callEvent(e);
         if(e.isCancelled()) {
         	rankupMaxProcess.remove(p);
@@ -155,7 +154,7 @@ public class RankupMax {
 					p.sendMessage(prxAPI.cp(message, p));
 				});
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(name);
 			rankupMaxProcess.remove(p);
 			return;
 		}
@@ -265,7 +264,7 @@ public class RankupMax {
    						p.sendMessage(prxAPI.cp(message, p));
    					});
    				}
-   				prxAPI.taskedPlayers.remove(p);
+   				prxAPI.taskedPlayers.remove(name);
    				rankupMaxProcess.remove(p);
    				break;
    			}
@@ -332,7 +331,7 @@ public class RankupMax {
    			}
                //rankup things
                main.econ.withdrawPlayer(p, loopNextRankCost);
-               rankupMaxStreak.put(p, main.plus(rankupMaxStreak.get(p)));
+               rankupMaxStreak.put(p, (rankupMaxStreak.get(p)+1));
                rankups.add(loopNextRank);
                rankupMaxMap.put(p, loopNextRank);
         }
@@ -375,9 +374,9 @@ public class RankupMax {
 		prxAPI.setPlayerRank(p, mapRank);
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
         rankupMaxPassedRanks.put(p, rankups);
-		XRankupMaxEvent x = new XRankupMaxEvent(p, rankupFromMap.get(p), mapRank, rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
-		Bukkit.getScheduler().runTaskLater(main, () -> {
+		AsyncRankupMaxEvent x = new AsyncRankupMaxEvent(p, rankupFromMap.get(p), mapRank, rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
 		main.getServer().getPluginManager().callEvent(x);
+		Bukkit.getScheduler().runTaskLater(main, () -> {	
         if(main.isRankupMaxWarpFilter) {
             if(main.rankStorage.getPlayerCommands().containsKey(mapRank)) {
           	main.rankStorage.getPlayerCommands().get(mapRank).forEach(line -> {
@@ -424,7 +423,7 @@ public class RankupMax {
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(p);
         Double playerBalance = main.econ.getBalance(p);
-        XRankUpdateEvent e = new XRankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
+        RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.RANKUPMAX, nextRank);
         Bukkit.getPluginManager().callEvent(e);
         if(e.isCancelled()) {
         	rankupMaxProcess.remove(p);
@@ -492,7 +491,7 @@ public class RankupMax {
 					p.sendMessage(prxAPI.cp(message, p));
 				});
 			}
-			prxAPI.taskedPlayers.remove(p);
+			prxAPI.taskedPlayers.remove(p.getName());
 			rankupMaxProcess.remove(p);
 			return;
 		}
@@ -585,7 +584,7 @@ public class RankupMax {
       						p.sendMessage(prxAPI.cp(message, p));
       					});
       				}
-      				prxAPI.taskedPlayers.remove(p);
+      				prxAPI.taskedPlayers.remove(p.getName());
       				rankupMaxProcess.remove(p);
       				break;
       			}
@@ -653,7 +652,7 @@ public class RankupMax {
                //rankup things
    			   main.debug(loopNextRankCost);
                main.econ.withdrawPlayer(p, loopNextRankCost);
-               rankupMaxStreak.put(p, main.plus(rankupMaxStreak.get(p)));
+               rankupMaxStreak.put(p, (rankupMaxStreak.get(p)+1));
                rankups.add(loopNextRank);
                rankupMaxMap.put(p, loopNextRank);
         	   if(loopNextRank.equalsIgnoreCase(limit)) {
@@ -700,9 +699,9 @@ public class RankupMax {
 		prxAPI.setPlayerRank(p, mapRank);
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
         rankupMaxPassedRanks.put(p, rankups);
-		XRankupMaxEvent x = new XRankupMaxEvent(p, rankupFromMap.get(p), mapRank, rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
-		Bukkit.getScheduler().runTaskLater(main, () -> {
+		AsyncRankupMaxEvent x = new AsyncRankupMaxEvent(p, rankupFromMap.get(p), mapRank, rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
 		main.getServer().getPluginManager().callEvent(x);
+		Bukkit.getScheduler().runTaskLater(main, () -> {
         if(main.isRankupMaxWarpFilter) {
             if(main.rankStorage.getPlayerCommands().containsKey(mapRank)) {
           	main.rankStorage.getPlayerCommands().get(mapRank).forEach(line -> {
@@ -712,6 +711,7 @@ public class RankupMax {
           	});
             }
           }
+        prxAPI.celeberate(p);
         rankupMaxMap.remove(p);
         rankupMaxProcess.remove(p);
         rankupMaxPassedRanks.remove(p);

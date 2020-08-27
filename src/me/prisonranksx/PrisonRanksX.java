@@ -322,6 +322,18 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	    }, autoSaveTime, autoSaveTime);
 	}  
 	    
+	public void simulateAsyncAutoDataSave() {
+		long timeBefore = System.currentTimeMillis();
+    	if(saveNotification) {
+    	Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eSaving data...");
+    	}
+    	getPlayerStorage().savePlayersData();
+    	long timeNow = System.currentTimeMillis() - timeBefore;
+    	if(saveNotification) {
+    	Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aData saved §7& §etook §6(§e" + toSeconds(timeNow) + "§6)§e.");
+    	}
+	}
+	
     public void saveDataAsynchronously(UUID u, String name) {
 	    TaskChain <?> tc = taskChainFactory.newSharedChain("dataSave");
 		tc.delay(30)
@@ -635,7 +647,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	}
 	
 	public void setupMySQL() {
-	       host = globalStorage.getStringData("MySQL.host");
+	       host = String.valueOf(globalStorage.getStringData("MySQL.host"));
 	       port = globalStorage.getIntegerData("MySQL.port");
 	       setDatabase(globalStorage.getStringData("MySQL.database"));
 	       username = globalStorage.getStringData("MySQL.username");
@@ -651,7 +663,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
         try {    
             openConnection();
             statement = getConnection().createStatement();  
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + getDatabase() + "." + table + " (uuid varchar(255), name varchar(255), rank varchar(255), prestige varchar(255), rebirth varchar(255), path varchar(255));");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + getDatabase() + "." + table + " (`uuid` varchar(255), `name` varchar(255), `rank` varchar(255), `prestige` varchar(255), `rebirth` varchar(255), `path` varchar(255));");
          
             Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aSuccessfully connected to the database.");
         } catch (ClassNotFoundException e) {
@@ -663,17 +675,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
             e.printStackTrace();
             getLogger().info("MySql SQL Error occurred.");
         }
-        try {
-        	statement.executeUpdate("ALTER TABLE " + getDatabase() + "." + table + " ADD rebirth varchar(255);");	
-        } catch (SQLException err) {}
-        try {
-			statement.executeUpdate("ALTER TABLE " + getDatabase() + "." + table + " ADD path varchar(255);");
-		} catch (SQLException err2) {}
-        try {
- 			statement.close();
- 		} catch (SQLException e) {
- 			e.printStackTrace();
- 		}
         }
  
 	}
@@ -690,12 +691,13 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
             if (getConnection() != null && !getConnection().isClosed()) {
                 return;
             }
+            Class.forName("com.mysql.jdbc.Driver");
             Properties prop = new Properties();
             prop.setProperty("user", username);
             prop.setProperty("password", password);
             prop.setProperty("useSSL", String.valueOf(useSSL));
             prop.setProperty("autoReconnect", String.valueOf(autoReconnect));
-            setConnection(DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.getDatabase(), prop));
+            setConnection(DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.getDatabase() + "?characterEncoding=utf8", prop));
         }
     }
     
@@ -730,7 +732,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "rebirth", rebirthName);
 				util.set(u, "name", name); 
 			} else {
-				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 			}
 		} catch (SQLException e1) {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -761,7 +763,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "rebirth", rebirthName);
 				util.set(u, "name", name);       
 			} else {
-				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 			}
 		} catch (SQLException e1) {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -795,7 +797,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "rebirth", rebirthName);
 				util.set(u, "name", name);       
 			} else {
-				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 			}
 		} catch (SQLException e1) {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -828,7 +830,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "rebirth", rebirthName);
 				util.set(u, "name", name);       
 			} else {
-				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (uuid, name, rank, prestige, rebirth, path) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
 			}
 		} catch (SQLException e1) {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -1072,10 +1074,12 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		Bukkit.getScheduler().runTaskLater(this, () -> {
 		if(isVaultGroups && checkVault) {
 			if(this.vaultPlugin.equalsIgnoreCase("LuckPerms")) {
-	    		User lpUser = luckperms.getUserManager().getUser(playerUUID);
+				taskChainFactory.newSharedChain("luckperms").async(() -> {
+	    		User lpUser = lpUtils.getUser(playerUUID);
 	    		if(!lpUser.getPrimaryGroup().equalsIgnoreCase(prxAPI.getPlayerRank(playerUUID))) {
 	    			prxAPI.setPlayerRank(playerUUID, lpUser.getPrimaryGroup());
 	    		}
+				}).execute();
 	    	}
 			else if(vaultPlugin.equalsIgnoreCase("GroupManager")) {
 				String group = groupManager.getGroup(p);
