@@ -13,11 +13,11 @@ public class AutoPrestigeCommand extends BukkitCommand
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	public AutoPrestigeCommand(String commandName) {
 		super(commandName);
-		this.setDescription(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".description", "automatically prestige while having enough money to rankup")));
-		this.setUsage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".usage", "/autoprestige")));
-		this.setPermission(main.configManager.commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.autoprestige"));
-		this.setPermissionMessage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
-		this.setAliases(main.configManager.commandsConfig.getStringList("commands." + commandName + ".aliases"));
+		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "automatically prestige while having enough money to rankup")));
+		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/autoprestige")));
+		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.autoprestige"));
+		this.setPermissionMessage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
+		this.setAliases(main.getConfigManager().commandsConfig.getStringList("commands." + commandName + ".aliases"));
 	}
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {

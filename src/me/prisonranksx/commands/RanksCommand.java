@@ -14,11 +14,11 @@ public class RanksCommand extends BukkitCommand {
 	
 	public RanksCommand(String commandName) {
 		super(commandName);
-		this.setDescription(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".description", "shows a list of prison ranks")));
-		this.setUsage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".usage", "/ranks")));
-		this.setPermission(main.configManager.commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.ranks"));
-		this.setPermissionMessage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
-		this.setAliases(main.configManager.commandsConfig.getStringList("commands." + commandName + ".aliases"));
+		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "shows a list of prison ranks")));
+		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/ranks")));
+		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.ranks"));
+		this.setPermissionMessage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
+		this.setAliases(main.getConfigManager().commandsConfig.getStringList("commands." + commandName + ".aliases"));
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class RanksCommand extends BukkitCommand {
 		}
 		if(args.length == 0) {
 			if(main.globalStorage.getBooleanData("Options.GUI-RANKLIST")) {
-				main.guiManager.openRanksGUI((Player)sender);
+				main.getGuiManager().openRanksGUI((Player)sender);
 				return true;
 			}
 			main.ranksAPI.send("1", sender);

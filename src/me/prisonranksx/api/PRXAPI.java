@@ -3106,7 +3106,7 @@ public class PRXAPI {
 	    */
 	public String getPlayerRankupPercentageDirect(final OfflinePlayer offlinePlayer) {
 		if(this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)) == null) {
-		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100;
+		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100, 1);
 		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
 		if(Double.valueOf(convertedValue) > 100) {
 			return "100";
@@ -3114,7 +3114,7 @@ public class PRXAPI {
 		return String.valueOf(convertedValue);
 		} else {
 			int splittingNumber = 1;
-			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100;
+			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100, 1);
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;
@@ -3243,7 +3243,7 @@ public class PRXAPI {
 		if(getPlayerNextRank(offlinePlayer) == null) {
 			return "100";
 		}
-		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankupCostWithIncreaseDirect(offlinePlayer);
+		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100, 1);
 		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
 		if(Double.valueOf(convertedValue) > 100) {
 			return "100";
@@ -3251,7 +3251,7 @@ public class PRXAPI {
 		return String.valueOf(convertedValue);
 		} else {
 			int splittingNumber = 1;
-			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100;
+			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100, 1);
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;

@@ -8,6 +8,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.CollectionUtils;
 
 public class FireworkManager {
 
@@ -21,17 +22,17 @@ public class FireworkManager {
 	public Map<String, Object> getFireworkBuilder() {
 		if(levelType == LevelType.RANK) {
 			if(main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + levelName + ".firework-builder") == null) {
-				return new HashMap<String, Object>();
+				return CollectionUtils.EMPTY_STRING_TO_OBJECT_MAP;
 			}
 		return main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + levelName + ".firework-builder").getValues(false);
 		} else if (levelType == LevelType.PRESTIGE) {
 			if(main.getConfigManager().prestigesConfig.getConfigurationSection("Prestiges." + levelName + ".firework-builder") == null) {
-				return new HashMap<String, Object>();
+				return CollectionUtils.EMPTY_STRING_TO_OBJECT_MAP;
 			}
 			return main.getConfigManager().prestigesConfig.getConfigurationSection("Prestiges." + levelName + ".firework-builder").getValues(false);
 		} else if (levelType == LevelType.REBIRTH) {
 			if(main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths." + levelName + ".firework-builder") == null) {
-				return new HashMap<String, Object>();
+				return CollectionUtils.EMPTY_STRING_TO_OBJECT_MAP;
 			}
 			return main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths." + levelName + ".firework-builder").getValues(false);
 		} else if (levelType == LevelType.OTHER) {

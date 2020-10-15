@@ -25,6 +25,9 @@ public class RankDataStorage {
 	private Map<String, List<String>> playerCommands;
 	private Map<String, List<String>> opCommands;
 	private Map<String, String> lastRankMap;
+	private final Map<String, String> emptyStringToStringMap = new HashMap<>();
+	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
+	private final List<String> emptyStringList = new ArrayList<>();
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
 	   this.rankData = new LinkedHashMap<String, RankDataHandler>();
@@ -101,10 +104,10 @@ public class RankDataStorage {
 		for(String pathName : main.getConfigManager().ranksConfig.getConfigurationSection("Ranks").getKeys(false)) {
 			for(String rankName : main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName).getKeys(false)) {
 				String rankupName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".nextrank");
-				String rankDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".display");
-				Double rankCost = main.getConfigManager().ranksConfig.getDouble("Ranks." + pathName + "." +  rankName + ".cost", 0.0);
-				Double rankupCost = main.getConfigManager().ranksConfig.getDouble("Ranks." + pathName + "." +  rankupName + ".cost", 0.0);
-				String rankupDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display");
+				String rankDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".display", "");
+				double rankCost = main.getConfigManager().ranksConfig.getDouble("Ranks." + pathName + "." +  rankName + ".cost", 0.0);
+				double rankupCost = main.getConfigManager().ranksConfig.getDouble("Ranks." + pathName + "." +  rankupName + ".cost", 0.0);
+				String rankupDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display", "");
 				boolean allowPrestige = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".allow-prestige");
 				List<String> rankupCommands = getList("Ranks." + pathName + "." +  rankupName + ".executecmds");
 				List<String> actionbarMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
@@ -119,9 +122,9 @@ public class RankDataStorage {
 				boolean sendFirework = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 				RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 				RankPath rankPath = new RankPath(rankName, pathName);
-				Map<String, Double> numberRequirements = new HashMap<>();
-				Map<String, String> stringRequirements = new HashMap<>();
-				List<String> customRequirementMessage = new ArrayList<>();
+				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
+				Map<String, String> stringRequirements = emptyStringToStringMap;
+				List<String> customRequirementMessage = emptyStringList;
 				if(main.getConfigManager().ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
@@ -178,9 +181,9 @@ public class RankDataStorage {
                 paths.add(pathName);
                 putPathRank(pathName, rankName);
     			List<String> commands = gds().parseHexColorCodes(rankupCommands);
-    			List<String> consoleCommands = new ArrayList<>();
-    			List<String> opCommands = new ArrayList<>();
-    			List<String> playerCommands = new ArrayList<>();
+    			List<String> consoleCommands = emptyStringList;
+    			List<String> opCommands = emptyStringList;
+    			List<String> playerCommands = emptyStringList;
     			if(commands != null && !commands.isEmpty()) {
     			for(String command : commands) {
     				if(command.startsWith("[console]") || !command.startsWith("[")) {
@@ -201,9 +204,6 @@ public class RankDataStorage {
     			}
 			 }
 			}
-		pathRanks.get("default").forEach(line -> {
-			main.debugPreEnable(line);
-		});
 	}
 	
 	public int getInteger(String node) {
@@ -215,7 +215,7 @@ public class RankDataStorage {
 	
 	public List<String> getList(String node) {
 		if(node == null || main.getConfigManager().ranksConfig.get(node) == null) {
-			return new ArrayList<>();
+			return emptyStringList;
 		}
 		return main.getConfigManager().ranksConfig.getStringList(node);
 	}
@@ -330,7 +330,7 @@ public class RankDataStorage {
 		return rankData.get(rankPath.get()).isAllowPrestige();
 	}
 	
-	public Double getRankupCost(RankPath rankPath) {
+	public double getRankupCost(RankPath rankPath) {
 		return rankData.get(rankPath.get()).getRankupCost();
 	}
 	

@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.CollectionUtils;
 
 public class RankRandomCommands {
 
@@ -24,31 +25,31 @@ public class RankRandomCommands {
 	private static PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	
 	public RankRandomCommands(String rankName, boolean withKeys, String pathName) {this.setRankName(rankName); this.withKeys = withKeys; this.setPathName(pathName);
-	this.commandsList = new ArrayList<>();
-	this.chances = new ArrayList<>();
-	this.randomCommandsMap = new HashMap<String, Object>();
+	this.commandsList = CollectionUtils.EMPTY_STRINGLIST_LIST;
+	this.chances = CollectionUtils.EMPTY_DOUBLE_LIST;
+	this.randomCommandsMap = CollectionUtils.EMPTY_STRING_TO_OBJECT_MAP;
 	}
 	
 	public RankRandomCommands(String rankName, boolean withKeys, String pathName, boolean loadSections) {this.setRankName(rankName); this.withKeys = withKeys; this.setPathName(pathName);
-	this.commandsList = new ArrayList<>();
-	this.chances = new ArrayList<>();
-	this.randomCommandsMap = new HashMap<String, Object>();
+	this.commandsList = CollectionUtils.EMPTY_STRINGLIST_LIST;
+	this.chances = CollectionUtils.EMPTY_DOUBLE_LIST;
+	this.randomCommandsMap = CollectionUtils.EMPTY_STRING_TO_OBJECT_MAP;
 	if(loadSections) {
-		loadSections(RankPath.getRankPath(rankName + "#~#" + pathName));
+		loadSections(RankPath.getRankPath(rankName, pathName));
 	}
 	}
 	
 	public void loadSections(RankPath rankPath) {
         String pathName = rankPath.getPathName();
         String rankName = rankPath.getRankName();
-		Map<String, Object> randomCommandsMap = new HashMap<String, Object>();
+		Map<String, Object> randomCommandsMap = CollectionUtils.EMPTY_STRING_TO_OBJECT_MAP;
 		if(main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds") != null &&
 				!main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getKeys(false).isEmpty()) {
 		randomCommandsMap = main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName + "." + rankName + ".randomcmds").getValues(withKeys);
 		
 		}
-		List<List<String>> commandsList = new ArrayList<>();
-		List<Double> chances = new ArrayList<>();
+		List<List<String>> commandsList = CollectionUtils.EMPTY_STRINGLIST_LIST;
+		List<Double> chances = CollectionUtils.EMPTY_DOUBLE_LIST;
 		if(!randomCommandsMap.isEmpty()) {
 		for(String section : randomCommandsMap.keySet()) {
 			commandsList.add(main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." + rankName + ".randomcmds." + section + ".commands"));

@@ -12,11 +12,11 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 	
 	public RebirthsCommand(String commandName) {
 		super(commandName);
-		this.setDescription(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".description", "shows a list of prison rebirths")));
-		this.setUsage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".usage", "/rebirths")));
-		this.setPermission(main.configManager.commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.rebirths"));
-		this.setPermissionMessage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
-		this.setAliases(main.configManager.commandsConfig.getStringList("commands." + commandName + ".aliases"));
+		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "shows a list of prison rebirths")));
+		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/rebirths")));
+		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.rebirths"));
+		this.setPermissionMessage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
+		this.setAliases(main.getConfigManager().commandsConfig.getStringList("commands." + commandName + ".aliases"));
 	}
 
 	@Override
@@ -39,7 +39,7 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 		}
 		if(args.length == 0) {
 			if(main.globalStorage.getBooleanData("Options.GUI-REBIRTHLIST")) {
-				main.guiManager.openRebirthsGUI((Player)sender);
+				main.getGuiManager().openRebirthsGUI((Player)sender);
 				return true;
 			}
 			main.rebirthsAPI.send("1", sender);

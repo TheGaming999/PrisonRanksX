@@ -16,6 +16,10 @@ public class RebirthDataStorage {
 	
 	public Map<String, RebirthDataHandler> rebirthData;
 	private PrisonRanksX main;
+	private final Map<String, String> emptyStringToStringMap = new HashMap<>();
+	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
+	private final List<String> emptyStringList = new ArrayList<>();
+	
 	public RebirthDataStorage(PrisonRanksX main) {
 		this.main = main;
 		this.rebirthData = new LinkedHashMap<String, RebirthDataHandler>();
@@ -44,10 +48,10 @@ public class RebirthDataStorage {
 			for(String rebirthName : main.getConfigManager().rebirthsConfig.getConfigurationSection("Rebirths").getKeys(false)) {
 				String nextRebirthName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + rebirthName + ".nextrebirth");
 				String rebirthDisplayName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + rebirthName + ".display");
-				Double rebirthCost = main.getConfigManager().rebirthsConfig.getDouble("Rebirths." + rebirthName + ".cost", 0.0);
+				double rebirthCost = main.getConfigManager().rebirthsConfig.getDouble("Rebirths." + rebirthName + ".cost", 0.0);
 				//Double nextRebirthCost = main.getConfigManager().rebirthsConfig.getDouble("Rebirths." + nextRebirthName + ".cost", 0.0);
 				//String nextRebirthDisplayName = main.getConfigManager().rebirthsConfig.getString("Rebirths." + nextRebirthName + ".display");
-				Double prestigeIncrease = 0.0;
+				double prestigeIncrease = 0.0;
                 prestigeIncrease = loadDouble("Rebirths." + rebirthName + ".prestige_cost_increase_percentage");
 				List<String> rebirthCommands = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".executecmds");
 				//List<String> nextRebirthCommands = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + nextRebirthName + ".executecmds");
@@ -64,9 +68,9 @@ public class RebirthDataStorage {
 				FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
 				boolean sendFirework = main.getConfigManager().rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
 				RebirthDataHandler rbdh = new RebirthDataHandler(rebirthName);
-				Map<String, Double> numberRequirements = new HashMap<>();
-				Map<String, String> stringRequirements = new HashMap<>();
-				List<String> customRequirementMessage = new ArrayList<>();
+				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
+				Map<String, String> stringRequirements = emptyStringToStringMap;
+				List<String> customRequirementMessage = emptyStringList;
 				if(main.getConfigManager().rebirthsConfig.isSet("Rebirths." + rebirthName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
@@ -120,14 +124,14 @@ public class RebirthDataStorage {
 			}
 	}
 	
-	public Double loadDouble(String node) {
+	public double loadDouble(String node) {
 		if(!main.getConfigManager().rebirthsConfig.isSet(node) || !main.getConfigManager().rebirthsConfig.isDouble(node)) {
 			return 0.0;
 		}
 		return main.getConfigManager().rebirthsConfig.getDouble(node, 0.0);
 	}
 	
-	public Integer loadInt(String node) {
+	public int loadInt(String node) {
 		if(!main.getConfigManager().rebirthsConfig.isSet(node) || !main.getConfigManager().rebirthsConfig.isInt(node)) {
 			return 0;
 		}
@@ -186,7 +190,7 @@ public class RebirthDataStorage {
 		return rebirthData.get(rebirthName).getNextRebirthName();
 	}
 	
-	public Double getCost(String rebirthName) {
+	public double getCost(String rebirthName) {
 		return rebirthData.get(rebirthName).getCost();
 	}
 	
@@ -262,7 +266,7 @@ public class RebirthDataStorage {
 		return rebirthData.get(rebirthName).isSendFirework();
 	}
 	
-	public Double getPrestigeCostIncreasePercentage(String rebirthName) {
+	public double getPrestigeCostIncreasePercentage(String rebirthName) {
 		return rebirthData.get(rebirthName).getPrestigeCostIncreasePercentage();
 	}
 	

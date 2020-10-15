@@ -12,10 +12,10 @@ import org.bukkit.util.StringUtil;
 
 
 
-public class PrxTabComplete implements TabCompleter{
+public class PrxTabComplete implements TabCompleter {
 	private static List<String> COMMANDS = new ArrayList<>();
 	@Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
 
 		if(args.length == 1) {
         //create new array

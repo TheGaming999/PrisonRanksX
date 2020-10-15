@@ -13,11 +13,11 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 	
 	public PrestigesCommand(String commandName) {
 		super(commandName);
-		this.setDescription(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".description", "shows a list of prison prestiges")));
-		this.setUsage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".usage", "/prestiges")));
-		this.setPermission(main.configManager.commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.prestiges"));
-		this.setPermissionMessage(main.getStringWithoutPAPI(main.configManager.commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
-		this.setAliases(main.configManager.commandsConfig.getStringList("commands." + commandName + ".aliases"));
+		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "shows a list of prison prestiges")));
+		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/prestiges")));
+		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.prestiges"));
+		this.setPermissionMessage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
+		this.setAliases(main.getConfigManager().commandsConfig.getStringList("commands." + commandName + ".aliases"));
 	}
 
 	@Override
@@ -40,7 +40,7 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 		}
 		if(args.length == 0) {
 				if(main.globalStorage.getBooleanData("Options.GUI-PRESTIGELIST")) {
-					main.guiManager.openPrestigesGUI((Player)sender);
+					main.getGuiManager().openPrestigesGUI((Player)sender);
 					return true;
 				}
 			main.prestigesAPI.send("1", sender);

@@ -18,6 +18,9 @@ public class PrestigeDataStorage {
 	private Map<String, PrestigeDataHandler> prestigeData;
 	private PrisonRanksX main;
 	private List<String> prestiges;
+	private final Map<String, String> emptyStringToStringMap = new HashMap<>();
+	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
+	private final List<String> emptyStringList = new ArrayList<>();
 	
 	public PrestigeDataStorage(PrisonRanksX main) {
 		this.main = main;
@@ -45,14 +48,14 @@ public class PrestigeDataStorage {
 			for(String prestigeName : main.getConfigManager().prestigesConfig.getConfigurationSection("Prestiges").getKeys(false)) {
 				String nextPrestigeName = loadString("Prestiges." + prestigeName + ".nextprestige");
 				String prestigeDisplayName = loadString("Prestiges." + prestigeName + ".display");
-				Double prestigeCost = loadDouble("Prestiges." + prestigeName + ".cost");
+				double prestigeCost = loadDouble("Prestiges." + prestigeName + ".cost");
 				//Double nextPrestigeCost = loadDouble("Prestiges." + nextPrestigeName + ".cost");
 				//String nextPrestigeDisplayName = loadString("Prestiges." + nextPrestigeName + ".display");
-				Double rankupCostIncreasePercentage = 0.0;
+				double rankupCostIncreasePercentage = 0.0;
 				rankupCostIncreasePercentage = loadDouble("Prestiges." + prestigeName + ".rankup_cost_increase_percentage");
 				List<String> prestigeCommands = loadStringList("Prestiges." + prestigeName + ".executecmds");
 				List<String> actionbarMessages = loadStringList("Prestiges." + prestigeName + ".actionbar.text");
-				Integer actionbarInterval = loadInt("Prestiges." + prestigeName + ".actionbar.interval");
+				int actionbarInterval = loadInt("Prestiges." + prestigeName + ".actionbar.interval");
 				List<String> broadcastMessages = loadStringList("Prestiges." + prestigeName + ".broadcast");
 				List<String> messages = loadStringList("Prestiges." + prestigeName + ".msg");
 				List<String> actions = loadStringList("Prestiges." + prestigeName + ".actions");
@@ -62,9 +65,9 @@ public class PrestigeDataStorage {
 				FireworkManager fireworkManager = new FireworkManager(prestigeName, LevelType.PRESTIGE, "prestige");
 				Boolean sendFirework = loadBoolean("Prestiges." + prestigeName + ".send-firework");
 				PrestigeDataHandler pdh = new PrestigeDataHandler(prestigeName);
-				Map<String, Double> numberRequirements = new HashMap<>();
-				Map<String, String> stringRequirements = new HashMap<>();
-				List<String> customRequirementMessage = new ArrayList<>();
+				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
+				Map<String, String> stringRequirements = emptyStringToStringMap;
+				List<String> customRequirementMessage = emptyStringList;
 				if(main.getConfigManager().prestigesConfig.isSet("Prestiges." + prestigeName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().prestigesConfig.getStringList("Prestiges." + prestigeName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
@@ -128,23 +131,23 @@ public class PrestigeDataStorage {
 	
 	public List<String> loadStringList(String node) {
 		if(main.getConfigManager().prestigesConfig.getStringList(node) == null || main.getConfigManager().prestigesConfig.getStringList(node).isEmpty()) {
-			return new ArrayList<String>();
+			return emptyStringList;
 		}
 		return main.getConfigManager().prestigesConfig.getStringList(node);
 	}
 	
-	public Integer loadInt(String node) {
+	public int loadInt(String node) {
 		if(!main.getConfigManager().prestigesConfig.isSet(node) || !main.getConfigManager().prestigesConfig.isInt(node)) {
 			return 0;
 		}
 		return main.getConfigManager().prestigesConfig.getInt(node, 0);
 	}
 	
-	public Boolean loadBoolean(String node) {
+	public boolean loadBoolean(String node) {
 		return main.getConfigManager().prestigesConfig.getBoolean(node, false);
 	}
 	
-	public Double loadDouble(String node) {
+	public double loadDouble(String node) {
 		if(!main.getConfigManager().prestigesConfig.isSet(node) || !main.getConfigManager().prestigesConfig.isDouble(node)) {
 			return 0.0;
 		}
@@ -201,7 +204,7 @@ public class PrestigeDataStorage {
 	
 	/**
 	 * 
-	 * @return array prestiges collection
+	 * @return construct a new array prestiges collection
 	 */
 	public List<String> getPrestigesCollection() {
 		return Arrays.asList(prestigeData.keySet().toArray(new String[0]));
@@ -218,6 +221,7 @@ public class PrestigeDataStorage {
 	/**
 	 * 
 	 * @return construct a new linked prestiges collection.
+	 * @deprecated use getNativeLinkedPrestigesCollection();
 	 */
 	public List<String> getLinkedPrestigesCollection() {
 		return new LinkedList<String>(prestigeData.keySet());
