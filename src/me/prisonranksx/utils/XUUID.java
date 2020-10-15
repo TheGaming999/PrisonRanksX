@@ -15,6 +15,7 @@ public class XUUID {
 	private UUID uuid;
 	private static final PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	private static final Map<UUID, String> legacyPlayers = new HashMap<>();
+	private static final Map<String, UUID> legacyPlayers2 = new HashMap<>();
 	
 	public XUUID(OfflinePlayer player) {
 		UUID u;
@@ -22,6 +23,7 @@ public class XUUID {
 			String playerName = player.getName();
 			u = UUID.nameUUIDFromBytes(playerName.getBytes());
 			legacyPlayers.put(u, playerName);
+			legacyPlayers2.put(playerName, u);
 		} else {
 			u = player.getUniqueId();
 		}
@@ -37,13 +39,15 @@ public class XUUID {
 		return legacyPlayers.get(uuid);
 	}
 	
-	public static UUID tryNameConvert(String name) {
+	public static UUID tryNameConvert(final String name) {
 		if(name.contains("-")) {
 			// is uuid
 			return UUID.fromString(name);
 		}
-		legacyPlayers.put(UUID.nameUUIDFromBytes(name.getBytes()), name);
-		return UUID.nameUUIDFromBytes(name.getBytes());
+		UUID uuid = UUID.nameUUIDFromBytes(name.getBytes());
+		legacyPlayers.put(uuid, name);
+		legacyPlayers2.put(name, uuid);
+		return uuid;
 	}
 	
 	/**
@@ -66,6 +70,12 @@ public class XUUID {
 		return Bukkit.getOfflinePlayer(uuid).getName();
 	}
 	
+	public static UUID getUUIDFromName(String name) {
+		if(main.isBefore1_7) {
+			return legacyPlayers2.get(name);
+		}
+		return Bukkit.getOfflinePlayer(name).getUniqueId();
+	}
 	/**
 	 * 
 	 * @param uuid
@@ -75,9 +85,12 @@ public class XUUID {
 		if(main.isBefore1_7) {
 			if(legacyPlayers.containsKey(uuid)) {
 				return uuid;
+			} else {
+				legacyPlayers.put(uuid, legacyPlayers.get(uuid));
+				return uuid;
 			}
 		}
-		return Bukkit.getOfflinePlayer(uuid).getUniqueId();
+		return uuid;
 	}
 	
 	public void setUUID(UUID uuid) {

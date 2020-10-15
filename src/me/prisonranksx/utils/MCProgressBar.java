@@ -3,7 +3,7 @@ package me.prisonranksx.utils;
 public class MCProgressBar {
 
 	private String style;
-	private final String xs = "x";
+	private final String replacement = "x";
 	private int maxValue;
 	private String leftPrefix;
 	private String completedPrefix;
@@ -45,8 +45,8 @@ public class MCProgressBar {
 	 * build the progressbar, give access to setValue(int) method.
 	 */
 	public void build() {
-		progressBar = getChars(xs, maxValue);
-		defaultProgressBar = getChars(xs, maxValue);
+		progressBar = getChars(replacement, maxValue);
+		defaultProgressBar = getChars(replacement, maxValue);
 	}
 	
 	/**
@@ -144,6 +144,6 @@ public class MCProgressBar {
 	 * @return final progress bar with settings applied
 	 */
 	public String getProgressBar() {
-		return this.progressBar.replaceAll(xs, style);
+		return this.progressBar.replace(replacement, style);
 	}
 }

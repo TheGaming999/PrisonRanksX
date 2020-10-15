@@ -22,7 +22,7 @@ public class MySqlUtils {
 	 */
 	public void set(String uuid, String key, String value) {
 		try {
-			statement.executeUpdate("UPDATE " + database + " set " + key + " = '" + value + "' where uuid='" + uuid + "';");
+			statement.executeUpdate("UPDATE " + database + " set `" + key + "`='" + value + "' where uuid='" + uuid + "';");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

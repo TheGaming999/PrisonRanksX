@@ -478,6 +478,13 @@ public class NumberAPI {
 		}
 		return number;
 	}
+	
+	public int limitInverse(double number, int limit) {
+		if(number < limit) {
+			return limit;
+		}
+		return (int)number;
+	}
     /**
      * 
      * @param number the number you want to limit

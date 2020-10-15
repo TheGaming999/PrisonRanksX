@@ -18,6 +18,8 @@ public class MySqlStreamer {
 
     private DataSource dataSource;
     private Connection globalConnection;
+    private MysqlStreamQuery query;
+    
     
     public MySqlStreamer(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -28,10 +30,15 @@ public class MySqlStreamer {
     }
 
     public Stream<Map> streamQuery(String sql) throws SQLException {
-        return new MysqlStreamQuery().stream(sql);
+    	this.query = new MysqlStreamQuery();
+        return query.stream(sql);
     }
 
-    class MysqlStreamQuery implements Closeable {
+    public MysqlStreamQuery getStreamQuery() {
+    	return this.query;
+    }
+    
+    public class MysqlStreamQuery implements Closeable {
 
         private Connection connection;
         private Statement statement;
@@ -79,6 +86,16 @@ public class MySqlStreamer {
             return resultStream;
         }
 
+        public void closeStatement() {
+        	   if (statement != null) {
+                   try {
+                       statement.close();
+                   } catch (SQLException e) {
+                   }
+                   statement = null;
+               }
+        }
+        
         @Override
         public void close() {
             if (statement != null) {

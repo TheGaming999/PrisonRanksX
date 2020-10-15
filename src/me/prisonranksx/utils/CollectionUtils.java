@@ -1,9 +1,12 @@
 package me.prisonranksx.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -14,6 +17,11 @@ import com.google.common.collect.Sets;
 
 public class CollectionUtils {
 	
+	public final static Map<String, Object> EMPTY_STRING_TO_OBJECT_MAP = new HashMap<>();
+	public final static List<String> EMPTY_STRING_LIST = new ArrayList<>();
+	public final static List<String> EMPTY_LINKED_STRING_LIST = new LinkedList<>();
+	public final static List<Double> EMPTY_DOUBLE_LIST = new ArrayList<>();
+	public final static List<List<String>> EMPTY_STRINGLIST_LIST = new ArrayList<>();
 	
 	private static boolean isNearPointer(final int number, final int divideBy) {
 		double converted = ((double)number / (double)divideBy);
@@ -506,7 +514,7 @@ public class CollectionUtils {
 	public static PaginatedList paginateListCollectable(List<String> stringList, final int maxElements, final int page) {
 	      int counter = 0;
 	      List<String> oldCollection = stringList;
-	      List<String> newCollection = Lists.newLinkedList();
+	      List<String> newCollection = EMPTY_LINKED_STRING_LIST;
 	      int size = oldCollection.size();
 			for(int i = 0; i < size; i++) {
 	    	  if(counter >= maxElements) {

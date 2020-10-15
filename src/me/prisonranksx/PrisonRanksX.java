@@ -247,7 +247,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	private String U;
 	private String D;
 	private String Z;
-    private String[] abbrivations;
+    private String[] abbrevations;
     private final DecimalFormat abb = new DecimalFormat("0.##");
 	// ======================
 	// OTHER FIELDS
@@ -389,11 +389,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		this.U = globalStorage.getStringData("MoneyFormatter.undecillion");
 		this.D = globalStorage.getStringData("MoneyFormatter.Duodecillion");
 		this.Z = globalStorage.getStringData("MoneyFormatter.zillion");
-	    String[] abbrivations = {"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, v("II"), v("III"), v("IV"), v("V"), v("VI"), v("VII"), v("VIII"), v("IX"), v("X")
+	    String[] abbrevations = {"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, v("II"), v("III"), v("IV"), v("V"), v("VI"), v("VII"), v("VIII"), v("IX"), v("X")
 	    		, v("11"), v("12"), v("13"), v("14"), v("15"), v("16"), v("17") , v("18") , v("19"), v("20"), v("21"), v("22"), v("23"), v("24"), v("25"), v("26")
 	    		, v("27"), v("28"), v("29"), v("30"), "~", "~!", "~?", "~@", "#", "^", "&", "*", "-", "+", "+2", "+3", "+4", "+5", "+6", "ALOT!"
 	    };
-	    this.abbrivations = abbrivations;
+	    this.abbrevations = abbrevations;
 	}
 	
 	public void onEnable() {
@@ -1212,7 +1212,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
         		 if(actionbar_task.containsKey(p)) {
         		 actionbar_task.put(p, actionbarTask);
         		 }
-		        	Integer lines = actionBar.size();
+		        	int lines = actionBar.size();
 		        	if(actionbar_animation.get(p) == lines) {
 		        		Bukkit.getScheduler().runTaskLater(prxAPI.getPluginMainClass(), () -> {
 		        		actionbarInUse.remove(p.getUniqueId());
@@ -1579,6 +1579,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 
 	public void executeCommand(Player player, String command) {
 		Player p = player;
+		Bukkit.getScheduler().runTask(this, () -> {
     	   if(command.startsWith("[console]")) {
     		   Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(10).replace("%player%", p.getName()));
     	   } else if (command.startsWith("[op]")) {
@@ -1599,6 +1600,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
     	   } else {
     		   Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", p.getName()));
     	   }
+		});
 	}
 	
 	public String v(String string) {
@@ -1609,7 +1611,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
     {
         if(y > 999) {
         double x = y / Math.pow(10,Math.floor(Math.log10(y) / 3) * 3);
-        return abb.format(x) + abbrivations[((int) Math.floor(Math.log10(y) / 3))];   
+        return abb.format(x) + abbrevations[((int) Math.floor(Math.log10(y) / 3))];   
         }
         return String.valueOf(y);
     }
