@@ -15,51 +15,40 @@ import com.google.common.collect.Lists;
  */
 public class OnlinePlayers {
 	
-private static Integer size = 0;
-private static Integer count = size;
+	private static final List<Player> EMPTY_PLAYER_LIST = Lists.newArrayList();
+    private static int size = 0;
+    private static int amount = 0;
+
     /**
-     * @param getEveryPlayer gets every player in the server in a list
-     * @return
+     * @return gets every player in the server in a list
      */
-	public static List<Player> getEveryPlayer() {
-	    List<Player> playerlist = Lists.newArrayList();
-	    playerlist.clear();
+	public static List<Player> getPlayers() {
+	    List<Player> playerList = EMPTY_PLAYER_LIST;
 	    for (World wrld : Bukkit.getWorlds()) {
-	        playerlist.addAll(wrld.getPlayers());
+	        playerList.addAll(wrld.getPlayers());
 	    }
-	    size = playerlist.size();
-	    return Collections.unmodifiableList(playerlist);
+	    size = playerList.size();
+	    return Collections.unmodifiableList(playerList);
 	}
 	/**
-	 * @param size amount of the entries in the online players list
-	 * @return
+	 * @return size amount of the entries in the online players list
 	 */
-    public static Integer size() {
+    public static int size() {
+    	Bukkit.getWorlds().forEach(world -> {
+    		world.getPlayers().forEach(player -> amount++);
+  	    });
+    	return amount;
+    }
+    
+    /**
+     * @deprecated
+     * @return amount of last cached online players in the server
+     */
+    public static int getCount() {
     	return size;
     }
-    /**
-     * @param getCount amount of online players in the server
-     * @return
-     */
-    public static Integer getCount() {
-    	return count;
-    }
-    /**
-     * @param OBOPlayer one by one player , loop
-     * @return
-     */
-    public static Player getOBOPlayer() {
-    	for(Player plr : getEveryPlayer()) {
-    		return plr;
-    	}
-		return null;
-    }
-    public static Boolean isEmpty() {
-    	if(count == 0) {
-    		return true;
-    	} else {
-    		return false;
-    	}
-    	
+
+    public static boolean isEmpty() {
+    	return size == 0 ? true : false;	
     }
 }

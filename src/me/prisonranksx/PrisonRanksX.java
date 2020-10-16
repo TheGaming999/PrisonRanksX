@@ -247,7 +247,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	private String U;
 	private String D;
 	private String Z;
-    private String[] abbrevations;
+    private String[] abbreviations;
     private final DecimalFormat abb = new DecimalFormat("0.##");
 	// ======================
 	// OTHER FIELDS
@@ -389,11 +389,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		this.U = globalStorage.getStringData("MoneyFormatter.undecillion");
 		this.D = globalStorage.getStringData("MoneyFormatter.Duodecillion");
 		this.Z = globalStorage.getStringData("MoneyFormatter.zillion");
-	    String[] abbrevations = {"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, v("II"), v("III"), v("IV"), v("V"), v("VI"), v("VII"), v("VIII"), v("IX"), v("X")
+	    String[] abbreviations = {"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, v("II"), v("III"), v("IV"), v("V"), v("VI"), v("VII"), v("VIII"), v("IX"), v("X")
 	    		, v("11"), v("12"), v("13"), v("14"), v("15"), v("16"), v("17") , v("18") , v("19"), v("20"), v("21"), v("22"), v("23"), v("24"), v("25"), v("26")
 	    		, v("27"), v("28"), v("29"), v("30"), "~", "~!", "~?", "~@", "#", "^", "&", "*", "-", "+", "+2", "+3", "+4", "+5", "+6", "ALOT!"
 	    };
-	    this.abbrevations = abbrevations;
+	    this.abbreviations = abbreviations;
 	}
 	
 	public void onEnable() {
@@ -1471,21 +1471,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			}
 		}
 		}
-		if(rankStorage.getOpCommands().containsKey(rankpath)) {
-		for(String string : rankStorage.getOpCommands().get(rankpath)) {
- 		   if(!p.isOp()) {
- 		   top.addCommand(string);
- 		   top.setTempOp(p, true);
- 		   p.setOp(true);
- 	       }
- 		   Bukkit.dispatchCommand(p, string.replace("%player%", name));
- 		   if(p.isOp() && top.isTempOp(p)) {
- 		   p.setOp(false);
- 		   top.delCommand(string);
- 		   top.setTempOp(p, false);
- 		   }
-		}
-		}
 	}
 	
 	public void executeCachedCommands(Player player, RankPath rank) {
@@ -1502,21 +1487,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			Bukkit.dispatchCommand(p, string.replace("%player%", name));
 		}
 		}
-		if(rankStorage.getOpCommands().containsKey(rankpath)) {
-		for(String string : rankStorage.getOpCommands().get(rankpath)) {
- 		   if(!p.isOp()) {
- 		   top.addCommand(string);
- 		   top.setTempOp(p, true);
- 		   p.setOp(true);
- 	       }
- 		   Bukkit.dispatchCommand(p, string.replace("%player%", name));
- 		   if(p.isOp() && top.isTempOp(p)) {
- 		   p.setOp(false);
- 		   top.delCommand(string);
- 		   top.setTempOp(p, false);
- 		   }
-		}
-		}
 	}
 	
 	public void executeCommandsSafely(Player player, List<String> stringList) {
@@ -1524,19 +1494,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
            for(String command : stringList) {
         	   if(command.startsWith("[console]")) {
         		   Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(10).replace("%player%", p.getName()));
-        	   } else if (command.startsWith("[op]")) {
-        		   String opCommand = command.substring(5).replace("%player%", p.getName());
-        		   if(!p.isOp()) {
-        		   top.addCommand(opCommand);
-        		   top.setTempOp(p, true);
-        		   p.setOp(true);
-        	       }
-        		   Bukkit.dispatchCommand(p, opCommand);
-        		   if(p.isOp() && top.isTempOp(p)) {
-        		   p.setOp(false);
-        		   top.delCommand(opCommand);
-        		   top.setTempOp(p, false);
-        		   }
         	   } else if (command.startsWith("[player]")) {
         		   Bukkit.dispatchCommand(p, command.substring(9).replace("%player%", p.getName()));
         	   } else {
@@ -1555,19 +1512,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
            for(String command : commandsList) {
         	   if(command.startsWith("[console]")) {
         		   Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(10).replace("%player%", p.getName()));
-        	   } else if (command.startsWith("[op]")) {
-        		   String opCommand = command.substring(5).replace("%player%", p.getName());
-        		   if(!p.isOp()) {
-        		   top.addCommand(opCommand);
-        		   top.setTempOp(p, true);
-        		   p.setOp(true);
-        	       }
-        		   Bukkit.dispatchCommand(p, opCommand);
-        		   if(p.isOp() && top.isTempOp(p)) {
-        		   p.setOp(false);
-        		   top.delCommand(opCommand);
-        		   top.setTempOp(p, false);
-        		   }
         	   } else if (command.startsWith("[player]")) {
         		   Bukkit.dispatchCommand(p, command.substring(9).replace("%player%", p.getName()));
         	   } else {
@@ -1582,19 +1526,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		Bukkit.getScheduler().runTask(this, () -> {
     	   if(command.startsWith("[console]")) {
     		   Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(10).replace("%player%", p.getName()));
-    	   } else if (command.startsWith("[op]")) {
-    		   String opCommand = command.substring(5).replace("%player%", p.getName());
-    		   if(!p.isOp()) {
-    		   top.addCommand(opCommand);
-    		   top.setTempOp(p, true);
-    		   p.setOp(true);
-    	       }
-    		   Bukkit.dispatchCommand(p, opCommand);
-    		   if(p.isOp() && top.isTempOp(p)) {
-    		   p.setOp(false);
-    		   top.delCommand(opCommand);
-    		   top.setTempOp(p, false);
-    		   }
     	   } else if (command.startsWith("[player]")) {
     		   Bukkit.dispatchCommand(p, command.substring(9).replace("%player%", p.getName()));
     	   } else {
@@ -1611,7 +1542,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
     {
         if(y > 999) {
         double x = y / Math.pow(10,Math.floor(Math.log10(y) / 3) * 3);
-        return abb.format(x) + abbrevations[((int) Math.floor(Math.log10(y) / 3))];   
+        return abb.format(x) + abbreviations[((int) Math.floor(Math.log10(y) / 3))];   
         }
         return String.valueOf(y);
     }
@@ -1665,7 +1596,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	@Deprecated
 	public List<List<String>> getStringListAll(List<String> stringList) {
 		List<List<String>> newLists = new ArrayList<>();
-		OnlinePlayers.getEveryPlayer().forEach(p -> {
+		OnlinePlayers.getPlayers().forEach(p -> {
 		List<String> newList = new ArrayList<>();
 		stringList.forEach(line -> {
 			newList.add(getChatColorReplacer().parsePlaceholders(line));
