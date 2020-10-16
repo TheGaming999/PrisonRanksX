@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.CollectionUtils;
 
 public class RankDataStorage {
 
@@ -28,6 +29,7 @@ public class RankDataStorage {
 	private final Map<String, String> emptyStringToStringMap = new HashMap<>();
 	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
 	private final List<String> emptyStringList = new ArrayList<>();
+	private int pathsAmount;
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
 	   this.rankData = new LinkedHashMap<String, RankDataHandler>();
@@ -37,6 +39,11 @@ public class RankDataStorage {
 	   this.playerCommands = new LinkedHashMap<>();
 	   this.opCommands = new LinkedHashMap<>();
 	   this.lastRankMap = new HashMap<>();
+	   this.pathsAmount = 0;
+	}
+	
+	public int getPathsAmount() {
+		return this.pathsAmount;
 	}
 	
 	public GlobalDataStorage gds() {
@@ -102,6 +109,7 @@ public class RankDataStorage {
 	 */
 	public void loadRanksData() {
 		for(String pathName : main.getConfigManager().ranksConfig.getConfigurationSection("Ranks").getKeys(false)) {
+			pathsAmount++;
 			for(String rankName : main.getConfigManager().ranksConfig.getConfigurationSection("Ranks." + pathName).getKeys(false)) {
 				String rankupName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".nextrank");
 				String rankDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankName + ".display", "");
@@ -180,12 +188,11 @@ public class RankDataStorage {
                 rankData.put(rankPath.get(), rdh);
                 paths.add(pathName);
                 putPathRank(pathName, rankName);
-    			List<String> commands = gds().parseHexColorCodes(rankupCommands);
-    			List<String> consoleCommands = emptyStringList;
-    			List<String> opCommands = emptyStringList;
-    			List<String> playerCommands = emptyStringList;
-    			if(commands != null && !commands.isEmpty()) {
-    			for(String command : commands) {
+    			List<String> consoleCommands = CollectionUtils.EMPTY_STRING_LIST;
+    			List<String> opCommands = CollectionUtils.EMPTY_STRING_LIST;
+    			List<String> playerCommands = CollectionUtils.EMPTY_STRING_LIST;
+    			if(rankupCommands != null && !rankupCommands.isEmpty()) {
+    			for(String command : rankupCommands) {
     				if(command.startsWith("[console]") || !command.startsWith("[")) {
     					consoleCommands.add(command.replace("[console] ", "").replace("%rankup%", rankupName).replace("%rank%", rankName)
     							.replace("%rankup_display%", rankupDisplayName));

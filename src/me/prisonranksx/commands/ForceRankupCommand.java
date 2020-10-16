@@ -34,7 +34,7 @@ public class ForceRankupCommand extends BukkitCommand {
 	        	return true;
 	        } else if (args.length == 1) {
 	        	if(args[0].equalsIgnoreCase("*")) {
-	        		for(Player player : OnlinePlayers.getEveryPlayer()) {
+	        		for(Player player : OnlinePlayers.getPlayers()) {
 	        			main.rankupLegacy.forceRankup(player, sender);
 	        		}
 	        		return true;
@@ -52,7 +52,7 @@ public class ForceRankupCommand extends BukkitCommand {
         	return true;
         } else if (args.length == 1) {
         	if(args[0].equalsIgnoreCase("*")) {
-        		for(Player player : OnlinePlayers.getEveryPlayer()) {
+        		for(Player player : OnlinePlayers.getPlayers()) {
         			main.rankupAPI.forceRankup(player, sender);
         		}
         		return true;

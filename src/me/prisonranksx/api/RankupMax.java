@@ -19,6 +19,7 @@ import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.AsyncRankupMaxEvent;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.utils.CollectionUtils;
 public class RankupMax {
 
 	
@@ -81,7 +82,8 @@ public class RankupMax {
         //clear old data
         //player checking values
         RankPath rp1 = prxAPI.getPlayerRankPath(p);
-        String currentRank = prxAPI.getPlayerRank(p);
+        String currentRank = rp1.getRankName();
+        String currentPath = rp1.getPathName();
         rankupFrom = currentRank;
         rankupFromMap.put(p, rankupFrom);
         String nextRank = prxAPI.getPlayerNextRank(p);
@@ -96,7 +98,9 @@ public class RankupMax {
         	return;
         }
         // other values
-        List<String> ranksConfigList = prxAPI.getRanksCollection(rp1.getPathName());
+        List<String> ranksConfigList = prxAPI.getRanksCollection(currentPath);
+        int currentIndex = ranksConfigList.indexOf(currentRank);
+        int size = ranksConfigList.size();
         boolean canPrestige = prxAPI.canPrestige(p);
         // if the player is at the latest rank
         if(nextRank == null && !canPrestigeMap.containsKey(p) && !canPrestige) {
@@ -107,12 +111,12 @@ public class RankupMax {
         // if he had a nextrank
         // player values
         String nextRankDisplay = !canPrestigeMap.containsKey(p) && !canPrestige ? main.getString(prxAPI.getPlayerRankupDisplay(p), name) : "null";
-	    Double nextRankCost = !canPrestigeMap.containsKey(p) && !canPrestige ? prxAPI.getPlayerRankupCostWithIncreaseDirect(p) : 0.0;
+	    double nextRankCost = !canPrestigeMap.containsKey(p) && !canPrestige ? prxAPI.getPlayerRankupCostWithIncreaseDirect(p) : 0.0;
 	    String nextRankCostInString = String.valueOf(nextRankCost);
         String nextRankCostFormatted = prxAPI.formatBalance(nextRankCost);
         //other values [2]
-    	List<String> allRanksCommands = new ArrayList<>();
-    	List<String> rankups = new ArrayList<>();
+    	List<String> allRanksCommands = CollectionUtils.EMPTY_STRING_LIST;
+    	List<String> rankups = CollectionUtils.EMPTY_STRING_LIST;
     	String rankupMessage = !canPrestigeMap.containsKey(p) && !canPrestige ? main.getString(main.messagesStorage.getStringMessage("rankup"), name) : "null";
     	String rankupNoPermissionMessage = !canPrestigeMap.containsKey(p) && !canPrestige ? main.getString(main.messagesStorage.getStringMessage("rankup-nopermission"), name).replace("%nextrank%", nextRank).replace("%rankup%", nextRank).replace("%rankup_display%", nextRankDisplay) : "null";
         //if the rank cost is higher than player's balance
@@ -159,6 +163,7 @@ public class RankupMax {
 			return;
 		}
         canPrestigeMap.remove(p);
+        String lastRank = prxAPI.getPathsCount() > 1 ? prxAPI.getLastRank(currentPath) : prxAPI.getLastRank();
         //add new player data
  	   rankupMaxMap.put(p, prxAPI.getPlayerRank(p));
         //@@@@@@@@@@@@@@@@@@@@
@@ -169,7 +174,7 @@ public class RankupMax {
         //==============
         //@@@@@@@@@@@@@@@@@@@@
  	  main.getServer().getScheduler().runTaskAsynchronously(main, () -> {
-        for(String rankSection : ranksConfigList) {
+        for(int i = currentIndex; i < size; i++) {
         	//loopValues
         	String loopCurrentRank = null;
         	String loopCurrentRankDisplay = null;
@@ -179,10 +184,10 @@ public class RankupMax {
         	String loopNextRankCostFormatted = null;
         	String loopNextRankDisplay = null;
         	String loopRankupMsg = null;
-        	List<String> loopNextRankCommands = new ArrayList<>();
-        	List<String> loopNextRankBroadcast = new ArrayList<>();
-        	List<String> loopNextRankMsg = new ArrayList<>();
-        	List<String> loopNextRankActions = new ArrayList<>();
+        	List<String> loopNextRankCommands = CollectionUtils.EMPTY_STRING_LIST;
+        	List<String> loopNextRankBroadcast = CollectionUtils.EMPTY_STRING_LIST;
+        	List<String> loopNextRankMsg = CollectionUtils.EMPTY_STRING_LIST;
+        	List<String> loopNextRankActions = CollectionUtils.EMPTY_STRING_LIST;
         	double loopPlayerBalance = main.econ.getBalance(p);
         	//temporarily save player data in a map
         	String mapRank = rankupMaxMap.get(p);
@@ -191,6 +196,9 @@ public class RankupMax {
         	   //RankPath rp = main.playerStorage.getPlayerRankPath(p);
         	   loopCurrentRankDisplay = main.rankStorage.getDisplayName(rp);
         	   loopNextRank = main.rankStorage.getRankupName(rp);
+        	   if(loopNextRank.equals(lastRank)) {
+        		   break;
+        	   }
         	   //if there is no rank next then stop the loop
         	   if(loopNextRank.equalsIgnoreCase("lastrank")) {
         		   if(main.getGlobalStorage().getBooleanData("Options.rankupmax-with-prestige")) {
@@ -339,10 +347,10 @@ public class RankupMax {
         //save player data
         String mapRank = rankupMaxMap.get(p);
         RankPath rp = new RankPath(mapRank, main.prxAPI.getDefaultPath());
-    	List<String> endNextRankActionbarMessage = new ArrayList<>();
-    	Integer endNextRankActionbarInterval = null;
-    	List<String> endNextRankBroadcast = new ArrayList<>();
-    	List<String> endNextRankMsg = new ArrayList<>();
+    	List<String> endNextRankActionbarMessage = CollectionUtils.EMPTY_STRING_LIST;
+    	int endNextRankActionbarInterval = 0;
+    	List<String> endNextRankBroadcast = CollectionUtils.EMPTY_STRING_LIST;
+    	List<String> endNextRankMsg = CollectionUtils.EMPTY_STRING_LIST;
     	String endRankupMessage = main.getString(main.messagesStorage.getStringMessage("rankup"), name);
     	boolean endIsBroadcastLastRankOnly = main.globalStorage.getBooleanData("Options.rankupmax-broadcastlastrankonly");
     	boolean endIsMsgLastRankOnly = main.globalStorage.getBooleanData("Options.rankupmax-msglastrankonly");

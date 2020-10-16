@@ -293,6 +293,14 @@ public class PRXAPI {
 		return main.prestigeStorage;
 	}
 	
+	/**
+	 * 
+	 * @return amount of registered rank paths (1 by default)
+	 */
+	public int getPathsCount() {
+		return main.rankStorage.getPathsAmount();
+	}
+	
 	@Deprecated
 	 public void saveCustomYml(FileConfiguration ymlConfig, File ymlFile) {
 		    try {
@@ -3546,6 +3554,37 @@ public class PRXAPI {
 	 */
 	public void celeberate(Player player) {
 		if(!main.allowEasterEggs) return;
+		Player p = player;
+		World world = p.getWorld();
+		Bukkit.getScheduler().runTask(main, () -> {
+		if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN) {
+        	Entity ent = world.spawnEntity(p.getLocation().add(0, 1, 0), EntityType.BAT);
+        	FastParticle.spawnParticle(world, ParticleType.FLAME, p.getLocation().add(0, 1, 0), 5);
+        	FastParticle.spawnParticle(world, ParticleType.DRIP_LAVA, p.getLocation().add(0, 1, 0), 5);
+        	Bukkit.getScheduler().runTaskLater(main, () -> {
+        		ent.remove();
+        	}, 25);
+        } else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS) {
+        	FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 0), 3);
+        	FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(1, 1, 0), 3);
+        	FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 1), 3);
+        	FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(0, 0, 0), 3);
+        	sendTempBlockChange(p, p.getLocation(), XMaterial.SNOW.parseMaterial(), (byte)0);
+        } else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE) {
+        	FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 0), 3);
+        	FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(1, 1, 0), 3);
+        	FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 1), 3);
+        	FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 0, 0), 3);
+        }
+		});
+	}
+	
+	/**
+	 * 
+	 * @param player
+	 * @param force ignore allow-easter-eggs option
+	 */
+	public void celeberate(Player player, boolean force) {
 		Player p = player;
 		World world = p.getWorld();
 		Bukkit.getScheduler().runTask(main, () -> {

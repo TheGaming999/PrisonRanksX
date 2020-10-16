@@ -593,7 +593,7 @@ public class PRXManager {
       if(main.isABProgress) {
       main.abprogress.clear(true);
       main.abprogress = new ActionbarProgress(main);
-        for(Player p : OnlinePlayers.getEveryPlayer()) {
+        for(Player p : OnlinePlayers.getPlayers()) {
     	  main.abprogress.enable(p);  
         }
       } else {
@@ -602,7 +602,7 @@ public class PRXManager {
       if(main.isEBProgress) {
     	  main.ebprogress.clear(true);
       main.ebprogress = new ExpbarProgress(main);
-      for(Player p : OnlinePlayers.getEveryPlayer()) {
+      for(Player p : OnlinePlayers.getPlayers()) {
   	  main.ebprogress.enable(p);  
       }
       } else {
@@ -1022,7 +1022,7 @@ public class PRXManager {
 	
 	public String matchPlayerName(String playerName) {
 		String matchedName = playerName;
-		for(Player players : OnlinePlayers.getEveryPlayer()) {
+		for(Player players : OnlinePlayers.getPlayers()) {
 			if(players.getName().equalsIgnoreCase(playerName)) {
 				matchedName = players.getName();
 			}
@@ -1032,7 +1032,7 @@ public class PRXManager {
 	
 	public Player matchPlayer(String playerName) {
 		String matchedName = playerName;
-		for(Player players : OnlinePlayers.getEveryPlayer()) {
+		for(Player players : OnlinePlayers.getPlayers()) {
 			if(players.getName().equalsIgnoreCase(playerName)) {
 				matchedName = players.getName();
 			}
