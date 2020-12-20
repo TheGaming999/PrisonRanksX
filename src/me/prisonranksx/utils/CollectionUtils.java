@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.Nonnull;
 
@@ -17,11 +19,15 @@ import com.google.common.collect.Sets;
 
 public class CollectionUtils {
 	
-	public final static Map<String, Object> EMPTY_STRING_TO_OBJECT_MAP = new HashMap<>();
-	public final static List<String> EMPTY_STRING_LIST = new ArrayList<>();
-	public final static List<String> EMPTY_LINKED_STRING_LIST = new LinkedList<>();
-	public final static List<Double> EMPTY_DOUBLE_LIST = new ArrayList<>();
-	public final static List<List<String>> EMPTY_STRINGLIST_LIST = new ArrayList<>();
+	public static Map<String, Object> EMPTY_STRING_TO_OBJECT_MAP = new ConcurrentHashMap<>();
+	public static List<String> EMPTY_STRING_LIST = new ArrayList<>();
+	public static List<String> EMPTY_LINKED_STRING_LIST = Collections.synchronizedList(new LinkedList<>());
+	public static List<Double> EMPTY_DOUBLE_LIST = Collections.synchronizedList(new ArrayList<>());
+	public static List<List<String>> EMPTY_STRINGLIST_LIST = Collections.synchronizedList(new ArrayList<>());
+	
+	public static List<String> emptyList() {
+		return EMPTY_STRING_LIST;
+	}
 	
 	private static boolean isNearPointer(final int number, final int divideBy) {
 		double converted = ((double)number / (double)divideBy);
@@ -35,7 +41,7 @@ public class CollectionUtils {
 			return decimalValue.length() > 1 ? false : true;
 		default:
 			return true;
-		}
+		}	
 	}
 	
 	/**

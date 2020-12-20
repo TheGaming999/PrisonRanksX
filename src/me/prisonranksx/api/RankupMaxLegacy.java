@@ -301,7 +301,7 @@ public class RankupMaxLegacy {
 		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
         rankupMaxPassedRanks.put(p, rankups);
-		AsyncRankupMaxEvent x = new AsyncRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
+		AsyncRankupMaxEvent x = new AsyncRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p), false);
 		main.getServer().getPluginManager().callEvent(x);
 		Bukkit.getScheduler().runTaskLater(main, () -> {
         rankupMaxMap.remove(p);
@@ -568,7 +568,7 @@ public class RankupMaxLegacy {
 		prxAPI.setPlayerRank(p, rankupMaxMap.get(p));
         main.animateActionbar(p, endNextRankActionbarInterval, endNextRankActionbarMessage);
         rankupMaxPassedRanks.put(p, rankups);
-	    AsyncRankupMaxEvent x = new AsyncRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p));
+	    AsyncRankupMaxEvent x = new AsyncRankupMaxEvent(p, rankupFromMap.get(p), rankupMaxMap.get(p), rankupMaxStreak.get(p), rankupMaxPassedRanks.get(p), true);
 		main.getServer().getPluginManager().callEvent(x);
 	    Bukkit.getScheduler().runTaskLater(main, () -> {
         rankupMaxMap.remove(p);
