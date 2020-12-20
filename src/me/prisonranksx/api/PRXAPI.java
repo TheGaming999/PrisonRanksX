@@ -30,6 +30,8 @@ import fr.mrmicky.fastparticle.FastParticle;
 import fr.mrmicky.fastparticle.ParticleType;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.IPrestigeDataHandler;
+import me.prisonranksx.data.IPrestigeDataStorage;
 import me.prisonranksx.data.LevelType;
 import me.prisonranksx.data.PercentageState;
 import me.prisonranksx.data.PrestigeDataHandler;
@@ -289,7 +291,7 @@ public class PRXAPI {
 		return main.getPrestigeMax();
 	}
 	
-	public PrestigeDataStorage getPrestigeStorage() {
+	public IPrestigeDataStorage getPrestigeStorage() {
 		return main.prestigeStorage;
 	}
 	
@@ -735,7 +737,7 @@ public class PRXAPI {
 	 * @param name
 	 * @return get access to prestige settings
 	 */
-	public PrestigeDataHandler getPrestige(String name) {
+	public IPrestigeDataHandler getPrestige(String name) {
 		return main.prestigeStorage.getDataHandler(name);
 	}
 	
@@ -3114,7 +3116,7 @@ public class PRXAPI {
 	    */
 	public String getPlayerRankupPercentageDirect(final OfflinePlayer offlinePlayer) {
 		if(this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)) == null) {
-		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100, 1);
+		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer), 1) * 100;
 		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
 		if(Double.valueOf(convertedValue) > 100) {
 			return "100";
@@ -3122,7 +3124,7 @@ public class PRXAPI {
 		return String.valueOf(convertedValue);
 		} else {
 			int splittingNumber = 1;
-			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100, 1);
+			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer), 1) * 100;
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;
@@ -3251,7 +3253,7 @@ public class PRXAPI {
 		if(getPlayerNextRank(offlinePlayer) == null) {
 			return "100";
 		}
-		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100, 1);
+		Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer), 1) * 100;
 		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
 		if(Double.valueOf(convertedValue) > 100) {
 			return "100";
@@ -3259,7 +3261,7 @@ public class PRXAPI {
 		return String.valueOf(convertedValue);
 		} else {
 			int splittingNumber = 1;
-			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100, 1);
+			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer), 1) * 100;
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;
@@ -3545,7 +3547,7 @@ public class PRXAPI {
 		player.sendBlockChange(location, material, data);
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 			player.sendBlockChange(location, block.getType(), block.getState().getRawData());
-		}, 20);
+		}, 30);
 	}
 	
 	/**

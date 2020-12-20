@@ -9,10 +9,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import com.google.common.collect.Lists;
 
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
@@ -21,7 +19,6 @@ import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.AsyncRankupMaxEvent;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RankUpdateEvent;
-import me.prisonranksx.utils.CollectionUtils;
 public class RankupMax {
 
 	
@@ -124,7 +121,7 @@ public class RankupMax {
         	return;
         }
         //if per rank permission option is enabled and the player dosen't has the required permission
-        if(isPerRankPermission && !p.hasPermission(main.rankupCommand.getPermission() + "." + nextRank) && !canPrestigeMap.containsKey(p) && !canPrestige) {
+        if(isPerRankPermission && !p.hasPermission(main.rankupCommand.getPermission() + "." + nextRank) && !canPrestigeMap.containsKey(name) && !canPrestige) {
         	p.sendMessage(rankupNoPermissionMessage);
         	rankupMaxProcess.remove(name);
         	return;
@@ -217,7 +214,7 @@ public class RankupMax {
         	   //if not then continue and check for the cost
               	loopNextRankCost = prxAPI.getIncreasedRankupCostX(main.playerStorage.getPlayerRebirth(p) ,main.playerStorage.getPlayerPrestige(p), main.rankStorage.getRankupCost(rp));
 
-               rankupMaxCost.put(name, rankupMaxCost.get(p) + loopNextRankCost);
+               rankupMaxCost.put(name, rankupMaxCost.get(name) + loopNextRankCost);
                //update values
                loopNextRankCostInString = String.valueOf(loopNextRankCost);
                loopNextRankCostFormatted = prxAPI.formatBalance(loopNextRankCost);
@@ -332,7 +329,7 @@ public class RankupMax {
    			}
                //rankup things
                main.econ.withdrawPlayer(p, loopNextRankCost);
-               rankupMaxStreak.put(name, (rankupMaxStreak.get(p)+1));
+               rankupMaxStreak.put(name, (rankupMaxStreak.get(name)+1));
                rankups.add(loopNextRank);
                rankupMaxMap.put(name, loopNextRank);
         }

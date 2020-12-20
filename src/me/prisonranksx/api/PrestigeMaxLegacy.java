@@ -18,7 +18,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
-import me.prisonranksx.data.PrestigeDataHandler;
+import me.prisonranksx.data.IPrestigeDataHandler;
 import me.prisonranksx.data.PrestigeRandomCommands;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.events.PrePrestigeMaxEvent;
@@ -71,7 +71,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 				return;
 			}
 		}
-		PrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
+		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
 		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
 		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
@@ -86,7 +86,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 			lastPrestigeMessage.forEach(p::sendMessage);
 			return;
 		}
-        PrestigeDataHandler nextPrestige = getAPI().getPrestige(nextPrestigeName);
+        IPrestigeDataHandler nextPrestige = getAPI().getPrestige(nextPrestigeName);
 		List<String> prestigesCollection = getAPI().getPrestigeStorage().getNativeLinkedPrestigesCollection();
 		Map<String, String> stringRequirements = nextPrestige.getStringRequirements();
 		Map<String, Double> numberRequirements = nextPrestige.getNumberRequirements();
@@ -114,13 +114,13 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
         	for(int i = currentPrestigeIndex ; i < prestigesCollection.size(); i++) {
         		String loopPrestigeName = prestigesCollection.get(i);
         		double loopBalance = getAPI().getPlayerMoney(name);
-        		PrestigeDataHandler loopPrestige = getAPI().getPrestige(loopPrestigeName);
+        		IPrestigeDataHandler loopPrestige = getAPI().getPrestige(loopPrestigeName);
         		String loopNextPrestigeName = loopPrestige.getNextPrestigeName();
         		if(loopNextPrestigeName.equals("LASTPRESTIGE")) {
         			lastPrestigeMessage.forEach(p::sendMessage);
         			break;
         		}
-        		PrestigeDataHandler loopNextPrestige = getAPI().getPrestige(loopNextPrestigeName);
+        		IPrestigeDataHandler loopNextPrestige = getAPI().getPrestige(loopNextPrestigeName);
         		double loopNextPrestigeCost = getAPI().getIncreasedPrestigeCost(rebirthName, loopNextPrestigeName);
         		takenBalance.addAndGet(loopNextPrestigeCost);
         		String loopNextPrestigeCostFormatted = getAPI().formatBalance(loopNextPrestigeCost);
@@ -224,7 +224,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
        			prestigeTimes.addAndGet(1);
         	}
         	if(!AccessibleString.isNullOrEmpty(finalPrestige)) {
-        		PrestigeDataHandler finalData = getAPI().getPrestige(finalPrestige.getString());
+        		IPrestigeDataHandler finalData = getAPI().getPrestige(finalPrestige.getString());
         		List<String> actionbarMessages = finalData.getActionbarMessages();
         		int actionbarInterval = finalData.getActionbarInterval();
         		String finalPrestigeName = finalData.getName();
@@ -266,7 +266,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 			getAPI().prestigeLegacy(p);
 			prestigeName = getAPI().getPlayerPrestige(uuid);
 		}
-		PrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
+		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
 		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
 		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
@@ -280,7 +280,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 		if(nextPrestigeName.equals("LASTPRESTIGE")) {
 			return;
 		}
-        PrestigeDataHandler nextPrestige = getAPI().getPrestige(nextPrestigeName);
+        IPrestigeDataHandler nextPrestige = getAPI().getPrestige(nextPrestigeName);
 		List<String> prestigesCollection = getAPI().getPrestigeStorage().getNativeLinkedPrestigesCollection();
 		Map<String, String> stringRequirements = nextPrestige.getStringRequirements();
 		Map<String, Double> numberRequirements = nextPrestige.getNumberRequirements();
@@ -298,12 +298,12 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
         	for(int i = currentPrestigeIndex ; i < prestigesCollection.size(); i++) {
         		String loopPrestigeName = prestigesCollection.get(i);
         		double loopBalance = getAPI().getPlayerMoney(name);
-        		PrestigeDataHandler loopPrestige = getAPI().getPrestige(loopPrestigeName);
+        		IPrestigeDataHandler loopPrestige = getAPI().getPrestige(loopPrestigeName);
         		String loopNextPrestigeName = loopPrestige.getNextPrestigeName();
         		if(loopNextPrestigeName.equals("LASTPRESTIGE")) {
         			break;
         		}
-        		PrestigeDataHandler loopNextPrestige = getAPI().getPrestige(loopNextPrestigeName);
+        		IPrestigeDataHandler loopNextPrestige = getAPI().getPrestige(loopNextPrestigeName);
         		double loopNextPrestigeCost = getAPI().getIncreasedPrestigeCost(rebirthName, loopNextPrestigeName);
         		takenBalance.addAndGet(loopNextPrestigeCost);
         		Map<String, String> loopStringRequirements = loopNextPrestige.getStringRequirements();
@@ -398,7 +398,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
        			prestigeTimes.addAndGet(1);
         	}
         	if(!AccessibleString.isNullOrEmpty(finalPrestige)) {
-        		PrestigeDataHandler finalData = getAPI().getPrestige(finalPrestige.getString());
+        		IPrestigeDataHandler finalData = getAPI().getPrestige(finalPrestige.getString());
         		List<String> actionbarMessages = finalData.getActionbarMessages();
         		int actionbarInterval = finalData.getActionbarInterval();
         		String finalPrestigeName = finalData.getName();

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.GlobalDataStorage1_16;
 import me.prisonranksx.data.GlobalDataStorage1_8;
+import me.prisonranksx.data.IPrestigeDataHandler;
 import me.prisonranksx.data.PrestigeDataHandler;
 import me.prisonranksx.data.PrestigeDataStorage;
 import me.prisonranksx.data.RankDataHandler;
@@ -776,7 +777,7 @@ public class PRXManager {
 			// prestige doesn't exist
 			return;
 		}
-		PrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(name);
+		IPrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(name);
 		pdh.setCost(cost);
 		main.prestigeStorage.putData(name, pdh);
 		main.prestigeStorage.savePrestigeData(name);
@@ -787,7 +788,7 @@ public class PRXManager {
 			// prestige doesn't exist
 			return;
 		}
-		PrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(name);
+		IPrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(name);
 		pdh.setDisplayName(displayName);
 		main.prestigeStorage.putData(name, pdh);
 		main.prestigeStorage.savePrestigeData(name);
@@ -802,15 +803,15 @@ public class PRXManager {
 		String nextPrestige = this.getNextPrestige(name);
 		if(previousPrestige != null) {
 			if(nextPrestige != null) {
-				PrestigeDataHandler npdh = main.prestigeStorage.getDataHandler(nextPrestige);
-				PrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(previousPrestige);
+				IPrestigeDataHandler npdh = main.prestigeStorage.getDataHandler(nextPrestige);
+				IPrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(previousPrestige);
 				pdh.setNextPrestigeName(nextPrestige);
 				pdh.setNextPrestigeCost(npdh.getCost());
 				pdh.setNextPrestigeDisplayName(npdh.getDisplayName());
 				main.prestigeStorage.getPrestigeData().put(previousPrestige, pdh);
 				main.prestigeStorage.savePrestigeData(previousPrestige);
 			} else {
-				PrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(previousPrestige);
+				IPrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(previousPrestige);
 				pdh.setNextPrestigeName("LASTPRESTIGE");
 				pdh.setNextPrestigeDisplayName(null);
 				main.prestigeStorage.getPrestigeData().put(previousPrestige, pdh);
