@@ -520,7 +520,7 @@ public class CollectionUtils {
 	public static PaginatedList paginateListCollectable(List<String> stringList, final int maxElements, final int page) {
 	      int counter = 0;
 	      List<String> oldCollection = stringList;
-	      List<String> newCollection = EMPTY_LINKED_STRING_LIST;
+	      List<String> newCollection = Lists.newLinkedList();
 	      int size = oldCollection.size();
 			for(int i = 0; i < size; i++) {
 	    	  if(counter >= maxElements) {

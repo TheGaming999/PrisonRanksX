@@ -19,7 +19,7 @@ public class MySqlStreamer {
     private DataSource dataSource;
     private Connection globalConnection;
     private MysqlStreamQuery query;
-    
+    private int fetchSize = Integer.MIN_VALUE;
     
     public MySqlStreamer(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -36,6 +36,18 @@ public class MySqlStreamer {
 
     public MysqlStreamQuery getStreamQuery() {
     	return this.query;
+    }
+    
+    public int getFetchSize() {
+    	return fetchSize;
+    }
+    
+    /**
+     * 
+     * @param newFetchSize change fetch size. It's set to Integer.MIN_VALUE by default.
+     */
+    public void setFetchSize(int newFetchSize) {
+    	fetchSize = newFetchSize;
     }
     
     public class MysqlStreamQuery implements Closeable {
@@ -59,7 +71,7 @@ public class MySqlStreamer {
              * MySQL documents say nothing about cursor holdability, so not use it explicitly.
              */
             statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            statement.setFetchSize(Integer.MIN_VALUE);
+            statement.setFetchSize(fetchSize);
             /* begin query */
             ResultSet rs = statement.executeQuery(sql);
             int columns = rs.getMetaData().getColumnCount();
@@ -85,7 +97,7 @@ public class MySqlStreamer {
             }, false).onClose(() -> close());
             return resultStream;
         }
-
+        
         public void closeStatement() {
         	   if (statement != null) {
                    try {

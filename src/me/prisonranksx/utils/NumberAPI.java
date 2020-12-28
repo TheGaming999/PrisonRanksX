@@ -479,11 +479,9 @@ public class NumberAPI {
 		return number;
 	}
 	
-	public int limitInverse(double number, int limit) {
-		if(number < limit) {
-			return limit;
-		}
-		return (int)number;
+	public double limitInverse(double number, int limit) {
+		if(number < limit) return limit;
+		return number;
 	}
     /**
      * 

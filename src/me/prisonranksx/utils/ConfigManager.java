@@ -36,6 +36,8 @@ public class ConfigManager {
 	public FileConfiguration rebirthDataConfig;
 	public File rebirthsFile;
 	public FileConfiguration rebirthsConfig;
+	public File infinitePrestigeFile;
+	public FileConfiguration infinitePrestigeConfig;
 	public List<String> ignoredSections;
 	
 	public void loadConfigs() {
@@ -57,6 +59,7 @@ public class ConfigManager {
 		createPrestigesConfig();
 		createRebirthDataConfig();
 		createRebirthsConfig();
+		createInfinitePrestigeConfig();
 		if(!messagesConfig.contains("Messages")) {
 		messagesConfig.options().copyDefaults(true);
 		}
@@ -67,7 +70,7 @@ public class ConfigManager {
 			e.printStackTrace();
 		}
 		if(!commandsConfig.contains("commands.prestigemax.enable")) {
-			commandsConfig.options().copyDefaults(true);
+		commandsConfig.options().copyDefaults(true);
 		}
 		if(!rankDataConfig.contains("players")) {
 		rankDataConfig.options().copyDefaults(true);
@@ -87,6 +90,9 @@ public class ConfigManager {
 		if(!rebirthsConfig.contains("Rebirths")) {
 		rebirthsConfig.options().copyDefaults(true);
 		}
+		if(!infinitePrestigeConfig.contains("Prestiges-Settings")) {
+		infinitePrestigeConfig.options().copyDefaults(true);
+		}
 	}
 	public void saveConfigs() {
 		saveCustomYml(messagesConfig, messagesFile);
@@ -97,6 +103,7 @@ public class ConfigManager {
 		saveCustomYml(prestigesConfig, prestigesFile);
 		saveCustomYml(rebirthDataConfig, rebirthDataFile);
 		saveCustomYml(rebirthsConfig, rebirthsFile);
+		saveCustomYml(infinitePrestigeConfig, infinitePrestigeFile);
 	}
 	
 	public void saveMessagesConfig() {
@@ -131,6 +138,10 @@ public class ConfigManager {
 		saveCustomYml(rebirthsConfig, rebirthsFile);
 	}
 	
+	public void saveInfinitePrestigeConfig() {
+		saveCustomYml(infinitePrestigeConfig, infinitePrestigeFile);
+	}
+	
 	public void saveCustomYml(FileConfiguration fileConfiguration, File file) {
 		if(file == null) {
 			return;
@@ -160,6 +171,8 @@ public class ConfigManager {
 		rebirthDataConfig = null;
 		rebirthsFile = null;
 		rebirthsConfig = null;
+		infinitePrestigeFile = null;
+		infinitePrestigeConfig = null;
 	}
 	
 	 private void createMessagesConfig() {
@@ -243,6 +256,17 @@ public class ConfigManager {
 	e.printStackTrace(); }
 	}
 	 
+	 private void createInfinitePrestigeConfig() {
+	        infinitePrestigeFile = new File(main.getDataFolder(), "infinite_prestige.yml");
+	        if (!infinitePrestigeFile.exists()) { infinitePrestigeFile.getParentFile().mkdirs(); main.saveResource("infinite_prestige.yml", false); }
+	        infinitePrestigeConfig = new YamlConfiguration();
+	            try {
+					infinitePrestigeConfig.load(infinitePrestigeFile);
+				} catch (FileNotFoundException e) { 	System.out.print("File Not Found <?>"); e.printStackTrace(); } catch (IOException e) {
+	System.out.print("Read write Failed <!>"); e.printStackTrace(); } catch (InvalidConfigurationException e) { System.out.print("Corrupted Configuration File <?>");
+	e.printStackTrace(); }
+	}
+	 
 	 public void reloadMainConfig() {
 	 	    try {
 					ConfigUpdater.update(main, "config.yml", new File(main.getDataFolder() + "/config.yml"), ignoredSections);
@@ -278,6 +302,7 @@ public class ConfigManager {
 			prestigesConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/prestiges.yml"));
 			//rebirthDataConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/rebirthdata.yml"));
 			rebirthsConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/rebirths.yml"));
+			infinitePrestigeConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/infinite_prestige.yml"));
     }
 	
 }

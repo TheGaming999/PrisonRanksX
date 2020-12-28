@@ -82,6 +82,7 @@ import me.prisonranksx.commands.TopRebirthsCommand;
 import me.prisonranksx.data.GlobalDataStorage;
 import me.prisonranksx.data.GlobalDataStorage1_16;
 import me.prisonranksx.data.GlobalDataStorage1_8;
+import me.prisonranksx.data.IPrestigeDataStorage;
 import me.prisonranksx.data.MessagesDataStorage;
 import me.prisonranksx.data.PlayerDataStorage;
 import me.prisonranksx.data.PrestigeDataStorage;
@@ -151,10 +152,10 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	public boolean isMvdw, isApiLoaded, isActionUtil, debug, terminateMode,
 	isBefore1_7, isRankEnabled, isPrestigeEnabled, isRebirthEnabled, forceSave,
     isABProgress, isRankupMaxWarpFilter, isVaultGroups, isholo, ishooked, isEBProgress,
-    isSaveOnLeave, checkVault, saveNotification, allowEasterEggs;
+    isSaveOnLeave, checkVault, saveNotification, allowEasterEggs, isEnabledInsteadOfDisabled;
 	// ======================
 	// MYSQL FIELDS
-	private boolean isMySql, useSSL, autoReconnect;
+	private boolean isMySql, useSSL, autoReconnect, useCursorFetch;
     private int port;
 	private Connection connection;
 	private String host, database, username, password;
@@ -172,7 +173,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	// DATA STORAGE FIELDS
 	public PlayerDataStorage playerStorage;
 	public RankDataStorage rankStorage;
-	public PrestigeDataStorage prestigeStorage;
+	public IPrestigeDataStorage prestigeStorage;
 	public RebirthDataStorage rebirthStorage;
 	public MessagesDataStorage messagesStorage;
 	// ======================
@@ -265,6 +266,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			"Rebirthlist-gui.completed-format.custom", "Rebirthlist-gui.other-format.custom");
 	public Map<Player, Integer> actionbar_animation;
     public Map<Player, BukkitTask> actionbar_task;
+    public List<String> disabledWorlds;
 	// ======================
     private TaskChainFactory taskChainFactory;
     
@@ -559,6 +561,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	    isRankupMaxWarpFilter = globalStorage.getBooleanData("Options.rankupmax-warp-filter");
 		checkVault = globalStorage.getBooleanData("Options.rankup-vault-groups-check");
 		allowEasterEggs = globalStorage.getBooleanData("Options.allow-easter-eggs");
+		disabledWorlds = globalStorage.getStringListData("worlds");
 		try {
 			ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
 		} catch (IOException e) {
@@ -626,6 +629,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		}
 		isSaveOnLeave = globalStorage.getBooleanData("Options.save-on-leave");
 		saveNotification = globalStorage.getBooleanData("Options.save-notification");
+		isEnabledInsteadOfDisabled = globalStorage.getBooleanData("Options.enabled-worlds-instead-of-disabled");
 		actionbarInUse = new HashSet<>();
 		if(!isBefore1_7) {
 			errorInspector = new ErrorInspector(this);
@@ -656,6 +660,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	       isMySql = globalStorage.getBooleanData("MySQL.enable");
 	       useSSL = globalStorage.getBooleanData("MySQL.useSSL");
 	       autoReconnect = globalStorage.getBooleanData("MySQL.autoReconnect");
+	       useCursorFetch = globalStorage.getBooleanData("MySQL.useCursorFetch");
 	       isRankEnabled = globalStorage.getBooleanData("Options.rank-enabled");
 	       isPrestigeEnabled = globalStorage.getBooleanData("Options.prestige-enabled");
 	       isRebirthEnabled = globalStorage.getBooleanData("Options.rebirth-enabled");
@@ -697,6 +702,9 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
             prop.setProperty("password", password);
             prop.setProperty("useSSL", String.valueOf(useSSL));
             prop.setProperty("autoReconnect", String.valueOf(autoReconnect));
+            if(useCursorFetch) {
+            prop.setProperty("useCursorFetch", String.valueOf(useCursorFetch));
+            }
             setConnection(DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.getDatabase() + "?characterEncoding=utf8", prop));
         }
     }
@@ -731,8 +739,10 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "prestige", prestigeName);
 				util.set(u, "rebirth", rebirthName);
 				util.set(u, "name", name); 
+				util.executeThenClose();
 			} else {
 				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+				statement.close();
 			}
 		} catch (SQLException e1) {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -761,9 +771,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "path", pathName);
 				util.set(u, "prestige", prestigeName);
 				util.set(u, "rebirth", rebirthName);
-				util.set(u, "name", name);       
+				util.set(u, "name", name);  
+				util.executeThenClose();
 			} else {
 				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+				statement.close();
 			}
 		} catch (SQLException e1) {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -795,9 +807,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "path", pathName);
 				util.set(u, "prestige", prestigeName);
 				util.set(u, "rebirth", rebirthName);
-				util.set(u, "name", name);       
+				util.set(u, "name", name);    
+				util.executeThenClose();
 			} else {
 				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+				statement.close();
 			}
 		} catch (SQLException e1) {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -828,9 +842,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "path", pathName);
 				util.set(u, "prestige", prestigeName);
 				util.set(u, "rebirth", rebirthName);
-				util.set(u, "name", name);       
+				util.set(u, "name", name);   
+				util.executeThenClose();
 			} else {
 				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
+				statement.close();
 			}
 		} catch (SQLException e1) {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
@@ -1379,7 +1395,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	@EventHandler
 	  public void onPlayerChat(AsyncPlayerChatEvent e) {
 		Player p = e.getPlayer();
-		List<String> disabledWorlds = globalStorage.getStringListData("worlds");
 		String playerWorld = p.getWorld().getName();
 		if(disabledWorlds.contains(playerWorld)) {
 			return;
@@ -1874,5 +1889,16 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		public TaskChainFactory getTaskChainFactory() {
 			return this.taskChainFactory;
 		}
+		public boolean isInDisabledWorld(Player p) {
+			String worldName = p.getWorld().getName();
+			return disabledWorlds.contains(worldName) != isEnabledInsteadOfDisabled;
+		}
 		
+		public boolean isInDisabledWorld(CommandSender sender) {
+			if(!(sender instanceof Player)) {
+				return false;
+			}
+			Player p = (Player)sender;
+			return disabledWorlds.contains(p.getWorld().getName()) != isEnabledInsteadOfDisabled;
+		}
 }
