@@ -28,6 +28,7 @@ public class RebirthCommand extends BukkitCommand {
 		if(!main.isRebirthEnabled) {
 			return true;
 		}
+		if(main.isInDisabledWorld(sender)) {return true;}
 		if(args.length == 0) {
 	      if(!(sender instanceof Player)) {
 	    	  return true;

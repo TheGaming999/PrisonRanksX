@@ -30,6 +30,7 @@ public class RanksCommand extends BukkitCommand {
 		if(!main.isRankEnabled) {
 			return true;
 		}
+		if(main.isInDisabledWorld(sender)) {return true;}
 		if(!(sender instanceof Player)) {
 			try {
 			sender.sendMessage(main.prxAPI.c(main.ranksAPI.rankListConsole));

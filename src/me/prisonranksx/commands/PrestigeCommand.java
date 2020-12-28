@@ -29,6 +29,7 @@ public class PrestigeCommand extends BukkitCommand {
 			return true;
 		}
 		if(args.length == 0) {
+			if(main.isInDisabledWorld(sender)) {return true;}
 	      if(!(sender instanceof Player)) {
 	    	  return true;
 	      } 

@@ -30,26 +30,42 @@ public class AutoRankupCommand extends BukkitCommand
 		if(!(sender instanceof Player)) {
 			return true;
 		}
-		Player p = (Player)sender;
-		if(main.isBefore1_7) {
+		
+		if(main.isBefore1_7) {		
 	        if(args.length == 0) {
+	        	Player p = (Player)sender;
 	            main.rankupLegacy.autoRankup(p);
 	        } else if (args.length == 1) {
 	        	if(args[0].equalsIgnoreCase("on") || args[0].equalsIgnoreCase("enable") || args[0].equalsIgnoreCase("true")) {
+	        		Player p = (Player)sender;
 	        		main.rankupLegacy.autoRankup(p, true);
 	        	} else if (args[0].equalsIgnoreCase("off") || args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("false")) {
+	        		Player p = (Player)sender;
 	        		main.rankupLegacy.autoRankup(p, false);
 	        	}
 	        }
 			return true;
 		}
         if(args.length == 0) {
+        	Player p = (Player)sender;
             main.rankupAPI.autoRankup(p);
         } else if (args.length == 1) {
         	if(args[0].equalsIgnoreCase("on") || args[0].equalsIgnoreCase("enable") || args[0].equalsIgnoreCase("true")) {
+        		Player p = (Player)sender;
         		main.rankupAPI.autoRankup(p, true);
         	} else if (args[0].equalsIgnoreCase("off") || args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("false")) {
+        		Player p = (Player)sender;
         		main.rankupAPI.autoRankup(p, false);
+        	} else {
+        		if(!sender.hasPermission(this.getPermission() + ".other")) {
+        			sender.sendMessage(this.getPermissionMessage());
+        			return true;
+        		}
+        		Player target = Bukkit.getPlayer(args[1]);
+        		if(target == null) {
+        			return true;
+        		}
+        		main.rankupAPI.autoRankup(target);
         	}
         }
 		return true;

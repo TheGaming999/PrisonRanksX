@@ -513,9 +513,12 @@ public class PRXManager {
 	    main.rankStorage.loadRanksData();
 	    main.prestigeStorage.loadPrestigesData();
 	    main.rebirthStorage.loadRebirthsData();
-	    main.getPlayerStorage().loadPlayersData();
+	    OnlinePlayers.getPlayers().forEach(p -> main.getPlayerStorage().loadPlayerData(p));
 	}
 	
+	/**
+	 * It's highly recommended to run this asynchronously
+	 */
 	public void reload() {
 	main.globalStorage.getDoubleMap().clear();
     main.globalStorage.getStringMap().clear();
@@ -553,6 +556,8 @@ public class PRXManager {
       main.isApiLoaded = false;
       main.autoSaveTime = main.getGlobalStorage().getIntegerData("Options.autosave-time");
       main.allowEasterEggs = main.getGlobalStorage().getBooleanData("Options.allow-easter-eggs");
+      main.disabledWorlds = main.getGlobalStorage().getStringListData("worlds");
+      main.isEnabledInsteadOfDisabled = main.getGlobalStorage().getBooleanData("Options.enabled-worlds-instead-of-disabled");
       main.prxAPI = new PRXAPI();
       main.prxAPI.setup();
       main.prxAPI.loadPermissions();
@@ -614,7 +619,7 @@ public class PRXManager {
       }
       main.isRankupMaxWarpFilter = main.globalStorage.getBooleanData("Options.rankupmax-warp-filter");
       main.getPlayerStorage().savePlayersData();
-      main.getPlayerStorage().loadPlayersData();
+      OnlinePlayers.getPlayers().forEach(p -> main.getPlayerStorage().loadPlayerData(p));
       if(!main.isBefore1_7) {
       main.errorInspector = new ErrorInspector(main);
       main.errorInspector.inspect();

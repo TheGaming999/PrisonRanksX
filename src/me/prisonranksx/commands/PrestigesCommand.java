@@ -39,12 +39,14 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 			return true;
 		}
 		if(args.length == 0) {
+			if(main.isInDisabledWorld(sender)) {return true;}
 				if(main.globalStorage.getBooleanData("Options.GUI-PRESTIGELIST")) {
 					main.getGuiManager().openPrestigesGUI((Player)sender);
 					return true;
 				}
 			main.prestigesAPI.send("1", sender);
 		} else if (args.length == 1) {
+			if(main.isInDisabledWorld(sender)) {return true;}
             main.prestigesAPI.send(args[0], sender);
 		}
 		return true;

@@ -7,13 +7,16 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class AsyncRankupMaxEvent extends Event implements Cancellable{
+public class AsyncRankupMaxEvent extends Event implements Cancellable {
+	
 	    private Player player;
 	    private String rankup;
 	    private String rank;
 	    private int streak;
 	    private List<String> rankups;
 	    private boolean isCancelled;
+	    private boolean isLimited;
+	    
 	    private static final HandlerList handlers = new HandlerList();
 	    @Override
 	    public HandlerList getHandlers() {
@@ -23,14 +26,14 @@ public class AsyncRankupMaxEvent extends Event implements Cancellable{
 	    public static HandlerList getHandlerList() {
 	        return handlers;
 	    }
-	    public AsyncRankupMaxEvent(Player player,String rank, String rankup, int streak, List<String> rankups) {
+	    public AsyncRankupMaxEvent(Player player,String rank, String rankup, int streak, List<String> rankups, boolean isLimited) {
 	    	super(true);
 	    	this.player = player;
 	    	this.rank = rank;
 	    	this.rankup = rankup;
 	    	this.streak = streak;
 	    	this.rankups = rankups;
-	    	this.isCancelled = false;
+	    	this.isLimited = isLimited;
 	    }
 		@Override
 		public boolean isCancelled() {
@@ -46,9 +49,19 @@ public class AsyncRankupMaxEvent extends Event implements Cancellable{
 			// TODO Auto-generated method stub
 			this.isCancelled = cancel;
 		}
+		
 		public Player getPlayer() {
 			return this.player;
 		}
+		
+		/**
+		 * 
+		 * @return true if player used: /rankupmax (rank)
+		 */
+		public boolean isLimited() {
+			return this.isLimited;
+		}
+		
         /**
          * get the player rank when he started the rankupmax process
          * @return rank name

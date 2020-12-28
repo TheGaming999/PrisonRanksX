@@ -97,8 +97,8 @@ public interface GlobalDataStorage {
 	 * @return loaded boolean
 	 */
 	public default boolean registerBooleanData(String configNode) {
-		getBooleanMap().put(configNode, main.getConfig().getBoolean(configNode));
-		getGlobalMap().put(configNode, main.getConfig().getBoolean(configNode));
+		getBooleanMap().put(configNode, main.getConfig().getBoolean(configNode, true));
+		getGlobalMap().put(configNode, main.getConfig().getBoolean(configNode, true));
 		return main.getConfig().getBoolean(configNode);
 	}
 	
@@ -215,6 +215,8 @@ public interface GlobalDataStorage {
 	    boolean saveOnLeave = registerBooleanData("Options.save-on-leave");
 	    boolean rankupMaxWarpFilter = registerBooleanData("Options.rankupmax-warp-filter");
 	    boolean allowEasterEggs = registerBooleanData("Options.allow-easter-eggs");
+	    boolean enableLeaderboard = registerBooleanData("Options.enable-leaderboard");
+	    boolean enabledWorldsInsteadOfDisabled = registerBooleanData("Options.enabled-worlds-instead-of-disabled");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");
@@ -264,6 +266,7 @@ public interface GlobalDataStorage {
 		String mySqlPassword = registerStringData("MySQL.password");
 		boolean mySqlUseSSL = registerBooleanData("MySQL.useSSL");
 		boolean mySqlAutoReconnect = registerBooleanData("MySQL.autoReconnect");
+		boolean mySqlUseCursorFetch = registerBooleanData("MySQL.useCursorFetch");
 		//Under Main-GUIOptions
 		String previousPageItemName = registerStringData("Main-GUIOptions.previouspage-itemNAME");
 		String previousPageItemDisplayName = registerStringData("Main-GUIOptions.previouspage-itemDISPLAYNAME");

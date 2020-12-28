@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.IPrestigeDataHandler;
 import me.prisonranksx.data.PrestigeDataHandler;
 import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
@@ -130,7 +131,9 @@ public class PRXCommand extends BukkitCommand {
 			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
+
         if(args.length == 0) {
+        	if(main.isInDisabledWorld(sender)) {return true;}
         	main.getHolidayUtils().getHelpMessage1().forEach(line -> {
         		sender.sendMessage(line.replace("%version%", ver));
         	});
@@ -868,7 +871,7 @@ public class PRXCommand extends BukkitCommand {
         	        			return true;
         	        		}
         	        		main.prxAPI.setPlayerPrestige(p, prestige);
-        	        		PrestigeDataHandler pdh = main.prxAPI.getPrestige(prestige);
+        	        		IPrestigeDataHandler pdh = main.prxAPI.getPrestige(prestige);
         	        		if(pdh.getPrestigeCommands() != null) {
         	        		main.executeCommands(p, pdh.getPrestigeCommands());
         	        		}
@@ -896,7 +899,7 @@ public class PRXCommand extends BukkitCommand {
         			return true;
         		}
         		main.prxAPI.setPlayerPrestige(p, newPrestige);
-        		PrestigeDataHandler pdh = main.prxAPI.getPrestige(newPrestige);
+        		IPrestigeDataHandler pdh = main.prxAPI.getPrestige(newPrestige);
         		if(pdh.getPrestigeCommands() != null)
         		main.executeCommands(p, pdh.getPrestigeCommands());
         		if(pdh.getAddPermissionList() != null) {

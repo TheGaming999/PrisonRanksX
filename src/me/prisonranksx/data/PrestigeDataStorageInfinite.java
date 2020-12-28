@@ -14,7 +14,8 @@ import java.util.Map.Entry;
 
 import me.prisonranksx.PrisonRanksX;
 
-public class PrestigeDataStorage implements IPrestigeDataStorage {
+public class PrestigeDataStorageInfinite implements IPrestigeDataStorage {
+	
 	private Map<String, IPrestigeDataHandler> prestigeData;
 	private PrisonRanksX main;
 	private List<String> prestiges;
@@ -22,7 +23,7 @@ public class PrestigeDataStorage implements IPrestigeDataStorage {
 	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
 	private final List<String> emptyStringList = new ArrayList<>();
 	
-	public PrestigeDataStorage(PrisonRanksX main) {
+	public PrestigeDataStorageInfinite(PrisonRanksX main) {
 		this.main = main;
 		this.prestigeData = new LinkedHashMap<String, IPrestigeDataHandler>();
 		this.prestiges = new LinkedList<>();

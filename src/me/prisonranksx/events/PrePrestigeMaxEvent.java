@@ -5,6 +5,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
+import me.prisonranksx.data.IPrestigeDataHandler;
 import me.prisonranksx.data.PrestigeDataHandler;
 
 public class PrePrestigeMaxEvent extends Event implements Cancellable {
@@ -12,9 +13,9 @@ public class PrePrestigeMaxEvent extends Event implements Cancellable {
 	private boolean isCancelled;
 	private static final HandlerList handlers = new HandlerList();
 	private Player player;
-	private PrestigeDataHandler prestige;
+	private IPrestigeDataHandler prestige;
 	
-	public PrePrestigeMaxEvent(Player player, PrestigeDataHandler prestige) {
+	public PrePrestigeMaxEvent(Player player, IPrestigeDataHandler prestige) {
 		this.player = player;
 		this.prestige = prestige;
 	}
@@ -42,7 +43,7 @@ public class PrePrestigeMaxEvent extends Event implements Cancellable {
 		return this.player;
 	}
 	
-	public PrestigeDataHandler getPrestige() {
+	public IPrestigeDataHandler getPrestige() {
 		return this.prestige;
 	}
 	

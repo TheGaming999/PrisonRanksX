@@ -3,14 +3,15 @@ package me.prisonranksx.data;
 import java.util.List;
 import java.util.Map;
 
-public class PrestigeDataHandler {
+public class PrestigeDataHandler implements IPrestigeDataHandler {
+	
 	private String prestigeName;
 	private String prestigeDisplayName;
-	private Double prestigeCost;
+	private double prestigeCost;
 	private String nextPrestigeName;
 	private String nextPrestigeDisplayName;
-	private Double nextPrestigeCost;
-	private Double rankupCostIncreasePercentage;
+	private double nextPrestigeCost;
+	private double rankupCostIncreasePercentage;
 	private List<String> prestigeCommands;
 	private List<String> actionbarMessages;
 	private int actionbarInterval = 0;
@@ -56,11 +57,11 @@ public class PrestigeDataHandler {
 		this.prestigeName = prestigeName;
 	}
 	
-	public Double getCost() {
+	public double getCost() {
 		return prestigeCost;
 	}
 	
-	public void setCost(Double prestigeCost) {
+	public void setCost(double prestigeCost) {
 		this.prestigeCost = prestigeCost;
 	}
 	
@@ -88,19 +89,19 @@ public class PrestigeDataHandler {
 		this.nextPrestigeDisplayName = nextPrestigeDisplayName;
 	}
 	
-	public Double getNextPrestigeCost() {
+	public double getNextPrestigeCost() {
 		return nextPrestigeCost;
 	}
 	
-	public void setNextPrestigeCost(Double nextPrestigeCost) {
+	public void setNextPrestigeCost(double nextPrestigeCost) {
 		this.nextPrestigeCost = nextPrestigeCost;
 	}
 	
-	public Double getRankupCostIncreasePercentage() {
+	public double getRankupCostIncreasePercentage() {
 		return rankupCostIncreasePercentage;
 	}
 	
-	public void setRankupCostIncreasePercentage(Double rankupCostIncreasePercentage) {
+	public void setRankupCostIncreasePercentage(double rankupCostIncreasePercentage) {
 		this.rankupCostIncreasePercentage = rankupCostIncreasePercentage;
 	}
 	

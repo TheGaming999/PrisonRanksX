@@ -28,6 +28,7 @@ public class RankupMaxCommand extends BukkitCommand {
 		if(!main.isRankEnabled) {
 			return true;
 		}
+		if(main.isInDisabledWorld(sender)) {return true;}
 		if(args.length == 0) {
 	      if(!(sender instanceof Player)) {
 	    	  return true;

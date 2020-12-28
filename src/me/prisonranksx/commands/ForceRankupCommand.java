@@ -33,6 +33,7 @@ public class ForceRankupCommand extends BukkitCommand {
 	        	sender.sendMessage(main.prxAPI.g("forcerankup-noargs"));
 	        	return true;
 	        } else if (args.length == 1) {
+	  	      if(main.isInDisabledWorld(sender)) {return true;}
 	        	if(args[0].equalsIgnoreCase("*")) {
 	        		for(Player player : OnlinePlayers.getPlayers()) {
 	        			main.rankupLegacy.forceRankup(player, sender);
@@ -51,6 +52,7 @@ public class ForceRankupCommand extends BukkitCommand {
         	sender.sendMessage(main.prxAPI.g("forcerankup-noargs"));
         	return true;
         } else if (args.length == 1) {
+        	if(main.isInDisabledWorld(sender)) {return true;}
         	if(args[0].equalsIgnoreCase("*")) {
         		for(Player player : OnlinePlayers.getPlayers()) {
         			main.rankupAPI.forceRankup(player, sender);

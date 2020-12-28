@@ -256,11 +256,17 @@ public class PlayerDataStorage {
 				    path = result.getString("path") == null ? defaultPath : result.getString("path");
 				    name = result.getString("name") == null ? Bukkit.getOfflinePlayer(xu.getUUID()).getName() : result.getString("name"); 
 					PlayerDataHandler pdh = new PlayerDataHandler(xu);
+					if(rank.isEmpty()) {
+						rank = defaultRank;
+					}
+					if(path.isEmpty()) {
+						path = defaultPath;
+					}
 					RankPath rankPath = new RankPath(rank, path);
-					if(prestige != null) {
+					if(prestige != null && !prestige.isEmpty()) {
 						pdh.setPrestige(prestige);
 					}
-					if(rebirth != null) {
+					if(rebirth != null && !rebirth.isEmpty()) {
 						pdh.setRebirth(rebirth);
 					}
 					pdh.setRankPath(rankPath);
@@ -979,10 +985,10 @@ public class PlayerDataStorage {
 		i = 0;
 		if(main.isMySql()) {
 		           try {
-		        	   main.getConnection().setAutoCommit(false);
+		        	   
 		        	   String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET `name`=?,`rank`=?,`prestige`=?,`rebirth`=?,`path`=? WHERE uuid=?";
 		               PreparedStatement statement = main.getConnection().prepareStatement(sql);
-		         
+		               main.getConnection().setAutoCommit(false);
 		               getPlayerData().values().stream().filter(val -> !isDummy(val)).forEach(val -> {
 		            	   i++;
 		            	   PlayerDataHandler value = val;
@@ -1014,7 +1020,11 @@ public class PlayerDataStorage {
 			    			}
 		               });
 		               int[] updated = statement.executeBatch();
-		               main.getConnection().commit();
+		               try {
+			               main.getConnection().commit();
+			           } catch (SQLException err) {
+			               main.getLogger().warning("[MySql] Couldn't commit because autocommit is already enabled.");
+			           }
 		               Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §9Updated §a" + String.valueOf(updated) + " §9" + getWordForm(i, "Entry", "Entries") + ".");
 		               statement.close();
 		               main.getConnection().setAutoCommit(true);
@@ -1050,10 +1060,9 @@ public class PlayerDataStorage {
 		i = 0;
 		if(main.isMySql()) {
 		           try {
-		        	   main.getConnection().setAutoCommit(false);
 		        	   String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET `name`=?,`rank`=?,`prestige`=?,`rebirth`=?,`path`=? WHERE uuid=?";
 		               PreparedStatement statement = main.getConnection().prepareStatement(sql);
-		         
+		               main.getConnection().setAutoCommit(false);
 		               getPlayerData().values().stream().filter(val -> !isDummy(val)).forEach(val -> {
 		            	   i++;
 		            	   PlayerDataHandler value = val;
@@ -1085,7 +1094,11 @@ public class PlayerDataStorage {
 			    			}
 		               });
 		               statement.executeBatch();  
+		               try {
 		               main.getConnection().commit();
+		               } catch (SQLException err) {
+		            	   main.getLogger().warning("[MySql] Couldn't commit because autocommit is already enabled.");
+		               }
 		               statement.close();
 		               main.getConnection().setAutoCommit(true);
 		           }

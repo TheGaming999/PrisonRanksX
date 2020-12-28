@@ -141,6 +141,7 @@ public class TopPrestigesCommand extends BukkitCommand {
 			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
+		if(main.isInDisabledWorld(sender)) {return true;}
 		if(args.length == 0) {
 			//int page = 1;
 			//int totalEntries = main.lbm.getPrestigeLeaderboard().size();

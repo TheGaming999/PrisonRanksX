@@ -35,18 +35,8 @@ public class PrestigeMaxCommand extends BukkitCommand {
 	    	  return true;
 	      } 
 	      Player p = (Player)sender;
+	      if(main.isInDisabledWorld(p)) {return true;}
 	      main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
-		} else if (args.length == 1) {
-			Player p = Bukkit.getPlayer(args[0]);
-			if(p == null) {
-				AccessibleBukkitTask abt = new AccessibleBukkitTask();
-				abt.runAsyncLoop(main, () -> {
-					sender.sendMessage(abt.getLoopValue("test").toString());
-				}, 0, 10, true, "test");
-				return true;
-			}
-			if(!p.hasPermission(this.getPermission() + ".other")) {return true;}
-			main.prxAPI.getPrestigeMax().execute(p);
 		}
 		return true;
 	}

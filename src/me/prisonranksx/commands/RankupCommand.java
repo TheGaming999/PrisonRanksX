@@ -34,12 +34,16 @@ public class RankupCommand extends BukkitCommand {
 	    	  sender.sendMessage(main.prxAPI.c(runFromConsole));
 	    	  return true;
 	      } 
+	      Player p = (Player)sender;
+	      if(main.isInDisabledWorld(p)) {return true;}
 	      if(main.isBefore1_7) {
-	    	  main.prxAPI.rankupLegacy((Player)sender);
+	    	  main.prxAPI.rankupLegacy(p);
 	    	  return true;
 	      }
-       main.prxAPI.rankup((Player)sender);
+       main.prxAPI.rankup(p);
 		} else if (args.length == 1) {
+			Player p = (Player)sender;
+		      if(main.isInDisabledWorld(p)) {return true;}
 			if(args[0].equalsIgnoreCase("max")) {
 				main.rankupMaxCommand.execute(sender, label, args);
 			} else {

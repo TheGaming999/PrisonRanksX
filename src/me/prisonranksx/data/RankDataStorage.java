@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Lists;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.utils.CollectionUtils;
@@ -26,9 +27,8 @@ public class RankDataStorage {
 	private Map<String, List<String>> playerCommands;
 	private Map<String, List<String>> opCommands;
 	private Map<String, String> lastRankMap;
-	private final Map<String, String> emptyStringToStringMap = new HashMap<>();
-	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
-	private final List<String> emptyStringList = new ArrayList<>();
+	private static final Map<String, String> emptyStringToStringMap = new HashMap<>();
+	private static final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
 	private int pathsAmount;
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
@@ -132,7 +132,7 @@ public class RankDataStorage {
 				RankPath rankPath = new RankPath(rankName, pathName);
 				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
 				Map<String, String> stringRequirements = emptyStringToStringMap;
-				List<String> customRequirementMessage = emptyStringList;
+				List<String> customRequirementMessage = Lists.newArrayList();
 				if(main.getConfigManager().ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
@@ -188,9 +188,9 @@ public class RankDataStorage {
                 rankData.put(rankPath.get(), rdh);
                 paths.add(pathName);
                 putPathRank(pathName, rankName);
-    			List<String> consoleCommands = CollectionUtils.EMPTY_STRING_LIST;
-    			List<String> opCommands = CollectionUtils.EMPTY_STRING_LIST;
-    			List<String> playerCommands = CollectionUtils.EMPTY_STRING_LIST;
+    			List<String> consoleCommands = Lists.newArrayList();
+    			List<String> opCommands = Lists.newArrayList();
+    			List<String> playerCommands = Lists.newArrayList();
     			if(rankupCommands != null && !rankupCommands.isEmpty()) {
     			for(String command : rankupCommands) {
     				if(command.startsWith("[console]") || !command.startsWith("[")) {
@@ -200,7 +200,7 @@ public class RankDataStorage {
     					playerCommands.add(command.substring(9).replace("%rankup%", rankupName).replace("%rank%", rankName)
     							.replace("%rankup_display%", rankupDisplayName));
     				} else if(command.startsWith("[op]")) {
-    					opCommands.add(command.substring(5).replace("%rankup%", rankupName).replace("%rank%", rankName)
+    					playerCommands.add(command.substring(5).replace("%rankup%", rankupName).replace("%rank%", rankName)
     							.replace("%rankup_display%", rankupDisplayName));
     				}
     			}
@@ -222,7 +222,7 @@ public class RankDataStorage {
 	
 	public List<String> getList(String node) {
 		if(node == null || main.getConfigManager().ranksConfig.get(node) == null) {
-			return emptyStringList;
+			return null;
 		}
 		return main.getConfigManager().ranksConfig.getStringList(node);
 	}

@@ -86,6 +86,7 @@ public class RankupLegacy {
 			}
 		} else {
 			if(!enable) {
+				prxAPI.autoRankupPlayers.remove(name);
 				if(prxAPI.g("autorankup-disabled") != null && !prxAPI.g("autorankup-disabled").isEmpty()) {
 					p.sendMessage(prxAPI.g("autorankup-disabled"));
 				}

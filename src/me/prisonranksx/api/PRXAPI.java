@@ -1471,7 +1471,13 @@ public class PRXAPI {
 	
 	@Nonnull
 	public int getPlayerRankNumber(UUID uuid) {
-		return Integer.valueOf(getRankNumber(getPlayerRankPath(uuid).getPathName(),getPlayerRank(uuid)));
+		if(uuid == null) return 0;
+		RankPath rp = getPlayerRankPath(uuid);
+		if(rp == null) return 0;
+		String pathName = rp.getPathName();
+		String rankName = rp.getRankName();
+		if(pathName == null || rankName == null) return 0;
+		return Integer.valueOf(getRankNumber(pathName, rankName));
 	}
 	
 	/**
@@ -3072,7 +3078,9 @@ public class PRXAPI {
 	 * @return player power (made for leaderboards)
 	 */
 	public int getPlayerPromotionsAmount(final UUID uuid) {
+		if(uuid == null) return 0;
 		RankPath rp = getPlayerRankPath(uuid);
+		if(rp == null) return 0;
 		if(hasRebirthed(uuid)) {
 			if(hasPrestiged(uuid)) {
 				return (getPlayerRebirthNumber(uuid) * getPrestigesCollection().size()) * (getPlayerPrestigeNumber(uuid) * getRanksCollection(rp.getPathName()).size()) + getPlayerRankNumber(uuid);
@@ -3081,7 +3089,8 @@ public class PRXAPI {
 			}
 		} else {
 			if(hasPrestiged(uuid)) {
-				return (getPlayerPrestigeNumber(uuid) * getRanksCollection(rp.getPathName()).size()) + getPlayerRankNumber(uuid);
+				int rankSize = rp.getPathName() == null ? 1 : getRanksCollection(rp.getPathName()).size();
+				return (getPlayerPrestigeNumber(uuid) * rankSize) + getPlayerRankNumber(uuid);
 			} else {
 				return getPlayerRankNumber(uuid);
 			}

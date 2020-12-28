@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
@@ -19,9 +18,9 @@ import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.AsyncRankupMaxEvent;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RankUpdateEvent;
+
 public class RankupMax {
 
-	
 	public final Map<String, String> rankupMaxMap;
     public final Set<String> rankupMaxProcess;
     public final Map<String, Integer> rankupMaxStreak;

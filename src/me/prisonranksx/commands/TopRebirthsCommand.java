@@ -141,6 +141,7 @@ public class TopRebirthsCommand extends BukkitCommand {
 			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
+		if(main.isInDisabledWorld(sender)) {return true;}
 		if(args.length == 0) {
             this.paginate(sender, leaderboardLines, 1, header, footer, main.lbm.getRebirthLeaderboard().size());		
 		} else if (args.length == 1) {
