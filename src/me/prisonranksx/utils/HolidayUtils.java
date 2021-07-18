@@ -466,13 +466,13 @@ public class HolidayUtils {
         		this.isCeleberation = false;
         	}
         } else if (month == 12) {
-        	if(day > 16) {
+        	if(day > 20) {
         		// is christmas
         		this.holiday = Holiday.CHRISTMAS;
         		this.isCeleberation = true;
         	}
         } else if (month == 1) {
-        	if(day < 7) {
+        	if(day < 1) {
         		// is christmas
         		this.holiday = Holiday.CHRISTMAS;
         		this.isCeleberation = true;

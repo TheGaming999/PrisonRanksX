@@ -81,6 +81,10 @@ public class AccessibleString {
 		return new AccessibleString(string, true);
 	}
 	
+	public static AccessibleString create() {
+		return new AccessibleString();
+	}
+	
 	@Nullable
 	public static AccessibleString parse(Object object) {
 		String newString = null;

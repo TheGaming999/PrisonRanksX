@@ -98,6 +98,12 @@ public class PapiHook extends PlaceholderExpansion {
     @Override
 	public String onRequest(OfflinePlayer arg0, String arg1) {
         OfflinePlayer p = arg0;
+        if(arg1.equalsIgnoreCase("canprestige")) {
+        	return String.valueOf(prxAPI.canPrestige(p.getPlayer()));
+        }
+        if(arg1.equalsIgnoreCase("canrebirth")) {
+        	return String.valueOf(prxAPI.canRebirth(p.getPlayer()));
+        }
         if(arg1.equalsIgnoreCase("currentrank_number")) {
         	return String.valueOf(prxAPI.getPlayerRankNumber(p));
         }
@@ -172,11 +178,27 @@ public class PapiHook extends PlaceholderExpansion {
 				return String.valueOf(prxAPI.getPlayerRankupPercentageDirect(p)) + prxAPI.getPercentSign();
 			}
 		}
+		if(arg1.startsWith("rank_percentage_")) {
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
+			String rank = arg1.replace("rank_percentage_", "");
+			RankPath rp = RankPath.getRankPath(rank, path);
+			if(prxAPI.isPercentSignBehind()) {
+			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankPercentage(p, rp));
+			} else {
+				return String.valueOf(prxAPI.getPlayerRankPercentage(p, rp)) + prxAPI.getPercentSign();
+			}
+		}
 		if(arg1.equalsIgnoreCase("rankup_percentage_plain")) {
 			if(prxAPI.getPlayerNextRank(p) == null) {
 				  return "100";
 			}
 			return String.valueOf(prxAPI.getPlayerRankupPercentageDirect(p));
+		}
+		if(arg1.startsWith("rankup_percentage_plain_")) {
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
+			String rank = arg1.replace("rankup_percentage_plain_", "");
+			RankPath rp = RankPath.getRankPath(rank, path);
+			return String.valueOf(prxAPI.getPlayerRankPercentage(p, rp));
 		}
 		if(arg1.startsWith("plaindecimal_")) {
 			String bsed = PlaceholderAPI.setBracketPlaceholders(p, arg1.replace("plaindecimal_", ""));
@@ -225,6 +247,16 @@ public class PapiHook extends PlaceholderExpansion {
 				return String.valueOf(prxAPI.getPlayerRankupPercentageDecimalDirect(p)) + prxAPI.getPercentSign();
 			}
 		}
+		if(arg1.startsWith("rank_percentage_decimal_")) {
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
+			String rank = arg1.replace("rank_percentage_decimal_", "");
+			RankPath rp = RankPath.getRankPath(rank, path);
+			if(prxAPI.isPercentSignBehind()) {
+			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankPercentageDecimalDirect(p, rp));
+			} else {
+				return String.valueOf(prxAPI.getPlayerRankPercentageDecimalDirect(p, rp)) + prxAPI.getPercentSign();
+			}
+		}
 		if(arg1.equalsIgnoreCase("rankup_percentage_nolimit")) {
 			if(prxAPI.getPlayerNextRank(p) == null) {
 				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
@@ -233,6 +265,16 @@ public class PapiHook extends PlaceholderExpansion {
 			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageNoLimitDirect(p));
 			} else {
 				return String.valueOf(prxAPI.getPlayerRankupPercentageNoLimitDirect(p)) + prxAPI.getPercentSign();
+			}
+		}
+		if(arg1.startsWith("rank_percentage_nolimit_")) {
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
+			String rank = arg1.replace("rank_percentage_nolimit_", "");
+			RankPath rp = RankPath.getRankPath(rank, path);
+			if(prxAPI.isPercentSignBehind()) {
+			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankPercentageNoLimitDirect(p, rp));
+			} else {
+				return String.valueOf(prxAPI.getPlayerRankPercentageNoLimitDirect(p, rp)) + prxAPI.getPercentSign();
 			}
 		}
 		if(arg1.equalsIgnoreCase("rankup_percentage_decimal_nolimit")) {
@@ -245,11 +287,27 @@ public class PapiHook extends PlaceholderExpansion {
 				return String.valueOf(prxAPI.getPlayerRankupPercentageDecimalNoLimitDirect(p)) + prxAPI.getPercentSign();
 			}
 		}
+		if(arg1.startsWith("rank_percentage_decimal_nolimit_")) {
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
+			String rank = arg1.replace("rank_percentage_decimal_nolimit_", "");
+			RankPath rp = RankPath.getRankPath(rank, path);
+			if(prxAPI.isPercentSignBehind()) {
+			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankPercentageDecimalNoLimitDirect(p, rp));
+			} else {
+				return String.valueOf(prxAPI.getPlayerRankPercentageDecimalNoLimitDirect(p, rp)) + prxAPI.getPercentSign();
+			}
+		}
 		if(arg1.equalsIgnoreCase("rankup_progress")) {
 			if(prxAPI.getPlayerNextRank(p) == null) {
 				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-lastrank"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerRankupProgressBar(p));
+		}
+		if(arg1.startsWith("rank_progress_")) {
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
+			String rank = arg1.replace("rank_progress_", "");
+			RankPath rp = RankPath.getRankPath(rank, path);
+			return String.valueOf(prxAPI.getPlayerRankProgressBar(p, rp));
 		}
 		if(arg1.equalsIgnoreCase("next_progress")) {
 			return String.valueOf((prxAPI.getPlayerNextProgress(p)));
@@ -262,6 +320,12 @@ public class PapiHook extends PlaceholderExpansion {
 				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-lastrank"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerRankupProgressBarExtended(p));
+		}
+		if(arg1.startsWith("rank_progress_double_")) {
+			String path = prxAPI.getPlayerRankPath(p).getPathName();
+			String rank = arg1.replace("rank_progress_double_", "");
+			RankPath rp = RankPath.getRankPath(rank, path);
+			return String.valueOf(prxAPI.getPlayerRankProgressBarExtended(p, rp));
 		}
 		if(arg1.equalsIgnoreCase("rankup_name")) {
 			if(prxAPI.getPlayerNextRank(p) == null) {

@@ -48,7 +48,7 @@ public class CollectionUtils {
 	 * 
 	 * @param a collection size
 	 * @param b elements per page
-	 * @return accurate final page number
+	 * @return %100 accurate final page number
 	 */
 	private static int fixPages(final int a, final int b) {
 		int mathConverted = (int) Math.ceil((double)a / (double)b);

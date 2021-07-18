@@ -12,6 +12,7 @@ public class MVdWPapiHook {
 	
     private PrisonRanksX main;
     private PRXAPI prxAPI;
+    
 	public MVdWPapiHook(PrisonRanksX main) {
 		super();
 		this.main = main;
@@ -26,8 +27,8 @@ public class MVdWPapiHook {
 					return "Offline";
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
-				if(prxAPI.isLastRank(p) && prxAPI.getConfig().getBoolean("PlaceholderAPI.currentrank-lastrank-enabled")) {
-					return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.currentrank-lastrank"), e.getPlayer().getName());
+				if(prxAPI.isLastRank(p) && main.getGlobalStorage().getBooleanData("PlaceholderAPI.currentrank-lastrank-enabled")) {
+					return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.currentrank-lastrank"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerRank(p));
 			}
@@ -39,8 +40,8 @@ public class MVdWPapiHook {
 					return "Offline";
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
-				if(prxAPI.isLastRank(p) && prxAPI.getConfig().getBoolean("PlaceholderAPI.currentrank-lastrank-enabled")) {
-					return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.currentrank-lastrank"), e.getPlayer().getName());
+				if(prxAPI.isLastRank(p) && main.getGlobalStorage().getBooleanData("PlaceholderAPI.currentrank-lastrank-enabled")) {
+					return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.currentrank-lastrank"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerRankDisplay(p));
 			}
@@ -53,7 +54,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-percentage-lastrank"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-percentage-lastrank"), e.getPlayer().getName());
 				}
 				if(prxAPI.isPercentSignBehind()) {
 				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageDirect(p));
@@ -118,7 +119,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-percentage-lastrank"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-percentage-lastrank"), e.getPlayer().getName());
 				}
 				if(prxAPI.isPercentSignBehind()) {
 				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageDecimalDirect(p));
@@ -135,7 +136,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-percentage-lastrank"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-percentage-lastrank"), e.getPlayer().getName());
 				}
 				if(prxAPI.isPercentSignBehind()) {
 				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageNoLimitDirect(p));
@@ -152,7 +153,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-percentage-lastrank"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-percentage-lastrank"), e.getPlayer().getName());
 				}
 				if(prxAPI.isPercentSignBehind()) {
 				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageDecimalNoLimitDirect(p));
@@ -169,7 +170,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-progress-lastrank"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-progress-lastrank"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerRankupProgressBar(p));
 			}
@@ -182,7 +183,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-progress-lastrank"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-progress-lastrank"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerRankupProgressBarExtended(p));
 			}
@@ -195,7 +196,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-lastrank"), e.getPlayer().getName());
+					return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-lastrank"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerNextRank(p));
 			}
@@ -208,7 +209,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-lastrank"), e.getPlayer().getName());
+					return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-lastrank"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerRankupDisplay(p));
 			}
@@ -221,7 +222,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-cost-lastrank"), e.getPlayer().getName());
+					return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-cost-lastrank"), e.getPlayer().getName());
 				}
 				if(prxAPI.isCurrencySymbolBehind()) {
 				return  String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
@@ -238,7 +239,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(prxAPI.getPlayerNextRank(p) == null) {
-					return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rankup-cost-lastrank"), e.getPlayer().getName());
+					return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rankup-cost-lastrank"), e.getPlayer().getName());
 				}
 				if(prxAPI.isCurrencySymbolBehind()) {
 				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPluginMainClass().formatBalance(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
@@ -275,7 +276,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasRebirthed(p)) {
-				 return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rebirth-notrebirthed"), e.getPlayer().getName());
+				 return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rebirth-notrebirthed"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerRebirth(p));
 			}
@@ -288,7 +289,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasRebirthed(p)) {
-			     return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.rebirth-notrebirthed"), e.getPlayer().getName());
+			     return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.rebirth-notrebirthed"), e.getPlayer().getName());
 				}
 				 return String.valueOf(prxAPI.getPlayerRebirthDisplay(p));
 			}
@@ -301,7 +302,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasPrestiged(p)) {
-				 return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.prestige-notprestiged"), e.getPlayer().getName());
+				 return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.prestige-notprestiged"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerPrestige(p));
 			}
@@ -314,7 +315,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasPrestiged(p)) {
-			     return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.prestige-notprestiged"), e.getPlayer().getName());
+			     return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.prestige-notprestiged"), e.getPlayer().getName());
 				}
 				 return String.valueOf(prxAPI.getPlayerPrestigeDisplay(p));
 			}
@@ -327,7 +328,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasPrestiged(p)) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.prestige-notprestiged"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.prestige-notprestiged"), e.getPlayer().getName());
 					}
 				if(prxAPI.isCurrencySymbolBehind()) {
 				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerPrestigeCost(p));
@@ -344,7 +345,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasPrestiged(p)) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.prestige-notprestiged"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.prestige-notprestiged"), e.getPlayer().getName());
 					}
 				if(prxAPI.isCurrencySymbolBehind()) {
 				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerPrestigeCostFormatted(p));
@@ -361,10 +362,10 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasPrestiged(p)) {
-					return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("firstprestige"), e.getPlayer().getName());
+					return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("firstprestige"), e.getPlayer().getName());
 				}
 				if(!prxAPI.hasNextPrestige(p)) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.prestige-lastprestige"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.prestige-lastprestige"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerNextPrestige(p));
 			}
@@ -377,10 +378,10 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasPrestiged(p)) {
-					return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("Prestiges." + prxAPI.getFirstPrestige() + ".display"), e.getPlayer().getName());
+					return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("Prestiges." + prxAPI.getFirstPrestige() + ".display"), e.getPlayer().getName());
 				}
 				if(!prxAPI.hasNextPrestige(p)) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.prestige-lastprestige"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.prestige-lastprestige"), e.getPlayer().getName());
 				}
 				return String.valueOf(prxAPI.getPlayerNextPrestigeDisplay(p));
 			}
@@ -393,7 +394,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasNextPrestige(p)) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.prestige-lastprestige"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.prestige-lastprestige"), e.getPlayer().getName());
 				}
 				if(prxAPI.isCurrencySymbolBehind()) {
 				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostInString(p)); 
@@ -410,7 +411,7 @@ public class MVdWPapiHook {
 				}
 				OfflinePlayer p = e.getOfflinePlayer();
 				if(!prxAPI.hasNextPrestige(p)) {
-					  return prxAPI.getPluginMainClass().getString(prxAPI.getConfig().getString("PlaceholderAPI.prestige-lastprestige"), e.getPlayer().getName());
+					  return prxAPI.getPluginMainClass().getString(main.getGlobalStorage().getStringData("PlaceholderAPI.prestige-lastprestige"), e.getPlayer().getName());
 				}
 				if(prxAPI.isCurrencySymbolBehind()) {
 				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostFormatted(p));

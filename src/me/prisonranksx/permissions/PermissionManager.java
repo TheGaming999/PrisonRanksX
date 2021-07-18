@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
@@ -30,7 +31,27 @@ public class PermissionManager {
 		}).execute();
 	}
 	
+	public void addPermissionOffline(final OfflinePlayer player, final String perm) {
+		String permission = perm;
+		if(permission.startsWith("[") && permission.contains("]")) {
+			int worldIndex = permission.lastIndexOf("]");
+			String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+			String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+		    addPermissionOffline(player, node, world);
+		    return;
+		}
+		main.newSharedChain("permission").async(() -> {
+        main.getPermissions().playerAdd(null, player, permission);
+		}).execute();
+	}
+	
 	private void addPermission(final Player player, final String permission, final String world) {
+		main.newSharedChain("permission").async(() -> {
+		main.getPermissions().playerAdd(Bukkit.getWorld(world).getName().trim(), player, permission.trim());
+		}).execute();
+	}
+	
+	private void addPermissionOffline(final OfflinePlayer player, final String permission, final String world) {
 		main.newSharedChain("permission").async(() -> {
 		main.getPermissions().playerAdd(Bukkit.getWorld(world).getName().trim(), player, permission.trim());
 		}).execute();
@@ -67,7 +88,27 @@ public class PermissionManager {
 		}).execute();
 	}
 	
+	public void delPermissionOffline(final OfflinePlayer player, final String perm) {
+		String permission = perm;
+		if(permission.startsWith("[") && permission.contains("]")) {
+			int worldIndex = permission.lastIndexOf("]");
+			String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+			String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+		    delPermissionOffline(player, node, world);
+		    return;
+		}
+		main.newSharedChain("permission").async(() -> {
+        main.getPermissions().playerRemove(null, player, permission);
+		}).execute();
+	}
+	
 	public void delPermission(final Player player, final String permission, final String world) {
+		main.newSharedChain("permission").async(() -> {
+			main.getPermissions().playerRemove(Bukkit.getWorld(world).getName().trim(), player, permission.trim());
+		}).execute();
+	}
+	
+	public void delPermissionOffline(final OfflinePlayer player, final String permission, final String world) {
 		main.newSharedChain("permission").async(() -> {
 			main.getPermissions().playerRemove(Bukkit.getWorld(world).getName().trim(), player, permission.trim());
 		}).execute();

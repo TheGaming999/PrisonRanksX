@@ -1,6 +1,8 @@
 package me.prisonranksx.leaderboard;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -8,9 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -18,8 +17,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.PlayerDataHandler;
 import me.prisonranksx.data.PlayerDataStorage.PlayerDataType;
-import me.prisonranksx.utils.MySqlStreamer;
+import me.prisonranksx.data.RankPath;
+import me.prisonranksx.data.XUser;
 
 public class LeaderboardManager {
 
@@ -36,10 +37,19 @@ public class LeaderboardManager {
 	private Map<UUID, Integer> updatedValuesP;
 	private Map<UUID, Integer> updatedValuesR;
 	private Map<UUID, Integer> updatedValuesGlobal;
+	private Map<UUID, RankPath> rankMySQL;
+	private Map<UUID, String> prestigeMySQL;
+	private Map<UUID, String> rebirthMySQL;
+	private Map<UUID, PlayerDataHandler> globalMySQL;
 	private boolean update;
+	public boolean isMYSQL;
 	
 	public LeaderboardManager(PrisonRanksX main) {
 		this.main = main;
+		isMYSQL = main.isMySql();
+		if(!main.getGlobalStorage().getBooleanData("Options.enable-leaderboard")) {
+			return;
+		}
 		list = Collections.synchronizedList(new LinkedList<>());
 		listp = Collections.synchronizedList(new LinkedList<>());
 		listr = Collections.synchronizedList(new LinkedList<>());
@@ -52,15 +62,21 @@ public class LeaderboardManager {
 		updatedValuesP = Collections.synchronizedMap(new LinkedHashMap<>());
 		updatedValuesR = Collections.synchronizedMap(new LinkedHashMap<>());
 		updatedValuesGlobal = Collections.synchronizedMap(new LinkedHashMap<>());
+		rankMySQL = Collections.synchronizedMap(new LinkedHashMap<>());
+	    prestigeMySQL = Collections.synchronizedMap(new LinkedHashMap<>());
+		rebirthMySQL = Collections.synchronizedMap(new LinkedHashMap<>());
+		globalMySQL = Collections.synchronizedMap(new LinkedHashMap<>());
+		clearUpdatedValues();
 		setUpdate(true);
-		getRankLeaderboard();
 		getPrestigeLeaderboard();
+		getRankLeaderboard();
 		getRebirthLeaderboard();
 		getGlobalLeaderboard();
 		Bukkit.getScheduler().runTaskTimerAsynchronously(this.main, () -> {
+			clearUpdatedValues();
 			setUpdate(true);
-			getRankLeaderboard();
 			getPrestigeLeaderboard();
+			getRankLeaderboard();
 			getRebirthLeaderboard();
 			getGlobalLeaderboard();
 		}, 20 * 60, 20 * 60);
@@ -150,18 +166,22 @@ public class LeaderboardManager {
 	 * @String returns String fallback if there is no player took that position.
 	 */
 	public String getPlayerPrestigeFromPosition(final int position, final String fallback) {
-		if(getPlayerFromPositionPrestige(position) == null) {
+		Entry<UUID, Integer> entry = getPlayerFromPositionPrestige(position);
+		if(entry == null) {
 			return fallback;
 		}
-		String prestige = main.prxAPI.getPlayerPrestige(getPlayerFromPositionPrestige(position).getKey());
+		UUID u = entry.getKey();
+		String prestige = isMYSQL ? prestigeMySQL.get(u) : main.prxAPI.getPlayerPrestige(u);
 		return prestige == null ? fallback : prestige;
 	}
 	
 	public String getPlayerPrestigeDisplayNameFromPosition(final int position, final String fallback) {
-		if(getPlayerFromPositionPrestige(position) == null) {
+		Entry<UUID, Integer> entry = getPlayerFromPositionPrestige(position);
+		if(entry == null) {
 			return fallback;
 		}
-		String prestigeDisplayName = main.prxAPI.getPlayerPrestigeDisplay(getPlayerFromPositionPrestige(position).getKey());
+		UUID u = entry.getKey();
+		String prestigeDisplayName = isMYSQL ? main.prxAPI.getPrestigeDisplay(prestigeMySQL.get(u)) : main.prxAPI.getPlayerPrestigeDisplay(u);
 		return prestigeDisplayName == null ? fallback : prestigeDisplayName;
 	}
 	
@@ -174,10 +194,13 @@ public class LeaderboardManager {
 	}
 	
 	public String getPlayerStageDisplayNameFromPosition(final int position, final String fallback) {
-		if(getPlayerFromPositionGlobal(position) == null) {
+		Entry<UUID, Integer> entry = getPlayerFromPositionGlobal(position);
+		if(entry == null) {
 			return fallback;
 		}
-		String stageDisplayName = main.prxAPI.getStageDisplay(getPlayerFromPositionGlobal(position).getKey(), " ", true);
+		UUID u = entry.getKey();
+		PlayerDataHandler pdh = globalMySQL.get(u);
+		String stageDisplayName = isMYSQL ? main.prxAPI.organizeStageDisplay(pdh.getRankPath().getRankName(), pdh.getRankPath().getPathName(), pdh.getPrestige(), pdh.getRebirth(), " ", true): main.prxAPI.getStageDisplay(u, " ", true);
 		return stageDisplayName == null ? fallback : stageDisplayName;
 	}
 	
@@ -189,18 +212,22 @@ public class LeaderboardManager {
 	 * @String returns String fallback if there is no player took that position.
 	 */
 	public String getPlayerRankFromPosition(final int position, final String fallback) {
-		if(getPlayerFromPositionRank(position) == null) {
+		Entry<UUID, Integer> entry = getPlayerFromPositionRank(position);
+		if(entry == null) {
 			return fallback;
 		}
-		String rank = main.prxAPI.getPlayerRank(getPlayerFromPositionRank(position).getKey());
+		UUID u = entry.getKey();
+		String rank = isMYSQL ? rankMySQL.get(u).getRankName() : main.prxAPI.getPlayerRank(u);
 		return rank == null ? fallback : rank;
 	}
 	
 	public String getPlayerRankDisplayNameFromPosition(final int position, final String fallback) {
-		if(getPlayerFromPositionRank(position) == null) {
+		Entry<UUID, Integer> entry = getPlayerFromPositionRank(position);
+		if(entry == null) {
 			return fallback;
 		}
-		String rankDisplayName = main.prxAPI.getPlayerRankDisplay(getPlayerFromPositionRank(position).getKey());
+		UUID u = entry.getKey();
+		String rankDisplayName = isMYSQL ? main.prxAPI.getRankDisplay(rankMySQL.get(u)) : main.prxAPI.getPlayerRankDisplay(u);
 		return rankDisplayName == null ? fallback : rankDisplayName;
 	}
 	
@@ -209,10 +236,12 @@ public class LeaderboardManager {
 	}
 	
 	public String getPlayerRebirthFromPosition(final int position, final String fallback) {
-		if(getPlayerFromPositionRebirth(position) == null) {
+		Entry<UUID, Integer> entry = getPlayerFromPositionRebirth(position);
+		if(entry == null) {
 			return fallback;
 		}
-		String rebirth = main.prxAPI.getPlayerRebirth(getPlayerFromPositionRebirth(position).getKey());
+		UUID u = entry.getKey();
+		String rebirth = isMYSQL ? rebirthMySQL.get(u) : main.prxAPI.getPlayerRebirth(u);
 		return rebirth == null ? fallback : rebirth;
 	}
 	
@@ -235,6 +264,7 @@ public class LeaderboardManager {
 		if(!main.getPlayerStorage().isRegistered(uuid)) {
 			return Bukkit.getOfflinePlayer(uuid).getName();
 		}
+		
 		return main.getPlayerStorage().getPlayerData().get(uuid.toString()).getName();
 	}
 	
@@ -282,34 +312,37 @@ public class LeaderboardManager {
 		if(!update && !updatedValues.isEmpty()) {
 			return updatedValues;
 		}
+		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
 		updatedValues.clear();
 		main.getPlayerStorage().storePlayersData(PlayerDataType.RANK);
 		if(main.isMySql()) {
-			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable();
-			MySqlStreamer mySqlStreamer = new MySqlStreamer(main.getConnection());
+			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " ORDER BY `rankscore` DESC LIMIT 100;";
+			Statement statement = null;
 			try {
-				mySqlStreamer.streamQuery(sql)
-				.sorted((a1, a2) -> {
-					String rank1 = (String)a1.get("rank");
-					String path1 = (String)a1.get("path");
-					String rank2 = (String)a2.get("rank");
-					String path2 = (String)a2.get("path");
-					int number1 = Integer.valueOf(main.prxAPI.getRankNumber(path1, rank1));
-					int number2 = Integer.valueOf(main.prxAPI.getRankNumber(path2, rank2));
-					return number2 - number1;
-				})
-				.limit(25)
-				.forEach(f -> {
-					UUID uuid = UUID.fromString((String)f.get("uuid"));
-					int finalNumber = Integer.valueOf(main.prxAPI.getRankNumber((String)f.get("path"), (String)f.get("rank")));
-					updatedValues.put(uuid, finalNumber);
-				});
+				statement = main.getConnection().createStatement();
+				ResultSet result = statement.executeQuery(sql);
+				while(result.next()) {
+					String uuid = result.getString("uuid");
+					int rankScore = result.getInt("rankscore");
+					String rank = result.getString("rank");
+					String path = result.getString("path");
+					main.debug("fetched mysql rankdata: " + uuid + "||" + rankScore);
+					UUID u = UUID.fromString(uuid);
+					updatedValues.put(u, rankScore);
+					RankPath rp = new RankPath(rank, path);
+					rankMySQL.put(u, rp);
+				}
 			} catch (SQLException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			mySqlStreamer.getStreamQuery().closeStatement();
-			return updatedValues;
-		}
+			try {
+				statement.close();
+			} catch (SQLException e) {
+				
+			}
+			
+		} else {
 		ConfigurationSection cf = main.getConfigManager().rankDataConfig.getConfigurationSection("players");
 		cf.getValues(false)
 		  .entrySet()
@@ -336,42 +369,54 @@ public class LeaderboardManager {
 			int finalNumber = Integer.valueOf(main.prxAPI.getRankNumber(value.getString("path"), value.getString("rank")));
 		    updatedValues.put(uuid, finalNumber);
 		  });
+		}
 	   update = false;
 	   list.clear();
 	   list.addAll(updatedValues.entrySet());
+		}).execute();
 	   return updatedValues;
 	}
 	
 	public Map<UUID, Integer> getPrestigeLeaderboard() {
 		if(!update && !updatedValuesP.isEmpty()) {
+			main.debug("UpdatedValuesP is not empty.");
 			return updatedValuesP;
 		}
+		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
+		main.debug("Clearing updatedvaluesp...");
 		updatedValuesP.clear();
+		main.debug("Clear successful.");
 		main.getPlayerStorage().storePlayersData(PlayerDataType.PRESTIGE);
+		main.debug("Prestige leaderboard called.");
 		if(main.isMySql()) {
-			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable();
-			MySqlStreamer mySqlStreamer = new MySqlStreamer(main.getConnection());
+			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " ORDER BY `prestigescore` DESC LIMIT 100;";
+			Statement statement = null;
+			main.debug("Started prestige statement.");
 			try {
-				mySqlStreamer.streamQuery(sql)
-				.sorted((a1, a2) -> {
-					String prestige1 = (String)a1.get("prestige");
-					String prestige2 = (String)a2.get("prestige");
-					int number1 = Integer.valueOf(main.prxAPI.getPrestigeNumber(prestige1));
-					int number2 = Integer.valueOf(main.prxAPI.getPrestigeNumber(prestige2));
-					return number2 - number1;
-				})
-				.limit(25)
-				.forEach(f -> {
-					UUID uuid = UUID.fromString((String)f.get("uuid"));
-					int finalNumber = Integer.valueOf(main.prxAPI.getPrestigeNumber((String)f.get("prestige")));
-					updatedValuesP.put(uuid, finalNumber);
-				});
+				statement = main.getConnection().createStatement();
+				main.debug("Prestige statement created.");
+				ResultSet result = statement.executeQuery(sql);
+				main.debug("Prestige statement executed.");
+				while(result.next()) {
+					String uuid = result.getString("uuid");
+					int prestigeScore = result.getInt("prestigescore");
+					String prestige = result.getString("prestige");
+					main.debug("fetched mysql prestigedata: " + uuid + "||" + prestigeScore);
+					UUID u = UUID.fromString(uuid);
+					updatedValuesP.put(u, prestigeScore);
+					prestigeMySQL.put(u, prestige);
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			mySqlStreamer.getStreamQuery().closeStatement();
-			return updatedValuesP;
-		}
+			
+		} else {
 		ConfigurationSection cf = main.getConfigManager().prestigeDataConfig.getConfigurationSection("players");
 		cf.getValues(false)
 		  .entrySet()
@@ -394,9 +439,11 @@ public class LeaderboardManager {
 			int finalNumber = Integer.valueOf(main.prxAPI.getPrestigeNumber(value));
 		    updatedValuesP.put(uuid, finalNumber);
 		  });
+		}
 	   update = false;
 	   listp.clear();
 	   listp.addAll(updatedValuesP.entrySet());
+		}).execute();
 	   return updatedValuesP;
 	}
 	
@@ -404,32 +451,35 @@ public class LeaderboardManager {
 		if(!update && !updatedValuesR.isEmpty()) {
 			return updatedValuesR;
 		}
+		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
 		updatedValuesR.clear();
 		main.getPlayerStorage().storePlayersData(PlayerDataType.REBIRTH);
 		if(main.isMySql()) {
-			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable();
-			MySqlStreamer mySqlStreamer = new MySqlStreamer(main.getConnection());
+			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " ORDER BY `rebirthscore` DESC LIMIT 100;";
+			Statement statement = null;
 			try {
-				mySqlStreamer.streamQuery(sql)
-				.sorted((a1, a2) -> {
-					String rebirth1 = (String)a1.get("rebirth");
-					String rebirth2 = (String)a2.get("rebirth");
-					int number1 = Integer.valueOf(main.prxAPI.getRebirthNumber(rebirth1));
-					int number2 = Integer.valueOf(main.prxAPI.getRebirthNumber(rebirth2));
-					return number2 - number1;
-				})
-				.limit(25)
-				.forEach(f -> {
-					UUID uuid = UUID.fromString((String)f.get("uuid"));
-					int finalNumber = Integer.valueOf(main.prxAPI.getRebirthNumber((String)f.get("rebirth")));
-					updatedValuesR.put(uuid, finalNumber);
-				});
+				statement = main.getConnection().createStatement();
+				ResultSet result = statement.executeQuery(sql);
+				while(result.next()) {
+					String uuid = result.getString("uuid");
+					int rebirthScore = result.getInt("rebirthscore");
+					String rebirth = result.getString("rebirth");
+					main.debug("fetched mysql rebirthdata: " + uuid + "||" + rebirthScore);
+					UUID u = UUID.fromString(uuid);
+					updatedValuesR.put(UUID.fromString(uuid), rebirthScore);
+					rebirthMySQL.put(u, rebirth);
+				}
 			} catch (SQLException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			mySqlStreamer.getStreamQuery().closeStatement();
-			return updatedValuesR;
-		}
+			try {
+				statement.close();
+			} catch (SQLException e) {
+				
+			}
+			
+		} else {
 		ConfigurationSection cf = main.getConfigManager().rebirthDataConfig.getConfigurationSection("players");
 		cf.getValues(false)
 		  .entrySet()
@@ -450,9 +500,11 @@ public class LeaderboardManager {
 			int finalNumber = Integer.valueOf(main.prxAPI.getRebirthNumber(value));
 		    updatedValuesR.put(uuid, finalNumber);
 		  });
+		}
 	   update = false;
 	   listr.clear();
 	   listr.addAll(updatedValuesR.entrySet());
+		}).execute();
 	   return updatedValuesR;
 	}
 	
@@ -460,32 +512,48 @@ public class LeaderboardManager {
 		if(!update && !updatedValuesGlobal.isEmpty()) {
 			return updatedValuesGlobal;
 		}
+		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
 		updatedValuesGlobal.clear();
 		main.getPlayerStorage().storePlayersData(PlayerDataType.ALL);
 		if(main.isMySql()) {
-			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable();
-			MySqlStreamer mySqlStreamer = new MySqlStreamer(main.getConnection());
+			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " ORDER BY `stagescore` DESC LIMIT 50;";
+			Statement statement = null;
 			try {
-				mySqlStreamer.streamQuery(sql)
-				.sorted((a1, a2) -> {
-					UUID uuid1 = UUID.fromString((String)a1.get("uuid"));
-					UUID uuid2 = UUID.fromString((String)a2.get("uuid"));
-					int number1 = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(uuid1));
-					int number2 = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(uuid2));
-					return number2 - number1;
-				})
-				.limit(25)
-				.forEach(f -> {
-					UUID uuid = UUID.fromString((String)f.get("uuid"));
-					int finalNumber = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(UUID.fromString((String)f.get("uuid"))));
-					updatedValuesGlobal.put(uuid, finalNumber);
-				});
+				statement = main.getConnection().createStatement();
+				ResultSet result = statement.executeQuery(sql);
+				while(result.next()) {
+					String uuid = result.getString("uuid");
+					int stageScore = result.getInt("stagescore");					
+					main.debug("fetched mysql stagedata: " + uuid + "||" + stageScore);
+					UUID u = UUID.fromString(uuid);
+					PlayerDataHandler pdh = new PlayerDataHandler(XUser.getXUser(u));
+					String name = result.getString("name");
+					String rank = result.getString("rank");
+					String path = result.getString("path");
+					String prestige = result.getString("prestige");
+					prestige = prestige.equals("none") ? null : prestige;
+					String rebirth = result.getString("rebirth");
+					rebirth = rebirth.equals("none") ? null : rebirth;
+					pdh.setUUID(u);
+                    pdh.setRankPath(RankPath.getRankPath(rank, path));
+                    pdh.setPrestige(prestige);
+                    pdh.setRebirth(rebirth);
+                    pdh.setName(name);
+					updatedValuesGlobal.put(u, stageScore);
+					globalMySQL.put(u, pdh);
+				}
 			} catch (SQLException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			mySqlStreamer.getStreamQuery().closeStatement();
-			return updatedValuesGlobal;
-		}
+			try {
+				statement.close();
+			} catch (SQLException e) {
+				
+			}
+			
+		} else {
+			
 		ConfigurationSection cf = main.getConfigManager().rankDataConfig.getConfigurationSection("players");
 		cf.getValues(false)
 		.entrySet()
@@ -509,9 +577,11 @@ public class LeaderboardManager {
 			int finalNumber = Integer.valueOf(main.prxAPI.getPlayerPromotionsAmount(uuid));
 		    updatedValuesGlobal.put(uuid, finalNumber);
 		  });
+		}
 	   update = false;
 	   listGlobal.clear();
 	   listGlobal.addAll(updatedValuesGlobal.entrySet());
+		}).execute();
 	   return updatedValuesGlobal;
 	}
 
@@ -521,6 +591,13 @@ public class LeaderboardManager {
 
 	public void setUpdate(boolean update) {
 		this.update = update;
+	}
+	
+	public void clearUpdatedValues() {
+		this.updatedValues.clear();
+		this.updatedValuesP.clear();
+		this.updatedValuesR.clear();
+		this.updatedValuesGlobal.clear();
 	}
 	
 }

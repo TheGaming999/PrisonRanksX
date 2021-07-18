@@ -15,7 +15,6 @@ import com.google.common.collect.Lists;
  */
 public class OnlinePlayers {
 	
-	private static final List<Player> EMPTY_PLAYER_LIST = Lists.newArrayList();
     private static int size = 0;
     private static int amount = 0;
 
@@ -23,7 +22,7 @@ public class OnlinePlayers {
      * @return gets every player in the server in a list
      */
 	public static List<Player> getPlayers() {
-	    List<Player> playerList = EMPTY_PLAYER_LIST;
+	    List<Player> playerList = Lists.newArrayList();
 	    for (World wrld : Bukkit.getWorlds()) {
 	        playerList.addAll(wrld.getPlayers());
 	    }

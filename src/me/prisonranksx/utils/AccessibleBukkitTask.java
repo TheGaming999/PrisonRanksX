@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitTask;
 public class AccessibleBukkitTask {
 
 	private BukkitTask bukkitTask;
-	private final Map<String, AtomicInteger> loopMap = new HashMap<>();
+	private final static Map<String, AtomicInteger> loopMap = new HashMap<>();
 	
 	public AccessibleBukkitTask() {
 		this.bukkitTask = null;
@@ -64,7 +64,7 @@ public class AccessibleBukkitTask {
 		return returnInt.get();
 	}
 	
-	public AtomicInteger getLoopValue(String name) {
+	public static AtomicInteger getLoopValue(String name) {
 		return loopMap.get(name);
 	}
 	

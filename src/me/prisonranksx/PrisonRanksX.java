@@ -83,9 +83,11 @@ import me.prisonranksx.data.GlobalDataStorage;
 import me.prisonranksx.data.GlobalDataStorage1_16;
 import me.prisonranksx.data.GlobalDataStorage1_8;
 import me.prisonranksx.data.IPrestigeDataStorage;
+import me.prisonranksx.data.InfinitePrestigeSettings;
 import me.prisonranksx.data.MessagesDataStorage;
 import me.prisonranksx.data.PlayerDataStorage;
 import me.prisonranksx.data.PrestigeDataStorage;
+import me.prisonranksx.data.PrestigeDataStorageInfinite;
 import me.prisonranksx.data.RankDataStorage;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataStorage;
@@ -132,6 +134,7 @@ import me.prisonranksx.utils.PlaceholderReplacer;
 import me.prisonranksx.utils.PlaceholderReplacerDefault;
 import me.prisonranksx.utils.PlaceholderReplacerPAPI;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
 import cloutteam.samjakob.gui.types.PaginatedGUI;
@@ -152,7 +155,8 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	public boolean isMvdw, isApiLoaded, isActionUtil, debug, terminateMode,
 	isBefore1_7, isRankEnabled, isPrestigeEnabled, isRebirthEnabled, forceSave,
     isABProgress, isRankupMaxWarpFilter, isVaultGroups, isholo, ishooked, isEBProgress,
-    isSaveOnLeave, checkVault, saveNotification, allowEasterEggs, isEnabledInsteadOfDisabled;
+    isSaveOnLeave, checkVault, saveNotification, allowEasterEggs, isEnabledInsteadOfDisabled,
+    isInfinitePrestige;
 	// ======================
 	// MYSQL FIELDS
 	private boolean isMySql, useSSL, autoReconnect, useCursorFetch;
@@ -256,6 +260,8 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	public ActionbarProgress abprogress;
 	public ExpbarProgress ebprogress;
 	public ErrorInspector errorInspector;
+	public InfinitePrestigeSettings infinitePrestigeSettings;
+	private static PrisonRanksX instance;
 	public int autoSaveTime;
     private BukkitTask actionbarTask;
 	public Set<UUID> actionbarInUse; 
@@ -266,7 +272,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			"Rebirthlist-gui.completed-format.custom", "Rebirthlist-gui.other-format.custom");
 	public Map<Player, Integer> actionbar_animation;
     public Map<Player, BukkitTask> actionbar_task;
-    public List<String> disabledWorlds;
+    public Set<String> disabledWorlds;
 	// ======================
     private TaskChainFactory taskChainFactory;
     
@@ -399,6 +405,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	}
 	
 	public void onEnable() {
+		instance = this;
 		taskChainFactory = BukkitTaskChainFactory.create(this);
 		holidayUtils = new HolidayUtils(this);
 		holidayUtils.setup();
@@ -426,10 +433,9 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		} else {
 		setupEconomy();
 		setupPermissions();
-
 		perm = new PermissionManager(this);
 		configManager = new ConfigManager(this);
-		if(Bukkit.getVersion().contains("1.16")) {
+		if(version.contains("1.16") || version.contains("1.17") || version.contains("1.18")) {
 	         globalStorage = new GlobalDataStorage1_16(this);
 		} else {
 			 globalStorage = new GlobalDataStorage1_8(this);
@@ -440,23 +446,31 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		messagesStorage = new MessagesDataStorage(this);
 	    configManager.loadConfigs();
 		if(!isBefore1_7) {
-		  if(Bukkit.getVersion().contains("1.16")) {
-			  this.actionBar = new Actionbar1_16();
+		  if(version.contains("1.16") || version.contains("1.17") || version.contains("1.18")) {
 			  this.chatColorReplacer = new ChatColorReplacer1_16(this);
-		  } else {
-			  this.actionBar = new ActionbarLegacy();
+		  } else {	  
 			  this.chatColorReplacer = new ChatColorReplacer1_8(this);
-		  }		  
+		  }		
+		  this.actionBar = new ActionbarLegacy();
 		}
 	    globalStorage.loadGlobalData();
+	    isInfinitePrestige = globalStorage.getBooleanData("Options.infinite-prestige");
 		rankStorage.loadRanksData();
+		if(isInfinitePrestige) {
+			infinitePrestigeSettings = new InfinitePrestigeSettings(this);
+			infinitePrestigeSettings.load();
+			prestigeStorage = new PrestigeDataStorageInfinite(this);
+			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §dInfinte Prestige Option is §aEnabled§d.");
+		} 
+		isMySql = globalStorage.getBooleanData("MySQL.enable");
 		prestigeStorage.loadPrestigesData();
 		rebirthStorage.loadRebirthsData();
 		messagesStorage.loadMessages(); 
 		playerStorage = new PlayerDataStorage(this);
 		prxAPI = new PRXAPI();
 		prxAPI.setup();
-		lbm = new LeaderboardManager(this);
+		setupMySQL();
+		lbm = new LeaderboardManager(this);	
 	    if((Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))) {
 			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eLoading PlaceholderAPI Placeholders...");
 			  papi = new PapiHook(this);
@@ -555,13 +569,13 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		}	  
  
 		setupBalanceFormat();
-		setupMySQL();
+		
 		autoSaveTime = globalStorage.getIntegerData("Options.autosave-time");
 		forceSave = globalStorage.getBooleanData("Options.forcesave");
 	    isRankupMaxWarpFilter = globalStorage.getBooleanData("Options.rankupmax-warp-filter");
 		checkVault = globalStorage.getBooleanData("Options.rankup-vault-groups-check");
 		allowEasterEggs = globalStorage.getBooleanData("Options.allow-easter-eggs");
-		disabledWorlds = globalStorage.getStringListData("worlds");
+		disabledWorlds = Sets.newHashSet(globalStorage.getStringListData("worlds"));
 		try {
 			ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
 		} catch (IOException e) {
@@ -639,7 +653,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		if(getGlobalStorage().getBooleanData("Options.autosave")) {
 			startAsyncUpdateTask();
 		}
-
 	}
 	
 	public boolean isMySql() {
@@ -647,6 +660,21 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	}
 	
 	public Statement getMySqlStatement() {
+		try {
+			if(this.statement == null || this.statement.isClosed()) {
+				try {
+					openConnection();
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				statement = getConnection().createStatement(); 
+				return statement;
+			}
+		} catch (SQLException e) {
+			System.out.println("Statement is either closed or null.");
+			e.printStackTrace();
+		}
 		return this.statement;
 	}
 	
@@ -657,7 +685,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	       username = globalStorage.getStringData("MySQL.username");
 	       password = globalStorage.getStringData("MySQL.password");   
 	       table = globalStorage.getStringData("MySQL.table");
-	       isMySql = globalStorage.getBooleanData("MySQL.enable");
+	       
 	       useSSL = globalStorage.getBooleanData("MySQL.useSSL");
 	       autoReconnect = globalStorage.getBooleanData("MySQL.autoReconnect");
 	       useCursorFetch = globalStorage.getBooleanData("MySQL.useCursorFetch");
@@ -668,17 +696,27 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
         try {    
             openConnection();
             statement = getConnection().createStatement();  
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + getDatabase() + "." + table + " (`uuid` varchar(255), `name` varchar(255), `rank` varchar(255), `prestige` varchar(255), `rebirth` varchar(255), `path` varchar(255));");
-         
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + getDatabase() + "." + table + " (`uuid` varchar(255), `name` varchar(255), `rank` varchar(255), `prestige` varchar(255), `rebirth` varchar(255), `path` varchar(255), `rankscore` int(5), `prestigescore` int(10), `rebirthscore` int(10), `stagescore` int(24));");
+            try {
+            	System.out.println("Checking for database update...");
+            	getMySqlStatement().executeUpdate("ALTER TABLE " + getDatabase() + "." + getTable() + " ADD `rankscore` int(5) AFTER `path`, ADD `prestigescore` int(10) AFTER `rankscore`, ADD `rebirthscore` int(10) AFTER `prestigescore`, ADD `stagescore` int(24) AFTER `rebirthscore`;");
+            	System.out.println("Database update successful.");
+            } catch (SQLException e) {
+            	System.out.println("Database is up to date.");
+            }
+            //ResultSet result = getMySqlStatement().executeQuery("SELECT `rankscore` FROM " + getDatabase() + "." + getTable() + ";");
+            //if(!result.next()) {
+            	
+            //}
             Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aSuccessfully connected to the database.");
         } catch (ClassNotFoundException e) {
-        	Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cdatabase class couldn't be found.");
+        	Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cDatabase class couldn't be found.");
             e.printStackTrace();
-            getLogger().info("MySql Connection failed.");
+            getLogger().info("MySql connection failed.");
         } catch (SQLException e) {
         	Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL error occurred.");
             e.printStackTrace();
-            getLogger().info("MySql SQL Error occurred.");
+            getLogger().info("MySql SQL error occurred.");
         }
         }
  
@@ -738,7 +776,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "path", pathName);
 				util.set(u, "prestige", prestigeName);
 				util.set(u, "rebirth", rebirthName);
-				util.set(u, "name", name); 
+				util.set(u, "name", name);
+				util.set(u, "rankscore", prxAPI.getRankNumber(pathName, rankName));
+				util.set(u, "prestigescore", prxAPI.getPrestigeNumber(prestigeName));
+				util.set(u, "rebirthscore", prxAPI.getRebirthNumber(rebirthName));
+				util.set(u, "stagescore", String.valueOf(prxAPI.getPower(rank, path, prestige, rebirth)));
 				util.executeThenClose();
 			} else {
 				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
@@ -771,7 +813,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "path", pathName);
 				util.set(u, "prestige", prestigeName);
 				util.set(u, "rebirth", rebirthName);
-				util.set(u, "name", name);  
+				util.set(u, "name", name); 
+				util.set(u, "rankscore", prxAPI.getRankNumber(pathName, rankName));
+				util.set(u, "prestigescore", prxAPI.getPrestigeNumber(prestigeName));
+				util.set(u, "rebirthscore", prxAPI.getRebirthNumber(rebirthName));
+				util.set(u, "stagescore", String.valueOf(prxAPI.getPower(rankName, pathName, prestigeName, rebirthName)));
 				util.executeThenClose();
 			} else {
 				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
@@ -807,7 +853,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "path", pathName);
 				util.set(u, "prestige", prestigeName);
 				util.set(u, "rebirth", rebirthName);
-				util.set(u, "name", name);    
+				util.set(u, "name", name);
+				util.set(u, "rankscore", prxAPI.getRankNumber(pathName, rankName));
+				util.set(u, "prestigescore", prxAPI.getPrestigeNumber(prestigeName));
+				util.set(u, "rebirthscore", prxAPI.getRebirthNumber(rebirthName));
+				util.set(u, "stagescore", String.valueOf(prxAPI.getPower(rankName, pathName, prestigeName, rebirthName)));
 				util.executeThenClose();
 			} else {
 				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
@@ -842,7 +892,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				util.set(u, "path", pathName);
 				util.set(u, "prestige", prestigeName);
 				util.set(u, "rebirth", rebirthName);
-				util.set(u, "name", name);   
+				util.set(u, "name", name);  
+				util.set(u, "rankscore", prxAPI.getRankNumber(pathName, rankName));
+				util.set(u, "prestigescore", prxAPI.getPrestigeNumber(prestigeName));
+				util.set(u, "rebirthscore", prxAPI.getRebirthNumber(rebirthName));
+				util.set(u, "stagescore", String.valueOf(prxAPI.getPower(rankName, pathName, prestigeName, rebirthName)));
 				util.executeThenClose();
 			} else {
 				statement.executeUpdate("INSERT INTO " + getDatabase() + "." + table +" (`uuid`, `name`, `rank`, `prestige`, `rebirth`, `path`) VALUES ('" + u + "', '" + name + "', '" + rankName + "', '" + prestigeName + "', '" + rebirthName + "', '" + pathName + "');");
@@ -931,6 +985,9 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			} else if (message instanceof Double) {
 				double msg = (double)message;
 				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + String.valueOf(msg)));
+			} else if (message instanceof UUID) {
+				UUID uuid = (UUID)message;
+				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + uuid.toString()));
 			} else if (message instanceof List) {
 				List<String> msg = (List)message;
 				Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&9[DEBUG] " + msg.toString()));
@@ -1229,7 +1286,8 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
         		 actionbar_task.put(p, actionbarTask);
         		 }
 		        	int lines = actionBar.size();
-		        	if(actionbar_animation.get(p) == lines) {
+		        	boolean animationEnded = actionbar_animation.get(p) >= lines;
+		        	if(animationEnded) {
 		        		Bukkit.getScheduler().runTaskLater(prxAPI.getPluginMainClass(), () -> {
 		        		actionbarInUse.remove(p.getUniqueId());
 		        		}, 20);
@@ -1239,7 +1297,8 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		        	String currentLine = actionBar.get(actionbar_animation.get(p).intValue());
 		        	
 		        	getActionbar().sendActionBar(p, getString(currentLine, p.getName()).replace("%rankup%", getString(playerStorage.getPlayerRank(p), p.getName())).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), p.getName())));
-					actionbar_animation.put(p, actionbar_animation.get(p)+1);
+					if(!animationEnded)
+		        	actionbar_animation.put(p, actionbar_animation.get(p)+1);
         	 }
          }.runTaskTimerAsynchronously(this, 1L, interval);
 	}
@@ -1395,8 +1454,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	@EventHandler
 	  public void onPlayerChat(AsyncPlayerChatEvent e) {
 		Player p = e.getPlayer();
-		String playerWorld = p.getWorld().getName();
-		if(disabledWorlds.contains(playerWorld)) {
+		if(isInDisabledWorld(p)) {
 			return;
 		}
 		String eventFormat = e.getFormat();
@@ -1900,5 +1958,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			}
 			Player p = (Player)sender;
 			return disabledWorlds.contains(p.getWorld().getName()) != isEnabledInsteadOfDisabled;
+		}
+		public static PrisonRanksX getInstance() {
+			return instance;
+		}
+		public static void setInstance(PrisonRanksX instance) {
+			PrisonRanksX.instance = instance;
 		}
 }

@@ -48,7 +48,7 @@ public class SkullCreator {
     public static ItemStack itemWithName(ItemStack item, String name) {
         notNull(item, "item");
         notNull(name, "name");
-        
+
         return Bukkit.getUnsafe().modifyItemStack(item,
         "{SkullOwner:\"" + name + "\"}"
         );
