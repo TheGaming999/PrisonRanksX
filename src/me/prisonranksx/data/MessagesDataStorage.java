@@ -94,6 +94,8 @@ public class MessagesDataStorage {
 		String prestigesGuiOpen = registerStringMessage("prestigesgui-open");
 		String autoRankupEnabled = registerStringMessage("autorankup-enabled");
 		String autoRankupDisabled = registerStringMessage("autorankup-disabled");
+		String autoRankupEnabledOther = registerStringMessage("autorankup-enabled-other");
+		String autoRankupDisabledOther = registerStringMessage("autorankup-disabled-other");
 		String autoRankupNoPermission = registerStringMessage("autorankup-nopermission");
 		String autoRankupLastRank = registerStringMessage("autorankup-lastrank");
 		String autoPrestigeEnabled = registerStringMessage("autoprestige-enabled");

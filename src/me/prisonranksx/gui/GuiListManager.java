@@ -170,7 +170,7 @@ public class GuiListManager {
 			} else if (itemValue.contains("@HEAD@")) {
 				String[] nameAndData = originalValue.split("@HEAD@");
 				String data = nameAndData[1];
-				x = XMaterial.PLAYER_HEAD.parseItem(true);
+				x = XMaterial.PLAYER_HEAD.parseItem();
 				if(data.length() > 16) {
 					if(data.contains("net")) {
 						main.debug("from url: " + data);

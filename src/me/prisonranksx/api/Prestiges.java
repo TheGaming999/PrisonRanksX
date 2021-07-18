@@ -144,7 +144,7 @@ public class Prestiges {
 	 * @param sender
 	 */
 	public void send(String pageNumber, CommandSender sender) {
-		if(!enablePages || pageNumber == null) {
+		if((!enablePages || pageNumber == null) && (!main.isInfinitePrestige)) {
 			sendList(sender);
 		} else {
 			if(!main.prxAPI.numberAPI.isNumber(pageNumber) || Integer.valueOf(pageNumber) < 1) {
@@ -290,7 +290,7 @@ public class Prestiges {
 	private void sendPagedList(String pageNumber, CommandSender sender) {
 		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 		if(enablePages) {
-			if(isCustomList) {
+			if(isCustomList || main.isInfinitePrestige) {
 				List<String> customList = CollectionUtils.paginateList(prestigeWithPagesListFormat, prestigePerPage, Integer.parseInt(pageNumber));
 				customList.forEach(line -> {
 					sender.sendMessage(main.getString(line, sender.getName()));

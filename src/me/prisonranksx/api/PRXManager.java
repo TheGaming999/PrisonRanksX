@@ -9,6 +9,8 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.Sets;
+
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.GlobalDataStorage1_16;
 import me.prisonranksx.data.GlobalDataStorage1_8;
@@ -556,7 +558,7 @@ public class PRXManager {
       main.isApiLoaded = false;
       main.autoSaveTime = main.getGlobalStorage().getIntegerData("Options.autosave-time");
       main.allowEasterEggs = main.getGlobalStorage().getBooleanData("Options.allow-easter-eggs");
-      main.disabledWorlds = main.getGlobalStorage().getStringListData("worlds");
+      main.disabledWorlds = Sets.newHashSet(main.getGlobalStorage().getStringListData("worlds"));
       main.isEnabledInsteadOfDisabled = main.getGlobalStorage().getBooleanData("Options.enabled-worlds-instead-of-disabled");
       main.prxAPI = new PRXAPI();
       main.prxAPI.setup();

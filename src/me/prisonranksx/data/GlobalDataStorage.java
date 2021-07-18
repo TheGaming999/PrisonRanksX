@@ -217,6 +217,8 @@ public interface GlobalDataStorage {
 	    boolean allowEasterEggs = registerBooleanData("Options.allow-easter-eggs");
 	    boolean enableLeaderboard = registerBooleanData("Options.enable-leaderboard");
 	    boolean enabledWorldsInsteadOfDisabled = registerBooleanData("Options.enabled-worlds-instead-of-disabled");
+	    boolean infinitePrestige = registerBooleanData("Options.infinite-prestige");
+	    String prestigeMaxType = registerStringData("Options.prestigemax-type");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");

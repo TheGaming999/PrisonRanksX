@@ -403,4 +403,9 @@ public class PrestigeDataStorage implements IPrestigeDataStorage {
                  }
 			}
 	}
+
+	@Override
+	public IPrestigeDataHandler getHandler(String prestigeName) {
+		return getDataHandler(prestigeName);
+	}
 }

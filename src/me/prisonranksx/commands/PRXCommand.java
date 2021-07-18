@@ -1,19 +1,26 @@
 package me.prisonranksx.commands;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.IPrestigeDataHandler;
-import me.prisonranksx.data.PrestigeDataHandler;
 import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataHandler;
@@ -24,6 +31,8 @@ import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.events.PrestigeUpdateEvent;
 import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.events.RebirthUpdateEvent;
+import me.prisonranksx.utils.AccessibleBukkitTask;
+import me.prisonranksx.utils.AccessibleString;
 import me.prisonranksx.utils.CollectionUtils;
 import me.prisonranksx.utils.HolidayUtils.Holiday;
 
@@ -33,6 +42,7 @@ public class PRXCommand extends BukkitCommand {
 	private String ver = "1.0";
 	private List<String> placeholders;
 	private boolean is1_16;
+	private Set<String> confirmation;
 	public PRXCommand(String commandName) {
 		super(commandName);
 		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "Manage ranks,prestiges,rebirths settings")));
@@ -81,6 +91,7 @@ public class PRXCommand extends BukkitCommand {
 				,"%prisonranksx_plain_{placeholder}%", "%prisonranksx_current_displayname%"
 				, "%prisonranksx_name_stage_<number>%", "%prisonranksx_value_stage_<number>%", ".");
 		placeholders = CollectionUtils.columnizeList(placeholders, 3, ", ", ".");
+		confirmation = Sets.newHashSet();
 	}
 
 	public String getRandomHexColors() {
@@ -124,6 +135,55 @@ public class PRXCommand extends BukkitCommand {
 		}
 	}
 	
+	/**
+	 * <p>Creates a copy of file in addition to paying attention to the amount of the same copied files
+	 * <p>For example if we have file named <i>'test.txt'</i>:
+	 * <p><pre> the file 'test.txt' didn't have any backup before, therefore the new file name will be: 'test_backup_0.txt'</pre>
+	 * <p><pre> if it already had a backup the new file name will be: 'test_backup_1.txt'</pre>
+	 * @param file to be copied and preserved.
+	 * @return true if the backup was successful, false otherwise.
+	 */
+	public boolean backupFile(File file) {
+		if(file == null) return false;
+		String fileName = file.getName();
+		String safeName = fileName.split("\\.")[0];
+		String firstName = safeName + "_backup_" + "0";
+		String newPath = file.getPath().replace(safeName, firstName);
+	    File newFile = new File(newPath);
+	    AccessibleString lastName = AccessibleString.createNullable(null);
+	    if(newFile.exists()) {
+	    	File f = new File(file.getPath());
+	    	File[] matchingFiles = f.listFiles(new FilenameFilter() {
+	    	    public boolean accept(File dir, String name) {
+	    	        return name.contains("_backup_");
+	    	    }
+	    	});
+	    	main.debug(matchingFiles.length);
+	    	lastName.setString(matchingFiles[matchingFiles.length-1].getPath());
+	    	String foundPath = lastName.getString();
+	    	String beforeDot = foundPath.split("\\.")[0];
+	    	String splitBackupNumber = beforeDot.split("_backup_")[1];
+	    	int newInteger = Integer.parseInt(splitBackupNumber)+1;
+	    	String newBackupPath = foundPath.replace("_backup_" + splitBackupNumber, "_backup_" + String.valueOf(newInteger));
+	    	try {
+				Files.copy(file, new File(newBackupPath));
+				return true;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+	    } else {
+	    	try {
+				Files.copy(file, newFile);
+				return true;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+	    }
+	    
+	}
+	
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
 		if(!sender.hasPermission(this.getPermission())) {
@@ -140,6 +200,15 @@ public class PRXCommand extends BukkitCommand {
         } else if (args.length == 1) {
         	if(args[0].equalsIgnoreCase("banana")) {
         		if(!main.allowEasterEggs) return true;
+        		sender.sendMessage(main.prxAPI.c("&e&oBananizing the leaderboard..."));
+        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        		main.lbm.clearUpdatedValues();
+        		main.lbm.setUpdate(true);
+        		main.lbm.getRankLeaderboard();
+        		main.lbm.getPrestigeLeaderboard();
+        		main.lbm.getRebirthLeaderboard();
+        		main.lbm.getGlobalLeaderboard();
+        		});
         		Bukkit.broadcastMessage(main.prxAPI.c("&e&lBANANA!"));
         	}
         	else if (args[0].equalsIgnoreCase("halloween")) {
@@ -191,7 +260,18 @@ public class PRXCommand extends BukkitCommand {
         		sender.sendMessage(main.prxAPI.c("&eRebirths: &b" + main.rebirthStorage.getRebirthData().size()));
         		sender.sendMessage(main.prxAPI.c("&eRegistered players: &b" + main.playerStorage.getPlayerData().size()));
         	} else if (args[0].startsWith("blabla")) {
-
+        		
+        	} else if (args[0].equalsIgnoreCase("resetplayerdata")) {
+        		
+        			sender.sendMessage(main.prxAPI.c("&7Are you sure you want to reset all player data?"));
+        			sender.sendMessage(main.prxAPI.c("&7What will happen:"));
+        			sender.sendMessage(main.prxAPI.c("&7Their prestiges and rebirths will be removed, ranks will be reset to first"));
+        			sender.sendMessage(main.prxAPI.c("&7All permissions they got from 'addpermission' will be removed from them"));
+        			sender.sendMessage(main.prxAPI.c("&7Their balance will be reset to 0"));
+        			sender.sendMessage(main.prxAPI.c("&7After that, the server will shutdown automatically."));
+        			sender.sendMessage(main.prxAPI.c("&7Type &a/prx resetplayerdata confirm &7to proceed."));
+                    confirmation.add(sender.getName());
+        		
         	} else if (args[0].equalsIgnoreCase("placeholders")) {
         		if(is1_16) {
         			placeholders.forEach(placeholder -> {
@@ -403,6 +483,83 @@ public class PRXCommand extends BukkitCommand {
         		sender.sendMessage(main.prxAPI.c("&c/&6prx setprestige <player> &4<prestige>"));
         	} else if (args[0].equalsIgnoreCase("setrebirth")) {
         		sender.sendMessage(main.prxAPI.c("&c/&6prx setrebirth <player> &4<rebirth>"));
+        	}
+        	else if (args[0].equalsIgnoreCase("resetplayerdata")) {
+        		if(args[1].equalsIgnoreCase("confirm")) {
+        			if(!confirmation.contains(sender.getName())) {
+        				sender.sendMessage(main.prxAPI.c("&7Please write &a/prx resetplayerdata &7first."));
+        			} else {
+        				AccessibleBukkitTask abt = new AccessibleBukkitTask();
+        				abt.set(Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        					sender.sendMessage(main.prxAPI.c("&7Starting the reset process..."));
+        					sender.sendMessage(main.prxAPI.c("&7Creating a backup..."));
+        					try {
+								Files.copy(main.getConfigManager().rankDataFile, new File(main.getConfigManager().rankDataFile.getPath().replace("rankdata.yml", "rankdata_old.yml")));
+								Files.copy(main.getConfigManager().prestigeDataFile, new File(main.getConfigManager().prestigeDataFile.getPath().replace("prestigedata.yml", "prestigedata_old.yml")));
+								Files.copy(main.getConfigManager().rebirthDataFile, new File(main.getConfigManager().rebirthDataFile.getPath().replace("rebirthdata.yml", "rebirthdata_old.yml")));
+								backupFile(main.getConfigManager().rankDataFile);
+								backupFile(main.getConfigManager().prestigeDataFile);
+								backupFile(main.getConfigManager().rebirthDataFile);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								sender.sendMessage(main.prxAPI.c("&cFailed to create a backup, please check the console."));
+								sender.sendMessage(main.prxAPI.c("&7Process cancelled."));
+								abt.cancel();
+								e.printStackTrace();
+							}
+        					sender.sendMessage(main.prxAPI.c("&aBackup creation done."));
+        					sender.sendMessage(main.prxAPI.c("&7Resetting online players data..."));
+        					main.getPlayerStorage().getPlayerData().keySet().forEach(id -> {
+        						UUID uuid = UUID.fromString(id);
+        						main.prxAPI.setPlayerRankPath(uuid, RankPath.getRankPath(main.prxAPI.getDefaultRank(), main.prxAPI.getDefaultPath()));
+        						main.prxAPI.deletePlayerPrestige(uuid);
+        						main.prxAPI.deletePlayerRebirth(uuid);
+        						Player p = Bukkit.getPlayer(uuid);
+        						main.prxAPI.allRankAddPermissions.forEach(line -> {
+        							main.perm.delPermission(p, line);
+        						});
+        						main.prxAPI.allPrestigeAddPermissions.forEach(line -> {
+        							main.perm.delPermission(p, line);
+        						});
+        						main.prxAPI.allRebirthAddPermissions.forEach(line -> {
+        							main.perm.delPermission(p, line);
+        						});
+        						main.prxAPI.getEconomy().withdrawPlayer(p, main.prxAPI.getPlayerMoney(p));
+        						
+        					});
+        					sender.sendMessage(main.prxAPI.c("&aOnline players data reset."));
+        					sender.sendMessage(main.prxAPI.c("&7Resetting offline players data, this might take a while..."));
+        					main.abprogress.clear(true);
+        					main.getConfigManager().rankDataConfig.getConfigurationSection("players").getKeys(false).forEach(id -> {
+        						UUID uuid = UUID.fromString(id);
+        						OfflinePlayer p = Bukkit.getOfflinePlayer(id);
+        						main.prxAPI.allRankAddPermissions.forEach(line -> {
+        							main.perm.delPermissionOffline(p, line);
+        						});
+        						main.prxAPI.allPrestigeAddPermissions.forEach(line -> {
+        							main.perm.delPermissionOffline(p, line);
+        						});
+        						main.prxAPI.allRebirthAddPermissions.forEach(line -> {
+        							main.perm.delPermissionOffline(p, line);
+        						});
+        						main.prxAPI.getEconomy().withdrawPlayer(p, (double)main.prxAPI.getPlayerMoney(p));
+        						if(sender instanceof Player) {
+        						main.getActionbar().sendActionBar((Player)sender, p.getName() + main.prxAPI.c(" &adata reset"));
+        						} else {
+        							sender.sendMessage(main.prxAPI.c(p.getName() + " &adata reset."));
+        						}
+        					});
+        					PrisonRanksX.getInstance().getConfigManager().rankDataFile.delete();
+        					PrisonRanksX.getInstance().getConfigManager().prestigeDataFile.delete();
+        					PrisonRanksX.getInstance().getConfigManager().rebirthDataFile.delete();
+        					sender.sendMessage(main.prxAPI.c("&aReset successful."));
+        					sender.sendMessage(main.prxAPI.c("&7&oRestarting the server..."));
+        					Bukkit.getScheduler().runTaskLaterAsynchronously(main, () -> {
+        						Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "restart");
+        					}, 60);
+        				}));
+        			}
+        		}
         	}
         	else if(args[0].equalsIgnoreCase("delrank")) {
         		String matchedRank = main.manager.matchRank(args[1]);

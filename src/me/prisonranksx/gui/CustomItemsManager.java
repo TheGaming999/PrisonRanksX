@@ -112,10 +112,10 @@ public class CustomItemsManager {
 					String itemName = itemNameWithData.split(":")[0];
 					byte itemData = Byte.parseByte(itemNameWithData.split(":")[1]);
 					
-					stringStack = XMaterial.matchDefinedXMaterial(itemName, itemData).get().parseItem(true);
+					stringStack = XMaterial.matchDefinedXMaterial(itemName, itemData).get().parseItem();
 				} else {
 					String itemName = itemNameWithData;
-					stringStack = XMaterial.matchXMaterial(itemName).get().parseItem(true);
+					stringStack = XMaterial.matchXMaterial(itemName).get().parseItem();
 				}
 				stackMeta = stringStack.getItemMeta();
 			} //item stack check

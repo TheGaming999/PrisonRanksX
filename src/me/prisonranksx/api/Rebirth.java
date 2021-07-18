@@ -22,6 +22,7 @@ import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.events.PrestigeUpdateEvent;
 import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class Rebirth {
@@ -203,12 +204,15 @@ public class Rebirth {
 		List<String> broadcastMessages = main.rebirthStorage.getBroadcast(rebirth);
 		if(broadcastMessages != null) {
 			if(!broadcastMessages.isEmpty()) {
+				OnlinePlayers.getPlayers().forEach(ap -> {
+					if(main.isInDisabledWorld(ap)) return;
 				for(String messageLine : broadcastMessages) {
-					Bukkit.broadcastMessage(prxAPI.cp(messageLine
+					ap.sendMessage(prxAPI.cp(messageLine
 							.replace("%player%", name)
 							.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p))
-							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(p)), p));
+							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplay(p)), p));
 				}
+				});
 			}
 		}
 		List<String> messages = main.rebirthStorage.getMsg(rebirth);

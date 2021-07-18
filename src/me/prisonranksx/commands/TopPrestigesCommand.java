@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.CollectionUtils;
 
 public class TopPrestigesCommand extends BukkitCommand {
 
@@ -35,7 +36,9 @@ public class TopPrestigesCommand extends BukkitCommand {
 	}
 	
 	public String getValue(int position) {
-		return main.lbm.getPlayerPrestigeFromPosition(position, "none");
+		String value = main.lbm.getPlayerPrestigeFromPosition(position, "none");
+		main.debug("leaderboard prestige value: " + value);
+		return value == null ? "none" : value;
 	}
 	
 	public void load() {

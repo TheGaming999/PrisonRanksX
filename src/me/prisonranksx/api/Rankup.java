@@ -23,6 +23,7 @@ import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.AsyncAutoRankupEvent;
 import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class Rankup {
@@ -51,7 +52,7 @@ public class Rankup {
 		}, autoRankupDelay, autoRankupDelay);
 	}
 	
-	public void autoRankup(Player player) {
+	public boolean autoRankup(Player player) {
 		Player p = player;
 		String name = p.getName();
 		if(prxAPI.isAutoRankupEnabled(p)) {
@@ -59,12 +60,14 @@ public class Rankup {
 			if(prxAPI.g("autorankup-disabled") != null && !prxAPI.g("autorankup-disabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-disabled"));
 			}
+			return false;
 		} else {
 			prxAPI.autoRankupPlayers.add(name);
 			startAutoRankupTask();
 			if(prxAPI.g("autorankup-enabled") != null && !prxAPI.g("autorankup-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-enabled"));
 			}
+			return true;
 		}
 	}
 	
@@ -227,12 +230,16 @@ public class Rankup {
 			List<String> broadcastMessages = main.rankStorage.getBroadcast(rp);
 			if(broadcastMessages != null) {
 				if(!broadcastMessages.isEmpty()) {
+					OnlinePlayers.getPlayers().forEach(ap -> {
+						if(main.isInDisabledWorld(ap)) return;
 					for(String messageLine : broadcastMessages) {
-						Bukkit.broadcastMessage(prxAPI.cp(messageLine
+						ap.sendMessage(prxAPI.cp(messageLine
 								.replace("%player%", name)
 								.replace("%rankup%", prxAPI.getPlayerNextRank(p))
+								.replace("%rank%", prxAPI.getPlayerRank(p))
 								.replace("%rankup_display%", prxAPI.getPlayerRankupDisplay(p)), p));
 					}
+					});
 				}
 			}
 			List<String> messages = main.rankStorage.getMsg(rp);
@@ -451,13 +458,16 @@ public class Rankup {
 			List<String> broadcastMessages = main.rankStorage.getBroadcast(rp);
 			if(broadcastMessages != null) {
 				if(!broadcastMessages.isEmpty()) {
+					OnlinePlayers.getPlayers().forEach(ap -> {
+						if(main.isInDisabledWorld(ap)) return;
 					for(String messageLine : broadcastMessages) {
-						Bukkit.broadcastMessage(prxAPI.cp(messageLine
+						ap.sendMessage(prxAPI.cp(messageLine
 								.replace("%player%", name)
 								.replace("%rankup%", nextRank)
 								.replace("%rank%", currentRank)
 								.replace("%rankup_display%", nextRankDisplay), p));
 					}
+					});
 				}
 			}
 			List<String> messages = main.rankStorage.getMsg(rp);
@@ -687,13 +697,16 @@ public class Rankup {
 			List<String> broadcastMessages = main.rankStorage.getBroadcast(rp);
 			if(broadcastMessages != null) {
 				if(!broadcastMessages.isEmpty()) {
+					OnlinePlayers.getPlayers().forEach(ap -> {
+						if(main.isInDisabledWorld(ap)) return;
 					for(String messageLine : broadcastMessages) {
-						Bukkit.broadcastMessage(prxAPI.cp(messageLine
+						ap.sendMessage(prxAPI.cp(messageLine
 								.replace("%player%", name)
 								.replace("%rankup%", nextRank)
 								.replace("%rank%", currentRank)
 								.replace("%rankup_display%", nextRankDisplay), p));
 					}
+					});
 				}
 			}
 			List<String> messages = main.rankStorage.getMsg(rp);

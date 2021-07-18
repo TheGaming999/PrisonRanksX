@@ -3,7 +3,9 @@ package me.prisonranksx.data;
 import java.util.List;
 import java.util.Map;
 
-public class PrestigeDataHandler implements IPrestigeDataHandler {
+import me.prisonranksx.PrisonRanksX;
+
+public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	
 	private String prestigeName;
 	private String prestigeDisplayName;
@@ -26,9 +28,13 @@ public class PrestigeDataHandler implements IPrestigeDataHandler {
 	private Map<String, Double> numberRequirements;
 	private Map<String, String> stringRequirements;
 	private List<String> customRequirementMessage;
+	private PrisonRanksX instance;
+	private InfinitePrestigeSettings ips;
 	
-	public PrestigeDataHandler(String prestigeName) {this.prestigeName = prestigeName;
-	this.sendFirework = false;}
+	public PrestigeDataHandlerInfinite(String prestigeName) {this.prestigeName = prestigeName;
+	this.sendFirework = false;
+	this.instance = PrisonRanksX.getInstance();
+	this.ips = instance.infinitePrestigeSettings;}
 	
 	public String getValues() {
 		String x = "[]";
@@ -53,13 +59,15 @@ public class PrestigeDataHandler implements IPrestigeDataHandler {
 		return prestigeName;
 	}
 	
-	public PrestigeDataHandler setName(String prestigeName) {
+	public PrestigeDataHandlerInfinite setName(String prestigeName) {
 		this.prestigeName = prestigeName;
 		return this;
 	}
 	
 	public double getCost() {
-		return prestigeCost;
+		instance.debug(getName());
+		return instance.prxAPI.numberAPI.calculate(ips.getCostExpression()
+				.replace("{number}", getName()));
 	}
 	
 	public void setCost(double prestigeCost) {
@@ -67,7 +75,7 @@ public class PrestigeDataHandler implements IPrestigeDataHandler {
 	}
 	
 	public String getDisplayName() {
-		return prestigeDisplayName;
+		return ips.getDisplay().replace("{number}", getName());
 	}
 	
 	public void setDisplayName(String prestigeDisplayName) {
@@ -75,7 +83,7 @@ public class PrestigeDataHandler implements IPrestigeDataHandler {
 	}
 	
 	public String getNextPrestigeName() {
-		return nextPrestigeName;
+		return String.valueOf(Integer.parseInt(getName())+1);
 	}
 	
 	public void setNextPrestigeName(String nextPrestigeName) {
@@ -83,7 +91,7 @@ public class PrestigeDataHandler implements IPrestigeDataHandler {
 	}
 	
 	public String getNextPrestigeDisplayName() {
-		return nextPrestigeDisplayName;
+		return ips.getDisplay().replace("{number}", getNextPrestigeName());
 	}
 	
 	public void setNextPrestigeDisplayName(String nextPrestigeDisplayName) {
@@ -91,7 +99,8 @@ public class PrestigeDataHandler implements IPrestigeDataHandler {
 	}
 	
 	public double getNextPrestigeCost() {
-		return nextPrestigeCost;
+		return instance.prxAPI.numberAPI.calculate(ips.getCostExpression()
+				.replace("{number}", getNextPrestigeName()));
 	}
 	
 	public void setNextPrestigeCost(double nextPrestigeCost) {
@@ -99,7 +108,7 @@ public class PrestigeDataHandler implements IPrestigeDataHandler {
 	}
 	
 	public double getRankupCostIncreasePercentage() {
-		return rankupCostIncreasePercentage;
+		return 100;
 	}
 	
 	public void setRankupCostIncreasePercentage(double rankupCostIncreasePercentage) {

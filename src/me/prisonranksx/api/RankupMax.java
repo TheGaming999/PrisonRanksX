@@ -18,6 +18,7 @@ import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.AsyncRankupMaxEvent;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.utils.OnlinePlayers;
 
 public class RankupMax {
 
@@ -293,9 +294,12 @@ public class RankupMax {
   	        }
                loopNextRankBroadcast = main.rankStorage.getBroadcast(rp);
                if(loopNextRankBroadcast != null && !isBroadcastLastRankOnly) {
-                 for(String broadcast :  loopNextRankBroadcast) {
-            	     Bukkit.broadcastMessage(main.getString(broadcast, name).replace("%player%", name).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rankupdisplay%", loopNextRankDisplay));   
+            	   OnlinePlayers.getPlayers().forEach(ap -> {
+            	   if(main.isInDisabledWorld(ap)) return;
+                 for(String broadcast :  main.rankStorage.getBroadcast(rp)) {
+            	     ap.sendMessage(main.getString(broadcast, name).replace("%player%", name).replace("%rankup%", main.rankStorage.getRankupName(rp)).replace("%rankup_display%", main.rankStorage.getRankupDisplayName(rp)).replace("%rankupdisplay%", main.rankStorage.getRankupDisplayName(rp)));   
                  }
+            	  });
                }
                loopNextRankMsg = main.rankStorage.getMsg(rp);
                if(loopNextRankMsg != null && !isMsgLastRankOnly) {
@@ -311,7 +315,7 @@ public class RankupMax {
    			RankRandomCommands rrc = main.rankStorage.getRandomCommandsManager(rp);
    			if(rrc != null && rrc.getRandomCommandsMap() != null) {
    			for(String section : rrc.getRandomCommandsMap().keySet()) {
-   				Double chance = rrc.getChance(section);
+   				double chance = rrc.getChance(section);
    				chances.put(section, chance);
    			}
    			String randomSection = prxAPI.numberAPI.getChanceFromWeightedMap(chances);
@@ -345,9 +349,16 @@ public class RankupMax {
     	boolean endIsMsgLastRankOnly = main.globalStorage.getBooleanData("Options.rankupmax-msglastrankonly");
     	boolean endIsRankupMsgLastRankOnly = main.globalStorage.getBooleanData("Options.rankupmax-rankupmsglastrankonly");
         if(endIsBroadcastLastRankOnly) {
-            for(String broadcast : endNextRankBroadcast) {
-       	     Bukkit.broadcastMessage(main.getString(broadcast, name).replace("%player%", name).replace("%rankup_display%", main.getString(main.rankStorage.getDisplayName(rp), name)));
-            }
+        	List<String> broadcastList = main.rankStorage.getBroadcast(rp);
+        	if(broadcastList != null && !broadcastList.isEmpty()) {
+        	OnlinePlayers.getPlayers().forEach(ap -> {
+         	   if(!main.isInDisabledWorld(ap)) {
+              for(String broadcast :  broadcastList) {
+         	     ap.sendMessage(main.getString(broadcast, name).replace("%player%", name).replace("%rankup%", rp.getRankName()).replace("%rankup_display%", main.rankStorage.getDisplayName(rp)).replace("%rankupdisplay%", main.rankStorage.getDisplayName(rp)));   
+              }
+         	   }
+         	  });
+        	}
         }
         if(endIsMsgLastRankOnly) {
             for(String msg :  endNextRankMsg) {
@@ -616,9 +627,12 @@ public class RankupMax {
   	        }
                loopNextRankBroadcast = main.rankStorage.getBroadcast(rp);
                if(loopNextRankBroadcast != null && !isBroadcastLastRankOnly) {
-                 for(String broadcast :  loopNextRankBroadcast) {
-            	     Bukkit.broadcastMessage(main.getString(broadcast, name).replace("%player%", name).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rankupdisplay%", loopNextRankDisplay));   
-                 }
+            	   OnlinePlayers.getPlayers().forEach(ap -> {
+                	   if(main.isInDisabledWorld(ap)) return;
+                     for(String broadcast :  main.rankStorage.getBroadcast(rp)) {
+                	     ap.sendMessage(main.getString(broadcast, name).replace("%player%", name).replace("%rankup%", main.rankStorage.getRankupName(rp)).replace("%rankup_display%", main.rankStorage.getRankupDisplayName(rp)).replace("%rankupdisplay%", main.rankStorage.getRankupDisplayName(rp)));   
+                     }
+                	  });
                }
                loopNextRankMsg = main.rankStorage.getMsg(rp);
                if(loopNextRankMsg != null && !isMsgLastRankOnly) {

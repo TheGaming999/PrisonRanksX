@@ -7,7 +7,8 @@ public interface IPrestigeDataHandler {
 
 	public String getValues();
 	public String getName();
-	public void setName(String name);
+	public IPrestigeDataHandler setName(String name);
+	public IPrestigeDataHandler getHandler(String prestigeName);
 	public double getCost();
 	public void setCost(double cost);
 	public String getDisplayName();

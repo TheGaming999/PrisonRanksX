@@ -23,6 +23,7 @@ import me.prisonranksx.events.PrestigeUpdateCause;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.PrestigeUpdateEvent;
 import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class Prestige {
@@ -86,6 +87,7 @@ public class Prestige {
 			}
 		} else {
 			if(!enable) {
+				prxAPI.autoPrestigePlayers.remove(name);
 				if(prxAPI.g("autoprestige-disabled") != null && !prxAPI.g("autoprestige-disabled").isEmpty()) {
 					p.sendMessage(prxAPI.g("autoprestige-disabled"));
 				}
@@ -143,7 +145,7 @@ public class Prestige {
 			if(prxAPI.h("prestige-notenoughmoney") != null && !prxAPI.h("prestige-notenoughmoney").isEmpty()) {
 			for(String line : prxAPI.h("prestige-notenoughmoney")) {
 				p.sendMessage(prxAPI.c(line)
-						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p)).replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p))
+						.replace("%nextprestige%", prestige).replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p))
 						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))).replace("%nextprestige_cost_formatted%", prxAPI.formatBalance(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))));
 			}
 			}
@@ -250,12 +252,15 @@ public class Prestige {
 		List<String> broadcastMessages = main.prestigeStorage.getBroadcast(prestige);
 		if(broadcastMessages != null) {
 			if(!broadcastMessages.isEmpty()) {
+				OnlinePlayers.getPlayers().forEach(ap -> {
+					if(main.isInDisabledWorld(ap)) return;
 				for(String messageLine : broadcastMessages) {
-					Bukkit.broadcastMessage(prxAPI.cp(messageLine
-							.replace("%player%", p.getName())
+					ap.sendMessage(prxAPI.cp(messageLine
+							.replace("%player%", name)
 							.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
-							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(p)), p));
+							.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplay(p)), p));
 				}
+				});
 			}
 		}
 		List<String> messages = main.prestigeStorage.getMsg(prestige);
@@ -337,7 +342,6 @@ public class Prestige {
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 		main.playerStorage.setPlayerPrestige(p, prestige);
 		prxAPI.taskedPlayers.remove(name);
-		
 		}, 1);
 		return true;
 	}
@@ -491,12 +495,15 @@ public class Prestige {
 		List<String> broadcastMessages = main.prestigeStorage.getBroadcast(prestige);
 		if(broadcastMessages != null) {
 			if(!broadcastMessages.isEmpty()) {
+				OnlinePlayers.getPlayers().forEach(ap -> {
+					if(main.isInDisabledWorld(ap)) return;
 				for(String messageLine : broadcastMessages) {
-					Bukkit.broadcastMessage(prxAPI.cp(messageLine
-							.replace("%player%", p.getName())
+					ap.sendMessage(prxAPI.cp(messageLine
+							.replace("%player%", name)
 							.replace("%nextprestige%", prestige)
 							.replace("%nextprestige_display%", nextPrestigeDisplay), p));
 				}
+				});
 			}
 		}
 		List<String> messages = main.prestigeStorage.getMsg(prestige);
@@ -644,7 +651,7 @@ public class Prestige {
 			getTaskedPlayers().remove(name);
 			return false;
 		}
-		AsyncAutoPrestigeEvent event = new AsyncAutoPrestigeEvent(p, currentPrestige, prestige);
+		AsyncAutoPrestigeEvent event = new AsyncAutoPrestigeEvent(p, prestige, currentPrestige);
 		Bukkit.getPluginManager().callEvent(event);
 		if(event.isCancelled()) {
 			getTaskedPlayers().remove(name);
@@ -739,12 +746,15 @@ public class Prestige {
 		List<String> broadcastMessages = main.prestigeStorage.getBroadcast(prestige);
 		if(broadcastMessages != null) {
 			if(!broadcastMessages.isEmpty()) {
+				OnlinePlayers.getPlayers().forEach(ap -> {
+					if(main.isInDisabledWorld(ap)) return;
 				for(String messageLine : broadcastMessages) {
-					Bukkit.broadcastMessage(prxAPI.cp(messageLine
+					ap.sendMessage(prxAPI.cp(messageLine
 							.replace("%player%", name)
 							.replace("%nextprestige%", prestige)
 							.replace("%nextprestige_display%", prestigeDisplay), p));
 				}
+				});
 			}
 		}
 		List<String> messages = main.prestigeStorage.getMsg(prestige);

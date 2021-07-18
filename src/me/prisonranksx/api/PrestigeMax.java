@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -731,6 +732,9 @@ public class PrestigeMax implements IPrestigeMax {
 		Player p = player;
 		String name = p.getName();
 		UUID uuid = p.getUniqueId();
+		if(multiThreadSet.contains(name)) {
+    		return;
+    	}
 		if(isProcessing(name)) {
 			p.sendMessage(getAPI().g("prestigemax-is-on"));
 			return;
@@ -800,8 +804,9 @@ public class PrestigeMax implements IPrestigeMax {
         getProcessingPlayers().add(name);
         chancesCache.put(name, new HashMap<>());
         int currentPrestigeIndex = prestigesCollection.indexOf(prestigeName);
-        AtomicInteger increment = new AtomicInteger(currentPrestigeIndex-1);
+        AtomicLong increment = this.plugin.isInfinitePrestige ? new AtomicLong(Long.valueOf(prestigeName)) : new AtomicLong(currentPrestigeIndex-1);
         int size = prestigesCollection.size();    
+        prestigesPerTick = this.plugin.isInfinitePrestige ? 10000 : prestigesPerTick;
         AccessibleBukkitTask accessibleTask = new AccessibleBukkitTask();
         accessibleTask.set(plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
         	if(multiThreadSet.contains(name)) {
@@ -810,12 +815,13 @@ public class PrestigeMax implements IPrestigeMax {
         	multiThreadSet.add(name);
         	for(int prestigeAmount = 0; prestigeAmount < prestigesPerTick+1; prestigeAmount++) {
         		
-        		if(increment.get() >= size) {
+        		if(increment.get() >= plugin.infinitePrestigeSettings.getFinalPrestige()) {
         			executeFinal(accessibleTask, player, name, finalPrestige, prestigeFrom, prestigeTimes, takenBalance);
         			break;
         		}
         		increment.incrementAndGet();
-        		int i = increment.get();
+        		long i = increment.get();
+        		plugin.debug("Increment: " + i);
         		RankPath loopRankPath = getAPI().getPlayerRankPath(uuid);
            		if(!getAPI().isLastRank(loopRankPath) && !getAPI().hasAllowPrestige(loopRankPath)) {
         			if(getAPI().canRankup(p)) {
@@ -823,11 +829,24 @@ public class PrestigeMax implements IPrestigeMax {
         			}
         			return;
         		}
+           		if(!plugin.isInfinitePrestige) {
            		if(i >= size) {
            			executeFinal(accessibleTask, player, name, finalPrestige, prestigeFrom, prestigeTimes, takenBalance);
         			break;
         		}
-        		String loopPrestigeName = prestigesCollection.get(i);
+           		} else {
+           			if(i >= plugin.infinitePrestigeSettings.getFinalPrestige()) {
+           				executeFinal(accessibleTask, player, name, finalPrestige, prestigeFrom, prestigeTimes, takenBalance);
+            			break;
+           			}
+           		}
+        		AccessibleString loopPrestigeNameHolder = new AccessibleString();
+        		if(plugin.isInfinitePrestige) {
+        			loopPrestigeNameHolder.setString(String.valueOf(increment.get()));
+        		} else {			
+        			loopPrestigeNameHolder.setString(prestigesCollection.get(Integer.valueOf(String.valueOf(i))));
+        		}
+        		String loopPrestigeName = loopPrestigeNameHolder.getString();
         		double loopBalance = getAPI().getPlayerMoney(p);
         		
         		IPrestigeDataHandler loopPrestige = getAPI().getPrestige(loopPrestigeName);

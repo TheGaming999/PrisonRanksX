@@ -36,7 +36,19 @@ public class PrestigeMaxCommand extends BukkitCommand {
 	      } 
 	      Player p = (Player)sender;
 	      if(main.isInDisabledWorld(p)) {return true;}
-	      main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
+	      String prestigeMaxType = main.getGlobalStorage().getStringData("Options.prestigemax-type");
+	      prestigeMaxType = prestigeMaxType == null ? "AMTQ" : prestigeMaxType;
+	      if(prestigeMaxType.equals("AR")) {
+	    	  main.prxAPI.getPrestigeMax().execute(p);
+	      } else if (prestigeMaxType.equals("ASTQ")) {
+	    	  main.prxAPI.getPrestigeMax().executeOnAsyncQueue(p);
+	      } else if (prestigeMaxType.equals("AMTQ")) {
+	          main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
+	      } else if (prestigeMaxType.equals("ARS")) {
+	    	  main.prxAPI.getPrestigeMax().execute(p, true);
+	      } else {
+	    	  main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
+	      }
 		}
 		return true;
 	}

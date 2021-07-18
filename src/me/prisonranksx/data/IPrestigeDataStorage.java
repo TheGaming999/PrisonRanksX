@@ -8,6 +8,7 @@ public interface IPrestigeDataStorage {
 
 	public void putData(String name, IPrestigeDataHandler prestigeDataHandler);
     public IPrestigeDataHandler getDataHandler(String name);
+    public IPrestigeDataHandler getHandler(String prestigeName);
     public GlobalDataStorage gds();
     public void loadPrestigesData();
     public String loadString(String node);
