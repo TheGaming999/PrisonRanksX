@@ -28,6 +28,16 @@ Ranks:
         - "&2Congratulations!"
         - "&3Congratulations!"
         - "&bCongratulations!"
+      # there are 2 types of requirements: [1] string requirements, [2] number requirements
+      # [1] usage:
+      # placeholderapi_placeholder->text
+      # it will check if the placeholder equals the text then it will continue the rankup process
+      # [2] usage:
+      # placeholderapi_placeholder>>number
+      # it will check if the placeholder is equal or larger than the number then it will continue the rankup process
+      # for example:
+      #requirements: # check if your current broken blocks is equal or higher than than the specified number
+      #- "%ezblocks_blocks%>>5000"
       actions:
       - "[MESSAGE] Hi, im being executed from actionutil plugin."
       # you can put as many commands as you want just copy the line and paste it exactly below the line you copied, the chances can go beyond 100 percent

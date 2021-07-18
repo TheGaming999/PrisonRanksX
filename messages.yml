@@ -15,24 +15,24 @@ Messages:
   - "&eYou need &f$%rankup_cost_formatted% &eto rankup %player% to &a%rankup%"
   - ""
   - "&7&m                                                                &7&m"
-  nopermission: "&cInsufficent Permission!"
+  nopermission: "&cNo permission!"
   # placeholders: %player%
   playernotfound: "&cThere's no player with that name."
-  delrank: "&e%args1% &cRank has been deleted."
-  setrank: "&cChanged &e%target%''s &cRank to &e%settedrank% &crank."
-  resetrank: "&cRestored &e%target%''s &cRank to &e%firstrank%&c."
-  createrank: "&cCreated rank &e%createdrank% &cwith price:&a%rankcost%&c."
-  setnextrank: "&cChanged &e%args1% &cnextrank to &a%args2%&c."
+  delrank: "&e%args1% &crank has been deleted."
+  setrank: "&cChanged &e%target%'s &crank to &e%settedrank% &crank."
+  resetrank: "&cRestored &e%target%'s &crank to &e%firstrank%&c."
+  createrank: "&cCreated rank &e%createdrank% &cwith price: &e%rankcost%&c."
+  setnextrank: "&cChanged &e%args1% &cnextrank to &e%args2%&c."
   setrankdisplay: "&cChanged &e%args1% &cdisplay to &r%args2%&c."
-  setrankcost: "&cChanged &e%args1% &cRank Cost to &a%args2%&c."
+  setrankcost: "&cChanged &e%args1% &crank cost to &a%args2%&c."
   # no longer used.
-  delplayerrank: "&cDeleted &e%player%''s &cRank."
+  delplayerrank: "&cDeleted &e%player%'s &crank."
   # no longer used.
-  addrankcmd: "&c%args1% &eUpdated with: &7%args2%&c."
+  addrankcmd: "&c%args1% &eupdated with: &7%args2%&c."
   # no longer used.
-  addrankbroadcast: "&c%args1% &eUpdated! with: &7%args2%&c."
+  addrankbroadcast: "&c%args1% &eupdated with: &7%args2%&c."
   # no longer used.
-  addrankmsg: "&c%args1% &eUpdated! with: &7%args2%&c."
+  addrankmsg: "&c%args1% &eupdated with: &7%args2%&c."
   setdefaultrank: "&cDefault rank changed to &e%args1%&c."
   setlastrank: "&cLast rank changed to &e%args1%&c."
   setplayerpath: "&cChanged &e%target% &cpath to &e%rankpath%&c."
@@ -51,8 +51,8 @@ Messages:
   setfirstrebirth: "&cFirst rebirth changed to &e%args1%"
   setlastrebirth: "&cLast rebirth changed to &e%args1%"
   setrebirth: '&cChanged &e%target%''s &crebirth to &e%settedrebirth% &crebirth.'
-  resetrebirth: "&cRestored &e%target%''s &crebirth to &e%firstrebirth%&c."
-  createrebirth: "&cCreated rebirth &e%createdrebirth% &cwith price:&a%rebirthcost%&c."
+  resetrebirth: "&cRestored &e%target%'s &crebirth to &e%firstrebirth%&c."
+  createrebirth: "&cCreated rebirth &e%createdrebirth% &cwith price: &e%rebirthcost%&c."
   setrebirthdisplay: "&cChanged &e%rebirth% &cdisplay to &e%changeddisplay&&c."
   setrebirthcost: "&cChanged rebirth &e%rebirth% &ccost to &e%rebirthcost%&c."
   # placeholders: %player%
@@ -61,21 +61,25 @@ Messages:
   # placeholders: %rankup% %rankup_display%
   rankup: "&9You have ranked up to &r%rankup_display%"
   rankup-other: "&9You ranked up &f%target% &9to &r%rankup_display%"
-  delprestige: "&e%args1% &cPrestige has been deleted"
+  delprestige: "&e%args1% &cprestige has been deleted."
   setfirstprestige: "&cFirst prestige changed to &e%args1%"
   setlastprestige: "&cLast prestige changed to &e%args1%"
-  setprestige: '&cChanged &e%target%''s &cPrestige to &e%settedprestige% &cprestige.'
-  resetprestige: "&cRestored &e%target%''s &cPrestige to &e%firstprestige%&c."
-  createprestige: "&cCreated prestige &e%createdprestige% &cwith price:&a%prestigecost%&c."
-  setnextprestige: "&cChanged &e%previousprestige% &cnext prestige to &a%nextprestige%&c."
+  setprestige: '&cChanged &e%target%''s &cprestige to &e%settedprestige% &cprestige.'
+  resetprestige: "&cRestored &e%target%''s &cprestige to &e%firstprestige%&c."
+  createprestige: "&cCreated prestige &e%createdprestige% &cwith price: &e%prestigecost%&c."
+  setnextprestige: "&cChanged &e%previousprestige% &cnext prestige to &e%nextprestige%&c."
   setprestigedisplay: "&cChanged &e%prestige% &cdisplay to &e%changeddisplay%&c."
-  setprestigecost: "&cChanged Prestige &e%prestige% &ccost to %prestigecost%&c."
+  setprestigecost: "&cChanged prestige &e%prestige% &ccost to %prestigecost%&c."
   # placeholders: %nextprestige% %nextprestige_display%
   prestige: "&aYou have prestiged to &r%nextprestige_display%"
+  # not yet
   forceprestige: "&aYou forced a prestige promotion to &f%target%"
-  noprestige: "&aYou can't prestige at this rank."
+  noprestige: "&a&l&nYou can't prestige at this rank."
+  norebirth: "&c&l&nYou can't rebirth at this rank."
   # placeholders: %player%
-  delplayerprestige: "&cDeleted &e%player%''s &cPrestige"
+  delplayerprestige: "&cDeleted &e%player%'s &cprestige"
+  # placeholders: %player%
+  delplayerrebirth: '&cDeleted &e%player%''s &crebirth.'
   # placeholders: %nextprestige% %nextprestige_display% %nextprestige_cost% %nextprestige_cost_formatted%
   prestige-notenoughmoney:
   - "&7&m                                               &7&m"
@@ -109,16 +113,18 @@ Messages:
   ranksgui-open: "&aOpening ranks gui..."
   # ignore
   prestigesgui-open: "&cOpening prestige list gui..."
-  autorankup-enabled: "&eAuto Rankup &aEnabled"
-  autorankup-disabled: "&eAuto Rankup &cDisabled"
+  autorankup-enabled: "&eAuto Rankup &aenabled&e."
+  autorankup-disabled: "&eAuto Rankup &cdisabled&e."
+  autorankup-enabled-other: "&eAuto rankup &aenabled &efor &7%player%&e."
+  autorankup-disabled-other: "&eAuto rankup &cdisabled &efor &7%player%&e."
   # ignore
-  autorankup-nopermission: "&cYou don't have permission to use auto rankup"
+  autorankup-nopermission: "&cYou don't have permission to use auto rankup."
   # ignore
-  autorankup-lastrank: "&eAuto Rankup &7automatically &cdisabled &7because you are at the latest rank"
-  autoprestige-enabled: "&3Auto Prestige &aEnabled"
-  autoprestige-disabled: "&3Auto Prestige &cDisabled"
-  autorebirth-enabled: "&6Auto Rebirth &aEnabled"
-  autorebirth-disabled: "&6Auto Rebirth &cDisabled"
+  autorankup-lastrank: "&eAuto Rankup &7automatically &cdisabled &7because you are at the latest rank."
+  autoprestige-enabled: "&3Auto prestige &aenabled&3."
+  autoprestige-disabled: "&3Auto prestige &cdisabled&3."
+  autorebirth-enabled: "&6Auto rebirth &aenabled&6."
+  autorebirth-disabled: "&6Auto Rebirth &cdisabled&6."
   # placeholders: %nextrebirth% %nextrebirth_display%
   rebirth: "&eYou have been reborn to %nextrebirth_display%."
   # placeholders: %nextrebirth% %nextrebirth_display% %nextrebirth_cost% %nextrebirth_cost_formatted%
@@ -135,7 +141,8 @@ Messages:
   # added to prevent players from rankup, prestige and rebirth commands spam which causes lag
   commandspam: "&cPlease wait before executing another command."
   # this message shows up when a player tries to use the rankupmax command while he is ranking up
-  rankupmax-is-on: "&cYour Max rankup process is already running."
+  rankupmax-is-on: "&cYour max rankup process is already running."
+  prestigemax-is-on: "&cYour max prestige process is already running."
   # placeholders: %page%
   ranklist-last-page-reached: "&eThere are only &f%page% &epage(s)."
   ranklist-invalid-page: "&cThis page is invalid!"
@@ -143,10 +150,12 @@ Messages:
   prestigelist-invalid-page: "&cThis page is invalid!"
   rebirthlist-last-page-reached: "&4There are only &f%page% &4page(s)."
   rebirthlist-invalid-page: "&cThis page is invalid!"
-  ranklist-console: "&cYou can't view the ranks format list in console. sending a plain list instead..."
-  prestigelist-console: "&3You can't view the prestiges format list in console. sending a plain list instead..."
-  rebirthlist-console: "&4You can't view the rebirths format list in console. sending a plain list instead..."
+  ranklist-console: "&cYou can't view the ranks format list in console. Sending a plain list instead..."
+  prestigelist-console: "&3You can't view the prestiges format list in console. Sending a plain list instead..."
+  rebirthlist-console: "&4You can't view the rebirths format list in console. Sending a plain list instead..."
   forcerankup-noargs: "&cUsage: /forcerankup <player>"
+  # tags: [header], [footer]
+  # both tags can be used multiple times, which means you can have more than one line of header and footer.
   top-prestiges:
   - "[header]&7- &e&oTop &6&oPrestiges &7-"
   - "&81: &e%name1% &8- &3%value1%"
@@ -159,7 +168,7 @@ Messages:
   - "&88: &e%name8% &8- &3%value8%"
   - "&89: &e%name9% &8- &3%value9%"
   - "&810: &e%name10% &8- &3%value10%"
-  - "[footer]&6Page: &e&o<%currentpage%/%totalpages%>"
+  - "[footer]&7&m                          &7"
   top-prestiges-last-page-reached: "&e&oThere are only &6&o%page% &e&opage(s)."
   top-rebirths:
   - "[header]&7- &c&oTop &4&oRebirths &7-"
@@ -173,7 +182,6 @@ Messages:
   - "&88: &c%name8% &8- &3%value8%"
   - "&89: &c%name9% &8- &3%value9%"
   - "&810: &c%name10% &8- &3%value10%"
-  - "[footer]&4Page: &c&o<%currentpage%/%totalpages%>"
   top-rebirths-last-page-reached: "&c&oThere are only &4&o%page% &c&opage(s)."
   rebirth-failed: "&cYou need &4&n%prestiges_amount_left%&c prestiges more to rebirth."
   # placeholders: %rank% %rank_display% %rankup% %rankup_display% %cost%

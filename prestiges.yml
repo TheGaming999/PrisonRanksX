@@ -7,7 +7,7 @@ Prestiges:
     executecmds: []
     broadcast: []
     msg: []
-    rankup_cost_increase_percentage: 50
+    rankup_cost_increase_percentage: 125
   'P2':
     display: "&8[&9P2&8]"
     cost: 15000000.0
@@ -15,4 +15,4 @@ Prestiges:
     executecmds: []
     broadcast: []
     msg: []
-    rankup_cost_increase_percentage: 100
+    rankup_cost_increase_percentage: 200

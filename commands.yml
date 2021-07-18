@@ -15,13 +15,20 @@ commands:
     permission-message: "&cYou don't have permission to execute this command."
     usage: "/<command>"
     aliases: [rumax, maxrankup, maxru]
+  prestigemax:
+    enable: true
+    description: "prestige to the latest prestige you can reach"
+    permission: "prisonranksx.prestigemax"
+    permission-message: "&cYou don't have permission to execute this command."
+    usage: "/<command>"
+    aliases: [pmax, maxprestige, maxp, maxpres, presmax]
   forcerankup:
     enable: true
     description: "force promote other players without losing anything"
     permission: "prisonranksx.forcerankup"
     permission-message: "&cYou don't have permission to execute this command."
     usage: "/<command> <player>"
-    aliases: [forceru]
+    aliases: [forceru, fru]
   autorankup:
     enable: true
     description: "automatically rankup when you have enough money"
@@ -30,13 +37,6 @@ commands:
     usage: "/<command>"
     aliases: [autoru, aru]
   autoprestige:
-    enable: true
-    description: "automatically prestige as long as you have enough money"
-    permission: "prisonranksx.autoprestige"
-    permission-message: "&cYou don't have permission to execute this command."
-    usage: "/<command>"
-    aliases: [autop, aprestige]
-  autorebirth:
     enable: true
     description: "automatically prestige as long as you have enough money"
     permission: "prisonranksx.autoprestige"

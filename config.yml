@@ -48,7 +48,7 @@ Options:
   # empty rebirth display
   no-rebirth-display: ""
   # Don't want rank's 'broadcast:' section to be shown in every world? set this to false . this uses the worlds list above.
-  allworlds-broadcast: false
+  allworlds-broadcast: true
   # If you want to send the rankup msg that one in the messages.yml file.
   send-rankupmsg: true
   # If you want to send the prestige msg /\
@@ -94,7 +94,7 @@ Options:
   # You can write here "GroupManager" or "PermissionsEX" or "LuckPerms" or "Vault" otherwise you can write the command using these placeholders %player% and %rank%.
   rankup-vault-groups-plugin: "Vault"
   # Check if player group in the said plugin doesn't match the one in prisonranksx then update it.
-  rankup-vault-groups-check: true
+  rankup-vault-groups-check: false
   # enable autorankup task.
   autorankup: true
   # if you want the player to prestige up when he gets enough money to prestige while ranking up using "/rankupmax" command
@@ -111,7 +111,7 @@ Options:
   # basically placeholderapi placeholders.
   actionbar-progress-format: "%prisonranksx_rankup_progress% &e%prisonranksx_rankup_percentage%"
   # update time in ticks (20 ticks = 1 second), (40 ticks = 2 seconds).
-  actionbar-progress-updater: 40
+  actionbar-progress-updater: 30
   # don't enable if you use experience for another thing.
   expbar-progress: false
   # expbar update time (10 ticks) (0.5 second)
@@ -120,14 +120,25 @@ Options:
   expbar-progress-format: "%prisonranksx_rankup_percentage%"
   # autosave data every 15 minutes?
   autosave: true
+  # time between auto save tasks in seconds (18000 ticks = 15 minutes)
+  autosave-time: 18000
   # send save message every 15 minutes to console?
   save-notification: true
-  # force rank/prestige/rebirth data save upon a rank/prestige/rebirth update?.
+  # force rank/prestige/rebirth data save upon a rank/prestige/rebirth update? (not recommended).
   forcesave: false
-  save-on-leave: false
-  # if you want /warp commands to be ignored on rankupmax till the last rank you rankup to. only commands that start with '[player] <command>' will be filtered
+  # save data when a player leaves the server or get kicked.
+  save-on-leave: true
+  # if you want /warp commands to be ignored on rankupmax till the last rank you rankup to. only commands that start with '[player] <command>' will be filtered.
   rankupmax-warp-filter: false
+  # ...
   allow-easter-eggs: true
+  enable-leaderboard: true
+  # change the list above to allow the commands to be executed on these worlds instead of preventing them.
+  enabled-worlds-instead-of-disabled: false
+  # AMTQ, ASTQ, AR, ARS
+  prestigemax-type: "AMTQ"
+  # infinite prestige
+  infinite-prestige: false
 Ranklist-text: # text based ranks list
   # placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted%
   rank-current-format: "%rank_displayname% &a> %nextrank_displayname% &a| &2$&e%nextrank_cost_formatted% &a<&m---"
@@ -188,7 +199,7 @@ Holograms:
     enable: true
     remove-time: 3
     height: 4
-    format: # placeholders: %player% %nextrank% %nextrank_display%
+    format: # placeholders: %player% %nextrank% %nextrank_display% or placeholderapi placeholders
     - "&6%player%"
     - "&b&kii&3Ranked Up To&b&kii"
     - "&e&l%nextrank%"
@@ -196,7 +207,7 @@ Holograms:
     enable: true
     remove-time: 5
     height: 4
-    format: # placeholders: %player% %nextprestige% %nextprestige_display%
+    format: # placeholders: %player% %nextprestige% %nextprestige_display% or placeholderapi placeholders
     - "&c%player%"
     - "&9&kii&6Prestiged Up To&9&kii"
     - "&4&l%nextprestige%"
@@ -218,19 +229,24 @@ MySQL: # wanna store players data in a database instead of yml files? enable thi
   password: "123"
   useSSL: false
   autoReconnect: true
+  useCursorFetch: true
 Main-GUIOptions:
   previouspage-itemNAME: "ARROW"
   previouspage-itemDISPLAYNAME: "&c<< Previous page"
   previouspage-itemLORE:
   - "&f"
   previouspage-itemENCHANTMENTS: []
+  previouspage-itemAMOUNT: 1
   previouspage-itemDATA: 0
+  previouspage-itemFLAGS: []
   nextpage-itemNAME: "ARROW"
   nextpage-itemDISPLAYNAME: "&6Next Page >>"
   nextpage-itemLORE:
   - "&f"
   nextpage-itemENCHANTMENTS: []
+  nextpage-itemAMOUNT: 1
   nextpage-itemDATA: 0
+  nextpage-itemFLAGS: []
   no-previous-pages: "&eThere are no previous pages."
   no-additional-pages: "&eThere are no additional pages."
   currentpage-itemNAME: "GLASS"
@@ -238,65 +254,74 @@ Main-GUIOptions:
   currentpage-itemLORE:
   - "&f"
   currentpage-itemENCHANTMENTS: []
+  currentpage-itemAMOUNT: 1
   currentpage-itemDATA: 0
+  currentpage-itemFLAGS: []
 Ranklist-gui:
-  title: "&6Ranks"
+  title: '             &7«&6«&3Ranks&6»&7»'
   # to disable keep it like this => constant-items: []
-  constant-items: # placeholders: [_ = space] [@ = new line/new enchantment/new flag] [%at% = @ symbol] [%us% = _ symbol] [: = split enchantment name and the level]
-  - "slot=0 item=DIAMOND amount=1 name=&6Spaces_Of_Course lore=&eRanks_Space@&7List enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=1 item=DIAMOND amount=1 name=&6Illegal_Enchantments lore=&eRanks@&7List@&6GUI enchantments=durability:1@sharpness:7 flags=HIDE_ENCHANTS"
-  - "slot=2 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks@&7List@&6GUI enchantments=durability:1"
-  - "slot=3 item=DIRT amount=1 name=&3&lCustomName enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=4 item=STONE amount=1"
-  - "slot=5 item=GLASS amount=1 name=&9Glass"
-  - "slot=6 item=DIAMOND amount=1 name=&4Same_Enchantment lore=&f&lDifferent_name enchantments=unbreaking:1 flags=HIDE_ENCHANTS"
-  - "slot=7 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks@&7List@&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
-  - "slot=8 item=DIAMOND amount=1 name=&6_&6 lore=&eRanks@&7List@&6GUI enchantments=durability:1 flags=HIDE_ENCHANTS"
+  constant-items: []
   # ranks item slots if it's above 44 it will be added to the next page. this was made to separate the constant items and rank items
-  allowed-slots: "9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55"
-  current-format: # placeholders: %currentrank% %currentrank_display% %currentrank_cost% %currentrank_cost_formatted%
+  allowed-slots: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55
+  current-format:
     # each format uses a different way of parsing so if a format is not working try another one till it work.
     # format: <itemname>:[data] | example: WOOL:1
     # format: <itemname>;[data] | example: WOOL;5
-    # format: <itemname>#[data] | example: STAINED_CLAY#2
+    # format: <itemid>#[data] | example: 35#2
     # format: <itemname>->[data] | example: STAINED_CLAY->14
     # format: <itemname> | example: DIAMOND
-    itemNAME: "stained_clay;14"
+    # format: @HEAD@<texture> | example: @HEAD@b03338e1e9ae77cb28a195790fcbc0601c6588830ca429af19205c3e0642bed7
+    # format: @HEAD@<url> | example: @HEAD@http://textures.minecraft.net/texture/b03338e1e9ae77cb28a195790fcbc0601c6588830ca429af19205c3e0642bed7
+    # format: @HEAD@<base64> | example: @HEAD@eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjAzMzM4ZTFlOWFlNzdjYjI4YTE5NTc5MGZjYmMwNjAxYzY1ODg4MzBjYTQyOWFmMTkyMDVjM2UwNjQyYmVkNyJ9fX0=
+    # format: @HEAD@<name> | example: @HEAD@Notch
+    itemNAME: STAINED_GLASS_PANE;11
     itemAMOUNT: 1
-    itemDISPLAYNAME: "&a%currentrank_display%"
-    itemLORE: # placeholder api supported
-    - "&6Your current rank!"
+    itemDISPLAYNAME: '&a%currentrank_display%'
+    itemLORE:
+    - '&6Your current rank!'
+    - '&7&m                       &r'
+    - '&6Progress:'
+    - '%prisonranksx_rankup_progress% &a%prisonranksx_rankup_percentage%&c%'
     itemENCHANTMENTS:
-    - DURABILITY 10
+    - 'DURABILITY 10'
     itemFLAGS:
-    - HIDE_ENCHANTS
-    itemCOMMANDS: # placeholder api supported. possible prefixes { (cancel-item_move),(closeinv),[op] <command>,[console] <command>,[player] <command>}
-    - "(cancel-item_move)"
-    - "[console] warp %currentrank%"
+    - 'HIDE_ENCHANTS'
+    itemCOMMANDS:
+    - '[player] warp %currentrank%'
+    - '(close-inventory)'
+    - '(cancel-item_move)'
     custom:
       B:
         itemLORE:
-        - "&4Your rank is B!"
-  completed-format: # placeholders: %completedrank% %completedrank_display% %completedrank_cost% %completedrank_cost_formatted%
-    itemNAME: "DIAMOND_SWORD;14"
+        - '&4Your rank is B!'
+  completed-format:
+    itemNAME: STAINED_GLASS_PANE;5
     itemAMOUNT: 1
-    itemDISPLAYNAME: "&a%completedrank_display%"
+    itemDISPLAYNAME: '&a%completedrank_display%'
     itemLORE:
-    - "&bCOMPLETED"
+    - '&bCOMPLETED'
+    - '&7&m                       &r'
+    - '&bCost: &7&m%completedrank_cost_formatted%'
+    - '&bClick to warp!'
+    itemENCHANTMENTS:
+    - 'DURABILITY 10'
+    itemFLAGS:
+    - 'HIDE_ENCHANTS'
+    itemCOMMANDS:
+    - '[player] warp %completedrank%'
+    - '(cancel-item_move)'
+  other-format:
+    itemNAME: STAINED_GLASS_PANE;14
+    itemAMOUNT: 1
+    itemDISPLAYNAME: '&a%otherrank_display%'
+    itemLORE:
+    - '&cCost: &3%otherrank_cost_formatted%'
+    - '&cReward:'
+    - '&e1x Rankup Key'
     itemENCHANTMENTS: []
     itemFLAGS: []
     itemCOMMANDS:
-    - "(cancel-item_move)"
-  other-format: # placeholders: %otherrank% %otherrank_display% %otherrank_cost% %otherrank_cost_formatted%
-    itemNAME: REDSTONE_BLOCK
-    itemAMOUNT: 1
-    itemDISPLAYNAME: "&a%otherrank_display%"
-    itemLORE:
-    - "&cCost: &3%otherrank_cost_formatted%"
-    itemENCHANTMENTS: []
-    itemFLAGS: []
-    itemCOMMANDS:
-    - "(cancel-item_move)"
+    - '(cancel-item_move)'
 Prestigelist-gui:
   title: "&3Prestiges"
   constant-items: []
@@ -377,8 +402,8 @@ Rebirthlist-gui:
 # '[rebirthpermissions] remove' = removes every permission that player got from rebirthing up <!> Of course Vault Must be installed
 PrestigeOptions:
   ResetMoney: false
-  ResetRank: true
-  # global rankup_cost_increase, if you want to disable this set it to 0 default: (prestigenumber * rankup_cost_increase_percentage)
+  ResetRank: false
+  # global rankup_cost_increase, if you want to disable this set it to 0 default: (prestigenumber * rankup_cost_increase_percentage), this will override the cost increase on prestiges.yml if set to value higher than 0
   rankup_cost_increase_percentage: 0
   # types: DEFAULT=>{prestigeNumber * cost_increase}, POWER=>{prestigeNumber+1 ^ cost_increase}, EXTRA=>{(prestigeNumber * cost_increase) * 2}
   cost_increase_type: DEFAULT

@@ -1,0 +1,22 @@
+# enable the usage of this by turning off the server and changing the option 'infinite-prestige' to true inside config.yml
+# placeholders:
+# {number} = prestige number
+# {rankcost} = current rank cost
+# %player% = player name
+Global-Settings:
+  display: "&8[&9P{number}&8]"
+  cost-expression: "{number} * 100000"
+  commands:
+  - "eco give %player% 500"
+  broadcast: []
+  final-prestige: 1000000
+# Don't abuse this by adding every single prestige! That will not benfit you. Therefore, you will have to use the default prestiges.yml instead of this.
+Prestiges-Settings:
+  # ~Possible actions~
+  # executecmds:
+  # - "command %player%"
+  # broadcast:
+  # - "&6a broadcast message line."
+  # - "&e%player% &7just prestiged."
+  500:
+    executecmds: []
