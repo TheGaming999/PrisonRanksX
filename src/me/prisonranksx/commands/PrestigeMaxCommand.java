@@ -38,6 +38,10 @@ public class PrestigeMaxCommand extends BukkitCommand {
 	      if(main.isInDisabledWorld(p)) {return true;}
 	      String prestigeMaxType = main.getGlobalStorage().getStringData("Options.prestigemax-type");
 	      prestigeMaxType = prestigeMaxType == null ? "AMTQ" : prestigeMaxType;
+	      if(main.isInfinitePrestige) {
+	    	  main.prxAPI.getPrestigeMax().executeOnAsyncQueue(p, true);
+	    	  return true;
+	      }
 	      if(prestigeMaxType.equals("AR")) {
 	    	  main.prxAPI.getPrestigeMax().execute(p);
 	      } else if (prestigeMaxType.equals("ASTQ")) {

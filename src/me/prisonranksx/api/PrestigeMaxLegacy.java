@@ -501,4 +501,10 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 		
 	}
 
+	@Override
+	public void executeOnAsyncQueue(Player player, boolean infinite) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

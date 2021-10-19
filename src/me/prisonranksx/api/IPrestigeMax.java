@@ -18,6 +18,8 @@ public interface IPrestigeMax {
 	
 	void executeOnAsyncQueue(Player player);
 	
+	void executeOnAsyncQueue(Player player, boolean infinite);
+	
 	void executeOnAsyncMultiThreadedQueue(Player player);
 	
 	void executeOnSyncMultiThreadedQueue(Player player);

@@ -15,8 +15,10 @@ import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.GlobalDataStorage1_16;
 import me.prisonranksx.data.GlobalDataStorage1_8;
 import me.prisonranksx.data.IPrestigeDataHandler;
+import me.prisonranksx.data.InfinitePrestigeSettings;
 import me.prisonranksx.data.PrestigeDataHandler;
 import me.prisonranksx.data.PrestigeDataStorage;
+import me.prisonranksx.data.PrestigeDataStorageInfinite;
 import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankDataStorage;
 import me.prisonranksx.data.RankPath;
@@ -532,7 +534,7 @@ public class PRXManager {
 	  main.getConfigManager().reloadMainConfig();
       main.getConfigManager().reloadConfigs();
       main.getConfigManager().loadConfigs();
-      if(Bukkit.getVersion().contains("1.16")) {
+      if(Bukkit.getVersion().contains("1.16") || Bukkit.getVersion().contains("1.17") || Bukkit.getVersion().contains("1.18")) {
       main.globalStorage = new GlobalDataStorage1_16(main);
       } else {
     	  main.globalStorage = new GlobalDataStorage1_8(main);
@@ -540,7 +542,14 @@ public class PRXManager {
       main.globalStorage.loadGlobalData();
       main.rankStorage = new RankDataStorage(main);
       main.rankStorage.loadRanksData();
+      main.isInfinitePrestige = main.getGlobalStorage().getBooleanData("Options.infinite-prestige");
       main.prestigeStorage = new PrestigeDataStorage(main);
+      if(main.isInfinitePrestige) {
+			main.infinitePrestigeSettings = new InfinitePrestigeSettings(main);
+			main.infinitePrestigeSettings.load();
+			main.prestigeStorage = new PrestigeDataStorageInfinite(main);
+			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §dInfinte Prestige Option is §aEnabled§d.");
+	  } 
       main.prestigeStorage.loadPrestigesData();
       main.rebirthStorage = new RebirthDataStorage(main);
       main.rebirthStorage.loadRebirthsData();
@@ -995,12 +1004,24 @@ public class PRXManager {
 	 */
 	public String matchPrestige(String prestigeName) {
 		String matchedPrestige = prestigeName;
+		if(main.isInfinitePrestige) {
+			return main.prxAPI.numberAPI.keepNumbers(prestigeName);
+		}
 		for(String str : main.prxAPI.getPrestigesCollection()) {
 			if(str.equalsIgnoreCase(prestigeName)) {
 				matchedPrestige = str;
 			}
 		}
 		return matchedPrestige;
+	}
+	
+	/**
+	 * 
+	 * @param prestigeName
+	 * @return always returns a number
+	 */
+	public String matchPrestigeInfinite(String prestigeName) {
+		return main.prxAPI.numberAPI.keepNumbers(prestigeName);
 	}
 	
 	public String matchPrestige(String prestigeName, boolean checkNumbers) {

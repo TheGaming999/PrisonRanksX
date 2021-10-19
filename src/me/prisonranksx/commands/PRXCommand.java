@@ -992,6 +992,26 @@ public class PRXCommand extends BukkitCommand {
         		}
         		Player p = Bukkit.getPlayer(args[1]);
         		String newPrestige = main.manager.matchPrestige(args[2]);
+        		if(main.isInfinitePrestige) {
+        			if(!main.prxAPI.prestigeInfiniteExists(newPrestige)) {
+        				sender.sendMessage(main.prxAPI.g("prestige-notfound").replace("%prestige%", newPrestige));
+        				return true;
+        			}
+        			PrestigeUpdateEvent e = new PrestigeUpdateEvent(p, PrestigeUpdateCause.SETPRESTIGE);
+            		Bukkit.getPluginManager().callEvent(e);
+            		if(e.isCancelled()) {
+            			return true;
+            		}
+            		if(newPrestige.equals("0")) {
+            			main.manager.delPlayerPrestige(XUser.getXUser(p));
+            			sender.sendMessage(main.prxAPI.g("delplayerprestige").replace("%player%", p.getName()));
+            			return true;
+            		}
+        			main.prxAPI.setPlayerPrestige(p, newPrestige);
+        			sender.sendMessage(main.prxAPI.g("setprestige").replace("%target%", p.getName())
+            				.replace("%settedprestige%", newPrestige));
+        			return true;
+        		}
         		if(!main.prxAPI.prestigeExists(newPrestige)) {
         			if(newPrestige.equalsIgnoreCase("P0") || newPrestige.equalsIgnoreCase("0")) {
                 		XUser user = XUser.getXUser(p);

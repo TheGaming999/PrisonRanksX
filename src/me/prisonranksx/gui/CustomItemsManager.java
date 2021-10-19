@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -27,6 +28,10 @@ public class CustomItemsManager {
 	
 	public String c(String stringValue) {
 		return ChatColor.translateAlternateColorCodes('&', stringValue);
+	}
+	
+	public String c(String stringValue, Player player) {
+		return ChatColor.translateAlternateColorCodes('&', plugin.getPlaceholderReplacer().parse(stringValue, player));
 	}
 	
 	public boolean hasCustomLevelItem(LevelType levelType, LevelState levelState) {
@@ -140,6 +145,79 @@ public class CustomItemsManager {
 					}
 				} else {
 					lore.add(c(fullLore).replace("_", " "));
+				}
+				stackMeta.setLore(lore);
+			} //lore check
+			if(stringMeta.startsWith("enchantments=")) {
+				String fullEnchantmentWithLvl = stringMeta.substring(13);
+				if(fullEnchantmentWithLvl.contains("@")) {
+					for(String singleEnchantmentWithLvl : fullEnchantmentWithLvl.split("@")) {
+						String enchantment = singleEnchantmentWithLvl.split(":")[0];
+						Integer lvl = Integer.valueOf(singleEnchantmentWithLvl.split(":")[1]);
+						stackMeta.addEnchant(EnchantmentReader.matchEnchantment(enchantment), lvl, true);
+					}
+				} else {
+					String enchantment = fullEnchantmentWithLvl.split(":")[0];
+					Integer lvl = Integer.valueOf(fullEnchantmentWithLvl.split(":")[1]);
+					stackMeta.addEnchant(EnchantmentReader.matchEnchantment(enchantment), lvl, true);
+				}
+			} //enchantments check
+			if(stringMeta.startsWith("flags=") && !plugin.isBefore1_7) {
+				String flagsList = stringMeta.substring(6);
+				if(flagsList.contains("@")) {
+					for(String singleFlag : flagsList.split("@")) {
+						stackMeta.addItemFlags(ItemFlagReader.matchItemFlag(singleFlag));
+					}
+				} else {
+					stackMeta.addItemFlags(ItemFlagReader.matchItemFlag(flagsList));
+				}
+			} //item flags check
+			stringStack.setItemMeta(stackMeta);
+		}
+		return stringStack;
+	}
+	
+	public ItemStack readCustomItem(String stringValue, Player player) {
+		ItemStack stringStack = new ItemStack(Material.STONE, 1);
+		ItemMeta stackMeta = stringStack.getItemMeta();
+		int amount = 1;
+		String displayName = "";
+		List<String> lore = new ArrayList<>();
+		for(String stringMeta : stringValue.split(" ")) {
+			if(stringMeta.startsWith("item=")) { //item stack with data support
+				String itemNameWithData = stringMeta.substring(5);
+				if(itemNameWithData.contains(":")) {
+					String itemName = itemNameWithData.split(":")[0];
+					byte itemData = Byte.parseByte(itemNameWithData.split(":")[1]);
+					
+					stringStack = XMaterial.matchDefinedXMaterial(itemName, itemData).get().parseItem();
+				} else {
+					String itemName = itemNameWithData;
+					stringStack = XMaterial.matchXMaterial(itemName).get().parseItem();
+				}
+				stackMeta = stringStack.getItemMeta();
+			} //item stack check
+			if(stringMeta.startsWith("amount=")) {
+              if(numberAPI.isNumber(stringMeta.substring(7))) {
+            	  amount = Integer.parseInt(stringMeta.substring(7));
+              } else {
+            	  plugin.getLogger().info("amount=<?> is not a number setting it to 1 by default");
+            	  amount = 1;
+              }
+              stringStack.setAmount(amount);
+			} //amount check
+			if(stringMeta.startsWith("name=")) {
+				displayName = c(stringMeta.substring(5), player);
+				stackMeta.setDisplayName(displayName.replace("_", " ").replace("%us%", "_"));
+			} //name check
+			if(stringMeta.startsWith("lore=")) {
+				String fullLore = stringMeta.substring(5);
+				if(fullLore.contains("@")) {
+					for(String loreLine : fullLore.split("@")) {
+						lore.add(c(loreLine, player).replace("_", " ").replace("%us%", "_"));
+					}
+				} else {
+					lore.add(c(fullLore, player).replace("_", " ").replace("%us%", "_"));
 				}
 				stackMeta.setLore(lore);
 			} //lore check
