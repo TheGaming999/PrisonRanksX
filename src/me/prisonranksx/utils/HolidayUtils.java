@@ -466,7 +466,7 @@ public class HolidayUtils {
         		this.isCeleberation = false;
         	}
         } else if (month == 12) {
-        	if(day > 20) {
+        	if(day > 18) {
         		// is christmas
         		this.holiday = Holiday.CHRISTMAS;
         		this.isCeleberation = true;

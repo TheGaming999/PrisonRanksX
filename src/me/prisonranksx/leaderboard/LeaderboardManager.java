@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -555,7 +557,13 @@ public class LeaderboardManager {
 		} else {
 			
 		ConfigurationSection cf = main.getConfigManager().rankDataConfig.getConfigurationSection("players");
-		cf.getValues(false)
+		Map<UUID, Integer> temp = new HashMap<>();
+		cf.getValues(false).entrySet().forEach(entry -> {
+			UUID u = UUID.fromString(entry.getKey());
+			temp.put(u, main.prxAPI.getPlayerPromotionsAmount(u));
+		});
+		updatedValuesGlobal = sortByValue(temp);
+		/*cf.getValues(false)
 		.entrySet()
 		  .stream()
 		  .sorted((a1, a2) -> {
@@ -578,6 +586,8 @@ public class LeaderboardManager {
 		    updatedValuesGlobal.put(uuid, finalNumber);
 		  });
 		}
+		*/
+		}
 	   update = false;
 	   listGlobal.clear();
 	   listGlobal.addAll(updatedValuesGlobal.entrySet());
@@ -598,6 +608,38 @@ public class LeaderboardManager {
 		this.updatedValuesP.clear();
 		this.updatedValuesR.clear();
 		this.updatedValuesGlobal.clear();
+	}
+	
+	private Map<UUID, Integer> sortByValue(Map<UUID, Integer> unsortMap) {
+
+	    // 1. Convert Map to List of Map
+	    List<Map.Entry<UUID, Integer>> list =
+	            new LinkedList<Map.Entry<UUID, Integer>>(unsortMap.entrySet());
+
+	    // 2. Sort list with Collections.sort(), provide a custom Comparator
+	    //    Try switch the o1 o2 position for a different order
+	    Collections.sort(list, new Comparator<Map.Entry<UUID, Integer>>() {
+	        public int compare(Map.Entry<UUID, Integer> o1,
+	                           Map.Entry<UUID, Integer> o2) {
+	            return (o1.getValue()).compareTo(o2.getValue());
+	        }
+	    });
+
+	    // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
+	    Map<UUID, Integer> sortedMap = new LinkedHashMap<UUID, Integer>();
+	    for (Map.Entry<UUID, Integer> entry : list) {
+	        sortedMap.put(entry.getKey(), entry.getValue());
+	    }
+
+	    /*
+	    //classic iterator example
+	    for (Iterator<Map.Entry<String, Integer>> it = list.iterator(); it.hasNext(); ) {
+	        Map.Entry<String, Integer> entry = it.next();
+	        sortedMap.put(entry.getKey(), entry.getValue());
+	    }*/
+
+
+	    return sortedMap;
 	}
 	
 }

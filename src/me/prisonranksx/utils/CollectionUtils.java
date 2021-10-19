@@ -55,7 +55,18 @@ public class CollectionUtils {
 		return isNearPointer(a, b) ? mathConverted : mathConverted-1;
 	}
     
-    private static int paginateIndex(final int index, final int entryPerPage, final int page) {	
+	public static int getAccurateFinalPage(final int elementsCount, final int elementsPerPage) {
+		return fixPages(elementsCount, elementsPerPage);
+	}
+	
+	/**
+	 * <i>
+	 * @param index the index from the loop that starts with 0 and ends with the size.
+	 * @param entryPerPage How many elements in a page.
+	 * @param page The page it will be placed on.
+	 * @return Correct position of the meant index in a paginated list.
+	 */
+    public static int paginateIndex(final int index, final int entryPerPage, final int page) {	
     	return page > 1 ? index + (entryPerPage*(page-1)) : index;
     }
     

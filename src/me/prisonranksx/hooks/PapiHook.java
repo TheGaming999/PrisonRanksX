@@ -110,6 +110,9 @@ public class PapiHook extends PlaceholderExpansion {
         if(arg1.equalsIgnoreCase("currentprestige_number")) {
         	return String.valueOf(prxAPI.getPlayerPrestigeNumber(p));
         }
+        if(arg1.equalsIgnoreCase("currentrebirth_number")) {
+        	return String.valueOf(prxAPI.getPlayerRebirthNumber(p));
+        }
         if(arg1.equalsIgnoreCase("current_displayname")) {
         	return prxAPI.getStageDisplay(p.getPlayer(), " ", true);
         }
@@ -431,6 +434,24 @@ public class PapiHook extends PlaceholderExpansion {
 			  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerPrestige(p));
+		}
+		if(arg1.equalsIgnoreCase("prestige_number")) {
+			if(!prxAPI.hasPrestiged(p)) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
+			}
+			if(main.isInfinitePrestige) {
+				return String.valueOf(prxAPI.getPlayerPrestige(p));
+			}
+			return String.valueOf(prxAPI.getPlayerPrestigeNumber(p.getUniqueId()));
+		}
+		if(arg1.equalsIgnoreCase("prestige_number_formatted")) {
+			if(!prxAPI.hasPrestiged(p)) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
+			}
+			if(main.isInfinitePrestige) {
+				return String.valueOf(prxAPI.formatBalance(Double.valueOf(prxAPI.getPlayerPrestige(p))));
+			}
+			return String.valueOf(prxAPI.formatBalance(prxAPI.getPlayerPrestigeNumber(p.getUniqueId())));
 		}
 		if(arg1.startsWith("prestige_name_")) {
 			Player player = Bukkit.getPlayer(arg1.replace("prestige_name_", ""));
