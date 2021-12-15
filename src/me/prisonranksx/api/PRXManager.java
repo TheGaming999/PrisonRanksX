@@ -548,7 +548,7 @@ public class PRXManager {
 			main.infinitePrestigeSettings = new InfinitePrestigeSettings(main);
 			main.infinitePrestigeSettings.load();
 			main.prestigeStorage = new PrestigeDataStorageInfinite(main);
-			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §dInfinte Prestige Option is §aEnabled§d.");
+			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §7Infinite Prestige option is §aenabled§7.");
 	  } 
       main.prestigeStorage.loadPrestigesData();
       main.rebirthStorage = new RebirthDataStorage(main);

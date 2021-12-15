@@ -460,7 +460,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			infinitePrestigeSettings = new InfinitePrestigeSettings(this);
 			infinitePrestigeSettings.load();
 			prestigeStorage = new PrestigeDataStorageInfinite(this);
-			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §dInfinte Prestige Option is §aEnabled§d.");
+			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §7Infinite Prestige option is §aenabled§7.");
 		} 
 		isMySql = globalStorage.getBooleanData("MySQL.enable");
 		prestigeStorage.loadPrestigesData();

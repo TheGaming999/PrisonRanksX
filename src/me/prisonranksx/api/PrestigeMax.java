@@ -644,6 +644,28 @@ public class PrestigeMax implements IPrestigeMax {
         				.replace("%nextprestige%", loopNextPrestigeName)
         				.replace("%nextprestige_display%", loopNextPrestigeDisplay)
         				);
+        		if(plugin.isInfinitePrestige) {
+        			List<String> commands = plugin.infinitePrestigeSettings.getCommands();
+        			if(commands != null && !commands.isEmpty()) {
+        				plugin.getServer().getScheduler().runTask(plugin, () -> {
+        					commands.forEach(cmd -> {
+        						plugin.executeCommand(p, plugin.getString(cmd
+        								.replace("{number}", loopPrestigeName)));
+        					});
+        				});
+        			}
+        			List<String> broadcast = plugin.infinitePrestigeSettings.getBroadcast();
+        			if(broadcast != null && !broadcast.isEmpty()) {
+        				broadcast.forEach(broadcastMessage -> {
+            				Bukkit.broadcastMessage(plugin.getString(broadcastMessage.replace("{number}", loopPrestigeName), name)
+            				.replace("%player%", name)
+    						.replace("%prestige%", loopPrestigeName)
+    						.replace("%nextprestige%", loopNextPrestigeName)
+    						.replace("%nextprestige_display%", loopNextPrestigeDisplay)
+    						);
+            			});
+        			}
+        		}
         		List<String> loopNextPrestigeCommands = loopNextPrestige.getPrestigeCommands();
         		if(loopNextPrestigeCommands != null && !loopNextPrestigeCommands.isEmpty()) {
         			plugin.getServer().getScheduler().runTask(plugin, () -> {
@@ -894,6 +916,28 @@ public class PrestigeMax implements IPrestigeMax {
         				.replace("%nextprestige%", loopNextPrestigeName)
         				.replace("%nextprestige_display%", loopNextPrestigeDisplay)
         				);
+        		if(plugin.isInfinitePrestige) {
+        			List<String> commands = plugin.infinitePrestigeSettings.getCommands();
+        			if(commands != null && !commands.isEmpty()) {
+        				plugin.getServer().getScheduler().runTask(plugin, () -> {
+        					commands.forEach(cmd -> {
+        						plugin.executeCommand(p, plugin.getString(cmd
+        								.replace("{number}", loopPrestigeName)));
+        					});
+        				});
+        			}
+        			List<String> broadcast = plugin.infinitePrestigeSettings.getBroadcast();
+        			if(broadcast != null && !broadcast.isEmpty()) {
+        				broadcast.forEach(broadcastMessage -> {
+            				Bukkit.broadcastMessage(plugin.getString(broadcastMessage.replace("{number}", loopPrestigeName), name)
+            				.replace("%player%", name)
+    						.replace("%prestige%", loopPrestigeName)
+    						.replace("%nextprestige%", loopNextPrestigeName)
+    						.replace("%nextprestige_display%", loopNextPrestigeDisplay)
+    						);
+            			});
+        			}
+        		}
         		List<String> loopNextPrestigeCommands = loopNextPrestige.getPrestigeCommands();
         		if(loopNextPrestigeCommands != null && !loopNextPrestigeCommands.isEmpty()) {
         			plugin.getServer().getScheduler().runTask(plugin, () -> {

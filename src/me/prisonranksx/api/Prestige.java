@@ -231,6 +231,28 @@ public class Prestige {
 				main.executeCommands(p, newPrestigeCommands);
 			}
 		}
+		if(main.isInfinitePrestige) {
+			List<String> commands = main.infinitePrestigeSettings.getCommands();
+			if(commands != null && !commands.isEmpty()) {
+				main.getServer().getScheduler().runTask(main, () -> {
+					commands.forEach(cmd -> {
+						main.executeCommand(p, main.getString(cmd
+								.replace("{number}", prxAPI.getPlayerNextPrestige(p))));
+					});
+				});
+			}
+			List<String> broadcast = main.infinitePrestigeSettings.getBroadcast();
+			if(broadcast != null && !broadcast.isEmpty()) {
+				broadcast.forEach(broadcastMessage -> {
+    				Bukkit.broadcastMessage(main.getString(broadcastMessage.replace("{number}", prxAPI.getPlayerNextPrestige(p)), name)
+    				.replace("%player%", name)
+					.replace("%prestige%", prestige)
+					.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
+					.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplay(p))
+					);
+    			});
+			}
+		}
 		List<String> actions = main.prestigeStorage.getActions(prestige);
 		if(actions != null) {
 			if(!actions.isEmpty() && main.isActionUtil) {
@@ -472,6 +494,28 @@ public class Prestige {
 							.replace("%nextprestige_cost%", prxAPI.s(nextPrestigeCost)));
 				}
 				main.executeCommands(p, newPrestigeCommands);
+			}
+		}
+		if(main.isInfinitePrestige) {
+			List<String> commands = main.infinitePrestigeSettings.getCommands();
+			if(commands != null && !commands.isEmpty()) {
+				main.getServer().getScheduler().runTask(main, () -> {
+					commands.forEach(cmd -> {
+						main.executeCommand(p, main.getString(cmd
+								.replace("{number}", prxAPI.getPlayerNextPrestige(p))));
+					});
+				});
+			}
+			List<String> broadcast = main.infinitePrestigeSettings.getBroadcast();
+			if(broadcast != null && !broadcast.isEmpty()) {
+				broadcast.forEach(broadcastMessage -> {
+    				Bukkit.broadcastMessage(main.getString(broadcastMessage.replace("{number}", prxAPI.getPlayerNextPrestige(p)), name)
+    				.replace("%player%", name)
+					.replace("%prestige%", prestige)
+					.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
+					.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplay(p))
+					);
+    			});
 			}
 		}
 		List<String> actions = main.prestigeStorage.getActions(prestige);
@@ -723,6 +767,28 @@ public class Prestige {
 							.replace("%nextprestige_cost%", prxAPI.s(prestigeCost)));
 				}
 				main.executeCommands(p, newPrestigeCommands);
+			}
+		}
+		if(main.isInfinitePrestige) {
+			List<String> commands = main.infinitePrestigeSettings.getCommands();
+			if(commands != null && !commands.isEmpty()) {
+				main.getServer().getScheduler().runTask(main, () -> {
+					commands.forEach(cmd -> {
+						main.executeCommand(p, main.getString(cmd
+								.replace("{number}", prestige)));
+					});
+				});
+			}
+			List<String> broadcast = main.infinitePrestigeSettings.getBroadcast();
+			if(broadcast != null && !broadcast.isEmpty()) {
+				broadcast.forEach(broadcastMessage -> {
+    				Bukkit.broadcastMessage(main.getString(broadcastMessage.replace("{number}", prestige), name)
+    				.replace("%player%", name)
+					.replace("%prestige%", currentPrestige)
+					.replace("%nextprestige%", prestige)
+					.replace("%nextprestige_display%", prestigeDisplay)
+					);
+    			});
 			}
 		}
 		List<String> actions = main.prestigeStorage.getActions(prestige);

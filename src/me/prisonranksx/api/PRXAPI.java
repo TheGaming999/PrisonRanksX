@@ -60,10 +60,10 @@ public class PRXAPI {
 	private FileConfiguration rankDataConfig, prestigeDataConfig, rebirthDataConfig, customConfig
 	, originalConfig, ranksConfig, prestigesConfig, rebirthsConfig, commandsConfig, messagesConfig;
     public PrisonRanksX main = null;
-	public Set<String> autoRankupPlayers = new HashSet<>();
-	public Set<String> autoPrestigePlayers = new HashSet<>();
-	public Set<String> autoRebirthPlayers = new HashSet<>();
-	public Set<String> taskedPlayers = new HashSet<>();
+	public static Set<String> autoRankupPlayers = new HashSet<>();
+	public static Set<String> autoPrestigePlayers = new HashSet<>();
+	public static Set<String> autoRebirthPlayers = new HashSet<>();
+	public static Set<String> taskedPlayers = new HashSet<>();
 	public Set<String> allRankAddPermissions, allRankDelPermissions, allPrestigeAddPermissions
 	, allPrestigeDelPermissions, allRebirthAddPermissions, allRebirthDelPermissions;
 	private String increaseType;
