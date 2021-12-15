@@ -49,7 +49,7 @@ Options:
   no-rebirth-display: ""
   # Don't want rank's 'broadcast:' section to be shown in every world? set this to false . this uses the worlds list above.
   allworlds-broadcast: true
-  # If you want to send the rankup msg that one in the messages.yml file.
+  # If you want to send the rankup msg, that one inside messages.yml file.
   send-rankupmsg: true
   # If you want to send the prestige msg /\
   send-prestigemsg: true
@@ -59,9 +59,9 @@ Options:
   send-rankupmaxmsg: true
   # Don't like the text rank list then try this setting [set it to true].
   GUI-RANKLIST: false
-  # You want a cool gui prestige list? use this [change it to true].
+  # You want a gui prestige list? use this [change it to true].
   GUI-PRESTIGELIST: false
-  # yep
+  # same
   GUI-REBIRTHLIST: false
   # Want your players to dance when they prestige? put a sound name here otherwise make it like this "" to disable.
   prestigesound-name: "LEVEL_UP"
@@ -135,7 +135,7 @@ Options:
   enable-leaderboard: true
   # change the list above to allow the commands to be executed on these worlds instead of preventing them.
   enabled-worlds-instead-of-disabled: false
-  # AMTQ, ASTQ, AR, ARS
+  # Prestige Max Types: AMTQ, ASTQ, AR, ARS. Check the WIKI from more information.
   prestigemax-type: "AMTQ"
   # infinite prestige
   infinite-prestige: false
