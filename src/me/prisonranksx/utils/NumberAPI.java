@@ -12,7 +12,6 @@ import java.util.Random;
 import com.google.common.util.concurrent.AtomicDouble;
 import java.util.concurrent.ThreadLocalRandom;
 
-import javafx.util.converter.BigIntegerStringConverter;
 
 public class NumberAPI {
 	Random rd;
@@ -294,13 +293,7 @@ public class NumberAPI {
         Integer finalValue = Integer.parseInt(numBeforeDot);
         return finalValue;
     }
-    public BigInteger toExactBigInteger(Double value) {
-    	String strValue = deleteScientificNotationA(value).replace(".", "#");
-        String numBeforeDot = strValue.split("#")[0];
-        BigIntegerStringConverter x = new BigIntegerStringConverter();
-        BigInteger finalValue = x.fromString(numBeforeDot);
-        return finalValue;
-    }
+
     public String toFakeInteger(Double value) {
     	String strValue = deleteScientificNotationA(value).replace(".", "#");
         String numBeforeDot = strValue.split("#")[0];

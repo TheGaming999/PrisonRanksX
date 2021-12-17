@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
@@ -32,6 +36,99 @@ public class ErrorInspector {
 	public void setErrors(List<String> errors) {
 		this.errors = errors;
 	}
+	
+	public void validateRanks() {
+		List<String> defaultPathRanks = main.rankStorage.getPathRanksMap().get("default");
+		String actualFirstRank = defaultPathRanks.get(0);
+		String actualLastRank = defaultPathRanks.get(defaultPathRanks.size()-1);
+		if(!main.prxAPI.getDefaultRank().equals(actualFirstRank)) {
+			main.getGlobalStorage().getStringMap().put("defaultrank", actualFirstRank);
+			main.getGlobalStorage().getStringMap().put("lastrank", actualLastRank);
+			main.getConfig().set("defaultrank", actualFirstRank);
+			main.getConfig().set("lastrank", actualLastRank);
+			main.getConfigManager().saveMainConfig();
+			FileConfiguration rankDataConfig = main.getConfigManager().rankDataConfig;
+		    Set<String> registeredPlayers = rankDataConfig.getConfigurationSection("players").getKeys(false);
+		    registeredPlayers.forEach(playerUUID -> {
+		    	if(!main.prxAPI.rankExists(rankDataConfig.getString("players." + playerUUID + ".rank"))) {
+		    		rankDataConfig.set("players." + playerUUID + ".rank", actualFirstRank);
+		    		OnlinePlayers.getPlayers().forEach(player -> {
+		    			main.prxAPI.setPlayerRank(player, actualFirstRank);
+		    		});
+		    	}
+		    });
+		    main.getConfigManager().saveRankDataConfig();
+			main.simulateAsyncAutoDataSave();
+			main.manager.reload();
+		}	
+	}
+	
+	public void validateRanks(CommandSender sender) {
+		List<String> defaultPathRanks = main.rankStorage.getPathRanksMap().get("default");
+		String actualFirstRank = defaultPathRanks.get(0);
+		String actualLastRank = defaultPathRanks.get(defaultPathRanks.size()-1);
+		AtomicBoolean hasFoundErrors = new AtomicBoolean(false);
+		boolean saveMainConfig = false;
+		if(!main.prxAPI.getDefaultRank().equals(actualFirstRank)) {
+			sender.sendMessage(main.prxAPI.c("&4Error &c<!> config.yml default rank doesn't match ranks.yml first rank &7[|] &frepairing..."));
+			main.getGlobalStorage().getStringMap().put("defaultrank", actualFirstRank);
+			main.getConfig().set("defaultrank", actualFirstRank);
+			saveMainConfig = true;
+			FileConfiguration rankDataConfig = main.getConfigManager().rankDataConfig;
+		    Set<String> registeredPlayers = rankDataConfig.getConfigurationSection("players").getKeys(false);
+		    registeredPlayers.forEach(playerUUID -> {
+		    	if(!main.prxAPI.rankExists(rankDataConfig.getString("players." + playerUUID + ".rank"))) {
+		    		sender.sendMessage(main.prxAPI.c("&4Error &c<!> " + playerUUID + "'s rank is invalid &7[|] &frepairing..."));
+		    		rankDataConfig.set("players." + playerUUID + ".rank", actualFirstRank);
+		    		OnlinePlayers.getPlayers().forEach(player -> {
+		    			main.prxAPI.setPlayerRank(player, actualFirstRank);
+		    		});
+		    		hasFoundErrors.set(true);
+		    	}
+		    });
+		    hasFoundErrors.set(true);
+		    
+		}	
+		if(!main.prxAPI.getLastRank().equals(actualLastRank)) {
+			sender.sendMessage(main.prxAPI.c("&4Error &c<!> config.yml last rank doesn't match ranks.yml last rank &7[|] &frepairing..."));
+			main.getGlobalStorage().getStringMap().put("lastrank", actualLastRank);
+			main.getConfig().set("lastrank", actualLastRank);
+			saveMainConfig = true;
+		}
+		if(saveMainConfig) main.getConfigManager().saveMainConfig();
+		List<String> ranksCollection = main.rankStorage.getRanksCollection(main.prxAPI.getDefaultPath());
+		int size = ranksCollection.size();
+		int i = -1;
+		String actualLastRankFromCollection = ranksCollection.get(size-1);
+		if(!main.rankStorage.getRankupName(RankPath.getRankPath(actualLastRankFromCollection, main.prxAPI.getDefaultPath())).equalsIgnoreCase("LASTRANK")) {
+			sender.sendMessage(main.prxAPI.c("&6Warning &e<!> ranks.yml rank: " + actualLastRankFromCollection + " is the lastrank, but its nextrank is not set to 'LASTRANK'."));
+		}
+		for(String rank : ranksCollection) {
+			i++;
+			String setNextRank = main.rankStorage.getRankupName(RankPath.getRankPath(rank, main.prxAPI.getDefaultPath()));
+			String actualNextRank = "LASTRANK";
+			if(i+1 < size)
+			actualNextRank = ranksCollection.get(i+1);
+			if(!setNextRank.equals(actualNextRank) && !actualNextRank.equals("LASTRANK")) {
+				sender.sendMessage(main.prxAPI.c("&6Warning &e<!> " + rank + " nextrank doesn't match the rank underneath it."));
+			}
+			if(!main.prxAPI.rankPathExists(RankPath.getRankPath(setNextRank, main.prxAPI.getDefaultPath())) && !actualNextRank.equals("LASTRANK")) {
+				sender.sendMessage(main.prxAPI.c("&6Warning &e<!> " + rank + " nextrank '" + setNextRank + "' is invalid."));
+			}
+		}
+		if(hasFoundErrors.get()) {
+			main.getConfigManager().saveRankDataConfig();
+			main.simulateAsyncAutoDataSave();
+			main.manager.reload();
+		}
+	}
+	
+    public void validatePlayerRank(Player p) {
+    	if(main.prxAPI.rankExists(main.prxAPI.getPlayerRank(p))) {
+    		return;
+    	}
+    	main.prxAPI.setPlayerRank(p, main.prxAPI.getDefaultRank());
+    }
 	
 	/**
 	 * ! start searching for errors asynchronously.

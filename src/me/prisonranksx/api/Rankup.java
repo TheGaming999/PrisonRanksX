@@ -326,6 +326,14 @@ public class Rankup {
 			}
 
 			String nextRankDisplay = prxAPI.getPlayerRankupDisplayR(p);
+			if(!main.prxAPI.rankExists(nextRank)) {
+				if(!p.isOp()) {
+					p.sendMessage(prxAPI.c("&cRankup failed! Please inform the administrators."));
+				} else {
+					p.sendMessage(prxAPI.c("&cRankup failed! Please take a look at the console for error logs. Try running /prx scan."));
+				}
+				return;
+			}
 			double rankupCostWithIncrease = prxAPI.getPlayerRankupCostWithIncreaseDirect(p);
 			Map<String, String> stringRequirements = prxAPI.getRankStringRequirements(rp);
 			Map<String, Double> numberRequirements = prxAPI.getRankNumberRequirements(rp);
