@@ -99,6 +99,7 @@ import me.prisonranksx.events.AsyncAutoRankupEvent;
 import me.prisonranksx.events.AsyncPrestigeMaxEvent;
 import me.prisonranksx.events.AsyncRankRegisterEvent;
 import me.prisonranksx.events.AsyncRankupMaxEvent;
+import me.prisonranksx.events.PrePrestigeMaxEvent;
 import me.prisonranksx.events.PrestigeUpdateEvent;
 import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.events.RebirthUpdateEvent;
@@ -118,6 +119,7 @@ import me.prisonranksx.reflections.ActionbarLegacy;
 import me.prisonranksx.reflections.ActionbarProgress;
 import me.prisonranksx.reflections.ExpbarProgress;
 import me.prisonranksx.utils.TempOpProtection;
+import me.prisonranksx.utils.TimeCounter;
 import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.HolidayUtils.Holiday;
 import me.prisonranksx.utils.ChatColorReplacer;
@@ -261,6 +263,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	public ExpbarProgress ebprogress;
 	public ErrorInspector errorInspector;
 	public InfinitePrestigeSettings infinitePrestigeSettings;
+	private TimeCounter timeCounter;
 	private static PrisonRanksX instance;
 	public int autoSaveTime;
     private BukkitTask actionbarTask;
@@ -435,7 +438,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		setupPermissions();
 		perm = new PermissionManager(this);
 		configManager = new ConfigManager(this);
-		if(version.contains("1.16") || version.contains("1.17") || version.contains("1.18")) {
+		if(version.contains("1.16") || version.contains("1.17") || version.contains("1.18") || version.contains("1.19")) {
 	         globalStorage = new GlobalDataStorage1_16(this);
 		} else {
 			 globalStorage = new GlobalDataStorage1_8(this);
@@ -446,7 +449,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		messagesStorage = new MessagesDataStorage(this);
 	    configManager.loadConfigs();
 		if(!isBefore1_7) {
-		  if(version.contains("1.16") || version.contains("1.17") || version.contains("1.18")) {
+		  if(version.contains("1.16") || version.contains("1.17") || version.contains("1.18") || version.contains("1.19")) {
 			  this.chatColorReplacer = new ChatColorReplacer1_16(this);
 		  } else {	  
 			  this.chatColorReplacer = new ChatColorReplacer1_8(this);
@@ -472,10 +475,10 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		setupMySQL();
 		lbm = new LeaderboardManager(this);	
 	    if((Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))) {
-			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eLoading PlaceholderAPI Placeholders...");
+			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eLoading PlaceholderAPI placeholders...");
 			  papi = new PapiHook(this);
 			  papi.register();
-			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aPlaceholderAPI Hooked.");
+			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aPlaceholderAPI hooked.");
 			  ishooked = true;
 			  placeholderReplacer = new PlaceholderReplacerPAPI();
 		} else {
@@ -484,25 +487,25 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			  placeholderReplacer = new PlaceholderReplacerDefault();
 		}
 		if((Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays") == true)) {
-			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aHolographicDisplays Hooked.");
+			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aHolographicDisplays hooked.");
 			  isholo = true;
 		} else {
 			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §2Started without HolographicDisplays.");
 			  isholo = false;
 		}
 		if((Bukkit.getPluginManager().isPluginEnabled("MVdWPlaceholderAPI") == true)) {
-			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eLoading MVdWPlaceholderAPI Placeholders...");
+			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §eLoading MVdWPlaceholderAPI placeholders...");
 			  mvdw = new MVdWPapiHook(this);
 			  mvdw.registerPlaceholders();
 			  isMvdw = true;
-			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aMVdWPlaceholderAPI Hooked.");
+			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aMVdWPlaceholderAPI hooked.");
 		} else {
 			  isMvdw = false;
 			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §2Started without MVdWPlaceholderAPI.");
 		}
 		if(Bukkit.getPluginManager().isPluginEnabled("ActionUtil") == true) {
 			  isActionUtil = true;
-			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aActionUtil Detected.");
+			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §aActionUtil detected.");
 		} else {
 			  Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §2Started without ActionUtil.");
 		}
@@ -648,6 +651,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		if(!isBefore1_7) {
 			errorInspector = new ErrorInspector(this);
 			errorInspector.inspect();
+			errorInspector.validateRanks(Bukkit.getConsoleSender());
 		}
 			//playerStorage.loadPlayersData();
 		if(getGlobalStorage().getBooleanData("Options.autosave")) {
@@ -1218,36 +1222,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		}
 		this.abprogress.disable(p);
 	}
-
-	@EventHandler(priority=EventPriority.HIGHEST)
-	public void onKick(PlayerKickEvent e) {
-		Player p = e.getPlayer();
-		if(isSaveOnLeave) {
-			taskChainFactory.newSharedChain("saveOnLeave").async(() -> {
-		if(isMySql()) {
-			this.updateMySqlData(p);
-		} else {
-			
-			UUID uuid = p.getUniqueId();
-			
-			getPlayerStorage().savePlayerData(uuid);
-			getConfigManager().saveRankDataConfig();
-			getConfigManager().savePrestigeDataConfig();
-			getConfigManager().saveRebirthDataConfig();
-			getPlayerStorage().unload(uuid);
-			
-		}
-			}).execute();
-		}
-		if(isEBProgress) {
-			this.ebprogress.disable(p);
-		}
-		if(!isABProgress) {
-			return;
-		}
-		this.abprogress.disable(p);
-	}
-	
 	
 	public boolean hasActionbarOn(UUID uuid) {
 		return actionbarInUse.contains(uuid);
@@ -1874,6 +1848,10 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			if(isForceSave()) {
 				saveDataAsynchronously(p.getUniqueId(), p.getName());
 			}
+			if(debug) {
+				this.debug("Prestiges passed: " + e.getPrestigeStreak());
+				this.debug("Time took: " + timeCounter.tryEndingAsSecondsFormatted());
+			}
 		}
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
@@ -1882,6 +1860,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			if(isForceSave()) {
 				saveDataAsynchronously(p.getUniqueId(), p.getName());
 			}
+		}
+		
+		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+		public void onPrePrestigeMax(PrePrestigeMaxEvent e) {
+			timeCounter = new TimeCounter(true);
 		}
 		
 		public String getDatabase() {
