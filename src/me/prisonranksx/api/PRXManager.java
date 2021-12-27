@@ -228,7 +228,7 @@ public class PRXManager {
 		rdh.setName(name);
 		rdh.setCost(cost);
 		rdh.setRankupName("LASTRANK");
-		rdh.setDisplayName(displayName);
+		rdh.setDisplayName(main.getGlobalStorage().parseHexColorCodes(displayName));
 		rdh.setMsg(emptyList);
 		rdh.setBroadcastMessages(emptyList);
 		rdh.setRankupCommands(emptyList);
@@ -251,7 +251,7 @@ public class PRXManager {
 			String prev = getPreviousRank(name, pathName);
 			String path = prev + "#~#" + pathName;
 			main.rankStorage.getDataHandler(path).setRankupName(name);
-			main.rankStorage.getDataHandler(path).setRankupDisplayName(displayName);
+			main.rankStorage.getDataHandler(path).setRankupDisplayName(main.getGlobalStorage().parseHexColorCodes(displayName));
 			main.rankStorage.getDataHandler(path).setRankupCost(cost);
 			RankPath rankPath2 = new RankPath(prev, pathName);
 			main.rankStorage.saveRankData(rankPath2);
@@ -331,11 +331,11 @@ public class PRXManager {
 	    String prev = this.getPreviousRank(name, defaultPath);
 	    RankPath rp2 = new RankPath(prev, defaultPath);
 	    RankDataHandler rdh2 = main.rankStorage.getDataHandler(rp2.get());
-	    rdh2.setRankupDisplayName(newDisplayName);
+	    rdh2.setRankupDisplayName(main.getGlobalStorage().parseHexColorCodes(newDisplayName));
 	    main.rankStorage.putData(rp2.get(), rdh2);
 	    main.rankStorage.saveRankData(rp2);
 	    }
-	    rdh.setDisplayName(newDisplayName);
+	    rdh.setDisplayName(main.getGlobalStorage().parseHexColorCodes(newDisplayName));
 	    main.rankStorage.putData(rp.get(), rdh);
 	    main.rankStorage.saveRankData(rp);
 	}
@@ -696,7 +696,7 @@ public class PRXManager {
 		pdh.setName(namec);
 		pdh.setCost(cost);
 		pdh.setNextPrestigeName("LASTPRESTIGE");
-		pdh.setDisplayName(displayName);
+		pdh.setDisplayName(main.getGlobalStorage().parseHexColorCodes(displayName));
 		pdh.setMsg(emptyList);
 		pdh.setBroadcastMessages(emptyList);
 		pdh.setPrestigeCommands(emptyList);
@@ -730,7 +730,7 @@ public class PRXManager {
 		pdh.setName(namec);
 		pdh.setCost(cost);
 		pdh.setNextPrestigeName("LASTPRESTIGE");
-		pdh.setDisplayName(displayName);
+		pdh.setDisplayName(main.getGlobalStorage().parseHexColorCodes(displayName));
 		pdh.setMsg(emptyList);
 		pdh.setBroadcastMessages(emptyList);
 		pdh.setPrestigeCommands(emptyList);
@@ -763,7 +763,7 @@ public class PRXManager {
 		pdh.setName(namec);
 		pdh.setCost(cost);
 		pdh.setNextPrestigeName("LASTPRESTIGE");
-		pdh.setDisplayName(displayName);
+		pdh.setDisplayName(main.getGlobalStorage().parseHexColorCodes(displayName));
 		pdh.setMsg(emptyList);
 		pdh.setBroadcastMessages(emptyList);
 		pdh.setPrestigeCommands(emptyList);
@@ -805,7 +805,7 @@ public class PRXManager {
 			return;
 		}
 		IPrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(name);
-		pdh.setDisplayName(displayName);
+		pdh.setDisplayName(main.getGlobalStorage().parseHexColorCodes(displayName));
 		main.prestigeStorage.putData(name, pdh);
 		main.prestigeStorage.savePrestigeData(name);
 	}
@@ -823,7 +823,7 @@ public class PRXManager {
 				IPrestigeDataHandler pdh = main.prestigeStorage.getDataHandler(previousPrestige);
 				pdh.setNextPrestigeName(nextPrestige);
 				pdh.setNextPrestigeCost(npdh.getCost());
-				pdh.setNextPrestigeDisplayName(npdh.getDisplayName());
+				pdh.setNextPrestigeDisplayName(main.getGlobalStorage().parseHexColorCodes(npdh.getDisplayName()));
 				main.prestigeStorage.getPrestigeData().put(previousPrestige, pdh);
 				main.prestigeStorage.savePrestigeData(previousPrestige);
 			} else {
@@ -877,7 +877,7 @@ public class PRXManager {
 		rdh.setName(name);
 		rdh.setCost(cost);
 		rdh.setNextRebirthName("LASTREBIRTH");
-		rdh.setDisplayName(displayName);
+		rdh.setDisplayName(main.getGlobalStorage().parseHexColorCodes(displayName));
 		rdh.setMsg(emptyList);
 		rdh.setBroadcastMessages(emptyList);
 		rdh.setRebirthCommands(emptyList);
@@ -920,7 +920,7 @@ public class PRXManager {
 			return;
 		}
 		RebirthDataHandler rdh = main.rebirthStorage.getDataHandler(name);
-		rdh.setDisplayName(displayName);
+		rdh.setDisplayName(main.getGlobalStorage().parseHexColorCodes(displayName));
 		main.rebirthStorage.putData(name, rdh);
 		main.rebirthStorage.saveRebirthData(name);
 	}
@@ -941,7 +941,7 @@ public class PRXManager {
 				RebirthDataHandler rdh = main.rebirthStorage.getDataHandler(previousRebirth);
 				rdh.setNextRebirthName(nextRebirth);
 				rdh.setNextRebirthCost(nrdh.getCost());
-				rdh.setNextRebirthDisplayName(nrdh.getDisplayName());
+				rdh.setNextRebirthDisplayName(main.getGlobalStorage().parseHexColorCodes(nrdh.getDisplayName()));
 				main.rebirthStorage.getRebirthData().put(previousRebirth, rdh);
 				main.rebirthStorage.saveRebirthData(previousRebirth);
 			} else {

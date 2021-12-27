@@ -65,9 +65,8 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	}
 	
 	public double getCost() {
-		instance.debug(getName());
-		return instance.prxAPI.numberAPI.calculate(ips.getCostExpression()
-				.replace("{number}", getName()));
+			return instance.prxAPI.numberAPI.calculate(ips.getCostExpression()
+					.replace("{number}", getName()));
 	}
 	
 	public void setCost(double prestigeCost) {

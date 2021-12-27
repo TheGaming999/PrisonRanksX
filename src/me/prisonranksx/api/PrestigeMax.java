@@ -38,6 +38,7 @@ public class PrestigeMax implements IPrestigeMax {
 	private Set<String> processingPlayers;
 	private final List<String> lastPrestigeMessage;
 	private final List<String> notEnoughMoneyMessage;
+	private String finalInfinitePrestige;
 	private final String noPrestigeMessage;
 	private final ConcurrentHashMultiset<String> multiThreadSet;
 	public int prestigesPerTick = 5;
@@ -55,6 +56,7 @@ public class PrestigeMax implements IPrestigeMax {
 		this.chancesCache = new HashMap<>();
 		this.prestigesPerTick = 5;
 		this.threadTimer = 1;
+		this.finalInfinitePrestige = String.valueOf(plugin.infinitePrestigeSettings.getFinalPrestige());
 	}
 	
 	@Override
@@ -522,7 +524,7 @@ public class PrestigeMax implements IPrestigeMax {
 			return;
 		}
 		AtomicDouble takenBalance = new AtomicDouble(0.0);
-		AtomicInteger prestigeTimes = new AtomicInteger(0);
+		AtomicInteger prestigeTimes = new AtomicInteger(2);
 		String prestigeName = getAPI().getPlayerPrestige(uuid);
 		if(prestigeName == null) {
 			if(getAPI().canPrestige(p)) {
@@ -574,10 +576,10 @@ public class PrestigeMax implements IPrestigeMax {
         int size = (int)plugin.infinitePrestigeSettings.getFinalPrestige();
         AccessibleBukkitTask accessibleTask = new AccessibleBukkitTask();
         accessibleTask.set(plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-        	if(!plugin.getPlayerStorage().getPlayerData().containsKey(uuid.toString())) {
+        	/*if(!plugin.getPlayerStorage().getPlayerData().containsKey(uuid.toString())) {
     			getProcessingPlayers().remove(name);
     			accessibleTask.cancel();
-    		}
+    		}*/
         	plugin.getTaskChainFactory().newSharedChain("prestigemax").async(() -> {
         		if(!plugin.getPlayerStorage().getPlayerData().containsKey(uuid.toString())) {
         			getProcessingPlayers().remove(name);
@@ -618,7 +620,7 @@ public class PrestigeMax implements IPrestigeMax {
         		
         		IPrestigeDataHandler loopPrestige = getAPI().getPrestige(loopPrestigeName);
         		String loopNextPrestigeName = loopPrestige.getNextPrestigeName();
-        		if(loopNextPrestigeName.equals(String.valueOf(plugin.infinitePrestigeSettings.getFinalPrestige()))) {
+        		if(loopNextPrestigeName.equals(finalInfinitePrestige)) {
         			lastPrestigeMessage.forEach(p::sendMessage);
         			//accessibleTask.cancel();
         			executeFinal(accessibleTask, player, name, finalPrestige, prestigeFrom, prestigeTimes, takenBalance);

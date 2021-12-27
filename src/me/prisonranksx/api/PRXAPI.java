@@ -1529,10 +1529,10 @@ public class PRXAPI {
 		if((number - 1) < 0) {
 			return null;
 		}
-		if((number - 1) >= getPrestigesCollection().size()) {
+		if((number - 1) >= getPrestigeSize()) {
 			return null;
 		}
-		return getPrestigesCollection().get(number - 1);
+		return main.isInfinitePrestige ? String.valueOf(number) : getPrestigesCollection().get(number - 1);
 	}
 	
 	/**
@@ -1625,13 +1625,23 @@ public class PRXAPI {
 	    *  @return prestige number in prestiges list ((index + 1))
 	    */
 	public String getPrestigeNumber(String prestigeName) {
-		List<String> collection = getPrestigesCollection();
-		String prestigeNumber = String.valueOf(collection.indexOf(prestigeName) + 1);
+		String prestigeNumber = "0";
+		if(!main.isInfinitePrestige) {
+			List<String> collection = getPrestigesCollection();
+			prestigeNumber = String.valueOf(collection.indexOf(prestigeName) + 1);
+		} else {
+			// because infinite prestige names are always numbers, no need to do anything.
+			prestigeNumber = prestigeName;
+		}
 		return prestigeNumber;
 	}
 	
 	public int getPrestigeNumberX(String prestigeName) {
-		return getPrestigesCollection().indexOf(prestigeName) + 1;
+		return main.isInfinitePrestige ? Integer.valueOf(prestigeName) : getPrestigesCollection().indexOf(prestigeName) + 1;
+	}
+	
+	public long getPrestigeSize() {
+		return main.isInfinitePrestige ? main.infinitePrestigeSettings.getFinalPrestige() : getPrestigesCollection().size();
 	}
 	/**
 	 * 
@@ -3133,7 +3143,7 @@ public class PRXAPI {
 	 * example: player. prestige=10 rebirth=2 will return 30
 	 */
 	public int getPlayerPrestiges(final OfflinePlayer offlinePlayer) {
-		int rebirthNumber = getPlayerRebirthNumber(offlinePlayer) == 0 ? 0 : getPlayerRebirthNumber(offlinePlayer) * getPrestigesCollection().size();
+		int rebirthNumber = getPlayerRebirthNumber(offlinePlayer) == 0 ? 0 : getPlayerRebirthNumber(offlinePlayer) * (int)getPrestigeSize();
 		if(!hasPrestiged(offlinePlayer)) {
 			return 0;
 		}
@@ -3154,7 +3164,7 @@ public class PRXAPI {
 	 * example: player. prestige=10 rebirth=2 will return 30
 	 */
 	public int getPlayerPrestiges(final UUID uuid) {
-		int rebirthNumber = getPlayerRebirthNumber(uuid) == 0 ? 0 : getPlayerRebirthNumber(uuid) * getPrestigesCollection().size();
+		int rebirthNumber = getPlayerRebirthNumber(uuid) == 0 ? 0 : getPlayerRebirthNumber(uuid) * (int)getPrestigeSize();
 		if(!hasPrestiged(uuid)) {
 			return 0;
 		}
@@ -3177,7 +3187,7 @@ public class PRXAPI {
 		RankPath rp = getPlayerRankPath(uuid);
 		if(rp == null) return 0;
 		if(hasRebirthed(uuid)) {
-				return (((getPlayerRebirthNumber(uuid)+1) * (getPrestigesCollection().size()+1))+getPlayerPrestigeNumber(uuid)+1) * (((getPlayerRebirthNumber(uuid)+1) * (getRanksCollection(rp.getPathName()).size()+1)) + getPlayerRankNumber(uuid)+1);
+				return (((getPlayerRebirthNumber(uuid)+1) * ((int)getPrestigeSize()+1))+getPlayerPrestigeNumber(uuid)+1) * (((getPlayerRebirthNumber(uuid)+1) * (getRanksCollection(rp.getPathName()).size()+1)) + getPlayerRankNumber(uuid)+1);
 		} else {
 			if(hasPrestiged(uuid)) {
 				int rankSize = rp.getPathName() == null ? 1 : getRanksCollection(rp.getPathName()).size();
@@ -3194,9 +3204,9 @@ public class PRXAPI {
 	public int getPower(final String rank, @Nullable final String path, @Nullable final String prestige, @Nullable final String rebirth) {
 		if(rebirth != null) {
 			if(prestige != null) {
-				return (((this.getRebirthNumberX(rebirth)+1) * (getPrestigesCollection().size()+1)+Integer.valueOf(this.getPrestigeNumber(prestige)+1)) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
+				return (((this.getRebirthNumberX(rebirth)+1) * ((int)getPrestigeSize()+1)+Integer.valueOf(this.getPrestigeNumber(prestige)+1)) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
 			} else {
-				return (((this.getRebirthNumberX(rebirth)+1) * (getPrestigesCollection().size()+1)+1) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
+				return (((this.getRebirthNumberX(rebirth)+1) * ((int)getPrestigeSize()+1)+1) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
 			}
 		} else {
 			if(prestige != null) {
@@ -3215,9 +3225,9 @@ public class PRXAPI {
 	public int getPromotionsAmount(final String rank, @Nullable final String path, @Nullable final String prestige, @Nullable final String rebirth) {
 		if(rebirth != null) {
 			if(prestige != null) {
-				return (((this.getRebirthNumberX(rebirth)+1) * (getPrestigesCollection().size()+1)+Integer.valueOf(this.getPrestigeNumber(prestige)+1)) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
+				return (((this.getRebirthNumberX(rebirth)+1) * ((int)getPrestigeSize()+1)+Integer.valueOf(this.getPrestigeNumber(prestige)+1)) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
 			} else {
-				return (((this.getRebirthNumberX(rebirth)+1) * (getPrestigesCollection().size()+1)+1) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
+				return (((this.getRebirthNumberX(rebirth)+1) * ((int)getPrestigeSize()+1)+1) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
 			}
 		} else {
 			if(prestige != null) {

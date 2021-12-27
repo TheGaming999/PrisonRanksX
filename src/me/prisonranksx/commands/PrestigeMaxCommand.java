@@ -7,6 +7,10 @@ import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.IPrestigeDataHandler;
+import me.prisonranksx.data.PrestigeDataHandler;
+import me.prisonranksx.events.AsyncPrestigeMaxEvent;
+import me.prisonranksx.events.PrePrestigeMaxEvent;
 import me.prisonranksx.utils.AccessibleBukkitTask;
 
 public class PrestigeMaxCommand extends BukkitCommand {
@@ -50,7 +54,29 @@ public class PrestigeMaxCommand extends BukkitCommand {
 	          main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
 	      } else if (prestigeMaxType.equals("ARS")) {
 	    	  main.prxAPI.getPrestigeMax().execute(p, true);
-	      } else {
+	      } else if (prestigeMaxType.equals("OG")) {
+	    	  PrePrestigeMaxEvent event = new PrePrestigeMaxEvent(p, main.prxAPI.getPrestige(main.prxAPI.getPlayerPrestige(p)));
+	    	  Bukkit.getPluginManager().callEvent(event);
+	    	  if(event.isCancelled()) {
+	    		  return true;
+	    	  }
+	    	  Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+	    	  String startingPrestige = main.prxAPI.getPlayerPrestige(p);
+	    	  int counter = 0;
+	    	  for(int i = 0; i < main.prestigeStorage.getNativeLinkedPrestigesCollection().size(); i++) {
+	    		  if(main.prxAPI.canPrestige(p, true)) {
+	    			  main.prestigeAPI.prestige(p, true);
+	    			  counter++;
+	    		  } else {
+	    			  break;
+	    		  }
+	    	  }
+	    	  String finalPrestige = main.prxAPI.getPlayerPrestige(p);
+	    	  AsyncPrestigeMaxEvent e = new AsyncPrestigeMaxEvent(p, startingPrestige, finalPrestige, counter, -1);
+	    	  Bukkit.getPluginManager().callEvent(e);
+	    	  p.sendMessage("Prestige max stopped.");
+	    	  });
+	      } else { 
 	    	  main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
 	      }
 		}
