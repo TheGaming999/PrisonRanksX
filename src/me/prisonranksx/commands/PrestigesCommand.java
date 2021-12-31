@@ -6,6 +6,8 @@ import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.CollectionUtils;
+import me.prisonranksx.utils.CollectionUtils.PaginatedList;
 
 public class PrestigesCommand extends BukkitCommand{
 	
@@ -32,9 +34,17 @@ private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("P
 		if(!(sender instanceof Player)) {
 			try {
 			sender.sendMessage(main.prxAPI.c(main.prestigesAPI.prestigeListConsole));
-			main.prxAPI.getPrestigesCollection().forEach(prestige -> {sender.sendMessage(prestige);});
+			PaginatedList pl = CollectionUtils.paginateListCollectable(main.prxAPI.getPrestigesCollection(), 10, 1);
+			if(args.length == 0) {
+			pl.collect().forEach(sender::sendMessage);
+			sender.sendMessage("Page: " + pl.getCurrentPage() + " of " + pl.getFinalPage());
+			} else if (args.length == 1) {
+				pl.navigate(Integer.valueOf(args[0]));
+				pl.collect().forEach(sender::sendMessage);
+				sender.sendMessage("Page: " + pl.getCurrentPage() + " of " + pl.getFinalPage());
+			}
 			} catch (NullPointerException err) {
-				
+				err.printStackTrace();
 			}
 			return true;
 		}

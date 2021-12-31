@@ -507,4 +507,10 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 		
 	}
 
+	@Override
+	public void executeInfinite(Player player) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

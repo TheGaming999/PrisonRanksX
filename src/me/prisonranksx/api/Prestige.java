@@ -17,6 +17,7 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.InfinitePrestigeSettings;
 import me.prisonranksx.data.PrestigeRandomCommands;
 import me.prisonranksx.events.AsyncAutoPrestigeEvent;
 import me.prisonranksx.events.PrestigeUpdateCause;
@@ -252,6 +253,37 @@ public class Prestige {
 					);
     			});
 			}
+			Map<Long, InfinitePrestigeSettings> cps = main.infinitePrestigeSettings.getContinuousPrestigeSettings();
+			if(!cps.isEmpty()) {
+				String nextPrestige = prxAPI.getPlayerNextPrestige(p);
+				if(!nextPrestige.equals("0") && !nextPrestige.equals("1")) {
+					for(Entry<Long, InfinitePrestigeSettings> each : cps.entrySet()) {
+						
+						if(!prxAPI.getNumberAPI().hasUsableDecimals((double)Long.valueOf(nextPrestige) / (double)each.getKey())) {
+							List<String> cbroadcast = each.getValue().getBroadcast();
+							if(cbroadcast != null && !cbroadcast.isEmpty()) {
+								cbroadcast.forEach(broadcastMessage -> {
+				    				Bukkit.broadcastMessage(main.getString(broadcastMessage.replace("{number}", prxAPI.getPlayerNextPrestige(p)), name)
+				    				.replace("%player%", name)
+									.replace("%prestige%", prestige)
+									.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
+									.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplay(p))
+									);
+				    			});
+							}
+							List<String> ccommands = each.getValue().getCommands();
+							if(ccommands != null && !ccommands.isEmpty()) {
+								main.getServer().getScheduler().runTask(main, () -> {
+									ccommands.forEach(cmd -> {
+										main.executeCommand(p, main.getString(cmd
+												.replace("{number}", prxAPI.getPlayerNextPrestige(p))));
+									});
+								});
+							}
+						}
+					}
+				}
+			}
 		}
 		List<String> actions = main.prestigeStorage.getActions(prestige);
 		if(actions != null) {
@@ -362,6 +394,7 @@ public class Prestige {
            });
 		}
 		Bukkit.getScheduler().runTaskLater(main, () -> {
+			main.debug(prestige);
 		main.playerStorage.setPlayerPrestige(p, prestige);
 		prxAPI.taskedPlayers.remove(name);
 		}, 1);
@@ -516,6 +549,37 @@ public class Prestige {
 					.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplay(p))
 					);
     			});
+			}
+			Map<Long, InfinitePrestigeSettings> cps = main.infinitePrestigeSettings.getContinuousPrestigeSettings();
+			if(!cps.isEmpty()) {
+				String nextPrestige = prxAPI.getPlayerNextPrestige(p);
+				if(!nextPrestige.equals("0") && !nextPrestige.equals("1")) {
+					for(Entry<Long, InfinitePrestigeSettings> each : cps.entrySet()) {
+						
+						if(!prxAPI.getNumberAPI().hasUsableDecimals((double)Long.valueOf(nextPrestige) / (double)each.getKey())) {
+							List<String> cbroadcast = each.getValue().getBroadcast();
+							if(cbroadcast != null && !cbroadcast.isEmpty()) {
+								cbroadcast.forEach(broadcastMessage -> {
+				    				Bukkit.broadcastMessage(main.getString(broadcastMessage.replace("{number}", prxAPI.getPlayerNextPrestige(p)), name)
+				    				.replace("%player%", name)
+									.replace("%prestige%", prestige)
+									.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
+									.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplay(p))
+									);
+				    			});
+							}
+							List<String> ccommands = each.getValue().getCommands();
+							if(ccommands != null && !ccommands.isEmpty()) {
+								main.getServer().getScheduler().runTask(main, () -> {
+									ccommands.forEach(cmd -> {
+										main.executeCommand(p, main.getString(cmd
+												.replace("{number}", prxAPI.getPlayerNextPrestige(p))));
+									});
+								});
+							}
+						}
+					}
+				}
 			}
 		}
 		List<String> actions = main.prestigeStorage.getActions(prestige);
@@ -789,6 +853,37 @@ public class Prestige {
 					.replace("%nextprestige_display%", prestigeDisplay)
 					);
     			});
+			}
+			Map<Long, InfinitePrestigeSettings> cps = main.infinitePrestigeSettings.getContinuousPrestigeSettings();
+			if(!cps.isEmpty()) {
+				String nextPrestige = prxAPI.getPlayerNextPrestige(p);
+				if(!nextPrestige.equals("0") && !nextPrestige.equals("1")) {
+					for(Entry<Long, InfinitePrestigeSettings> each : cps.entrySet()) {
+						
+						if(!prxAPI.getNumberAPI().hasUsableDecimals((double)Long.valueOf(nextPrestige) / (double)each.getKey())) {
+							List<String> cbroadcast = each.getValue().getBroadcast();
+							if(cbroadcast != null && !cbroadcast.isEmpty()) {
+								cbroadcast.forEach(broadcastMessage -> {
+				    				Bukkit.broadcastMessage(main.getString(broadcastMessage.replace("{number}", prxAPI.getPlayerNextPrestige(p)), name)
+				    				.replace("%player%", name)
+									.replace("%prestige%", prestige)
+									.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(p))
+									.replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplay(p))
+									);
+				    			});
+							}
+							List<String> ccommands = each.getValue().getCommands();
+							if(ccommands != null && !ccommands.isEmpty()) {
+								main.getServer().getScheduler().runTask(main, () -> {
+									ccommands.forEach(cmd -> {
+										main.executeCommand(p, main.getString(cmd
+												.replace("{number}", prxAPI.getPlayerNextPrestige(p))));
+									});
+								});
+							}
+						}
+					}
+				}
 			}
 		}
 		List<String> actions = main.prestigeStorage.getActions(prestige);

@@ -31,5 +31,7 @@ public interface IPrestigeMax {
 	boolean isProcessing(String name);
 	
 	PRXAPI getAPI();
+
+	void executeInfinite(Player player);
 	
 }

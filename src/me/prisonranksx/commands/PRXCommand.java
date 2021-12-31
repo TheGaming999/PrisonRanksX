@@ -51,7 +51,7 @@ public class PRXCommand extends BukkitCommand {
 		this.setPermissionMessage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
 		this.setAliases(main.getConfigManager().commandsConfig.getStringList("commands." + commandName + ".aliases"));
 		ver = main.getDescription().getVersion();
-		is1_16 = Bukkit.getVersion().contains("1.16");
+		is1_16 = Bukkit.getVersion().contains("1.16") || Bukkit.getVersion().contains("1.17") || Bukkit.getVersion().contains("1.18") || Bukkit.getVersion().contains("1.19");
 		placeholders = Arrays.asList(
 				"%prisonranksx_currentrank_name%", "%prisonranksx_currentrank_displayname%"
 				,"%prisonranksx_rankup_percentage%", "%prisonranksx_rankup_percentage_decimal%"
@@ -248,17 +248,27 @@ public class PRXCommand extends BukkitCommand {
         		});
         	}
         	else if (args[0].equalsIgnoreCase("saveplayerdata")) {
-        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
-                main.simulateAsyncAutoDataSave();
-        		});
+        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> main.simulateAsyncAutoDataSave());
         	}
         	else if (args[0].equalsIgnoreCase("info")) {
         		if(!main.allowEasterEggs) return true;
+        		String isInfinitePrestige = main.isInfinitePrestige ? "&a [INFINITE]" : "&c [NORMAL]";
         		sender.sendMessage(main.prxAPI.c("&6&lPRX&r &7&lINFO:"));
         		sender.sendMessage(main.prxAPI.c("&eRanks: &b" + main.rankStorage.getEntireData().size()));
-        		sender.sendMessage(main.prxAPI.c("&ePrestiges: &b" + main.prestigeStorage.getPrestigeData().size()));
+        		sender.sendMessage(main.prxAPI.c("&ePrestiges: &b" + main.prxAPI.getPrestigeSize() + isInfinitePrestige));
         		sender.sendMessage(main.prxAPI.c("&eRebirths: &b" + main.rebirthStorage.getRebirthData().size()));
         		sender.sendMessage(main.prxAPI.c("&eRegistered players: &b" + main.playerStorage.getPlayerData().size()));
+        		sender.sendMessage(main.prxAPI.c("&econfig.yml &7defaultrank: &b" + main.prxAPI.getDefaultRank()));
+        		sender.sendMessage(main.prxAPI.c("&econfig.yml &7lastrank: &b" + main.prxAPI.getLastRank()));
+        		sender.sendMessage(main.prxAPI.c("&eranks.yml &7default/first rank: &b" + main.rankStorage.getRanksCollection(main.prxAPI.getDefaultPath()).get(0)));
+        		sender.sendMessage(main.prxAPI.c("&eranks.yml &7last rank: &b" + main.rankStorage.getLastRank(main.prxAPI.getDefaultPath())));
+        	} else if (args[0].equalsIgnoreCase("fix") || args[0].equalsIgnoreCase("scan")) {
+        		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        			sender.sendMessage(main.prxAPI.c("&b&lScanning..."));
+        			main.errorInspector.validateRanks(sender);
+        			main.errorInspector.validatePrestiges(sender);
+        			sender.sendMessage(main.prxAPI.c("&a&lScan Complete!"));
+        		});
         	} else if (args[0].startsWith("blabla")) {
         		
         	} else if (args[0].equalsIgnoreCase("resetplayerdata")) {
@@ -919,21 +929,21 @@ public class PRXCommand extends BukkitCommand {
         		main.manager.setRankDisplayName(matchedRank, newDisplayName);
         		main.getConfigManager().saveRanksConfig();
         		sender.sendMessage(main.prxAPI.g("setrankdisplay").replace("%args1%", matchedRank)
-        				.replace("%args2%", newDisplayName + " §f=> " + main.getString(newDisplayName)));
+        				.replace("%args2%", newDisplayName + " §f=> " + main.getString(main.getGlobalStorage().translateHexColorCodes(newDisplayName))));
         	} else if (args[0].equalsIgnoreCase("setprestigedisplay")) {
         		String matchedPrestige = main.manager.matchPrestige(args[1]);
         		String newDisplayName = main.getArgs(args, 2);
         		main.manager.setPrestigeDisplayName(matchedPrestige, newDisplayName);
         		main.getConfigManager().savePrestigesConfig();
         		sender.sendMessage(main.prxAPI.g("setprestigedisplay").replace("%prestige%", matchedPrestige)
-        				.replace("%changeddisplay%", newDisplayName + " §f=> " + main.getString(newDisplayName)));
+        				.replace("%changeddisplay%", newDisplayName + " §f=> " + main.getString(main.getGlobalStorage().translateHexColorCodes(newDisplayName))));
         	} else if (args[0].equalsIgnoreCase("setrebirthdisplay")) {
         		String matchedRebirth = main.manager.matchRebirth(args[1]);
         		String newDisplayName = main.getArgs(args, 2);
         		main.manager.setRebirthDisplayName(matchedRebirth, newDisplayName);
         		main.getConfigManager().savePrestigesConfig();
         		sender.sendMessage(main.prxAPI.g("setrebirthdisplay").replace("%rebirth%", matchedRebirth)
-        				.replace("%changeddisplay%", newDisplayName + " §f=> " + main.getString(newDisplayName)));
+        				.replace("%changeddisplay%", newDisplayName + " §f=> " + main.getString(main.getGlobalStorage().translateHexColorCodes(newDisplayName))));
         	} else if (args[0].equalsIgnoreCase("setrank")) {
         		if(Bukkit.getPlayer(args[1]) == null) {
             			sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
@@ -961,6 +971,7 @@ public class PRXCommand extends BukkitCommand {
                 	main.perm.delPermission(p, line);
                 });}
         		} catch (Exception exception) {
+        			exception.printStackTrace();
         			main.getLogger().warning(p.getName() + " data went wrong. possible reasons:");
         			main.getLogger().warning("some ranks on ranks.yml has an invalid nextrank, (not matching case, rank doesn't exist)");
         			main.getLogger().warning("player has old/wrong rankdata in rankdata.yml therefore rankdata.yml must be deleted while the server is offline to prevent data loss");
@@ -1178,7 +1189,7 @@ public class PRXCommand extends BukkitCommand {
         		main.getConfigManager().saveRanksConfig();
         		sender.sendMessage(main.prxAPI.g("createrank").replace("%createdrank%", args[1])
         				.replace("%rankcost%", args[2]));
-        		sender.sendMessage(main.prxAPI.c("&7Display: &r" + main.prxAPI.c(displayName)));
+        		sender.sendMessage(main.prxAPI.c("&7Display: &r" + main.prxAPI.c(main.getGlobalStorage().translateHexColorCodes(displayName))));
         		if(!path.equals("")) {
         			sender.sendMessage(main.prxAPI.c("&7Path: &6" + path));
         		}
@@ -1194,7 +1205,7 @@ public class PRXCommand extends BukkitCommand {
         		main.getConfigManager().savePrestigesConfig();
         		sender.sendMessage(main.prxAPI.g("createprestige").replace("%createdprestige", args[1])
         				.replace("%prestigecost%", args[2]));
-        		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(displayName)));
+        		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(main.getGlobalStorage().translateHexColorCodes(displayName))));
         	} else if (args[0].equalsIgnoreCase("createrebirth")) {
         		double costy;
         		if(!main.prxAPI.numberAPI.isNumber(args[2])) {
@@ -1207,7 +1218,7 @@ public class PRXCommand extends BukkitCommand {
         		main.getConfigManager().saveRebirthsConfig();
         		sender.sendMessage(main.prxAPI.g("createrebirth").replace("%createdrebirth%", args[1])
         		        .replace("%rebirthcost%", args[2]));
-        		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(displayName)));
+        		sender.sendMessage(main.prxAPI.c("&7Display: " + main.prxAPI.c(main.getGlobalStorage().translateHexColorCodes(displayName))));
         	}
         }
 		return true;
