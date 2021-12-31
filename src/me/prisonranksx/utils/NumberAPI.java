@@ -365,6 +365,15 @@ public class NumberAPI {
     	return rd.nextInt() * 100;
     }
     
+    public boolean hasUsableDecimals(double number) {
+    	String stringNumber = String.valueOf(number);
+    	String pastPoint = stringNumber.split("\\.")[1];
+    	if(pastPoint.length() == 1 && pastPoint.equals("0")) {
+    		return false;
+    	}
+    	return true;
+    }
+    
     /**
      * 
      * @param fromValue double minimum range

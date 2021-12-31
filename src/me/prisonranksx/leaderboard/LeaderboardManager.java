@@ -328,7 +328,6 @@ public class LeaderboardManager {
 					int rankScore = result.getInt("rankscore");
 					String rank = result.getString("rank");
 					String path = result.getString("path");
-					main.debug("fetched mysql rankdata: " + uuid + "||" + rankScore);
 					UUID u = UUID.fromString(uuid);
 					updatedValues.put(u, rankScore);
 					RankPath rp = new RankPath(rank, path);
@@ -381,29 +380,21 @@ public class LeaderboardManager {
 	
 	public Map<UUID, Integer> getPrestigeLeaderboard() {
 		if(!update && !updatedValuesP.isEmpty()) {
-			main.debug("UpdatedValuesP is not empty.");
 			return updatedValuesP;
 		}
 		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
-		main.debug("Clearing updatedvaluesp...");
 		updatedValuesP.clear();
-		main.debug("Clear successful.");
 		main.getPlayerStorage().storePlayersData(PlayerDataType.PRESTIGE);
-		main.debug("Prestige leaderboard called.");
 		if(main.isMySql()) {
 			String sql = "SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " ORDER BY `prestigescore` DESC LIMIT 100;";
 			Statement statement = null;
-			main.debug("Started prestige statement.");
 			try {
 				statement = main.getConnection().createStatement();
-				main.debug("Prestige statement created.");
 				ResultSet result = statement.executeQuery(sql);
-				main.debug("Prestige statement executed.");
 				while(result.next()) {
 					String uuid = result.getString("uuid");
 					int prestigeScore = result.getInt("prestigescore");
 					String prestige = result.getString("prestige");
-					main.debug("fetched mysql prestigedata: " + uuid + "||" + prestigeScore);
 					UUID u = UUID.fromString(uuid);
 					updatedValuesP.put(u, prestigeScore);
 					prestigeMySQL.put(u, prestige);
@@ -426,8 +417,6 @@ public class LeaderboardManager {
 		  .sorted((a1, a2) -> {
 			String value1 = (String)a1.getValue();
 			String value2 = (String)a2.getValue();
-			main.debug("prestige value: " + value1);
-			main.debug("prestige key: " + a1.getKey());
 			int number1 = 0; 
 			int number2 = 0;
 		    number1 = Integer.valueOf(main.prxAPI.getPrestigeNumber(value1));
@@ -466,7 +455,6 @@ public class LeaderboardManager {
 					String uuid = result.getString("uuid");
 					int rebirthScore = result.getInt("rebirthscore");
 					String rebirth = result.getString("rebirth");
-					main.debug("fetched mysql rebirthdata: " + uuid + "||" + rebirthScore);
 					UUID u = UUID.fromString(uuid);
 					updatedValuesR.put(UUID.fromString(uuid), rebirthScore);
 					rebirthMySQL.put(u, rebirth);

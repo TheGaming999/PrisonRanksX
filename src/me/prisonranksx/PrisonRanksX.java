@@ -99,6 +99,7 @@ import me.prisonranksx.events.AsyncAutoRankupEvent;
 import me.prisonranksx.events.AsyncPrestigeMaxEvent;
 import me.prisonranksx.events.AsyncRankRegisterEvent;
 import me.prisonranksx.events.AsyncRankupMaxEvent;
+import me.prisonranksx.events.PrePrestigeMaxEvent;
 import me.prisonranksx.events.PrestigeUpdateEvent;
 import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.events.RebirthUpdateEvent;
@@ -118,6 +119,7 @@ import me.prisonranksx.reflections.ActionbarLegacy;
 import me.prisonranksx.reflections.ActionbarProgress;
 import me.prisonranksx.reflections.ExpbarProgress;
 import me.prisonranksx.utils.TempOpProtection;
+import me.prisonranksx.utils.TimeCounter;
 import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.HolidayUtils.Holiday;
 import me.prisonranksx.utils.ChatColorReplacer;
@@ -261,6 +263,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	public ExpbarProgress ebprogress;
 	public ErrorInspector errorInspector;
 	public InfinitePrestigeSettings infinitePrestigeSettings;
+	private TimeCounter timeCounter;
 	private static PrisonRanksX instance;
 	public int autoSaveTime;
     private BukkitTask actionbarTask;
@@ -649,6 +652,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			errorInspector = new ErrorInspector(this);
 			errorInspector.inspect();
 			errorInspector.validateRanks(Bukkit.getConsoleSender());
+			errorInspector.validatePrestiges(Bukkit.getConsoleSender());
 		}
 			//playerStorage.loadPlayersData();
 		if(getGlobalStorage().getBooleanData("Options.autosave")) {
@@ -1845,6 +1849,10 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			if(isForceSave()) {
 				saveDataAsynchronously(p.getUniqueId(), p.getName());
 			}
+			if(debug) {
+				this.debug("Prestiges passed: " + e.getPrestigeStreak());
+				this.debug("Time took: " + timeCounter.tryEndingAsSecondsFormatted());
+			}
 		}
 		
 		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
@@ -1853,6 +1861,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			if(isForceSave()) {
 				saveDataAsynchronously(p.getUniqueId(), p.getName());
 			}
+		}
+		
+		@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+		public void onPrePrestigeMax(PrePrestigeMaxEvent e) {
+			timeCounter = new TimeCounter(true);
 		}
 		
 		public String getDatabase() {
@@ -1936,4 +1949,5 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		public static void setInstance(PrisonRanksX instance) {
 			PrisonRanksX.instance = instance;
 		}
+		
 }
