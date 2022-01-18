@@ -21,6 +21,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.IPrestigeDataHandler;
+import me.prisonranksx.data.InfinitePrestigeSettings;
 import me.prisonranksx.data.PrestigeRandomCommands;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.events.AsyncPrestigeMaxEvent;
@@ -30,6 +31,7 @@ import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.utils.AccessibleBukkitTask;
 import me.prisonranksx.utils.AccessibleString;
 import me.prisonranksx.utils.CompatibleSound.Sounds;
+import me.prisonranksx.utils.TimeCounter;
 
 public class PrestigeMax implements IPrestigeMax {
 
@@ -56,7 +58,7 @@ public class PrestigeMax implements IPrestigeMax {
 		this.chancesCache = new HashMap<>();
 		this.prestigesPerTick = 5;
 		this.threadTimer = 1;
-		this.finalInfinitePrestige = String.valueOf(plugin.infinitePrestigeSettings.getFinalPrestige());
+		this.finalInfinitePrestige = this.plugin.isInfinitePrestige ? String.valueOf(plugin.infinitePrestigeSettings.getFinalPrestige()) : "P2";
 	}
 	
 	@Override
@@ -273,6 +275,200 @@ public class PrestigeMax implements IPrestigeMax {
         });
  	}
 
+	@Override
+	public void executeInfinite(Player player) {
+		Player p = player;
+		String name = p.getName();
+		UUID uuid = p.getUniqueId();
+		if(isProcessing(name)) {
+			p.sendMessage(getAPI().g("prestigemax-is-on"));
+			return;
+		}
+		RankPath rankPath = getAPI().getPlayerRankPath(uuid);
+		if(!getAPI().isLastRank(rankPath) && !getAPI().hasAllowPrestige(rankPath)) {
+			if(getAPI().canRankup(p)) {
+				getAPI().rankupMax(p);
+			} else {
+				//p.sendMessage(noPrestigeMessage);
+			}
+			return;
+		}
+		AtomicDouble takenBalance = new AtomicDouble(0.0);
+		AtomicInteger prestigeTimes = new AtomicInteger(0);
+		String prestigeName = getAPI().getPlayerPrestige(uuid);
+		if(prestigeName == null) {
+			if(getAPI().canPrestige(p)) {
+			getAPI().getPrestigeAPI().prestige(p);
+			prestigeName = getAPI().getFirstPrestige();
+			} else {
+				getAPI().getPrestigeAPI().prestige(p);
+				getProcessingPlayers().remove(name);
+				return;
+			}
+		}
+		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
+		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
+		Bukkit.getPluginManager().callEvent(e);
+		if(e.isCancelled()) {
+			getProcessingPlayers().remove(name);
+			return;
+		}
+		AccessibleString prestigeFrom = new AccessibleString(prestigeName);
+		AccessibleString finalPrestige = new AccessibleString();
+		String nextPrestigeName = prestige.getNextPrestigeName();
+		double playerBalance = getAPI().getPlayerMoney(p);
+		final String finalInfinitePrestige = String.valueOf(plugin.infinitePrestigeSettings.getFinalPrestige()+1);
+		if(nextPrestigeName.equals(finalInfinitePrestige)) {
+			getProcessingPlayers().remove(name);
+			lastPrestigeMessage.forEach(p::sendMessage);
+			return;
+		}
+        IPrestigeDataHandler nextPrestige = getAPI().getPrestige(nextPrestigeName);
+		String rebirthName = getAPI().getPlayerRebirth(uuid);
+		String nextPrestigeDisplay = nextPrestige.getDisplayName();
+		double nextPrestigeCost = getAPI().getIncreasedPrestigeCost(rebirthName, nextPrestigeName);
+		String nextPrestigeCostFormatted = getAPI().formatBalance(nextPrestigeCost);
+		String prestigeMessage = plugin.getString(getAPI().g("prestige"), name);
+        if(nextPrestigeCost > playerBalance) {
+        	notEnoughMoneyMessage.forEach(messageLine -> {
+        	    messageLine = plugin.getString(messageLine, name)
+        		.replace("%player%", name)
+        		.replace("%nextprestige%", nextPrestigeName)
+        		.replace("%nextprestige_display%", nextPrestigeDisplay)
+        		.replace("%nextprestige_cost%", String.valueOf(nextPrestigeCost))
+        		.replace("%nextprestige_cost_formatted%", nextPrestigeCostFormatted);
+        	    p.sendMessage(messageLine);
+        	});
+        	return;
+        }
+        getProcessingPlayers().add(name);
+        int currentPrestigeIndex = Integer.valueOf(prestigeName);
+        int size = (int)plugin.infinitePrestigeSettings.getFinalPrestige();
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+        	for(int i = currentPrestigeIndex ; i < size; i++) {
+        		RankPath loopRankPath = getAPI().getPlayerRankPath(uuid);
+           		if(!getAPI().isLastRank(loopRankPath) && !getAPI().hasAllowPrestige(loopRankPath)) {
+        			if(getAPI().canRankup(p)) {
+        				getAPI().rankupMax(p);
+        			}
+        			return;
+        		}
+           		if(!plugin.getPlayerStorage().getPlayerData().containsKey(uuid.toString())) {
+        			getProcessingPlayers().remove(name);
+        			break;
+        		}
+        		String loopPrestigeName = String.valueOf(i);
+        		double loopBalance = getAPI().getPlayerMoney(p);
+        		
+        		IPrestigeDataHandler loopPrestige = getAPI().getPrestige(loopPrestigeName);
+        		String loopNextPrestigeName = loopPrestige.getNextPrestigeName();
+        		if(loopNextPrestigeName.equals(finalInfinitePrestige)) {
+        			lastPrestigeMessage.forEach(p::sendMessage);
+        			break;
+        		}
+        		IPrestigeDataHandler loopNextPrestige = getAPI().getPrestige(loopNextPrestigeName);
+        		double loopNextPrestigeCost = getAPI().getIncreasedPrestigeCost(rebirthName, loopNextPrestigeName);
+        		takenBalance.addAndGet(loopNextPrestigeCost);
+        		String loopNextPrestigeCostFormatted = getAPI().formatBalance(loopNextPrestigeCost);
+        		String loopNextPrestigeDisplay = getAPI().c(loopNextPrestige.getDisplayName());
+        		if(loopNextPrestigeCost > loopBalance) {
+                	notEnoughMoneyMessage.forEach(messageLine -> {
+                		p.sendMessage(plugin.getString(messageLine, name)
+                		.replace("%player%", name)
+                		.replace("%nextprestige%", loopNextPrestigeName)
+                		.replace("%nextprestige_display%", loopNextPrestigeDisplay)
+                		.replace("%nextprestige_cost%", String.valueOf(loopNextPrestigeCost))
+                		.replace("%nextprestige_cost_formatted%", loopNextPrestigeCostFormatted));
+                	});
+                	break;
+        		}
+        		p.sendMessage(prestigeMessage
+        				.replace("%nextprestige%", loopNextPrestigeName)
+        				.replace("%nextprestige_display%", loopNextPrestigeDisplay)
+        				);
+        		List<String> loopNextPrestigeCommands = loopNextPrestige.getPrestigeCommands();
+        		if(loopNextPrestigeCommands != null && !loopNextPrestigeCommands.isEmpty()) {
+        			plugin.getServer().getScheduler().runTask(plugin, () -> {
+        				plugin.executeCommands(p, loopNextPrestigeCommands);
+        			});
+        		}
+        		List<String> loopNextPrestigeBroadcast = loopNextPrestige.getBroadcast();
+        		if(loopNextPrestigeBroadcast != null && !loopNextPrestigeBroadcast.isEmpty()) {
+        			loopNextPrestigeBroadcast.forEach(broadcastMessage -> {
+        				Bukkit.broadcastMessage(plugin.getString(broadcastMessage, name)
+        				.replace("%player%", name)
+						.replace("%prestige%", loopPrestigeName)
+						.replace("%nextprestige%", loopNextPrestigeName)
+						.replace("%nextprestige_display%", loopNextPrestigeDisplay)
+						);
+        			});
+        		}
+        		List<String> loopNextPrestigeMessage = loopNextPrestige.getMsg();
+        		if(loopNextPrestigeMessage != null && !loopNextPrestigeMessage.isEmpty()) {
+        			loopNextPrestigeMessage.forEach(messageLine -> {
+        				p.sendMessage(plugin.getString(messageLine, name)
+        						.replace("%player%", name)
+        						.replace("%prestige%", loopPrestigeName)
+        						.replace("%nextprestige%", loopNextPrestigeName)
+        						.replace("%nextprestige_display%", loopNextPrestigeDisplay)
+        						);
+        			});
+        		}
+        		Map<Long, InfinitePrestigeSettings> cps = plugin.infinitePrestigeSettings.getContinuousPrestigeSettings();
+    			if(!cps.isEmpty()) {
+    				if(!loopNextPrestigeName.equals("0") && !loopNextPrestigeName.equals("1")) {
+    					for(Entry<Long, InfinitePrestigeSettings> each : cps.entrySet()) {
+    						
+    						if(!getAPI().getNumberAPI().hasUsableDecimals((double)Long.valueOf(loopNextPrestigeName) / (double)each.getKey())) {
+    							List<String> cbroadcast = each.getValue().getBroadcast();
+    							if(cbroadcast != null && !cbroadcast.isEmpty()) {
+    								cbroadcast.forEach(broadcastMessage -> {
+    				    				Bukkit.broadcastMessage(plugin.getString(broadcastMessage.replace("{number}", loopNextPrestigeName), name)
+    				    				.replace("%player%", name)
+    									.replace("%prestige%", loopPrestigeName)
+    									.replace("%nextprestige%", loopNextPrestigeName)
+    									.replace("%nextprestige_display%", loopNextPrestigeDisplay)
+    									);
+    				    			});
+    							}
+    							List<String> ccommands = each.getValue().getCommands();
+    							if(ccommands != null && !ccommands.isEmpty()) {
+    								plugin.getServer().getScheduler().runTask(plugin, () -> {
+    									ccommands.forEach(cmd -> {
+    										plugin.executeCommand(p, plugin.getString(cmd
+    												.replace("{number}", loopNextPrestigeName)));
+    									});
+    								});
+    							}
+    						}
+    					}
+    				}
+    			}
+       			getAPI().getEconomy().withdrawPlayer(p, loopNextPrestigeCost);
+       			finalPrestige.setString(loopNextPrestigeName);
+       			getAPI().setPlayerPrestige(uuid, loopNextPrestigeName);
+       			prestigeTimes.addAndGet(1);
+        	}
+        	if(!AccessibleString.isNullOrEmpty(finalPrestige)) {
+        		IPrestigeDataHandler finalData = getAPI().getPrestige(finalPrestige.getString());
+        		List<String> actionbarMessages = finalData.getActionbarMessages();
+        		int actionbarInterval = finalData.getActionbarInterval();
+        		String finalPrestigeName = finalData.getName();
+        		String finalPrestigeDisplay = getAPI().c(finalData.getDisplayName());
+        		if(actionbarMessages != null && !actionbarMessages.isEmpty()) {
+        			List<String> replaced = new ArrayList<>();
+        			actionbarMessages.forEach(messageLine -> {
+        				replaced.add(messageLine.replace("%nextprestige%", finalPrestigeName).replace("%nextprestige_display%", finalPrestigeDisplay));
+        			});
+        			plugin.animateActionbar(p, actionbarInterval, replaced);
+        		}
+        		AsyncPrestigeMaxEvent event = new AsyncPrestigeMaxEvent(p, prestigeFrom.getString(), finalPrestigeName, prestigeTimes.get(), takenBalance.get());
+        		Bukkit.getPluginManager().callEvent(event);
+        	}
+        	getProcessingPlayers().remove(name);
+        });
+ 	}
+	
 	@Override
 	public void execute(Player player, boolean silent) {
 		if(!silent) execute(player);
@@ -581,10 +777,14 @@ public class PrestigeMax implements IPrestigeMax {
     			accessibleTask.cancel();
     		}*/
         	plugin.getTaskChainFactory().newSharedChain("prestigemax").async(() -> {
+        		TimeCounter counter = new TimeCounter();
+        		counter.begin();
         		if(!plugin.getPlayerStorage().getPlayerData().containsKey(uuid.toString())) {
         			getProcessingPlayers().remove(name);
         			accessibleTask.cancel();
         		}
+        	    plugin.debug("Is player online check: " + counter.tryEndingAsSecondsFormattedAndRestart());
+        	    
         	    int i = increment.get();
         		if(i >= size) {
         			if(!AccessibleString.isNullOrEmpty(finalPrestige)) {
@@ -606,6 +806,7 @@ public class PrestigeMax implements IPrestigeMax {
                 	getProcessingPlayers().remove(name);
         			accessibleTask.cancel();
         		}
+        		plugin.debug("Has surpassed prestiges size check: " + counter.tryEndingAsSecondsFormattedAndRestart());
         		increment.incrementAndGet();
         		i = increment.get();
         		RankPath loopRankPath = getAPI().getPlayerRankPath(uuid);
@@ -615,6 +816,7 @@ public class PrestigeMax implements IPrestigeMax {
         			}
         			return;
         		}
+           		plugin.debug("Is last rank check: " + counter.tryEndingAsSecondsFormattedAndRestart());
         		String loopPrestigeName = String.valueOf(i);
         		double loopBalance = getAPI().getPlayerMoney(p);
         		
@@ -625,6 +827,7 @@ public class PrestigeMax implements IPrestigeMax {
         			//accessibleTask.cancel();
         			executeFinal(accessibleTask, player, name, finalPrestige, prestigeFrom, prestigeTimes, takenBalance);
         		}
+        		plugin.debug("Is final prestige check: " + counter.tryEndingAsSecondsFormattedAndRestart());
         		IPrestigeDataHandler loopNextPrestige = getAPI().getPrestige(loopNextPrestigeName);
         		double loopNextPrestigeCost = getAPI().getIncreasedPrestigeCost(rebirthName, loopNextPrestigeName);
         		takenBalance.addAndGet(loopNextPrestigeCost);
@@ -642,6 +845,7 @@ public class PrestigeMax implements IPrestigeMax {
                 	//accessibleTask.cancel();
                 	executeFinal(accessibleTask, player, name, finalPrestige, prestigeFrom, prestigeTimes, takenBalance);
         		}
+        		plugin.debug("Has enough balance check: " + counter.tryEndingAsSecondsFormattedAndRestart());
         		p.sendMessage(prestigeMessage
         				.replace("%nextprestige%", loopNextPrestigeName)
         				.replace("%nextprestige_display%", loopNextPrestigeDisplay)
@@ -668,12 +872,14 @@ public class PrestigeMax implements IPrestigeMax {
             			});
         			}
         		}
+        		plugin.debug("Is infinite prestige check: " + counter.tryEndingAsSecondsFormattedAndRestart());
         		List<String> loopNextPrestigeCommands = loopNextPrestige.getPrestigeCommands();
         		if(loopNextPrestigeCommands != null && !loopNextPrestigeCommands.isEmpty()) {
         			plugin.getServer().getScheduler().runTask(plugin, () -> {
         				plugin.executeCommands(p, loopNextPrestigeCommands);
         			});
         		}
+        		plugin.debug("Has commands check: " + counter.tryEndingAsSecondsFormattedAndRestart());
         		/*
         		List<String> loopNextPrestigeAddPermissionList = loopNextPrestige.getAddPermissionList();
         		if(loopNextPrestigeAddPermissionList != null && !loopNextPrestigeAddPermissionList.isEmpty()) {
@@ -710,6 +916,7 @@ public class PrestigeMax implements IPrestigeMax {
 						);
         			});
         		}
+        		plugin.debug("Has broadcast check: " + counter.tryEndingAsSecondsFormattedAndRestart());
         		List<String> loopNextPrestigeMessage = loopNextPrestige.getMsg();
         		if(loopNextPrestigeMessage != null && !loopNextPrestigeMessage.isEmpty()) {
         			loopNextPrestigeMessage.forEach(messageLine -> {
@@ -721,6 +928,7 @@ public class PrestigeMax implements IPrestigeMax {
         						);
         			});
         		}
+        		plugin.debug("Has message check: " + counter.tryEndingAsSecondsFormattedAndRestart());
         		/*
         		List<String> loopNextPrestigeActions = loopNextPrestige.getActions();
         		if(getAPI().hasActionUtilEnabled() && loopNextPrestigeActions != null && !loopNextPrestigeActions.isEmpty()) {
@@ -747,10 +955,12 @@ public class PrestigeMax implements IPrestigeMax {
        			}
        			*/
        			getAPI().getEconomy().withdrawPlayer(p, loopNextPrestigeCost);
+       			plugin.debug("Money deduction: " + counter.tryEndingAsSecondsFormattedAndRestart());
        			finalPrestige.setString(loopNextPrestigeName);
        			getAPI().setPlayerPrestige(uuid, loopNextPrestigeName);
+       			plugin.debug("Player prestige update: " + counter.tryEndingAsSecondsFormattedAndRestart());
        			prestigeTimes.addAndGet(1);
- 
+       			plugin.debug("Prestige strike update: " + counter.tryEndingAsSecondsFormatted());
         	}).execute();
         }, 0, 1));
  	}
@@ -1542,7 +1752,7 @@ public class PrestigeMax implements IPrestigeMax {
     			p.playSound(p.getLocation(), Sounds.valueOf(nextPrestigeSoundName).bukkitSound(), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
     		}
     		boolean nextPrestigeHologramIsEnable = plugin.getGlobalStorage().getBooleanData("Holograms.prestige.enable");
-    		if(plugin.isholo && nextPrestigeHologramIsEnable) {
+    		if(plugin.hasHolographicDisplays && nextPrestigeHologramIsEnable) {
     			int nextPrestigeHologramRemoveTime = plugin.getGlobalStorage().getIntegerData("Holograms.prestige.remove-time");
     			int nextPrestigeHologramHeight = plugin.getGlobalStorage().getIntegerData("Holograms.prestige.height");
     			List<String> nextPrestigeHologramFormat = plugin.getGlobalStorage().getStringListData("Holograms.prestige.format");

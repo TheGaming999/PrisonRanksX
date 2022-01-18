@@ -37,7 +37,6 @@ public class TopPrestigesCommand extends BukkitCommand {
 	
 	public String getValue(int position) {
 		String value = main.lbm.getPlayerPrestigeFromPosition(position, "none");
-		main.debug("leaderboard prestige value: " + value);
 		return value == null ? "none" : value;
 	}
 	

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -204,31 +205,37 @@ public class PlayerDataStorage {
 }
 
 	public boolean hasData(UUID uuid) {
+		AtomicBoolean returnedValue = new AtomicBoolean(false);
 		if(main.isMySql()) {
+			main.newSharedChain("dataSave").current(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuid + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuid + "';");
 			} catch (SQLException ex) {
 				ex.printStackTrace();
-				return false;
+				returnedValue.set(false);
 			}
 			try {
 				if(result.next()) {
-					return true;
+					returnedValue.set(true);
 				} else {
-					return false;
+					returnedValue.set(false);
 				}
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				return false;
+				returnedValue.set(false);
 			}
+			}).execute();
 		} else {
 		if(main.getConfigManager().rankDataConfig.isConfigurationSection("players." + uuid)) {
-			return true;
+			returnedValue.set(true);
 		}
-		return false;
+		returnedValue.set(false);
 		}
+		return returnedValue.get();
 	}
 	
 	/**
@@ -309,6 +316,7 @@ public class PlayerDataStorage {
 	public void loadPlayerData(UUID uuid, String playerName) {
 		XUser xu = XUser.getXUser(uuid.toString());
 		if(main.isMySql()) {
+			main.getTaskChainFactory().newSharedChain("dataSave").delay(1).current(() -> {
 			ResultSet result = null;
 			Statement statement = null;
 			try {
@@ -350,6 +358,7 @@ public class PlayerDataStorage {
 				e.printStackTrace();
 			}
 			return;
+			}).execute();
 		}
 		PlayerDataHandler pdh = new PlayerDataHandler(xu);
 		if(!main.getConfigManager().rankDataConfig.isConfigurationSection("players." + xu.getUUID().toString())) {
@@ -525,10 +534,12 @@ public class PlayerDataStorage {
 		String uuidString = uuid.toString();	
 		AccessibleString rank = new AccessibleString();
 		if(main.isMySql()) {
-			main.getTaskChainFactory().newSharedChain("rank").async(() -> {
+			main.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -537,6 +548,12 @@ public class PlayerDataStorage {
 				while (result.next()) {
 				    rank.setString(result.getString("rank") == null ? defaultRank : result.getString("rank"));
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -552,10 +569,12 @@ public class PlayerDataStorage {
 		String uuidString = uuid.toString();	
 		AccessibleString rank = new AccessibleString();
 		if(main.isMySql()) {
-			main.getTaskChainFactory().newSharedChain("rank").async(() -> {
+			main.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -564,6 +583,12 @@ public class PlayerDataStorage {
 				while (result.next()) {
 				    rank.setString(result.getString("rank") == null ? defaultRank : result.getString("rank"));
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -621,10 +646,12 @@ public class PlayerDataStorage {
 		String uuidString = uuid.toString();	
 		AccessibleString prestige = new AccessibleString();
 		if(main.isMySql()) {
-			main.getTaskChainFactory().newSharedChain("prestige").async(() -> {
+			main.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -633,6 +660,12 @@ public class PlayerDataStorage {
 				while (result.next()) {
 				    prestige.setString(result.getString("prestige").equals("none") ? null : result.getString("prestige"));
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -649,10 +682,12 @@ public class PlayerDataStorage {
 		AccessibleString prestige = new AccessibleString("unloaded");
 		if(main.isMySql()) {
 			main.debug("Getting offline prestige of: " + uuidString);
-			main.getTaskChainFactory().newSharedChain("prestige").async(() -> {
+			main.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT prestige FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT prestige FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -663,6 +698,12 @@ public class PlayerDataStorage {
 				    main.debug(uuidString + "'s prestige is:" + prestige.getString());
 				    break;
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -707,10 +748,12 @@ public class PlayerDataStorage {
 		String uuidString = uuid.toString();	
 		AccessibleString rebirth = new AccessibleString();
 		if(main.isMySql()) {
-			main.getTaskChainFactory().newSharedChain("rebirth").async(() -> {
+			main.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -719,6 +762,12 @@ public class PlayerDataStorage {
 				while (result.next()) {
 				    rebirth.setString(result.getString("rebirth").equals("none") ? null : result.getString("rebirth"));
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -734,10 +783,12 @@ public class PlayerDataStorage {
 		String uuidString = uuid.toString();	
 		AccessibleString rebirth = new AccessibleString();
 		if(main.isMySql()) {
-			main.getTaskChainFactory().newSharedChain("rebirth").async(() -> {
+			main.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -746,6 +797,12 @@ public class PlayerDataStorage {
 				while (result.next()) {
 				    rebirth.setString(result.getString("rebirth").equals("none") ? null : result.getString("rebirth"));
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -809,10 +866,12 @@ public class PlayerDataStorage {
 		AccessibleString rank = new AccessibleString();
 		AccessibleString path = new AccessibleString();
 		if(main.isMySql()) {
-			main.getTaskChainFactory().newSharedChain("rankpath").async(() -> {
+			main.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -822,6 +881,12 @@ public class PlayerDataStorage {
 				    rank.setString(result.getString("rank") == null ? defaultRank : result.getString("rank"));
 				    path.setString(result.getString("path") == null ? defaultPath : result.getString("path"));
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -839,10 +904,12 @@ public class PlayerDataStorage {
 		AccessibleString rank = new AccessibleString();
 		AccessibleString path = new AccessibleString();
 		if(main.isMySql()) {
-			main.getTaskChainFactory().newSharedChain("rankpath").async(() -> {
+			main.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
 			ResultSet result = null;
+			Statement statement = null;
 			try {
-				result = main.getMySqlStatement().executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
+				statement = main.getConnection().createStatement();
+				result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -852,6 +919,12 @@ public class PlayerDataStorage {
 				    rank.setString(result.getString("rank") == null ? defaultRank : result.getString("rank"));
 				    path.setString(result.getString("path") == null ? defaultPath : result.getString("path"));
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				statement.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -917,6 +990,7 @@ public class PlayerDataStorage {
 		AtomicInteger i = new AtomicInteger(-1);
 		Entry<String, PlayerDataHandler>[] array = (Entry<String, PlayerDataHandler>[])getPlayerData().entrySet().toArray(new Entry[0]);
 		int size = array.length;
+		
 		if(main.isMySql()) {
 			try {
 				main.getConnection().setAutoCommit(false);
@@ -924,7 +998,7 @@ public class PlayerDataStorage {
 	               PreparedStatement statement = main.getConnection().prepareStatement(sql);
 	               AccessibleBukkitTask abTask = new AccessibleBukkitTask();
 	               abTask.set(Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
-	            	   TaskChain<?> saveChain = main.getTaskChainFactory().newSharedChain("savelarge");
+	            	   TaskChain<?> saveChain = main.getTaskChainFactory().newSharedChain("dataSave");
 	            	   saveChain.async(() -> {
 	            	   i.incrementAndGet();
 	            	   int b = i.get();
@@ -979,7 +1053,7 @@ public class PlayerDataStorage {
 		}
 		AccessibleBukkitTask abTask = new AccessibleBukkitTask();
 		abTask.set(Bukkit.getScheduler().runTaskTimer(main, () -> {
-			TaskChain<?> saveChain = main.getTaskChainFactory().newSharedChain("savelarge");
+			TaskChain<?> saveChain = main.getTaskChainFactory().newSharedChain("dataSave");
 			saveChain.async(() -> {
 				i.incrementAndGet();
 				int b = i.get();
@@ -1095,7 +1169,8 @@ public class PlayerDataStorage {
 			return;
 		}
 		i = 0;
-		if(main.isMySql()) {
+		if(!main.isMySql()) return;
+		main.newSharedChain("dataSave").current(() -> {
 		           try {
 		        	   String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET `name`=?,`rank`=?,`prestige`=?,`rebirth`=?,`path`=?,`rankscore`=?,`prestigescore`=?,`rebirthscore`=?,`stagescore`=? WHERE `uuid`=?";
 		        	   main.getConnection().setAutoCommit(false);
@@ -1150,7 +1225,7 @@ public class PlayerDataStorage {
 		    			main.getLogger().info("<Error> Updating player sql data..");
 		           }
 		           return;
-		}
+		}).execute();
 	}
 	
 	public enum PlayerDataType {

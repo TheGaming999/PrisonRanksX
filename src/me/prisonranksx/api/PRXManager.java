@@ -553,13 +553,13 @@ public class PRXManager {
       main.prestigeStorage.loadPrestigesData();
       main.rebirthStorage = new RebirthDataStorage(main);
       main.rebirthStorage.loadRebirthsData();
-      if(main.ishooked) {
+      if(main.hasPAPI) {
     	  Bukkit.getScheduler().runTask(main, () -> {
       main.papi = new PapiHook(main);
       main.papi.register();
     	  });
       }
-      if(main.isMvdw) {
+      if(main.hasMVdWPAPI) {
     	  main.mvdw = new MVdWPapiHook(main);
     	  main.mvdw.registerPlaceholders();
       }

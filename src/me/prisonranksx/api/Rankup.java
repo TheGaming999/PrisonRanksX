@@ -277,7 +277,7 @@ public class Rankup {
 				p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
 			}
 			boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-			if(rankupHologramIsEnable && main.isholo) {
+			if(rankupHologramIsEnable && main.hasHolographicDisplays) {
 				int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 				int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 				List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");
@@ -516,7 +516,7 @@ public class Rankup {
 				p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
 			}
 			boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-			if(rankupHologramIsEnable && main.isholo) {
+			if(rankupHologramIsEnable && main.hasHolographicDisplays) {
 				int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 				int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 				List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");
@@ -754,7 +754,7 @@ public class Rankup {
 				p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
 			}
 			boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-			if(rankupHologramIsEnable && main.isholo) {
+			if(rankupHologramIsEnable && main.hasHolographicDisplays) {
 				int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 				int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 				List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");

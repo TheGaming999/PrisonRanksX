@@ -357,6 +357,18 @@ public class PRXAPI {
 		return true;
 	}
 	
+	public boolean prestigeExistsAny(String prestige) {
+		if(main.isInfinitePrestige) {
+		return main.prestigeStorage.getPrestigeData().get(prestige) != null;
+		} else {
+			long pre = Long.valueOf(prestige);
+			if(pre > main.infinitePrestigeSettings.getFinalPrestige() || pre < 0) {
+				return false;
+			}
+			return true;
+		}
+	}
+	
 	/**
 	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param rank

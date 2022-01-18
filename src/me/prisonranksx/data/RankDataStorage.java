@@ -27,8 +27,6 @@ public class RankDataStorage {
 	private Map<String, List<String>> playerCommands;
 	private Map<String, List<String>> opCommands;
 	private Map<String, String> lastRankMap;
-	private static final Map<String, String> emptyStringToStringMap = new HashMap<>();
-	private static final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
 	private int pathsAmount;
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
@@ -130,8 +128,8 @@ public class RankDataStorage {
 				boolean sendFirework = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 				RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 				RankPath rankPath = new RankPath(rankName, pathName);
-				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
-				Map<String, String> stringRequirements = emptyStringToStringMap;
+				Map<String, Double> numberRequirements = new LinkedHashMap<>();
+				Map<String, String> stringRequirements = new LinkedHashMap<>();
 				List<String> customRequirementMessage = Lists.newArrayList();
 				if(main.getConfigManager().ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".requirements")) {

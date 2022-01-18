@@ -257,7 +257,7 @@ public class PrestigeLegacy {
 			p.playSound(p.getLocation(), Sounds.valueOf(nextPrestigeSoundName).bukkitSound(), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
 		}
 		boolean nextPrestigeHologramIsEnable = main.globalStorage.getBooleanData("Holograms.prestige.enable");
-		if(nextPrestigeHologramIsEnable && main.isholo) {
+		if(nextPrestigeHologramIsEnable && main.hasHolographicDisplays) {
 			int nextPrestigeHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.prestige.remove-time");
 			int nextPrestigeHologramHeight = main.globalStorage.getIntegerData("Holograms.prestige.height");
 			List<String> nextPrestigeHologramFormat = main.globalStorage.getStringListData("Holograms.prestige.format");
@@ -459,7 +459,7 @@ public class PrestigeLegacy {
 			p.playSound(p.getLocation(), Sounds.valueOf(nextPrestigeSoundName).bukkitSound(), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
 		}
 		boolean nextPrestigeHologramIsEnable = main.globalStorage.getBooleanData("Holograms.prestige.enable");
-		if(nextPrestigeHologramIsEnable && main.isholo) {
+		if(nextPrestigeHologramIsEnable && main.hasHolographicDisplays) {
 			int nextPrestigeHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.prestige.remove-time");
 			int nextPrestigeHologramHeight = main.globalStorage.getIntegerData("Holograms.prestige.height");
 			List<String> nextPrestigeHologramFormat = main.globalStorage.getStringListData("Holograms.prestige.format");
@@ -652,7 +652,7 @@ public class PrestigeLegacy {
 			p.playSound(p.getLocation(), Sounds.valueOf(nextPrestigeSoundName).bukkitSound(), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
 		}
 		boolean nextPrestigeHologramIsEnable = main.globalStorage.getBooleanData("Holograms.prestige.enable");
-		if(nextPrestigeHologramIsEnable && main.isholo) {
+		if(nextPrestigeHologramIsEnable && main.hasHolographicDisplays) {
 			int nextPrestigeHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.prestige.remove-time");
 			int nextPrestigeHologramHeight = main.globalStorage.getIntegerData("Holograms.prestige.height");
 			List<String> nextPrestigeHologramFormat = main.globalStorage.getStringListData("Holograms.prestige.format");

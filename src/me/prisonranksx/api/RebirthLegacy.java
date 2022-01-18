@@ -215,7 +215,7 @@ public class RebirthLegacy {
 			p.playSound(p.getLocation(), Sounds.valueOf(nextRebirthSoundName).bukkitSound(), nextRebirthSoundVolume, nextRebirthSoundPitch);
 		}
 		boolean nextRebirthHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rebirth.enable");
-		if(nextRebirthHologramIsEnable && main.isholo) {
+		if(nextRebirthHologramIsEnable && main.hasHolographicDisplays) {
 			int nextRebirthHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rebirth.remove-time");
 			int nextRebirthHologramHeight = main.globalStorage.getIntegerData("Holograms.rebirth.height");
 			List<String> nextRebirthHologramFormat = main.globalStorage.getStringListData("Holograms.rebirth.format");

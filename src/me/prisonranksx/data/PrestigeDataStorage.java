@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
+import com.google.common.collect.Lists;
 
 import me.prisonranksx.PrisonRanksX;
 
@@ -18,9 +19,6 @@ public class PrestigeDataStorage implements IPrestigeDataStorage {
 	private Map<String, IPrestigeDataHandler> prestigeData;
 	private PrisonRanksX main;
 	private List<String> prestiges;
-	private final Map<String, String> emptyStringToStringMap = new HashMap<>();
-	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
-	private final List<String> emptyStringList = new ArrayList<>();
 	
 	public PrestigeDataStorage(PrisonRanksX main) {
 		this.main = main;
@@ -65,9 +63,10 @@ public class PrestigeDataStorage implements IPrestigeDataStorage {
 				FireworkManager fireworkManager = new FireworkManager(prestigeName, LevelType.PRESTIGE, "prestige");
 				Boolean sendFirework = loadBoolean("Prestiges." + prestigeName + ".send-firework");
 				PrestigeDataHandler pdh = new PrestigeDataHandler(prestigeName);
-				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
-				Map<String, String> stringRequirements = emptyStringToStringMap;
-				List<String> customRequirementMessage = emptyStringList;
+				Map<String, Double> numberRequirements = new LinkedHashMap<>();
+				Map<String, String> stringRequirements = new LinkedHashMap<>();
+				List<String> customRequirementMessage = Lists.newArrayList();
+				customRequirementMessage.clear();
 				if(main.getConfigManager().prestigesConfig.isSet("Prestiges." + prestigeName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().prestigesConfig.getStringList("Prestiges." + prestigeName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
@@ -131,7 +130,7 @@ public class PrestigeDataStorage implements IPrestigeDataStorage {
 	
 	public List<String> loadStringList(String node) {
 		if(main.getConfigManager().prestigesConfig.getStringList(node) == null || main.getConfigManager().prestigesConfig.getStringList(node).isEmpty()) {
-			return emptyStringList;
+			return Lists.newArrayList();
 		}
 		return main.getConfigManager().prestigesConfig.getStringList(node);
 	}

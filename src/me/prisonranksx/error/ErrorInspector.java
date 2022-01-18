@@ -123,6 +123,47 @@ public class ErrorInspector {
 		}
 	}
 	
+	public void validatePrestiges(CommandSender sender) {
+		List<String> prestigesCollection = main.prxAPI.getPrestigesCollection();
+		boolean isInfinitePrestige = main.isInfinitePrestige;
+		String actualFirstPrestige = isInfinitePrestige ? "1" : prestigesCollection.get(0);
+		String actualLastPrestige = isInfinitePrestige ? String.valueOf(main.infinitePrestigeSettings.getFinalPrestige()) : prestigesCollection.get(prestigesCollection.size()-1);
+		AtomicBoolean hasFoundErrors = new AtomicBoolean(false);
+		boolean saveMainConfig = false;
+		if(!main.prxAPI.getFirstPrestige().equals(actualFirstPrestige)) {
+			sender.sendMessage(main.prxAPI.c("&4Error &c<!> config.yml first prestige doesn't match prestiges.yml first prestige &7[|] &frepairing..."));
+			main.getGlobalStorage().getStringMap().put("firstprestige", actualFirstPrestige);
+			main.getConfig().set("firstprestige", actualFirstPrestige);
+			saveMainConfig = true;
+			FileConfiguration prestigeDataConfig = main.getConfigManager().prestigeDataConfig;
+		    Set<String> registeredPlayers = prestigeDataConfig.getConfigurationSection("players").getKeys(false);
+		    registeredPlayers.forEach(playerUUID -> {
+		    	if(!main.prxAPI.prestigeExistsAny(prestigeDataConfig.getString("players." + playerUUID))) {
+		    		sender.sendMessage(main.prxAPI.c("&4Error &c<!> " + playerUUID + "'s prestige is invalid &7[|] &frepairing..."));
+		    		prestigeDataConfig.set("players." + playerUUID, actualFirstPrestige);
+		    		OnlinePlayers.getPlayers().forEach(player -> {
+		    			main.prxAPI.setPlayerPrestige(player, actualFirstPrestige);
+		    		});
+		    		hasFoundErrors.set(true);
+		    	}
+		    });
+		    hasFoundErrors.set(true);
+		    
+		}	
+		if(!main.prxAPI.getLastPrestige().equals(actualLastPrestige)) {
+			sender.sendMessage(main.prxAPI.c("&4Error &c<!> config.yml last prestige doesn't match prestiges.yml last prestige &7[|] &frepairing..."));
+			main.getGlobalStorage().getStringMap().put("lastprestige", actualLastPrestige);
+			main.getConfig().set("lastprestige", actualLastPrestige);
+			saveMainConfig = true;
+		}
+		if(saveMainConfig) main.getConfigManager().saveMainConfig();
+		if(hasFoundErrors.get()) {
+			main.getConfigManager().saveRankDataConfig();
+			main.simulateAsyncAutoDataSave();
+			main.manager.reload();
+		}
+	}
+	
     public void validatePlayerRank(Player p) {
     	if(main.prxAPI.rankExists(main.prxAPI.getPlayerRank(p))) {
     		return;

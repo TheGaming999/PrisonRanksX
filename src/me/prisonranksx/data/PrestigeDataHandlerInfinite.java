@@ -2,6 +2,7 @@ package me.prisonranksx.data;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import me.prisonranksx.PrisonRanksX;
 
@@ -30,11 +31,13 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	private List<String> customRequirementMessage;
 	private PrisonRanksX instance;
 	private InfinitePrestigeSettings ips;
+	private Map<Long, InfinitePrestigeSettings> cps;
 	
 	public PrestigeDataHandlerInfinite(String prestigeName) {this.prestigeName = prestigeName;
 	this.sendFirework = false;
 	this.instance = PrisonRanksX.getInstance();
-	this.ips = instance.infinitePrestigeSettings;}
+	this.ips = instance.infinitePrestigeSettings;
+	this.cps = instance.infinitePrestigeSettings.getConstantPrestigeSettings();}
 	
 	public String getValues() {
 		String x = "[]";
@@ -74,7 +77,18 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	}
 	
 	public String getDisplayName() {
-		return ips.getDisplay().replace("{number}", getName());
+		String display = ips.getDisplay().replace("{number}", getName());
+		if(!cps.isEmpty()) {
+		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
+		   		long prestigeNumber = Long.valueOf(prestigeName);
+		   		InfinitePrestigeSettings ipsc = cons.getValue();
+		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+		   			display = ipsc.getDisplay().replace("{number}", getName());
+		   			break;
+		   		}
+		   	}
+		}	
+		return display;
 	}
 	
 	public void setDisplayName(String prestigeDisplayName) {
@@ -90,7 +104,18 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	}
 	
 	public String getNextPrestigeDisplayName() {
-		return ips.getDisplay().replace("{number}", getNextPrestigeName());
+		String display = ips.getDisplay().replace("{number}", getNextPrestigeName());
+		if(!cps.isEmpty()) {
+		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
+		   		long prestigeNumber = Long.valueOf(prestigeName);
+		   		InfinitePrestigeSettings ipsc = cons.getValue();
+		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+		   			display = ipsc.getDisplay().replace("{number}", getNextPrestigeName());
+		   			break;
+		   		}
+		   	}
+		}	
+		return display;
 	}
 	
 	public void setNextPrestigeDisplayName(String nextPrestigeDisplayName) {
@@ -115,7 +140,18 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	}
 	
 	public List<String> getPrestigeCommands() {
-		return prestigeCommands;
+		List<String> commands = prestigeCommands;
+		if(!cps.isEmpty()) {
+		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
+		   		long prestigeNumber = Long.valueOf(prestigeName);
+		   		InfinitePrestigeSettings ipsc = cons.getValue();
+		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+		   			commands = ipsc.getCommands();
+		   			break;
+		   		}
+		   	}
+		}	
+		return commands;
 	}
 	
 	public void setPrestigeCommands(List<String> nextPrestigeCommands) {

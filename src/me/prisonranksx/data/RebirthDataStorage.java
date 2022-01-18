@@ -10,15 +10,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.google.common.collect.Lists;
+
 import me.prisonranksx.PrisonRanksX;
 
 public class RebirthDataStorage {
 	
 	public Map<String, RebirthDataHandler> rebirthData;
 	private PrisonRanksX main;
-	private final Map<String, String> emptyStringToStringMap = new HashMap<>();
-	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
-	private final List<String> emptyStringList = new ArrayList<>();
 	
 	public RebirthDataStorage(PrisonRanksX main) {
 		this.main = main;
@@ -68,9 +67,9 @@ public class RebirthDataStorage {
 				FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
 				boolean sendFirework = main.getConfigManager().rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
 				RebirthDataHandler rbdh = new RebirthDataHandler(rebirthName);
-				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
-				Map<String, String> stringRequirements = emptyStringToStringMap;
-				List<String> customRequirementMessage = emptyStringList;
+				Map<String, Double> numberRequirements = new LinkedHashMap<>();
+				Map<String, String> stringRequirements = new LinkedHashMap<>();
+				List<String> customRequirementMessage = Lists.newArrayList();
 				if(main.getConfigManager().rebirthsConfig.isSet("Rebirths." + rebirthName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
