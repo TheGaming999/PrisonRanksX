@@ -80,9 +80,6 @@ public class InfinitePrestigeSettings {
 				    	newSetting.setBroadcast(this.plugin.getChatColorReplacer().parseRegular(broadcast));
 				    if(nextPrestigeNumber != 0) 
 				    	newSetting.setFinalPrestige(nextPrestigeNumber);
-				    this.plugin.debug = true;
-				    this.plugin.debugPreEnable("SETUP CONSTANT DISPLAY OF " + prestigeNumber + " TO: " + consDisplay);
-				    this.plugin.debug = false;
 				    this.constantPrestigeSettings.put(Long.valueOf(prestigeNumber), newSetting);
 				}
 			}

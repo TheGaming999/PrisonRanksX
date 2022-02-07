@@ -22,7 +22,7 @@ public class RebirthDataHandler {
 	private List<String> delPermissionList;
 	private boolean sendFirework;
 	private RebirthRandomCommands randomCommandsManager;
-	private FireworkManager fireworkManager;
+	private FireworkDataHandler fireworkDataHandler;
 	private int requiredPrestiges;
 	private Map<String, Double> numberRequirements;
 	private Map<String, String> stringRequirements;
@@ -174,22 +174,6 @@ public class RebirthDataHandler {
 		}
 	}
 	
-	public FireworkManager getFireworkManager() {
-		return fireworkManager;
-	}
-	
-	public void setFireworkManager(FireworkManager fireworkManager) {
-		if(fireworkManager != null) {
-			if(fireworkManager.getFireworkBuilder() == null) {
-				return;
-			}
-			if(fireworkManager.getFireworkBuilder().isEmpty()) {
-				return;
-			}
-		this.fireworkManager = fireworkManager;
-		}
-	}
-	
 	public boolean isSendFirework() {
 		return sendFirework;
 	}
@@ -238,6 +222,14 @@ public class RebirthDataHandler {
 
 	public void setCustomRequirementMessage(List<String> customRequirementMessage) {
 		this.customRequirementMessage = customRequirementMessage;
+	}
+
+	public FireworkDataHandler getFireworkDataHandler() {
+		return fireworkDataHandler;
+	}
+
+	public void setFireworkDataHandler(FireworkDataHandler fireworkDataHandler) {
+		this.fireworkDataHandler = fireworkDataHandler;
 	}
 	
 }

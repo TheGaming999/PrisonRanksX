@@ -7,12 +7,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import me.prisonranksx.PrisonRanksX;
-import net.md_5.bungee.api.ChatColor;
 
 public class GlobalDataStorage1_16 implements GlobalDataStorage {
 

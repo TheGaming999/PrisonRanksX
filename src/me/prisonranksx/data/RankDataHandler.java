@@ -24,11 +24,15 @@ public class RankDataHandler {
 	private List<String> messages;
 	private List<String> addPermissionList;
 	private List<String> currentAddPermissionList;
+	private List<String> worldAddPermissionList;
+	private List<String> serverAddPermissionList;
 	private List<String> delPermissionList;
 	private List<String> currentDelPermissionList;
+	private List<String> worldDelPermissionList;
+	private List<String> serverDelPermissionList;
 	private boolean sendFirework;
 	private RankRandomCommands randomCommandsManager;
-	private FireworkManager fireworkManager;
+	private FireworkDataHandler fireworkDataHandler;
 	private String pathName;
 	private @Nullable Map<String, Double> numberRequirements;
 	private @Nullable Map<String, String> stringRequirements;
@@ -207,16 +211,6 @@ public class RankDataHandler {
 		}
 	}
 	
-	public FireworkManager getFireworkManager() {
-		return fireworkManager;
-	}
-	
-	public void setFireworkManager(FireworkManager fireworkManager) {
-		if(fireworkManager != null) {
-		this.fireworkManager = fireworkManager;
-		}
-	}
-	
 	public boolean isSendFirework() {
 		return sendFirework;
 	}
@@ -281,6 +275,46 @@ public class RankDataHandler {
 
 	public void setCurrentDelPermissionList(List<String> currentDelPermissionList) {
 		this.currentDelPermissionList = currentDelPermissionList;
+	}
+
+	public FireworkDataHandler getFireworkDataHandler() {
+		return fireworkDataHandler;
+	}
+
+	public void setFireworkDataHandler(FireworkDataHandler fireworkDataHandler) {
+		this.fireworkDataHandler = fireworkDataHandler;
+	}
+
+	public List<String> getWorldAddPermissionList() {
+		return worldAddPermissionList;
+	}
+
+	public void setWorldAddPermissionList(List<String> worldAddPermissionList) {
+		this.worldAddPermissionList = worldAddPermissionList;
+	}
+
+	public List<String> getServerAddPermissionList() {
+		return serverAddPermissionList;
+	}
+
+	public void setServerAddPermissionList(List<String> serverAddPermissionList) {
+		this.serverAddPermissionList = serverAddPermissionList;
+	}
+
+	public List<String> getWorldDelPermissionList() {
+		return worldDelPermissionList;
+	}
+
+	public void setWorldDelPermissionList(List<String> worldDelPermissionList) {
+		this.worldDelPermissionList = worldDelPermissionList;
+	}
+
+	public List<String> getServerDelPermissionList() {
+		return serverDelPermissionList;
+	}
+
+	public void setServerDelPermissionList(List<String> serverDelPermissionList) {
+		this.serverDelPermissionList = serverDelPermissionList;
 	}
 	
 }

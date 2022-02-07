@@ -55,7 +55,8 @@ public class RankupMaxLegacy {
 	@SuppressWarnings("unused")
 	public void rankupMax(final Player player) {
         Player p = player;
-        UUID u = XUUID.getXUUID(player);
+        String name = p.getName();
+        UUID u = XUUID.tryNameConvert(name);
         String rankupFrom = null;
         if(rankupMaxProcess.contains(p)) {
         	p.sendMessage(prxAPI.g("rankupmax-is-on"));
@@ -213,12 +214,12 @@ public class RankupMaxLegacy {
                
    	        if(main.rankStorage.getAddPermissionList(rp) != null && !main.rankStorage.getAddPermissionList(rp).isEmpty()) {
   	          for(String addpermission : main.rankStorage.getAddPermissionList(rp)) {
-  	        	main.perm.addPermission(p, addpermission.replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank));
+  	        	main.perm.addPermission(name, addpermission.replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank));
   	          }
   	        }
   	        if(main.rankStorage.getDelPermissionList(rp) != null && !main.rankStorage.getDelPermissionList(rp).isEmpty()) {
   	        	for(String delpermission : main.rankStorage.getDelPermissionList(rp)) {
-  	        		main.perm.delPermission(p, delpermission.replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank));
+  	        		main.perm.delPermission(name, delpermission.replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank));
   	        	}
   	        }
                loopNextRankBroadcast = main.rankStorage.getBroadcast(rp);
@@ -257,7 +258,7 @@ public class RankupMaxLegacy {
    			}
    			}
                //rankup things
-               main.econ.withdrawPlayer(p, loopNextRankCost);
+               main.econ.withdrawPlayer(name, loopNextRankCost);
                rankupMaxStreak.put(p, (rankupMaxStreak.get(p)+1));
                rankups.add(loopNextRank);
                rankupMaxMap.put(p, loopNextRank);
@@ -328,7 +329,8 @@ public class RankupMaxLegacy {
 	@SuppressWarnings("unused")
 	public void rankupMax(final Player player, final String rankLimit) {
         Player p = player;
-        UUID u = XUUID.getXUUID(p);
+        String name = p.getName();
+        UUID u = XUUID.tryNameConvert(name);
         String rankupFrom = null;
         RankPath rp1 = prxAPI.getPlayerRankPath(u);
         String limit = main.manager.matchRank(rankLimit, rp1.getPathName());
@@ -475,12 +477,12 @@ public class RankupMaxLegacy {
                
    	        if(main.rankStorage.getAddPermissionList(rp) != null && !main.rankStorage.getAddPermissionList(rp).isEmpty()) {
   	          for(String addpermission : main.rankStorage.getAddPermissionList(rp)) {
-  	        	main.perm.addPermission(p, addpermission.replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank));
+  	        	main.perm.addPermission(name, addpermission.replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank));
   	          }
   	        }
   	        if(main.rankStorage.getDelPermissionList(rp) != null && !main.rankStorage.getDelPermissionList(rp).isEmpty()) {
   	        	for(String delpermission : main.rankStorage.getDelPermissionList(rp)) {
-  	        		main.perm.delPermission(p, delpermission.replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank));
+  	        		main.perm.delPermission(name, delpermission.replace("%player%", p.getName()).replace("%rankup%", loopNextRank).replace("%rankup_display%", loopNextRankDisplay).replace("%rank%", loopCurrentRank));
   	        	}
   	        }
                loopNextRankBroadcast = main.rankStorage.getBroadcast(rp);
@@ -520,7 +522,7 @@ public class RankupMaxLegacy {
    			}
                //rankup things
    			   main.debug(loopNextRankCost);
-               main.econ.withdrawPlayer(p, loopNextRankCost);
+               main.econ.withdrawPlayer(name, loopNextRankCost);
                rankupMaxStreak.put(p, (rankupMaxStreak.get(p)+1));
                rankups.add(loopNextRank);
                rankupMaxMap.put(p, loopNextRank);

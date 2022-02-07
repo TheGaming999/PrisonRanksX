@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.util.concurrent.AtomicDouble;
 
+import co.aikar.taskchain.TaskChain;
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.IPrestigeDataHandler;
@@ -283,23 +284,21 @@ public class PrestigeMax implements IPrestigeMax {
 		if(isProcessing(name)) {
 			p.sendMessage(getAPI().g("prestigemax-is-on"));
 			return;
-		}
+		}	
 		RankPath rankPath = getAPI().getPlayerRankPath(uuid);
-		if(!getAPI().isLastRank(rankPath) && !getAPI().hasAllowPrestige(rankPath)) {
-			if(getAPI().canRankup(p)) {
+		plugin.newSharedChain("maxprocess#" + name).async(() -> {
+			if(!getAPI().isLastRank(rankPath) && !getAPI().hasAllowPrestige(rankPath)) {
 				getAPI().rankupMax(p);
-			} else {
-				//p.sendMessage(noPrestigeMessage);
 			}
-			return;
-		}
+		}).execute();
+		plugin.newSharedChain("maxprocess#" + name).abortIf(!player.isOnline()).async(() -> {
 		AtomicDouble takenBalance = new AtomicDouble(0.0);
 		AtomicInteger prestigeTimes = new AtomicInteger(0);
 		String prestigeName = getAPI().getPlayerPrestige(uuid);
 		if(prestigeName == null) {
 			if(getAPI().canPrestige(p)) {
-			getAPI().getPrestigeAPI().prestige(p);
-			prestigeName = getAPI().getFirstPrestige();
+				getAPI().getPrestigeAPI().prestige(p);
+				prestigeName = getAPI().getFirstPrestige();
 			} else {
 				getAPI().getPrestigeAPI().prestige(p);
 				getProcessingPlayers().remove(name);
@@ -308,7 +307,7 @@ public class PrestigeMax implements IPrestigeMax {
 		}
 		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
 		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
-		Bukkit.getPluginManager().callEvent(e);
+		plugin.scheduler.runTask(plugin, () -> Bukkit.getPluginManager().callEvent(e));
 		if(e.isCancelled()) {
 			getProcessingPlayers().remove(name);
 			return;
@@ -433,7 +432,7 @@ public class PrestigeMax implements IPrestigeMax {
     							}
     							List<String> ccommands = each.getValue().getCommands();
     							if(ccommands != null && !ccommands.isEmpty()) {
-    								plugin.getServer().getScheduler().runTask(plugin, () -> {
+    								plugin.scheduler.runTask(plugin, () -> {
     									ccommands.forEach(cmd -> {
     										plugin.executeCommand(p, plugin.getString(cmd
     												.replace("{number}", loopNextPrestigeName)));
@@ -448,6 +447,35 @@ public class PrestigeMax implements IPrestigeMax {
        			finalPrestige.setString(loopNextPrestigeName);
        			getAPI().setPlayerPrestige(uuid, loopNextPrestigeName);
        			prestigeTimes.addAndGet(1);
+       			if(plugin.globalStorage.getBooleanData("PrestigeOptions.ResetRank")) {
+       				RankUpdateEvent e1 = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE, plugin.globalStorage.getStringData("defaultrank"));
+       				plugin.scheduler.runTask(plugin, () -> Bukkit.getPluginManager().callEvent(e1));
+       				if(e1.isCancelled()) {
+       					getAPI().taskedPlayers.remove(name);
+       				} else {
+       					plugin.playerStorage.setPlayerRank(p, plugin.globalStorage.getStringData("defaultrank"));
+       				}
+       				List<String> prestigeCommands = plugin.globalStorage.getStringListData("PrestigeOptions.prestige-cmds");
+       				if(!prestigeCommands.isEmpty()) {
+       		           prestigeCommands.forEach(cmd -> {
+       		        	   if(cmd.startsWith("[rankpermissions]")) {
+       		        		   getAPI().allRankAddPermissions.forEach(permission -> {
+       		        		   plugin.perm.delPermissionAsync(p, permission);
+       		        		   });
+       		        	   } else if (cmd.startsWith("[prestigepermissions]")) {
+       		        		   getAPI().allPrestigeAddPermissions.forEach(permission -> {
+       		        			   plugin.perm.delPermissionAsync(p, permission);
+       		        		   });
+       		        	   } else if (cmd.startsWith("[rebirthpermissions]")) {
+       		        		   getAPI().allRebirthAddPermissions.forEach(permission -> {
+       		        			   plugin.perm.delPermissionAsync(p, permission);
+       		        		   });
+       		        	   } else {
+       		        		   plugin.executeCommand(p, cmd);
+       		        	   }
+       		           });
+       				}
+       			}
         	}
         	if(!AccessibleString.isNullOrEmpty(finalPrestige)) {
         		IPrestigeDataHandler finalData = getAPI().getPrestige(finalPrestige.getString());
@@ -467,6 +495,7 @@ public class PrestigeMax implements IPrestigeMax {
         	}
         	getProcessingPlayers().remove(name);
         });
+		}).execute();
  	}
 	
 	@Override
@@ -492,7 +521,7 @@ public class PrestigeMax implements IPrestigeMax {
 		}
 		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
 		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
-		Bukkit.getPluginManager().callEvent(e);
+		plugin.scheduler.runTask(plugin, () -> Bukkit.getPluginManager().callEvent(e));
 		if(e.isCancelled()) {
 			getProcessingPlayers().remove(name);
 			return;
@@ -734,7 +763,7 @@ public class PrestigeMax implements IPrestigeMax {
 		}
 		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
 		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
-		Bukkit.getPluginManager().callEvent(e);
+		plugin.scheduler.runTask(plugin, () -> Bukkit.getPluginManager().callEvent(e));
 		if(e.isCancelled()) {
 			getProcessingPlayers().remove(name);
 			return;
@@ -1000,7 +1029,7 @@ public class PrestigeMax implements IPrestigeMax {
 		}
 		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
 		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
-		Bukkit.getPluginManager().callEvent(e);
+		plugin.scheduler.runTask(plugin, () -> Bukkit.getPluginManager().callEvent(e));
 		if(e.isCancelled()) {
 			getProcessingPlayers().remove(name);
 			return;
@@ -1301,7 +1330,7 @@ public class PrestigeMax implements IPrestigeMax {
 		}
 		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
 		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
-		Bukkit.getPluginManager().callEvent(e);
+		plugin.scheduler.runTask(plugin, () -> Bukkit.getPluginManager().callEvent(e));
 		if(e.isCancelled()) {
 			getProcessingPlayers().remove(name);
 			return;
@@ -1532,7 +1561,7 @@ public class PrestigeMax implements IPrestigeMax {
 		}
 		IPrestigeDataHandler prestige = getAPI().getPrestige(prestigeName);
 		PrePrestigeMaxEvent e = new PrePrestigeMaxEvent(p, prestige);
-		Bukkit.getPluginManager().callEvent(e);
+		plugin.scheduler.runTask(plugin, () -> Bukkit.getPluginManager().callEvent(e));
 		if(e.isCancelled()) {
 			getProcessingPlayers().remove(name);
 			return;
@@ -1764,6 +1793,11 @@ public class PrestigeMax implements IPrestigeMax {
     	getProcessingPlayers().remove(name);
 		accessibleBukkitTask.cancel();
 		multiThreadSet.remove(name);	
+	}
+
+	@Override
+	public void removeProcessingPlayer(String name) {
+		getProcessingPlayers().remove(name);
 	}
 	
 }

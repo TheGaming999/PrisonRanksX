@@ -25,7 +25,7 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	private List<String> delPermissionList;
 	private Boolean sendFirework;
 	private PrestigeRandomCommands randomCommandsManager;
-	private FireworkManager fireworkManager;
+	private FireworkDataHandler fireworkDataHandler;
 	private Map<String, Double> numberRequirements;
 	private Map<String, String> stringRequirements;
 	private List<String> customRequirementMessage;
@@ -241,22 +241,6 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 		}
 	}
 	
-	public FireworkManager getFireworkManager() {
-		return fireworkManager;
-	}
-	
-	public void setFireworkManager(FireworkManager fireworkManager) {
-		if(fireworkManager != null) {
-			if(fireworkManager.getFireworkBuilder() == null) {
-				return;
-			}
-			if(fireworkManager.getFireworkBuilder().isEmpty()) {
-				return;
-			}
-		this.fireworkManager = fireworkManager;
-		}
-	}
-	
 	public boolean getSendFirework() {
 		return sendFirework;
 	}
@@ -302,6 +286,16 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	@Override
 	public IPrestigeDataHandler getHandler(String prestigeName) {
 		return this;
+	}
+
+	@Override
+	public FireworkDataHandler getFireworkDataHandler() {
+		return this.fireworkDataHandler;
+	}
+
+	@Override
+	public void setFireworkDataHandler(FireworkDataHandler fireworkDataHandler) {
+		this.fireworkDataHandler = fireworkDataHandler;
 	}
 	
 }

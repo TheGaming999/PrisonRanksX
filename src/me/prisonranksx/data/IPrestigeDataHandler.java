@@ -39,8 +39,8 @@ public interface IPrestigeDataHandler {
 	public void setDelPermissionList(List<String> delPermissionList);
 	public PrestigeRandomCommands getRandomCommandsManager();
 	public void setRandomCommandsManager(PrestigeRandomCommands prestigeRandomCommands);
-	public FireworkManager getFireworkManager();
-	public void setFireworkManager(FireworkManager fireworkManager);
+	public FireworkDataHandler getFireworkDataHandler();
+	public void setFireworkDataHandler(FireworkDataHandler fireworkDataHandler);
 	public boolean getSendFirework();
 	public void setSendFirework(boolean sendFirework);
 	public Map<String, Double> getNumberRequirements();
