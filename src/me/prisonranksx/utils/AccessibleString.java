@@ -85,6 +85,7 @@ public class AccessibleString {
 		return new AccessibleString();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Nullable
 	public static AccessibleString parse(Object object) {
 		String newString = null;

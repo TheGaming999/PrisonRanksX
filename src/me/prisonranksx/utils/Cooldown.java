@@ -45,6 +45,7 @@ class IntegerLong {
 public class Cooldown {	
 	
 	private final static Map<String, IntegerLong> cooldowns = Maps.newLinkedHashMap();
+	private final static long th = 1000;
 		
 	/**
 	 * Begins a cooldown. Should be inserted after / underneath the code.
@@ -77,7 +78,7 @@ public class Cooldown {
 	public static boolean isCoolingDown(final String name) {
 		if(cooldowns.containsKey(name)) {
 			IntegerLong mapValue = cooldowns.get(name);
-			long secondsLeft = ((mapValue.getLong()/1000)+mapValue.getInt()) - (System.currentTimeMillis()/1000);
+			long secondsLeft = ((mapValue.getLong()/th)+mapValue.getInt()) - (System.currentTimeMillis()/th);
 			if(secondsLeft>0) {
                 // Still cooling down
                 return true;
@@ -95,8 +96,21 @@ public class Cooldown {
 	 */
 	public static long get(final String name) throws NullPointerException {
 		IntegerLong mapValue = cooldowns.get(name);
-		long secondsLeft = ((mapValue.getLong()/1000)+mapValue.getInt()) - (System.currentTimeMillis()/1000);
+		long secondsLeft = ((mapValue.getLong()/th)+mapValue.getInt()) - (System.currentTimeMillis()/th);
 		long correctedSecondsLeft = secondsLeft > 0 ? secondsLeft : 0;
+		return correctedSecondsLeft;
+	}
+	
+	/**
+	 * 
+	 * @param name player name / key name or the wanted identifier
+	 * @return -1 if (name) is not under cooldown / cooldown ended, otherwise return cooldown in seconds.
+	 */
+	public static long checkAndGet(final String name) {
+		IntegerLong mapValue = cooldowns.get(name);
+		if(mapValue == null) return -1;
+		long secondsLeft = ((mapValue.getLong()/th)+mapValue.getInt()) - (System.currentTimeMillis()/th);
+		long correctedSecondsLeft = secondsLeft > 0 ? secondsLeft : -1;
 		return correctedSecondsLeft;
 	}
 	

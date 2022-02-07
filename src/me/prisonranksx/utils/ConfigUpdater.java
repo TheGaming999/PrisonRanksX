@@ -36,9 +36,8 @@ public class ConfigUpdater {
      * @throws IOException If an IOException occurs
      */
     public static void update(Plugin plugin, String resourceName, File toUpdate, List<String> ignoredSections) throws IOException {
-    	if(prx.isBefore1_7) {
-    		prx.getLogger().info("(Ignore if not important to you) Config comment updater doesn't support (" + prx.getServer().getVersion() +")");
-    	} else {
+    	if(prx.isBefore1_7) return;
+    	
         BufferedReader newReader = new BufferedReader(new InputStreamReader(plugin.getResource(resourceName), StandardCharsets.UTF_8));
         List<String> newLines = newReader.lines().collect(Collectors.toList());
         newReader.close();
@@ -54,7 +53,6 @@ public class ConfigUpdater {
         Yaml yaml = new Yaml();
         Map<String, String> comments = parseComments(newLines, ignoredSectionsArrayList, oldConfig, yaml);
         write(newConfig, oldConfig, comments, ignoredSectionsArrayList, writer, yaml);
-    	}
     }
 
     //Write method doing the work.

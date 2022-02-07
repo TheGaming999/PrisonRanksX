@@ -70,6 +70,7 @@ public class XUUID {
 		return Bukkit.getOfflinePlayer(uuid).getName();
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static UUID getUUIDFromName(String name) {
 		if(main.isBefore1_7) {
 			return legacyPlayers2.get(name);

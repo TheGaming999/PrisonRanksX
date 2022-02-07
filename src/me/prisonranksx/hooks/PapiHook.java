@@ -450,7 +450,7 @@ public class PapiHook extends PlaceholderExpansion {
 			if(main.isInfinitePrestige) {
 				return String.valueOf(prxAPI.getPlayerPrestige(p));
 			}
-			return String.valueOf(prxAPI.getPlayerPrestigeNumber(p.getUniqueId()));
+			return String.valueOf(prxAPI.getPlayerPrestigeNumber(p));
 		}
 		if(arg1.equalsIgnoreCase("prestige_number_formatted")) {
 			if(!prxAPI.hasPrestiged(p)) {
@@ -459,7 +459,7 @@ public class PapiHook extends PlaceholderExpansion {
 			if(main.isInfinitePrestige) {
 				return String.valueOf(prxAPI.formatBalance(Double.valueOf(prxAPI.getPlayerPrestige(p))));
 			}
-			return String.valueOf(prxAPI.formatBalance(prxAPI.getPlayerPrestigeNumber(p.getUniqueId())));
+			return String.valueOf(prxAPI.formatBalance(prxAPI.getPlayerPrestigeNumber(p)));
 		}
 		if(arg1.startsWith("prestige_name_")) {
 			Player player = Bukkit.getPlayer(arg1.replace("prestige_name_", ""));

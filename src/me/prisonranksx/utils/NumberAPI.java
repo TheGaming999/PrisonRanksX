@@ -1,7 +1,6 @@
 package me.prisonranksx.utils;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -454,9 +452,9 @@ public class NumberAPI {
             return null;
         }
         double chance = ThreadLocalRandom.current().nextDouble() * weights.values().stream().map(Number::doubleValue).reduce(0D, Double::sum);
-        AtomicDouble needle = new AtomicDouble();
+        AtomicObject needle = new AtomicObject((double)0.0);
         return weights.entrySet().stream().filter((ent) -> {
-            return needle.addAndGet(ent.getValue().doubleValue()) >= chance;
+            return (double)needle.setAndGet((double)needle.get()+ent.getValue().doubleValue()) >= chance;
         }).findFirst().map(Map.Entry::getKey).orElse(null);
     }
 	

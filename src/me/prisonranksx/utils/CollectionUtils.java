@@ -3,13 +3,13 @@ package me.prisonranksx.utils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -19,11 +19,11 @@ import com.google.common.collect.Sets;
 
 public class CollectionUtils {
 	
-	public static Map<String, Object> EMPTY_STRING_TO_OBJECT_MAP = new ConcurrentHashMap<>();
-	public static List<String> EMPTY_STRING_LIST = new ArrayList<>();
-	public static List<String> EMPTY_LINKED_STRING_LIST = Collections.synchronizedList(new LinkedList<>());
-	public static List<Double> EMPTY_DOUBLE_LIST = Collections.synchronizedList(new ArrayList<>());
-	public static List<List<String>> EMPTY_STRINGLIST_LIST = Collections.synchronizedList(new ArrayList<>());
+	public final static Map<String, Object> EMPTY_STRING_TO_OBJECT_MAP = new ConcurrentHashMap<>();
+	public final static List<String> EMPTY_STRING_LIST = new ArrayList<>();
+	public final static List<String> EMPTY_LINKED_STRING_LIST = Collections.synchronizedList(new LinkedList<>());
+	public final static List<Double> EMPTY_DOUBLE_LIST = Collections.synchronizedList(new ArrayList<>());
+	public final static List<List<String>> EMPTY_STRINGLIST_LIST = Collections.synchronizedList(new ArrayList<>());
 	
 	public static List<String> emptyList() {
 		return EMPTY_STRING_LIST;
@@ -55,6 +55,51 @@ public class CollectionUtils {
 		return isNearPointer(a, b) ? mathConverted : mathConverted-1;
 	}
     
+	/**
+	 * 
+	 * @param text text to be inspected
+	 * @param searchFor which text should be found
+	 * @return true if (searchFor) is found within (text) or if (searchFor) is empty, false otherwise.
+	 */
+	private static boolean containsIgnoreCase(String text, String searchFor) {
+	    final int length = searchFor.length();
+	    if (length == 0)
+	        return true;
+
+	    final char firstLo = Character.toLowerCase(searchFor.charAt(0));
+	    final char firstUp = Character.toUpperCase(searchFor.charAt(0));
+
+	    for (int i = text.length() - length; i >= 0; i--) {
+	        final char ch = text.charAt(i);
+	        if (ch != firstLo && ch != firstUp)
+	            continue;
+
+	        if (text.regionMatches(true, i, searchFor, 0, length))
+	            return true;
+	    }
+
+	    return false;
+	}
+	
+	private static String replaceIgnoreCase(String source, String target, String replacement)
+    {
+        StringBuilder sbSource = new StringBuilder(source);
+        StringBuilder sbSourceLower = new StringBuilder(source.toLowerCase());
+        String searchString = target.toLowerCase();
+
+        int idx = 0;
+        while((idx = sbSourceLower.indexOf(searchString, idx)) != -1) {
+            sbSource.replace(idx, idx + searchString.length(), replacement);
+            sbSourceLower.replace(idx, idx + searchString.length(), replacement);
+            idx+= replacement.length();
+        }
+        sbSourceLower.setLength(0);
+        sbSourceLower.trimToSize();
+        sbSourceLower = null;
+
+        return sbSource.toString();
+    }
+	
 	public static int getAccurateFinalPage(final int elementsCount, final int elementsPerPage) {
 		return fixPages(elementsCount, elementsPerPage);
 	}
@@ -242,7 +287,7 @@ public class CollectionUtils {
 			return rl;
 		}
 		
-		public ReplaceableList replaceCollectable(String from, String to) {
+		public ReplaceableList replace(String from, String to) {
 			int i = 0;
 			for(String line : list) {
 				i++;
@@ -407,7 +452,7 @@ public class CollectionUtils {
 	public static boolean containsIgnoreCase(Collection<String> stringCollection, String searchFor) {
 		boolean found = false;
 		for(String line : stringCollection) {
-			if(line.contains("(?i)" + searchFor)) {
+			if(containsIgnoreCase(line, searchFor)) {
 				found = true;
 			}
 		}
@@ -417,15 +462,76 @@ public class CollectionUtils {
 	public static String containsIgnoreCaseReturn(Collection<String> stringCollection, String searchFor) {
 		String found = null;
 		for(String line : stringCollection) {
-			if(line.contains("(?i)" + searchFor)) {
+			if(containsIgnoreCase(line, searchFor)) {
 				found = line;
 			}
 		}
 		return found;
 	}
 	
+	public static List<String> containsIgnoreCaseReturnAll(Collection<String> stringCollection, String searchFor) {
+		List<String> found = Lists.newArrayList();
+		for(String line : stringCollection) {
+			if(containsIgnoreCase(line, searchFor)) {
+				found.add(line);
+			}
+		}
+		return found;
+	}
+	
+	/**
+	 * 
+	 * @param stringCollection to be inspected
+	 * @param pattern to be used
+	 * @return elements that are matchable with the pattern matcher, false otherwise.
+	 */
+	public static List<String> hasPatternReturnAll(Collection<String> stringCollection, Pattern pattern) {
+		List<String> found = Lists.newArrayList();
+		for(String line : stringCollection) {
+			Matcher matcher = pattern.matcher(line);
+			while(matcher.find()) {
+				found.add(line);
+			}
+		}
+		return found;
+	}
+	
+	public static List<String> hasPatternAndContainsIgnoreCaseReturnAll(Collection<String> stringCollection, Pattern pattern, String searchFor) {
+		List<String> found = Lists.newArrayList();
+		if(!containsIgnoreCase(stringCollection, searchFor)) {
+			return found;
+		}
+		for(String line : stringCollection) {
+			Matcher matcher = pattern.matcher(line);
+			while(matcher.find()) {
+				found.add(line);
+			}
+		}
+		return found;
+	}
+	
+	public static boolean containsFromList(String string, Collection<String> searchFor) {
+		boolean found = false;
+		for(String line : searchFor) {
+			if(string.contains(line)) {
+				found = true;
+			}
+		}
+		return found;
+	}
+	
+	public static boolean containsIgnoreCaseFromList(String string, Collection<String> searchFor) {
+		boolean found = false;
+		for(String line : searchFor) {
+			if(containsIgnoreCase(string, line)) {
+				found = true;
+			}
+		}
+		return found;
+	}
+	
 	public static ReplaceableList replaceCollectable(List<String> stringList, String from, String to) {
-		int i = 0;
+		int i = -1;
 		for(String line : stringList) {
 			i++;
 			if(line.equals(from)) {
@@ -437,7 +543,7 @@ public class CollectionUtils {
 	}
 	
 	public static List<String> replace(List<String> stringList, String from, String to) {
-		int i = 0;
+		int i = -1;
 		for(String line : stringList) {
 			i++;
 			if(line.equals(from)) {
@@ -447,8 +553,19 @@ public class CollectionUtils {
 		return stringList;
 	}
 	
+	public static List<String> replaceWithin(List<String> stringList, String from, String to) {
+		int i = -1;
+		for(String line : stringList) {
+			i++;
+			if(line.equals(from)) {
+				stringList.set(i, line.replace(from, to));
+			}
+		}
+		return stringList;
+	}
+	
 	public static List<String> replaceIgnoreCase(List<String> stringList, String from, String to) {
-		int i = 0;
+		int i = -1;
 		for(String line : stringList) {
 			i++;
 			if(line.equalsIgnoreCase(from)) {
@@ -459,12 +576,52 @@ public class CollectionUtils {
 	}
 	
 	public static List<String> replaceContainsIgnoreCase(List<String> stringList, String from, String to) {
-		int i = 0;
+		int i = -1;
 		for(String line : stringList) {
 			i++;
-			if(line.contains("(?i)" + from)) {
+			if(containsIgnoreCase(line, from)) {
 				stringList.set(i, to);
 			}
+		}
+		return stringList;
+	}
+	
+	public static List<String> replaceContainsIgnoreCaseWithin(List<String> stringList, String from, String to) {
+		int i = -1;
+		for(String line : stringList) {
+			i++;
+			if(containsIgnoreCase(line, from)) {
+				stringList.set(i, replaceIgnoreCase(line, from, to));
+			}
+		}
+		return stringList;
+	}
+	
+	public static List<String> replaceElementWithList(List<String> stringList, String target, List<String> replacement) {
+		int originalIndex = stringList.indexOf(target);
+		if(originalIndex != -1) {
+			stringList.remove(target);
+			stringList.addAll(originalIndex, replacement);
+		}
+		return stringList;
+	}
+	
+	public static List<String> replaceElementContainsWithList(List<String> stringList, String searchFor, List<String> replacement) {
+		String target = containsIgnoreCaseReturn(stringList, searchFor);
+		if(target != null) {
+			int originalIndex = stringList.indexOf(target);
+			stringList.remove(target);
+			stringList.addAll(originalIndex, replacement);
+		}
+		return stringList;
+	}
+	
+	public static List<String> replaceElementIgnoreCaseWithList(List<String> stringList, String searchFor, List<String> replacement) {
+		String target = hasIgnoreCaseReturn(stringList, searchFor);
+		if(target != null) {
+			int originalIndex = stringList.indexOf(target);	
+			stringList.remove(target);
+			stringList.addAll(originalIndex, replacement);
 		}
 		return stringList;
 	}

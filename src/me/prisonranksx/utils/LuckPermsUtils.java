@@ -4,12 +4,9 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import net.luckperms.api.LuckPerms;
-import net.luckperms.api.model.data.DataMutateResult;
-import net.luckperms.api.model.data.DataType;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.model.user.UserManager;
@@ -17,8 +14,6 @@ import net.luckperms.api.node.Node;
 import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.InheritanceNode;
 import net.luckperms.api.platform.PlayerAdapter;
-import net.luckperms.api.query.QueryMode;
-import net.luckperms.api.query.QueryOptions;
 import net.luckperms.api.track.Track;
 
 public class LuckPermsUtils {
@@ -86,7 +81,7 @@ public class LuckPermsUtils {
         User user = userManager.getUser(uniqueId);
         String group = groupName;
         InheritanceNode node = InheritanceNode.builder(group).value(true).build();
-        DataMutateResult result = user.data().add(node);
+        // DataMutateResult result = user.data().add(node);
         user.data().clear(nodes -> {
             if (!(nodes instanceof InheritanceNode)) {
                 return false;

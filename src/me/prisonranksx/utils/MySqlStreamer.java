@@ -29,7 +29,8 @@ public class MySqlStreamer {
     	this.globalConnection = connection;
     }
 
-    public Stream<Map> streamQuery(String sql) throws SQLException {
+    @SuppressWarnings("rawtypes")
+	public Stream<Map> streamQuery(String sql) throws SQLException {
     	this.query = new MysqlStreamQuery();
         return query.stream(sql);
     }
@@ -55,7 +56,8 @@ public class MySqlStreamer {
         private Connection connection;
         private Statement statement;
 
-        public Stream<Map> stream(String sql) throws SQLException {
+        @SuppressWarnings("rawtypes")
+		public Stream<Map> stream(String sql) throws SQLException {
         	if(dataSource != null) {
             connection = dataSource.getConnection();
         	} else {
@@ -78,7 +80,8 @@ public class MySqlStreamer {
             Map resultMap = new HashMap(columns);
             /* NOTE: Manually invoking of Stream.close() is required to close the MySQL statement and connection. */
             Stream<Map> resultStream = StreamSupport.stream(new Spliterators.AbstractSpliterator<Map>(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.IMMUTABLE) {
-                @Override
+                @SuppressWarnings("unchecked")
+				@Override
                 public boolean tryAdvance(Consumer<? super Map> action) {
                     try {
                         if (!rs.next()) {

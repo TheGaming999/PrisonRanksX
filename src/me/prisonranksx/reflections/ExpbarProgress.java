@@ -1,4 +1,5 @@
 package me.prisonranksx.reflections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ public class ExpbarProgress {
 	
 	public ExpbarProgress(PrisonRanksX main) {
 		this.main = main;
-		this.players = Sets.newConcurrentHashSet();
+		this.players = !main.isBefore1_7 ? Sets.newConcurrentHashSet() : new HashSet<>();
 		this.isTaskOn = false;
 		this.expbarFormat = this.main.globalStorage.getStringData("Options.expbar-progress-format");
 		this.expbarUpdater = this.main.globalStorage.getIntegerData("Options.expbar-progress-updater");
