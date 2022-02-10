@@ -310,11 +310,11 @@ public class LeaderboardManager {
 		return getGlobalLeaderboard().get(player.getUniqueId());
 	}
 	
-	public Map<UUID, Integer> getRankLeaderboard() {
+	public synchronized Map<UUID, Integer> getRankLeaderboard() {
 		if(!update && !updatedValues.isEmpty()) {
 			return updatedValues;
 		}
-		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
+		main.getTaskChainFactory().newSharedChain("dataSave").current(() -> {
 		updatedValues.clear();
 		main.getPlayerStorage().storePlayersData(PlayerDataType.RANK);
 		if(main.isMySql()) {
@@ -378,11 +378,11 @@ public class LeaderboardManager {
 	   return updatedValues;
 	}
 	
-	public Map<UUID, Integer> getPrestigeLeaderboard() {
+	public synchronized Map<UUID, Integer> getPrestigeLeaderboard() {
 		if(!update && !updatedValuesP.isEmpty()) {
 			return updatedValuesP;
 		}
-		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
+		main.getTaskChainFactory().newSharedChain("dataSave").current(() -> {
 		updatedValuesP.clear();
 		main.getPlayerStorage().storePlayersData(PlayerDataType.PRESTIGE);
 		if(main.isMySql()) {
@@ -438,11 +438,11 @@ public class LeaderboardManager {
 	   return updatedValuesP;
 	}
 	
-	public Map<UUID, Integer> getRebirthLeaderboard() {
+	public synchronized Map<UUID, Integer> getRebirthLeaderboard() {
 		if(!update && !updatedValuesR.isEmpty()) {
 			return updatedValuesR;
 		}
-		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
+		main.getTaskChainFactory().newSharedChain("dataSave").current(() -> {
 		updatedValuesR.clear();
 		main.getPlayerStorage().storePlayersData(PlayerDataType.REBIRTH);
 		if(main.isMySql()) {
@@ -498,11 +498,11 @@ public class LeaderboardManager {
 	   return updatedValuesR;
 	}
 	
-	public Map<UUID, Integer> getGlobalLeaderboard() {
+	public synchronized Map<UUID, Integer> getGlobalLeaderboard() {
 		if(!update && !updatedValuesGlobal.isEmpty()) {
 			return updatedValuesGlobal;
 		}
-		main.getTaskChainFactory().newSharedChain("leaderboard").current(() -> {
+		main.getTaskChainFactory().newSharedChain("dataSave").current(() -> {
 		updatedValuesGlobal.clear();
 		main.getPlayerStorage().storePlayersData(PlayerDataType.ALL);
 		if(main.isMySql()) {

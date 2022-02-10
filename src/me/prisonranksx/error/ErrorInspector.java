@@ -175,6 +175,7 @@ public class ErrorInspector {
 	 * ! start searching for errors asynchronously.
 	 */
 	public void inspect() {
+		if(main.isBefore1_7) return;
 		errors.clear();
 		Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 		try {

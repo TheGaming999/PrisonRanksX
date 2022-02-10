@@ -11,8 +11,6 @@ public class HolidayUtils {
 
 	public enum Holiday {NONE, HALLOWEEN, CHRISTMAS, VALENTINE}
 	
-	
-	private PrisonRanksX main;
 	private List<String> helpMessage1;
 	private List<String> helpMessage2;
 	private List<String> helpMessage3;
@@ -20,7 +18,6 @@ public class HolidayUtils {
 	private boolean isCeleberation;
 	
 	public HolidayUtils(PrisonRanksX main) {
-		this.main = main;
 		this.helpMessage1 = new ArrayList<>();
 		this.helpMessage2 = new ArrayList<>();
 		this.helpMessage3 = new ArrayList<>();
@@ -37,7 +34,7 @@ public class HolidayUtils {
 		helpMessage2.clear();
 		helpMessage3.clear();
 		helpMessage1
-		.add(c("&3[&6PrisonRanksX&3] &av%version%"));
+		.add(c("&3[&6PrisonRanks&cX&3] &av%version%"));
 		helpMessage1
 		.add(c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
 		helpMessage1
@@ -74,7 +71,7 @@ public class HolidayUtils {
 		.add(c("&c&m+                                                                    +&c"));
 		///////////////////////////////////////
 		helpMessage2
-		.add(c("&3[&6PrisonRanksX&3] &av%version%"));
+		.add(c("&3[&6PrisonRanks&cX&3] &av%version%"));
 		helpMessage2
 		.add(c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
 		helpMessage2
@@ -103,7 +100,7 @@ public class HolidayUtils {
 		.add(c("&c&m+                                                                    +&3"));
 		//////////////////////////////////////////
 		helpMessage3
-		.add(c("&3[&6PrisonRanksX&3] &av%version%"));
+		.add(c("&3[&6PrisonRanks&cX&3] &av%version%"));
 		helpMessage3
 		.add(c("&7<> = required &8⎟ &7[] = optional &8⎟ &7() = optional prefix"));
 		helpMessage3

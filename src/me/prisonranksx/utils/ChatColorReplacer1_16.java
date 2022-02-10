@@ -18,7 +18,7 @@ public class ChatColorReplacer1_16 implements ChatColorReplacer {
 		this.main = main;
 	}
 	
-	private String c(String textToTranslate) {
+	private String c(String textToTranslate) {	
 		return ChatColor.translateAlternateColorCodes('&', textToTranslate);
 	}
 	

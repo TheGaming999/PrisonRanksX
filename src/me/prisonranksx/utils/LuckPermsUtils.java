@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.data.DataMutateResult;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.model.user.UserManager;
@@ -51,6 +51,12 @@ public class LuckPermsUtils {
         return userFuture.join();
     }
     
+    public User getUserQuick(UUID uniqueId) {
+    	UserManager userManager = luckperms.getUserManager();
+        User user = userManager.getUser(uniqueId);
+        return user;
+    }
+    
     /**
      * 
      * @param uniqueId
@@ -73,20 +79,24 @@ public class LuckPermsUtils {
      */
     public void setGroup(UUID uniqueId, String groupName, boolean save) {
     	UserManager userManager = luckperms.getUserManager();
-        CompletableFuture<User> userFuture = userManager.loadUser(uniqueId);
-        User user = userFuture.join();
-        user.setPrimaryGroup(groupName);
+        User user = userManager.getUser(uniqueId);
+        InheritanceNode node = InheritanceNode.builder(groupName).value(true).build();
+        DataMutateResult result = user.data().add(node);
+        user.data().clear(nodes -> {
+            if (!(nodes instanceof InheritanceNode)) {
+                return false;
+            }
+            InheritanceNode inheritanceNode = (InheritanceNode) nodes;
+            return !inheritanceNode.equals(node);
+        });
         if(save) {
-        userManager.saveUser(user);
+            userManager.saveUser(user);
         }
     }
     
     public Collection<Group> getGroups(final Player player) {
         PlayerAdapter<Player> playerAdapter = luckperms.getPlayerAdapter(Player.class);
-        
-        // Get a LuckPerms user for the player.
         User user = playerAdapter.getUser(player);
-        // Get all of the groups they inherit from on the current server.
         Collection<Group> groups = user.getInheritedGroups(playerAdapter.getQueryOptions(player));
         return groups;
     }
@@ -107,12 +117,10 @@ public class LuckPermsUtils {
     	return isLoaded;
     }
     
-    public void setGroupOnTrack(final Player player, final Group group, final String track) {
+    public void resetGroupOnTrack(final Player player, final String trackName) {
     	User user = luckperms.getUserManager().getUser(player.getUniqueId());
-    	Track tracc = luckperms.getTrackManager().getTrack(track);
-    	tracc.promote(user, group.getQueryOptions().context());
-        luckperms.getTrackManager().saveTrack(tracc);
-        luckperms.getUserManager().saveUser(user);
+    	Track track = luckperms.getTrackManager().getTrack(trackName);
+    	user.data().clear(NodeType.INHERITANCE.predicate(node -> track.containsGroup(node.getGroupName())));
     }
     
 }

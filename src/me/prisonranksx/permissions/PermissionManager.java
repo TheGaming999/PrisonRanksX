@@ -1,12 +1,20 @@
 package me.prisonranksx.permissions;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 
+import co.aikar.taskchain.TaskChain;
 import me.prisonranksx.PrisonRanksX;
 
 public class PermissionManager {
@@ -29,6 +37,72 @@ public class PermissionManager {
 		main.newSharedChain("permission").async(() -> {
         main.getPermissions().playerAdd(null, player, permission);
 		}).execute();
+	}
+	
+	public String addPermission(final Player player, final String permission, boolean createThread) {
+		if(createThread) {
+			addPermission(player, permission);
+			return permission;
+		}
+		if(!permission.startsWith("[")) {
+			return String.valueOf(main.getPermissions().playerAdd(null, player, permission));
+		}
+        int worldIndex = permission.lastIndexOf("]");
+		String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+		String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+	    addPermission(player, node, world);
+		return permission;
+	}
+	
+	public CompletableFuture<Boolean> addPermissionAsync(final Player player, final String permission) {
+		return CompletableFuture.supplyAsync(() -> {
+		        if(!permission.startsWith("[")) {
+		        	 return (main.getPermissions().playerAdd(null, player, permission));
+		        }
+		        int worldIndex = permission.lastIndexOf("]");
+				String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+				String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+				return (main.getPermissions().playerAdd(Bukkit.getWorld(world).getName().trim(), player, node.trim()));
+		});
+	}
+	
+	public void addPermissionAsync(final Player player, final Collection<String> permissions) {
+		for(String permission : permissions) {
+			addPermissionAsync(player, permission);
+		}
+	}
+	
+	public void addPermission(final Player player, final Collection<String> perm) {
+		main.newSharedChain("permission").async(() -> {
+			for(String permission : perm) {
+				if(!permission.startsWith("[")) {
+					main.getPermissions().playerAdd(null, player, permission);
+					return;
+				}
+				int worldIndex = permission.lastIndexOf("]");
+				String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+				String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+				addPermission(player, node, world);
+			}
+		}).execute();	
+	}
+	
+	public Collection<String> addPermission(final Player player, final Collection<String> perm, boolean createThread) {
+		if(createThread) {
+			addPermission(player, perm);
+			return perm;
+		}
+		for(String permission : perm) {
+			if(!permission.startsWith("[")) {
+				main.getPermissions().playerAdd(null, player, permission);
+				return perm;
+			}
+			int worldIndex = permission.lastIndexOf("]");
+			String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+			String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+			addPermission(player, node, world);
+		}
+		return perm;	
 	}
 	
 	public void addPermissionOffline(final OfflinePlayer player, final String perm) {
@@ -88,6 +162,76 @@ public class PermissionManager {
 		}).execute();
 	}
 	
+	public String delPermission(final Player player, final String permission, boolean createThread) {
+		if(createThread) {
+			delPermission(player, permission);
+			return permission;
+		}
+		if(!permission.startsWith("[")) {
+			return String.valueOf(main.getPermissions().playerRemove(null, player, permission));
+		}
+		int worldIndex = permission.lastIndexOf("]");
+		String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+		String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+	    delPermission(player, node, world);
+		return permission;
+	}
+	
+	public CompletableFuture<Boolean> delPermissionAsync(final Player player, final String permission) {
+		return CompletableFuture.supplyAsync(new Supplier<Boolean>() {
+		    @Override
+		    public Boolean get() {
+		        if(!permission.startsWith("[")) {
+		        	 return (main.getPermissions().playerRemove(null, player, permission));
+		        }
+		        int worldIndex = permission.lastIndexOf("]");
+				String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+				String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+				return (main.getPermissions().playerRemove(Bukkit.getWorld(world).getName().trim(), player, node.trim()));
+		    }
+		});
+	}
+	
+	public boolean delPermissionAsync(final Player player, final Collection<String> permissions) {
+		for(String permission : permissions) {
+			delPermissionAsync(player, permission);
+		}
+		return true;
+	}
+	
+	public void delPermission(final Player player, final Collection<String> perm) {
+		main.newSharedChain("permission").async(() -> {
+			for(String permission : perm) {
+				if(!permission.startsWith("[")) {
+					main.getPermissions().playerRemove(null, player, permission);
+					return;
+				}
+				int worldIndex = permission.lastIndexOf("]");
+				String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+				String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+				delPermission(player, node, world);
+			}
+		}).execute();	
+	}
+	
+	public Collection<String> delPermission(final Player player, final Collection<String> perm, boolean createThread) {
+		if(createThread) {
+			delPermission(player, perm);
+			return perm;
+		}
+		for(String permission : perm) {
+			if(!permission.startsWith("[")) {
+				main.getPermissions().playerRemove(null, player, permission);
+				return perm;
+			}
+			int worldIndex = permission.lastIndexOf("]");
+			String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
+			String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
+			delPermission(player, node, world);
+		}
+		return perm;	
+	}
+	
 	public void delPermissionOffline(final OfflinePlayer player, final String perm) {
 		String permission = perm;
 		if(permission.startsWith("[") && permission.contains("]")) {
@@ -97,19 +241,19 @@ public class PermissionManager {
 		    delPermissionOffline(player, node, world);
 		    return;
 		}
-		main.newSharedChain("permission").async(() -> {
+		main.newSharedChain("delpermission").async(() -> {
         main.getPermissions().playerRemove(null, player, permission);
 		}).execute();
 	}
 	
 	public void delPermission(final Player player, final String permission, final String world) {
-		main.newSharedChain("permission").async(() -> {
+		main.newSharedChain("delpermission").async(() -> {
 			main.getPermissions().playerRemove(Bukkit.getWorld(world).getName().trim(), player, permission.trim());
 		}).execute();
 	}
 	
 	public void delPermissionOffline(final OfflinePlayer player, final String permission, final String world) {
-		main.newSharedChain("permission").async(() -> {
+		main.newSharedChain("delpermission").async(() -> {
 			main.getPermissions().playerRemove(Bukkit.getWorld(world).getName().trim(), player, permission.trim());
 		}).execute();
 	}
