@@ -1,8 +1,17 @@
-# default ranks
-# don't put anything under the first rank. except for display, nextrank, and cost. because the actions that will be executed is the rank you rankup to.
+# ============================================================================================================================================================================
+# | Default ranks. The ranks don't have to be in alphanumeric order. You can put them in any order, and you can name them anything you want.                                 |
+# | Don't put anything under the first rank !EXCEPT FOR! display, nextrank, and cost. This is because the actions that will be executed is the rank that you will rankup to. |
+#                                 █████╗ ██╗  ██╗███████╗ █████╗ ██╗  ██╗  ████████╗██╗  ██╗███████╗   ██╗       ██╗██╗██╗  ██╗██╗
+#                                ██╔══██╗██║  ██║██╔════╝██╔══██╗██║ ██╔╝  ╚══██╔══╝██║  ██║██╔════╝   ██║  ██╗  ██║██║██║ ██╔╝██║
+#                                ██║  ╚═╝███████║█████╗  ██║  ╚═╝█████═╝      ██║   ███████║█████╗     ╚██╗████╗██╔╝██║█████═╝ ██║
+#                                ██║  ██╗██╔══██║██╔══╝  ██║  ██╗██╔═██╗      ██║   ██╔══██║██╔══╝      ████╔═████║ ██║██╔═██╗ ██║
+#                                ╚█████╔╝██║  ██║███████╗╚█████╔╝██║ ╚██╗     ██║   ██║  ██║███████╗    ╚██╔╝ ╚██╔╝ ██║██║ ╚██╗██║
+#                                 ╚════╝ ╚═╝  ╚═╝╚══════╝ ╚════╝ ╚═╝  ╚═╝     ╚═╝   ╚═╝  ╚═╝╚══════╝     ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝
+#                                                         https://github.com/TheGaming999/PrisonRanksX/wiki
+# ============================================================================================================================================================================
 Ranks:
-  default: # rank path: default
-    'A': # shouldn't put any actions here.
+  default: # Rank path: default
+    'A': # Shouldn't put any actions here as stated above.
       display: "&7[&1A&7]"
       nextrank: B
       cost: 0
@@ -10,37 +19,41 @@ Ranks:
       display: "&7[&2B&7]"
       nextrank: LASTRANK
       cost: 5000.0
-      executecmds: # "[console] noicecommand", "[player] yourcommand", "[op] mycommand", "imconsolecommand"
+      # Prefixes: [console], [player], *none*
+      # =========================================
+      # [console] executes a command as a console
+      # [player] executes a command as a player
+      # executes a command as a console aswell
+      # =========================================
+      executecmds:
       - "[console] give %player% diamond 1"
-      - "[op] say i am executing this command as an operator"
       - "[player] warp %rankup%"
-      - "say this command was also executed by the console."
+      - "say %player% ranked up from A to B!"
       broadcast:
-      - "&7%player% &eranked up to &7%rankup%"
-      - "&7-----------------"
+      - "&7&m-----------------"
+      - "&7%player% &6ranked up to &7%rankup%"
+      - "&7&m-----------------"
       msg:
-      - "&9You got &b1 &9diamond."
-      # if you don't want the actionbar message to be animated just remove all lines except the first one. the interval works in ticks (20 ticks => 1 second) (10 ticks => 0.5 second)
+      - "&7You got &c1 &7Diamond."
+      - "&c$5000 &4has been taken from you for ranking up!"
+      # Interval: 20 ticks => 1 second | 10 ticks => 0.5 seconds | 5 ticks => 0.25 seconds | and so on...
       actionbar:
-        interval: 10
+        interval: 2
         text:
-        - "&aCongratulations!"
-        - "&2Congratulations!"
-        - "&3Congratulations!"
-        - "&bCongratulations!"
-      # there are 2 types of requirements: [1] string requirements, [2] number requirements
-      # [1] usage:
-      # placeholderapi_placeholder->text
-      # it will check if the placeholder equals the text then it will continue the rankup process
-      # [2] usage:
-      # placeholderapi_placeholder>>number
-      # it will check if the placeholder is equal or larger than the number then it will continue the rankup process
-      # for example:
-      #requirements: # check if your current broken blocks is equal or higher than than the specified number
+        - "<glow first=&c&l middle=&4&l last=&c&l>&f&lYou ranked up to B!</glow>"
+      # 1. Check if your current broken blocks is equal or higher than 5000. Remove the # before requirements and the line underneath it to enable!
+      # 2. Check if your current permissions group is Admin. Remove the # before requirements and the line underneath it to enable!
+      # ================================================
+      #requirements: 
       #- "%ezblocks_blocks%>>5000"
+      #- "%vault_group%->Admin"
+      # ================================================
+      # Actions that will be executed from ActionUtil API. Download link: https://mc-plugins.net/cdn/plugins/bukkit/ActionUtil_1.3.jar
       actions:
-      - "[MESSAGE] Hi, im being executed from actionutil plugin."
-      # you can put as many commands as you want just copy the line and paste it exactly below the line you copied, the chances can go beyond 100 percent
+      - "[MESSAGE] Hi, I got executed by ActionUtil."
+      # ================================================
+      # You can put as many commands as you want just copy the line and paste it exactly below the line you copied. The chances can go above 100 percent.
+      # ================================================
       randomcmds:
         '1':
           chance: 70
@@ -50,11 +63,16 @@ Ranks:
           chance: 30
           commands:
           - "say Random Console Command 2 with chance: 30%"
-      # to add world-specific permission use this format:
+      # ================================================
+      # To add world-specific permission use this format:
       # [worldname] permission.permission
-      # otherwise just write the permission and an example of the format above:
-      # [world_the_end] essentials.warp.B
-      # you will be given the permission "essentials.warp.B" in the world: world_the_end
+      # Otherwise just write the permission.
+      # ================================================
+      # [world_the_end] essentials.warps.B
+      # >>> You will be given the permission "essentials.warps.B" in the world: world_the_end
+      # essentials.warps.B
+      # >>> You will be given the permission "essentials.warps.B" in all worlds.
+      # ================================================
       addpermission:
       - "essentials.warps.B"
       delpermission:

@@ -1,170 +1,199 @@
-# --------------------------------------------------------------
-# Symbols can be used in every message
-# "[>>]", "»"
-# "[<<]", "«"
-# "[coolarrow]", "➤"
-# "[<3]", "❤"
-# "[shadowarrow]", "➢"
-# "[shadowarrow_2]", "➣"
-# "[shadowarrow_down]", "⧨"
-# "[shadowsquare]", "❑"
-# "[nuke]", "☢"
-# "[+]", "✚"
-# "[correct]", "✔"
-# "[incorrect]", "✖"
-# "[bowarrow]", "➸"
-# "[squaredot]", "◼"
-# "[square]", "■"
-# "[happyface]", "☺"
-# "[|]", "⎟"
-# --------------------------------------------------------------
-# Disabled worlds
-# [you will not see messages of other worlds if allworlds-broadcast is false]
-# [you can't rankup]
-# [you can't prestige]
-# [you can't rebirth]
-# [you can't use /prx commands]
+# ============================================================================================================================================================================
+# Using these placeholders will replace them with a symbol when used in any of the plugin messages.
+# "[>>]"
+# "[<<]"
+# "[coolarrow]"
+# "[<3]"
+# "[shadowarrow]"
+# "[shadowarrow_2]"
+# "[shadowarrow_down]"
+# "[shadowsquare]"
+# "[nuke]"
+# "[+]"
+# "[correct]"
+# "[incorrect]"
+# "[bowarrow]"
+# "[squaredot]"
+# "[square]"
+# "[happyface]"
+# "[|]"
+# "[center]" = put it at the beginning of any message and the message will get in the center of the chat box (not guaranteed to work everywhere).
+# ============================================================================================================================================================================
+# || Disabled Worlds List ||
+# ============================================================================================================================================================================
+# Any world added here, will have the following functions disabled:
+# [You will not see the messages of other worlds if allworlds-broadcast is set to false]
+# [You won't be able to rankup]
+# [You won't be able to prestige]
+# [You won't be able to rebirth]
+# [You won't be able to use /prx commands]
+# [The chat won't be touched]
+# ============================================================================================================================================================================
+# !! VERY IMPORTANT !!
+# !! VERY IMPORTANT !!
+# !! VERY IMPORTANT !!
+# !! VERY IMPORTANT !!
+# !! VERY IMPORTANT !!
+# ============================================================================================================================================================================
+defaultrank: A
+lastrank: B
+defaultpath: "default"
+firstprestige: P1
+lastprestige: P2
+firstrebirth: R1
+lastrebirth: R2
+# ================================================
 worlds:
-- "i_am_a_disabled_world"
-- "i_should_not_be_messing_with_prisonranksx"
-- "not_even_the_op_can_bypass_me"
+- "disabled_world"
+- "disabled_world2"
 Options:
-  # Wanna disable ranks? set it to false.
+  # False: Disables rank functions and rank data management.
   rank-enabled: true
-  # Wanna disable prestiges? set it to false.
+  # False: Disables prestige functions and prestige data management.
   prestige-enabled: true
-  # Wanna disable rebirths? set it to false.
+  # False: Disables rebirth functions and rebirth data management.
   rebirth-enabled: true
-  # force display order default: "{rebirth}{prestige}{rank}"
+  # True: Force display order, by default: "{rebirth}{prestige}{rank}" in the chat.
   force-display-order: "{rebirth}{prestige}{rank}"
-  # Forces any chat plugin to place the rank display name aka prefix before the chat format without using a variable/placeholder.
+  # True: Forces any chat plugin to place the rank display name before the chat format without using a variable or a placeholder. <!> Does not support DeluxeChat! Use PlaceholderAPI placeholders instead.
   force-rank-display: true
-  # Does the same as above but shows the prestige prefix/display name with the rank ofc.
+  # True: Does the same as above but shows the prestige display name with the rank display name of course.
   force-prestige-display: true
-  # -
+  # True: The same story.
   force-rebirth-display: true
-  # empty prestige display
+  # What will be shown when a player doesn't have a prestige on his/her chat format. Notice that this is only for chat messages. Look below for PlaceholderAPI placeholders.
   no-prestige-display: ""
-  # empty rebirth display
+  # What will be shown when a player doesn't have a rebirth on his/her chat format. Notice that this is only for chat messages. Look below for PlaceholderAPI placeholders.
   no-rebirth-display: ""
-  # Don't want rank's 'broadcast:' section to be shown in every world? set this to false . this uses the worlds list above.
+  # True: Allows PrisonRanksX to replace the chat placeholders {rank}, {prestige}, and {rebirth}. This can be safely disabled if you are only using PlaceholderAPI placeholders, which can improve performance by a little.
+  format-chat: true
+  # True: Broadcasts the messages to every world and ignores the list above.
   allworlds-broadcast: true
-  # If you want to send the rankup msg that one in the messages.yml file.
+  # True: Sends the message from messages.yml.
   send-rankupmsg: true
-  # If you want to send the prestige msg /\
+  # True: Sends the message from messages.yml.
   send-prestigemsg: true
-  # -
+  # True: Sends the message from messages.yml.
   send-rebirthmsg: true
-  # /rankupmax msg
+  # True: Sends the message from messages.yml.
   send-rankupmaxmsg: true
-  # Don't like the text rank list then try this setting [set it to true].
+  # True: Opens a GUI list instead of showing a text list when using the /ranks command. This can be edited below.
   GUI-RANKLIST: false
-  # You want a cool gui prestige list? use this [change it to true].
+  # True: Opens a GUI list instead of showing a text list when using the /prestiges command. This can be edited below.
   GUI-PRESTIGELIST: false
-  # yep
+  # True: Opens a GUI list instead of showing a text list when using the /rebirths commands. This can be edited below.
   GUI-REBIRTHLIST: false
-  # Want your players to dance when they prestige? put a sound name here otherwise make it like this "" to disable.
-  prestigesound-name: "LEVEL_UP"
-  # Sound volume if you make it higher other players will hear it.
-  prestigesound-volume: 1.0
-  # Sound pitch you will hear the sound similar to the original one but with little changes like it's made with demon's mouth when it's high.
+  # A sound that will play when you prestige. You can disable it by setting it to nothing like this: ""
+  prestigesound-name: "SUCCESSFUL_HIT"
+  # Sound volume. If you make it higher, other players will hear it. If it's 1.0, only you will hear it.
+  prestigesound-volume: 1.5
+  # Sound pitch. Changes how soft and fast the sound is. Higher -> Softer/Faster. Range: 0.5-2.0
   prestigesound-pitch: 1.0
-  # You can disable this by making it empty as you see "".
-  rankupsound-name: "LEVEL_UP"
-  # -
-  rankupsound-volume: 1.0
-  # -
+  # A sound that will play once you rankup. You can disable it by setting it to nothing like this: ""
+  rankupsound-name: "WOOD_CLICK"
+  # Sound volume if you make it higher other players will hear it. If it's 1.0, only you will hear it.
+  rankupsound-volume: 1.5
+  # Sound pitch. Changes how soft and fast the sound is. Higher -> Softer/Faster. Range: 0.5-2.0
   rankupsound-pitch: 1.0
-  # -
-  rebirthsound-name: "GHAST_SCREAM"
-  # -
+  # A sound that will play after you rebirth. You can disable it by setting it to nothing like this: ""
+  rebirthsound-name: "ORB_PICKUP"
+  # Sound volume if you make it higher other players will hear it. If it's 1.0, only you will hear it.
   rebirthsound-volume: 1.0
-  # -
+  # Sound pitch. Changes how soft and fast the sound is. Higher -> Softer/Faster. Range: 0.5-2.0
   rebirthsound-pitch: 1.0
-  # if you want every rank to have a restricted permission. the permission is: "prisonranksx.rankup.<the_rank_that_you_will_go_to>" without the quotes.
+  # True: Every player will need a specific permission to rankup to the next rank. The permission is: "prisonranksx.rankup.<rankname>" without the quotes.
   per-rank-permission: false
-  # if you don't want the server to be a text garbage when the players rankup max then disable this by setting it to true.
-  rankupmax-broadcastlastrankonly: true
-  # if you enable this the player may miss an important message you put in one of the ranks.
-  rankupmax-msglastrankonly: true
-  # this is literally useless just disable it by making it true. except if you want the players to show their coolness when they rankup max.
-  rankupmax-rankupmsglastrankonly: true
-  # Want vault plugin to handle the ranks instead of prisonranksx? then use this.
+  # True: Disables sending the broadcast messages of each rank you passed when you are ranking up with rankup max. However, it will send the last one.
+  rankupmax-broadcastlastrankonly: false
+  # True: Does the same as above, but for 'msg:' section.
+  rankupmax-msglastrankonly: false
+  # True: Does the same as above, but for the rankup message that is inside messages.yml.
+  rankupmax-rankupmsglastrankonly: false
+  # True: Will make the rank registeration process under control by another Permission plugin, which you can change below.
   rankup-vault-groups: false
-  # You can write here "GroupManager" or "PermissionsEX" or "LuckPerms" or "Vault" otherwise you can write the command using these placeholders %player% and %rank%.
+  # You can write here "GroupManager", "PermissionsEX", "LuckPerms", "Vault". Also, you can write a command using these placeholders %player% and %rank%. For example, "manuadd %player% %rank%"
   rankup-vault-groups-plugin: "Vault"
-  # Check if player group in the said plugin doesn't match the one in prisonranksx then update it.
+  # True: Allows the permission plugin to be the boss. Check if the player group in said plugin doesn't match the one in PrisonRanksX then update it.
   rankup-vault-groups-check: false
-  # enable autorankup task.
+  # True: Enables autorankup asynchronous tasks in which /autorankup command can be used.
   autorankup: true
-  # if you want the player to prestige up when he gets enough money to prestige while ranking up using "/rankupmax" command
+  # True: The player will prestige when he/she has enough money to prestige while ranking up using "/rankupmax" command.
   rankupmax-with-prestige: false
-  # time between auto rankups in ticks
-  autorankup-delay: 20
-  autoprestige-delay: 20
-  # still not added.
-  autorebirth-delay: 20
-  # actionbar that shows your current progress to the next stage. that appear above your hotbar.
+  # Time between auto rankups in ticks. (20 ticks = 1 second)
+  autorankup-delay: 10
+  # Time between auto prestiges in ticks. (20 ticks = 1 second)
+  autoprestige-delay: 10
+  # Time between auto rebirths in ticks. (20 ticks = 1 second)
+  autorebirth-delay: 10
+  # True: Shows an actionbar message that shows your current progress to the next stage that appears above your hotbar.
   actionbar-progress: true
-  # show actionbar progress only while holding a diamond pickaxe?
+  # True: Shows the actionbar message only while holding a diamond pickaxe.
   actionbar-progress-only-pickaxe: true
-  # basically placeholderapi placeholders.
+  # What to be shown in the actionbar message.
   actionbar-progress-format: "%prisonranksx_rankup_progress% &e%prisonranksx_rankup_percentage%"
-  # update time in ticks (20 ticks = 1 second), (40 ticks = 2 seconds).
+  # Update time in ticks. (20 ticks = 1 second), (40 ticks = 2 seconds).
   actionbar-progress-updater: 30
-  # don't enable if you use experience for another thing.
+  # True: Updates the exp progress bar value to match the progress-format output below.
   expbar-progress: false
-  # expbar update time (10 ticks) (0.5 second)
+  # Expbar update time. (10 ticks) = (0.5 second)
   expbar-progress-updater: 10
-  # the placeholder must return a number from 0 to 100 ! otherwise it will not work properly
+  # The placeholder must return a number from 0 to 100 ! Otherwise it will not work properly.
   expbar-progress-format: "%prisonranksx_rankup_percentage%"
-  # autosave data every 15 minutes?
+  # True: Automatically saves player data every (autosave-time) ticks.
   autosave: true
-  # time between auto save tasks in seconds (18000 ticks = 15 minutes)
+  # Time between auto save tasks in ticks (18000 ticks = 15 minutes)
   autosave-time: 18000
-  # send save message every 15 minutes to console?
+  # True: Sends a save message every 15 minutes to the console telling you how long did it take to save data.
   save-notification: true
-  # force rank/prestige/rebirth data save upon a rank/prestige/rebirth update? (not recommended).
+  # True: Forces a rank/prestige/rebirth data save to the disk upon a rank/prestige/rebirth update? (not recommended). This is how it used to be in ancient versions.
   forcesave: false
-  # save data when a player leaves the server or get kicked.
+  # True: Save data when a player leaves the server or get kicked, and then release an unwanted amount of memory space that he had while in the server (highly recommended).
   save-on-leave: true
-  # if you want /warp commands to be ignored on rankupmax till the last rank you rankup to. only commands that start with '[player] <command>' will be filtered.
+  # True: Ignores spamming "/warp" commands and only executes the last one in the rankupmax process. Only commands that start with '[player] <command>' will be filtered.
   rankupmax-warp-filter: false
-  # ...
+  # True: Enables certain developer commands and other stuff.
   allow-easter-eggs: true
+  # True: Enables leaderboards that consist of players with the highest ranks/prestiges/rebirths.
   enable-leaderboard: true
-  # change the list above to allow the commands to be executed on these worlds instead of preventing them.
+  # True: Reverses the worlds list above rules.
   enabled-worlds-instead-of-disabled: false
-  # AMTQ, ASTQ, AR, ARS
+  # Prestige Max Types: AMTQ, ASTQ, AR, ARS. Only change when the developer tells you to do so.
   prestigemax-type: "AMTQ"
-  # infinite prestige
+  # True: Enables infinite prestige config file, and ignores prestiges.yml.
   infinite-prestige: false
-Ranklist-text: # text based ranks list
-  # placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted%
-  rank-current-format: "%rank_displayname% &a> %nextrank_displayname% &a| &2$&e%nextrank_cost_formatted% &a<&m---"
-  rank-completed-format: "&7&m%rank_name%&r &7> &7&m%nextrank_name%&r &8| &a&lCOMPLETED"
-  rank-other-format: "%rank_displayname% &7> &a%nextrank_displayname% &7| &f$&e%nextrank_cost_formatted%"
-  # You have a big collection of ranks? then use this to make your ranks list fancier.
+Ranklist-text: # Text based ranks list
+  # Placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted%
+  rank-current-format: "%rank_displayname% &a> %nextrank_displayname% &a[|] &2$&e%nextrank_cost_formatted% &a<&m---"
+  rank-completed-format: "&7&m%rank_name%&r &7> &7&m%nextrank_name%&r &8[|] &a&lCOMPLETED"
+  rank-other-format: "%rank_displayname% &7> &a%nextrank_displayname% &7[|] &f$&e%nextrank_cost_formatted%"
+  # ============================================================================================================================================================================
+  # True: Shows a certain amount of ranks in pages instead of showing them all at once in the chat. It can be used like this: "/ranks <pagenumber>."
+  # ============================================================================================================================================================================
   enable-pages: true
+  # ============================================================================================================================================================================
   # How many ranks per page? 8 9 10 20..
+  # ============================================================================================================================================================================
   rank-per-page: 9
-  # This is how the players will see the ranks list in the game customize it to your liking.
-  # If you want a custom list just remove [rankslist] placeholder and put your thing
-  # however rank per page will count the text lines (header+footer) as ranks if you removed [rankslist] so you may increase it
-  # you can use PlaceholderAPI placeholders here.
+  # ============================================================================================================================================================================
+  # This is how the players will see the ranks list in the game.
+  # Removing [rankslist] line, will allow the list to become a custom list in which you can put any thing you want.
+  # However, rank per page will count the text lines (header+footer) as ranks if you removed the [rankslist] line, so you may consider increasing it.
+  # Also, you can use PlaceholderAPI placeholders here.
+  # ============================================================================================================================================================================
   rank-with-pages-list-format:
-  - "&7&m                           &7"
+  - "&7&m+                           +&7"
   - "[rankslist]"
   - "&aRanks &7[<<] &e%currentpage% &9of &e%totalpages% &7[>>]"
-  - "&7&m                           &7"
+  - "&7&m+                           +&7"
+  # This will be used if "enable-pages" is set to "false".
   rank-list-format:
   - "&7&m                           &7"
   - "[rankslist]"
   - "&7&m                           &7"
-Prestigelist-text: # text based prestiges list
-  # placeholders: %prestige_name% %prestige_displayname% %nextprestige_name% %nextprestige_displayname% %nextprestige_cost% %nextprestige_cost_formatted%
+Prestigelist-text: # Text based prestiges list
+  # Placeholders: %prestige_name% %prestige_displayname% %nextprestige_name% %nextprestige_displayname% %nextprestige_cost% %nextprestige_cost_formatted%
   prestige-current-format: "%prestige_displayname% &a> %nextprestige_displayname% &a| &2$&e%nextprestige_cost_formatted% &a<&m---"
-  prestige-completed-format: "&7&m%prestige_name% &7> &7&m%nextprestige_name% &8| &a&lCOMPLETED"
+  prestige-completed-format: "&7&m%prestige_name%&r &7> &7&m%nextprestige_name%&r &8| &a&lCOMPLETED"
   prestige-other-format: "%prestige_displayname% &7> &a%nextprestige_displayname% &7| &f$&e%nextprestige_cost_formatted%"
   enable-pages: true
   prestige-per-page: 9
@@ -177,10 +206,10 @@ Prestigelist-text: # text based prestiges list
   - "&7&m                           &7"
   - "[prestigeslist]"
   - "&7&m                           &7"
-Rebirthlist-text: # text based rebirths list
-  # placeholders: %rebirth_name% %rebirth_displayname% %nextrebirth_name% %nextrebirth_displayname% %nextrebirth_cost% %nextrebirth_cost_formatted% 
+Rebirthlist-text: # Text based rebirths list
+  # Placeholders: %rebirth_name% %rebirth_displayname% %nextrebirth_name% %nextrebirth_displayname% %nextrebirth_cost% %nextrebirth_cost_formatted% 
   rebirth-current-format: "%rebirth_displayname% &a> %nextrebirth_displayname% &a| &2$&e%nextrebirth_cost_formatted% &a<&m---"
-  rebirth-completed-format: "&7&m%rebirth_name% &7> &7&m%nextrebirth_name% &8| &a&lCOMPLETED"
+  rebirth-completed-format: "&7&m%rebirth_name%&r &7> &7&m%nextrebirth_name%&r &8| &a&lCOMPLETED"
   rebirth-other-format: "%rebirth_displayname% &7> &a%nextrebirth_displayname% &7| &f$&e%nextrebirth_cost_formatted%"
   enable-pages: true
   rebirth-per-page: 9
@@ -193,33 +222,38 @@ Rebirthlist-text: # text based rebirths list
   - "&7&m                           &7"
   - "[rebirthslist]"
   - "&7&m                           &7"
-# You must have HolographicDisplays plugin installed on your server in order for this to work.
+# ============================================================================================================================================================================
+# You must have HolographicDisplays or DecentHolograms plugin installed on your server in order for this to work.
+# ============================================================================================================================================================================
 Holograms:
   rankup:
     enable: true
     remove-time: 3
     height: 4
-    format: # placeholders: %player% %nextrank% %nextrank_display% or placeholderapi placeholders
+    format: # placeholders: %player% %nextrank% %nextrank_display% or PlaceholderAPI placeholders
     - "&6%player%"
-    - "&b&kii&3Ranked Up To&b&kii"
-    - "&e&l%nextrank%"
+    - "&f&kii&r &bSuccessful Rankup! &f&kii&r"
+    - "&7&l%nextrank_display%&r"
   prestige:
     enable: true
     remove-time: 5
     height: 4
-    format: # placeholders: %player% %nextprestige% %nextprestige_display% or placeholderapi placeholders
+    format: # placeholders: %player% %nextprestige% %nextprestige_display% or PlaceholderAPI placeholders
     - "&c%player%"
-    - "&9&kii&6Prestiged Up To&9&kii"
-    - "&4&l%nextprestige%"
+    - "&f&kii&r &4Successful Prestige! &f&kii&r"
+    - "&7&l%nextprestige_display%&r"
   rebirth:
     enable: true
     remove-time: 5
     height: 4
-    format:
-    - "&c%player%"
-    - "&c&kii&4Reborn To&c&kii"
-    - "&e&l%nextrebirth%"
-MySQL: # wanna store players data in a database instead of yml files? enable this.
+    format: # placeholders: %player% %nextrebirth% %nextrebirth_display% or PlaceholderAPI placeholders
+    - "&e%player%"
+    - "&f&kii&r &6Successful Rebirth! &f&kii&r"
+    - "&7&l%nextrebirth_display%&r"
+# ============================================================================================================================================================================
+# True: Uses a MySQL storage instead of a YAML storage file. In addition, when used with save-on-leave option, it will support Bungeecord data synchronization.
+# ============================================================================================================================================================================
+MySQL:
   enable: false
   host: localhost
   port: 3306
@@ -230,11 +264,144 @@ MySQL: # wanna store players data in a database instead of yml files? enable thi
   useSSL: false
   autoReconnect: true
   useCursorFetch: true
-Main-GUIOptions:
+# ============================================================================================================================================================================
+#                                                                      Auto Commands For Level Resets
+# ============================================================================================================================================================================
+# '[rankpermissions] remove' = removes every permission that player got from ranking up <!> Of course Vault Must be installed
+# '[prestigepermissions] remove' = removes every permission that player got from prestiging up <!> Of course Vault Must be installed
+# '[rebirthpermissions] remove' = removes every permission that player got from rebirthing up <!> Of course Vault Must be installed
+# ============================================================================================================================================================================
+PrestigeOptions:
+  ResetMoney: false
+  ResetRank: false
+  # Global rankup_cost_increase, if you want to disable this, set it to 0. default: (prestigenumber * rankup_cost_increase_percentage), this will override the cost increase on prestiges.yml if set to value higher than 0.
+  rankup_cost_increase_percentage: 0
+  # Types: DEFAULT=>{prestigeNumber * cost_increase}, POWER=>{prestigeNumber+1 ^ cost_increase}, EXTRA=>{(prestigeNumber * cost_increase) * 2}
+  cost_increase_type: DEFAULT
+  # This expression is not for the global increase. It's for the ones inside prestiges.yml file.
+  # Available Placeholders: {rankcost}, {prestigenumber}, {cost_increase}
+  cost_increase_expression: "{cost_increase} * ({rankcost} / 100)"
+  # Executed when you prestige.
+  prestige-cmds:
+  - "[rankpermissions] remove"
+  # Executed when you delete someone's prestige using "/prx delplayerprestige."
+  prestige-delete-cmds:
+  - "[prestigepermissions] remove"
+  - "say Deleted prestige of %player%."
+  # Executed when you do "/prx resetplayerprestige"
+  # '[prestigepermissions$1] remove' = removes every permission that player got from prestiging up except the first prestige. It only works here.
+  prestige-reset-cmds:
+  - "[prestigepermissions$1] remove"
+RankOptions:
+  # Executed when you perform "/prx delplayerrank" on a player.
+  rank-delete-cmds:
+  - "[rankpermissions] remove"
+  # Executed when you reset someone's rank using "/prx resetplayerrank."
+  rank-reset-cmds:
+  - "[rankpermissions] remove"
+RebirthOptions:
+  ResetMoney: false
+  ResetRank: true
+  ResetPrestige: true
+  prestige_cost_increase_percentage: 0
+  cost_increase_type: DEFAULT
+  # Placeholders: {prestigecost}, {rebirthnumber}, {cost_increase}
+  cost_increase_expression: "{cost_increase} * ({prestigecost} / 100)"
+  rebirth-cmds:
+  - "[rankpermissions] remove"
+  - "[prestigepermissions] remove"
+  rebirth-delete-cmds:
+  - "[rebirthpermissions] remove"
+  rebirth-reset-cmds:
+  - "[rebirthpermissions$1] remove"
+PlaceholderAPI:
+  # The character that will represent the progress bar blocks. By default it will show small squares because [squaredot] is a symbol from the very beginning of the config file.
+  # You can use any symbol. It's not limited to the symbols provided by the plugin.
+  rankup-progress-style: '[squaredot]'
+  # The color that will represent completion.
+  rankup-progress-filled: '&a'
+  # The color that will represent how much is needed to complete the progress bar.
+  rankup-progress-needed: '&c'
+  # True: Shows the text "rankup-progress-full" instead of a full progress bar.
+  rankup-progress-full-enabled: false
+  # Text that will be shown once the progress bar is filled.
+  rankup-progress-full: "&aType &e/rankup &3!"
+  # Text that will show on the place of the progress bar when you are the latest rank.
+  rankup-progress-lastrank: "Prestige now by typing &e/prestige"
+  # Text that will show on the place of the percentage when you are the latest rank.
+  rankup-percentage-lastrank: "&c/prestige"
+  # Text that will show on the place of the rank cost when you are the latest rank.
+  rankup-cost-lastrank: "&cHighest Rank"
+  # Text that will show on the place of the next rank when you are the latest rank.
+  rankup-lastrank: "&cType /prestige"
+  # True: Shows a text other than the last rank when you reach it.
+  currentrank-lastrank-enabled: false
+  # The text that will be shown.
+  currentrank-lastrank: "&a/prestige"
+  # The text that will be shown once you reach the highest prestige.
+  prestige-lastprestige: "&cHighest Prestige"
+  # The text that will show when you don't have a prestige or you didn't prestige yet.
+  prestige-notprestiged: "&fNone"
+  # The text that will be shown on the place of the next prestige when you don't have a prestige.
+  nextprestige-notprestiged: "&fNot Prestiged"
+  # The symbol that will show alongside the money / balance from the placeholders.
+  currency-symbol: "$"
+  # True: Shows the curreny symbol behind the balance. "$100.0"
+  currency-symbol-behind: true
+  # The symbol that will show in any placeholder that uses percentages.
+  percent-sign: "%"
+  # True: Shows the percent symbol behind the number. "%99"
+  percent-sign-behind: false
+  rebirth-notrebirthed: "&fNone"
+  nextrebirth-notrebirthed: "&fN/A"
+  rebirth-lastrebirth: "&4Last Rebirth"
+  next-progress-style: # Global progress bar for every level. Changes according to your level position / next objective (rank,prestige,rebirth). %prisonranksx_next_progress%
+    rankup: '[|]'
+    prestige: '[squaredot]'
+    rebirth: '[>>]'
+  next-progress-filled:
+    rankup: '&a'
+    prestige: '&b'
+    rebirth: '&6'
+  next-progress-needed:
+    rankup: '&c'
+    prestige: '&7'
+    rebirth: '&8'
+  next-progress-full-isrankup-enabled: false
+  next-progress-full-isprestige-enabled: false
+  next-progress-full-isrebirth-enabled: false
+  next-progress-full-islast-enabled: false
+  next-progress-full-isrankup: "&7Type &a/rankup&7!"
+  next-progress-full-isprestige: "&7Type &c/prestige&7!"
+  next-progress-full-isrebirth: "&7Type &c/rebirth&7!"
+  next-progress-full-islast: "&7You are at the latest stage."
+  # What to show when there isn't any player that holds this position / no player that has prestiged, so there won't be 1st player in the leaderboard.
+  leaderboard-name-rank-null: "none"
+  leaderboard-value-rank-null: "none"
+  leaderboard-name-prestige-null: "none"
+  leaderboard-value-prestige-null: "none"
+  leaderboard-name-rebirth-null: "none"
+  leaderboard-value-rebirth-null: "none"
+MoneyFormatter: # The letter(s) that will be shown after the balance in any placeholder that uses formatted balance.
+  thousand: 'K'
+  million: 'M'
+  billion: 'B'
+  trillion: 'T'
+  quadrillion: 'Q'
+  quintillion: 'QT'
+  sextillion: 'S'
+  septillion: 'ST'
+  octillion: 'O'
+  nonillion: 'N'
+  decillion: 'D'
+  undecillion: 'UD'
+  Duodecillion: 'DD'
+  zillion: 'Z'
+Main-GUIOptions: # These items will be shown when there are enough levels to show in the next page.
   previouspage-itemNAME: "ARROW"
   previouspage-itemDISPLAYNAME: "&c<< Previous page"
   previouspage-itemLORE:
-  - "&f"
+  - "&fGo back!"
   previouspage-itemENCHANTMENTS: []
   previouspage-itemAMOUNT: 1
   previouspage-itemDATA: 0
@@ -242,7 +409,7 @@ Main-GUIOptions:
   nextpage-itemNAME: "ARROW"
   nextpage-itemDISPLAYNAME: "&6Next Page >>"
   nextpage-itemLORE:
-  - "&f"
+  - "&fNavigate to the next page!"
   nextpage-itemENCHANTMENTS: []
   nextpage-itemAMOUNT: 1
   nextpage-itemDATA: 0
@@ -252,19 +419,19 @@ Main-GUIOptions:
   currentpage-itemNAME: "GLASS"
   currentpage-itemDISPLAYNAME: "&cPage &4{currentpage} &cof &4{maxpages}"
   currentpage-itemLORE:
-  - "&f"
+  - "&fThis is the current page."
   currentpage-itemENCHANTMENTS: []
   currentpage-itemAMOUNT: 1
   currentpage-itemDATA: 0
   currentpage-itemFLAGS: []
 Ranklist-gui:
-  title: '             &7«&6«&3Ranks&6»&7»'
-  # to disable keep it like this => constant-items: []
+  title: '             &7<&6<&3Ranks&6>&7>'
+  # To disable keep it like this => constant-items: []
   constant-items: []
-  # ranks item slots if it's above 44 it will be added to the next page. this was made to separate the constant items and rank items
+  # Ranks item slots if it's above 44 it will be added to the next page. This was made to separate the constant items and rank items.
   allowed-slots: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55
   current-format:
-    # each format uses a different way of parsing so if a format is not working try another one till it work.
+    # Each format uses a different way of parsing, so if a format is not working, try the next one if not, then the next.... until it works.
     # format: <itemname>:[data] | example: WOOL:1
     # format: <itemname>;[data] | example: WOOL;5
     # format: <itemid>#[data] | example: 35#2
@@ -290,6 +457,7 @@ Ranklist-gui:
     - '[player] warp %currentrank%'
     - '(close-inventory)'
     - '(cancel-item_move)'
+    # Bypass the format above and show specific format for a specific rank.
     custom:
       B:
         itemLORE:
@@ -310,6 +478,13 @@ Ranklist-gui:
     itemCOMMANDS:
     - '[player] warp %completedrank%'
     - '(cancel-item_move)'
+    custom:
+      A:
+        itemLORE:
+        - '&cYou have passed the rank &1A&c (the first rank).'
+      B:
+        itemLORE:
+        - '&cYou have passed the rank &2B&c.'
   other-format:
     itemNAME: STAINED_GLASS_PANE;14
     itemAMOUNT: 1
@@ -322,10 +497,16 @@ Ranklist-gui:
     itemFLAGS: []
     itemCOMMANDS:
     - '(cancel-item_move)'
+    custom:
+      B:
+        itemLORE:
+        - '&cCost: &3%otherrank_cost_formatted%'
+        - '&cReward:'
+        - '&e&l/fly command'
 Prestigelist-gui:
   title: "&3Prestiges"
   constant-items: []
-  # prestiges item slots if it's above 44 it will be added to the next page.
+  # Prestiges item slots. If it's above 44, it will be added to the next page.
   allowed-slots: "9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55"
   current-format:
     itemNAME: EMERALD_BLOCK
@@ -362,7 +543,7 @@ Prestigelist-gui:
 Rebirthlist-gui:
   title: "&4Rebirths"
   constant-items: []
-  # rebirths item slots if it's above 44 it will be added to the next page.
+  # Rebirths item slots. If it's above 44, it will be added to the next page.
   allowed-slots: "9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55"
   current-format:
     itemNAME: GOLD_BLOCK
@@ -395,125 +576,4 @@ Rebirthlist-gui:
     itemENCHANTMENTS: []
     itemFLAGS: []
     itemCOMMANDS:
-    - "(cancel-item_move)" 
-# autocommands:
-# '[rankpermissions] remove' = removes every permission that player got from ranking up <!> Of course Vault Must be installed
-# '[prestigepermissions] remove' = removes every permission that player got from prestiging up <!> Of course Vault Must be installed
-# '[rebirthpermissions] remove' = removes every permission that player got from rebirthing up <!> Of course Vault Must be installed
-PrestigeOptions:
-  ResetMoney: false
-  ResetRank: false
-  # global rankup_cost_increase, if you want to disable this set it to 0 default: (prestigenumber * rankup_cost_increase_percentage), this will override the cost increase on prestiges.yml if set to value higher than 0
-  rankup_cost_increase_percentage: 0
-  # types: DEFAULT=>{prestigeNumber * cost_increase}, POWER=>{prestigeNumber+1 ^ cost_increase}, EXTRA=>{(prestigeNumber * cost_increase) * 2}
-  cost_increase_type: DEFAULT
-  # this expression is not for the global increase.
-  # placeholders: {rankcost}, {prestigenumber}, {cost_increase}
-  cost_increase_expression: "{cost_increase} * ({rankcost} / 100)"
-  # executed when you prestige
-  prestige-cmds:
-  - "[rankpermissions] remove"
-  # executed when you do /prx delplayerprestige
-  prestige-delete-cmds:
-  - "[prestigepermissions] remove"
-  - "say Hi %player%"
-  # executed when you do /prx resetplayerprestige
-  # '[prestigepermissions$1] remove' = removes every permission that player got from prestiging up except the first prestige, it only works here
-  prestige-reset-cmds:
-  - "[prestigepermissions$1] remove"
-RankOptions:
-  # executed when you type /prx delplayerrank
-  rank-delete-cmds:
-  - "[rankpermissions] remove"
-  # executed when you do /prx resetplayerrank
-  rank-reset-cmds:
-  - "[rankpermissions] remove"
-RebirthOptions:
-  ResetMoney: false
-  ResetRank: true
-  ResetPrestige: true
-  prestige_cost_increase_percentage: 0
-  cost_increase_type: DEFAULT
-  # placeholders: {prestigecost}, {rebirthnumber}, {cost_increase}
-  cost_increase_expression: "{cost_increase} * ({prestigecost} / 100)"
-  rebirth-cmds:
-  - "[rankpermissions] remove"
-  - "[prestigepermissions] remove"
-  rebirth-delete-cmds:
-  - "[rebirthpermissions] remove"
-  rebirth-reset-cmds:
-  - "[rebirthpermissions$1] remove"
-PlaceholderAPI:
-  rankup-progress-style: '[squaredot]'
-  rankup-progress-filled: '&a'
-  rankup-progress-needed: '&c'
-  rankup-progress-full-enabled: false
-  rankup-progress-full: "&aType &e/rankup &3!"
-  rankup-progress-lastrank: "Prestige now by typing &e/prestige"
-  rankup-percentage-lastrank: "&c/prestige"
-  rankup-cost-lastrank: "&cHighest Rank"
-  rankup-lastrank: "&cType /prestige"
-  currentrank-lastrank-enabled: false
-  currentrank-lastrank: "&a/prestige"
-  prestige-lastprestige: "&cHighest Prestige"
-  prestige-notprestiged: "&fNone"
-  nextprestige-notprestiged: "&fNot Prestiged"
-  currency-symbol: "$"
-  currency-symbol-behind: true
-  percent-sign: "%"
-  percent-sign-behind: false
-  rebirth-notrebirthed: "&fNone"
-  nextrebirth-notrebirthed: "&fN/A"
-  rebirth-lastrebirth: "&4Last Rebirth"
-  next-progress-style: # global progress bar for every level. changes according to your level position (rank,prestige,rebirth) [configurable]
-    rankup: '[|]'
-    prestige: '[squaredot]'
-    rebirth: '[>>]'
-  next-progress-filled:
-    rankup: '&a'
-    prestige: '&b'
-    rebirth: '&6'
-  next-progress-needed:
-    rankup: '&c'
-    prestige: '&7'
-    rebirth: '&8'
-  next-progress-full-isrankup-enabled: false
-  next-progress-full-isprestige-enabled: false
-  next-progress-full-isrebirth-enabled: false
-  next-progress-full-islast-enabled: false
-  next-progress-full-isrankup: "&7Type &a/rankup&7!"
-  next-progress-full-isprestige: "&7Type &c/prestige&7!"
-  next-progress-full-isrebirth: "&7Type &c/rebirth&7!"
-  next-progress-full-islast: "&7You are at the latest stage."
-  # what to show when there is no player that took this position i.e no player prestiged so there will be not 1st player in the leaderboard.
-  leaderboard-name-rank-null: "none"
-  leaderboard-value-rank-null: "none"
-  leaderboard-name-prestige-null: "none"
-  leaderboard-value-prestige-null: "none"
-  leaderboard-name-rebirth-null: "none"
-  leaderboard-value-rebirth-null: "none"
-MoneyFormatter:
-  thousand: 'K'
-  million: 'M'
-  billion: 'B'
-  trillion: 'T'
-  quadrillion: 'Q'
-  quintillion: 'QT'
-  sextillion: 'S'
-  septillion: 'ST'
-  octillion: 'O'
-  nonillion: 'N'
-  decillion: 'D'
-  undecillion: 'UD'
-  Duodecillion: 'DD'
-  zillion: 'Z'
-# ----------------------------------------------
-# Don't Forget This !
-# ----------------------------------------------
-defaultrank: A
-lastrank: B
-defaultpath: "default"
-firstprestige: P1
-lastprestige: P2
-firstrebirth: R1
-lastrebirth: R2
+    - "(cancel-item_move)"

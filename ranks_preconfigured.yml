@@ -1,0 +1,370 @@
+# ============================================================================================================================================================================
+# | Default ranks. It doesn't have to be in alphanumeric order. You can put it in any order, and you can name the ranks anything you want.                                   |
+# | Don't put anything under the first rank !EXCEPT FOR! display, nextrank, and cost. This is because the actions that will be executed is the rank that you will rankup to. |
+#                                ░█████╗░██╗░░██╗███████╗░█████╗░██╗░░██╗  ████████╗██╗░░██╗███████╗  ░██╗░░░░░░░██╗██╗██╗░░██╗██╗
+#                                ██╔══██╗██║░░██║██╔════╝██╔══██╗██║░██╔╝  ╚══██╔══╝██║░░██║██╔════╝  ░██║░░██╗░░██║██║██║░██╔╝██║
+#                                ██║░░╚═╝███████║█████╗░░██║░░╚═╝█████═╝░  ░░░██║░░░███████║█████╗░░  ░╚██╗████╗██╔╝██║█████═╝░██║
+#                                ██║░░██╗██╔══██║██╔══╝░░██║░░██╗██╔═██╗░  ░░░██║░░░██╔══██║██╔══╝░░  ░░████╔═████║░██║██╔═██╗░██║
+#                                ╚█████╔╝██║░░██║███████╗╚█████╔╝██║░╚██╗  ░░░██║░░░██║░░██║███████╗  ░░╚██╔╝░╚██╔╝░██║██║░╚██╗██║
+#                                ░╚════╝░╚═╝░░╚═╝╚══════╝░╚════╝░╚═╝░░╚═╝  ░░░╚═╝░░░╚═╝░░╚═╝╚══════╝  ░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝
+#                                                         https://github.com/TheGaming999/PrisonRanksX/wiki
+# ============================================================================================================================================================================
+Ranks:
+  default:
+    A:
+      display: '&7[&1A&7]'
+      nextrank: B
+      cost: 0
+    B:
+      display: '&7[&2B&7]'
+      nextrank: C
+      cost: 5000.0
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    C:
+      cost: 12500.0
+      display: '&7[&3C&7]'
+      nextrank: D
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    D:
+      cost: 25000.0
+      display: '&7[&4D&7]'
+      nextrank: E
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    E:
+      cost: 50000.0
+      display: '&7[&5E&7]'
+      nextrank: F
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    F:
+      cost: 75000.0
+      display: '&7[&6F&7]'
+      nextrank: G
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    G:
+      cost: 100000.0
+      display: '&7[&7&lG&7]'
+      nextrank: H
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    H:
+      cost: 150000.0
+      display: '&7[&8H&7]'
+      nextrank: I
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    I:
+      cost: 200000.0
+      display: '&7[&9I&7]'
+      nextrank: J
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    J:
+      cost: 250000.0
+      display: '&7[&0&lJ&7]'
+      nextrank: K
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    K:
+      cost: 350000.0
+      display: '&7[&aK&7]'
+      nextrank: L
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    L:
+      cost: 500000.0
+      display: '&7[&bL&7]'
+      nextrank: M
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    M:
+      cost: 550000.0
+      display: '&7[&cM&7]'
+      nextrank: N
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    N:
+      cost: 600000.0
+      display: '&7[&dN&7]'
+      nextrank: O
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    O:
+      cost: 650000.0
+      display: '&7[&eO&7]'
+      nextrank: P
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    P:
+      cost: 700000.0
+      display: '&7[&fP&7]'
+      nextrank: Q
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    Q:
+      cost: 750000.0
+      display: '&7[&1&lQ&7]'
+      nextrank: R
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    R:
+      cost: 800000.0
+      display: '&7[&2&lR&7]'
+      nextrank: S
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    S:
+      cost: 850000.0
+      display: '&7[&3&lS&7]'
+      nextrank: T
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    T:
+      cost: 900000.0
+      display: '&7[&5&lT&7]'
+      nextrank: U
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    U:
+      cost: 950000.0
+      display: '&7[&6&lU&7]'
+      nextrank: V
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    V:
+      cost: 1000000.0
+      display: '&7[&9&lV&7]'
+      nextrank: W
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    W:
+      cost: 1250000.0
+      display: '&7[&a&lW&7]'
+      nextrank: X
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    X:
+      cost: 1500000.0
+      display: '&7[&b&lX&7]'
+      nextrank: Y
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    Y:
+      cost: 1750000.0
+      display: '&7[&c&lY&7]'
+      nextrank: Z
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"
+    Z:
+      cost: 2000000.0
+      display: '&7[&c&ki&4&lZ&c&ki&7]'
+      nextrank: LASTRANK
+      broadcast:
+      - "&c%player% &7ranked up to &c%rankup%"
+      actionbar:
+        interval: 2
+        text:
+        - <glow first=&a&l middle=&2&l last=&a&l>&f&lCongratulations!</glow>
+        - <glow first=&c&l middle=&4&l last=&c&l>&f&lYou reached the last rank!</glow>
+        - <glow first=&c&l middle=&4&l last=&c&l>&f&lYou reached the last rank!</glow>
+        - <glow first=&c&l middle=&4&l last=&c&l>&f&lYou reached the last rank!</glow>
+      addpermission:
+      - "essentials.warps.%rankup%"
+      delpermission:
+      - "essentials.warps.%rank%"

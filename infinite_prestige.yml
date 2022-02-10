@@ -1,4 +1,4 @@
-# enable the usage of this by turning off the server and changing the option 'infinite-prestige' to true inside config.yml
+# Enable the this configuration file by turning off the server and changing the option 'infinite-prestige' from false to true inside config.yml.
 # placeholders:
 # {number} = prestige number
 # {rankcost} = current rank cost
@@ -10,7 +10,7 @@ Global-Settings:
   - "eco give %player% 500"
   broadcast: []
   final-prestige: 1000000
-# Don't abuse this by adding every single prestige! That will not benfit you. Therefore, you will have to use the default prestiges.yml instead of this.
+# Execute at that specific prestige number.
 Prestiges-Settings:
   # ~Possible actions~
   # executecmds:
@@ -20,3 +20,21 @@ Prestiges-Settings:
   # - "&e%player% &7just prestiged."
   500:
     executecmds: []
+# Execute every X prestige.
+# Actions that will be performed every time the player passes X amount of prestiges.
+# So if a player passes 500/1000/1500/etc.... prestiges, this message will be broadcasted.
+# Accepts: executecmds, broadcast.
+Continuous-Prestiges-Settings:
+  500:
+    broadcast:
+    - "&6%player% has passed &a500 &6prestiges."
+# Edit at X prestige.
+# Permanent changes to prestige settings. Below, what will happen is, that prestiges numbered from 500 till 999 will have their
+# display changed. Then, it will also get changed again when the player reaches prestige 1000.
+Constant-Prestiges-Settings:
+  500:
+    display: "&8[&bP{number}&8]"
+    to: 1000
+  1000:
+    display: "&8[&cP{number}&8]"
+    to: 2000
