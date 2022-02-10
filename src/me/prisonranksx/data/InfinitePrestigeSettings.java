@@ -46,7 +46,7 @@ public class InfinitePrestigeSettings {
 					InfinitePrestigeSettings newSetting = new InfinitePrestigeSettings(plugin);
 					String contDisplay = infinitePrestigeConfig.getString("Continuous-Prestiges-Settings." + prestigeNumber + ".display");
 					String contCostExpression = infinitePrestigeConfig.getString("Continuous-Prestiges-Settings." + prestigeNumber + ".cost-expression");
-					List<String> commands = infinitePrestigeConfig.getStringList("Continuous-Prestiges-Settings." + prestigeNumber + ".commands");
+					List<String> commands = infinitePrestigeConfig.getStringList("Continuous-Prestiges-Settings." + prestigeNumber + ".executecmds");
 					List<String> broadcast = infinitePrestigeConfig.getStringList("Continuous-Prestiges-Settings." + prestigeNumber + ".broadcast");
 				    if(contDisplay != null)
 				    	newSetting.setDisplay(this.plugin.getChatColorReplacer().parseRegular(contDisplay));
@@ -67,7 +67,7 @@ public class InfinitePrestigeSettings {
 					InfinitePrestigeSettings newSetting = new InfinitePrestigeSettings(plugin);
 					String consDisplay = infinitePrestigeConfig.getString("Constant-Prestiges-Settings." + prestigeNumber + ".display");
 					String consCostExpression = infinitePrestigeConfig.getString("Constant-Prestiges-Settings." + prestigeNumber + ".cost-expression");
-					List<String> commands = infinitePrestigeConfig.getStringList("Constant-Prestiges-Settings." + prestigeNumber + ".commands");
+					List<String> commands = infinitePrestigeConfig.getStringList("Constant-Prestiges-Settings." + prestigeNumber + ".executecmds");
 					List<String> broadcast = infinitePrestigeConfig.getStringList("Constant-Prestiges-Settings." + prestigeNumber + ".broadcast");
                     long nextPrestigeNumber = infinitePrestigeConfig.getLong("Constant-Prestiges-Settings." + prestigeNumber + ".to");
 				    if(consDisplay != null)
@@ -80,9 +80,6 @@ public class InfinitePrestigeSettings {
 				    	newSetting.setBroadcast(this.plugin.getChatColorReplacer().parseRegular(broadcast));
 				    if(nextPrestigeNumber != 0) 
 				    	newSetting.setFinalPrestige(nextPrestigeNumber);
-				    this.plugin.debug = true;
-				    this.plugin.debugPreEnable("SETUP CONSTANT DISPLAY OF " + prestigeNumber + " TO: " + consDisplay);
-				    this.plugin.debug = false;
 				    this.constantPrestigeSettings.put(Long.valueOf(prestigeNumber), newSetting);
 				}
 			}

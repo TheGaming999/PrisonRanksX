@@ -25,7 +25,7 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	private List<String> delPermissionList;
 	private Boolean sendFirework;
 	private PrestigeRandomCommands randomCommandsManager;
-	private FireworkManager fireworkManager;
+	private FireworkDataHandler fireworkDataHandler;
 	private Map<String, Double> numberRequirements;
 	private Map<String, String> stringRequirements;
 	private List<String> customRequirementMessage;
@@ -77,8 +77,7 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	}
 	
 	public String getDisplayName() {
-		String display = "";
-		display = ips.getDisplay().replace("{number}", getName());
+		String display = ips.getDisplay().replace("{number}", getName());
 		if(!cps.isEmpty()) {
 		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
 		   		long prestigeNumber = Long.valueOf(prestigeName);
@@ -105,7 +104,18 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	}
 	
 	public String getNextPrestigeDisplayName() {
-		return ips.getDisplay().replace("{number}", getNextPrestigeName());
+		String display = ips.getDisplay().replace("{number}", getNextPrestigeName());
+		if(!cps.isEmpty()) {
+		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
+		   		long prestigeNumber = Long.valueOf(prestigeName);
+		   		InfinitePrestigeSettings ipsc = cons.getValue();
+		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+		   			display = ipsc.getDisplay().replace("{number}", getNextPrestigeName());
+		   			break;
+		   		}
+		   	}
+		}	
+		return display;
 	}
 	
 	public void setNextPrestigeDisplayName(String nextPrestigeDisplayName) {
@@ -130,7 +140,18 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	}
 	
 	public List<String> getPrestigeCommands() {
-		return prestigeCommands;
+		List<String> commands = prestigeCommands;
+		if(!cps.isEmpty()) {
+		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
+		   		long prestigeNumber = Long.valueOf(prestigeName);
+		   		InfinitePrestigeSettings ipsc = cons.getValue();
+		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+		   			commands = ipsc.getCommands();
+		   			break;
+		   		}
+		   	}
+		}	
+		return commands;
 	}
 	
 	public void setPrestigeCommands(List<String> nextPrestigeCommands) {
@@ -220,22 +241,6 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 		}
 	}
 	
-	public FireworkManager getFireworkManager() {
-		return fireworkManager;
-	}
-	
-	public void setFireworkManager(FireworkManager fireworkManager) {
-		if(fireworkManager != null) {
-			if(fireworkManager.getFireworkBuilder() == null) {
-				return;
-			}
-			if(fireworkManager.getFireworkBuilder().isEmpty()) {
-				return;
-			}
-		this.fireworkManager = fireworkManager;
-		}
-	}
-	
 	public boolean getSendFirework() {
 		return sendFirework;
 	}
@@ -281,6 +286,16 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	@Override
 	public IPrestigeDataHandler getHandler(String prestigeName) {
 		return this;
+	}
+
+	@Override
+	public FireworkDataHandler getFireworkDataHandler() {
+		return this.fireworkDataHandler;
+	}
+
+	@Override
+	public void setFireworkDataHandler(FireworkDataHandler fireworkDataHandler) {
+		this.fireworkDataHandler = fireworkDataHandler;
 	}
 	
 }

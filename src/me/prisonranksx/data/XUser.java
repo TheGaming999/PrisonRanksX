@@ -45,7 +45,7 @@ public class XUser {
 	}
 	
 	public UUID getUUID() {
-		return uuid;
+		return this.uuid;
 	}
 	
 }

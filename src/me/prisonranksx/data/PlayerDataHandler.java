@@ -8,8 +8,10 @@ import javax.annotation.Nullable;
 public class PlayerDataHandler {
 
 	private XUser player;
+	@SuppressWarnings("unused")
 	private String rank;
 	private String prestige;
+	@SuppressWarnings("unused")
 	private String path;
 	private RankPath rankPath;
 	private String rebirth;

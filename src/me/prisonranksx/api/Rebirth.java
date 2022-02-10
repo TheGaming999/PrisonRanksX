@@ -10,20 +10,18 @@ import java.util.Map.Entry;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
-
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RebirthRandomCommands;
 import me.prisonranksx.events.RebirthUpdateEvent;
+import me.prisonranksx.hooks.IHologram;
 import me.prisonranksx.events.PrestigeUpdateCause;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.events.PrestigeUpdateEvent;
 import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.utils.OnlinePlayers;
-import me.prisonranksx.utils.CompatibleSound.Sounds;
+import me.prisonranksx.utils.XSound;
 
 public class Rebirth {
 	
@@ -35,14 +33,14 @@ public class Rebirth {
 	
 	public void rebirth(final Player player) {
 		String name = player.getName();
-		if(prxAPI.taskedPlayers.contains(name)) {
+		if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 			if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 				return;
 			}
 			player.sendMessage(prxAPI.g("commandspam"));
 			return;
 		}
-		prxAPI.taskedPlayers.add(name);
+		PRXAPI.TASKED_PLAYERS.add(name);
 
 		Player p = player;
 		String rebirth = prxAPI.getPlayerNextRebirth(p);
@@ -51,7 +49,7 @@ public class Rebirth {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(rebirth.equalsIgnoreCase("LASTREBIRTH")) {
@@ -60,14 +58,14 @@ public class Rebirth {
 				  p.sendMessage(prxAPI.c(line));
 			  }
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(!prxAPI.isLastRank(p)) {
 			if(prxAPI.g("norebirth") != null && !prxAPI.g("norebirth").isEmpty()) {
 				p.sendMessage(prxAPI.cp(prxAPI.g("norebirth"), p));
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(prxAPI.getPlayerNextRebirthCost(p) > prxAPI.getPlayerMoney(p)) {
@@ -78,7 +76,7 @@ public class Rebirth {
 						.replace("%nextrebirth_cost%", prxAPI.s(prxAPI.getPlayerNextRebirthCost(p))).replace("%nextrebirth_cost_formatted%", prxAPI.getPlayerNextRebirthCostFormatted(p)));
 			}
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		int requiredPrestiges = prxAPI.getRequiredPrestiges(rebirth);
@@ -89,7 +87,7 @@ public class Rebirth {
 			int left = (requiredPrestiges - prxAPI.getPlayerPrestiges(p)) / rebirthNumber;
 			p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
 					.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		} else {
@@ -98,7 +96,7 @@ public class Rebirth {
 				int left = (prxAPI.getPrestigesCollection().size() - prxAPI.getPlayerPrestiges(p) / rebirthNumber);
 				p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
 						.replace("%prestiges_amount%", prxAPI.s(prxAPI.getPrestigesCollection().size())));
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 		}
@@ -130,13 +128,13 @@ public class Rebirth {
 					p.sendMessage(prxAPI.cp(message, p));
 				});
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		RebirthUpdateEvent e = new RebirthUpdateEvent(player, RebirthUpdateCause.REBIRTHUP);
 		main.getServer().getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		String rebirthMsg = prxAPI.g("rebirth");
@@ -247,10 +245,10 @@ public class Rebirth {
 		if(!nextRebirthSoundName.isEmpty() && nextRebirthSoundName.length() > 1) {
 			float nextRebirthSoundPitch = (float)main.globalStorage.getDoubleData("Options.rebirthsound-pitch");
 		    float nextRebirthSoundVolume = (float)main.globalStorage.getDoubleData("Options.rebirthsound-volume");
-			p.playSound(p.getLocation(), Sounds.valueOf(nextRebirthSoundName).bukkitSound(), nextRebirthSoundVolume, nextRebirthSoundPitch);
+			p.playSound(p.getLocation(), XSound.matchSound(nextRebirthSoundName), nextRebirthSoundVolume, nextRebirthSoundPitch);
 		}
 		boolean nextRebirthHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rebirth.enable");
-		if(nextRebirthHologramIsEnable && main.isholo) {
+		if(nextRebirthHologramIsEnable && main.hasHologramsPlugin) {
 			int nextRebirthHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rebirth.remove-time");
 			int nextRebirthHologramHeight = main.globalStorage.getIntegerData("Holograms.rebirth.height");
 			List<String> nextRebirthHologramFormat = main.globalStorage.getStringListData("Holograms.rebirth.format");
@@ -303,26 +301,23 @@ public class Rebirth {
 		}
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 		main.playerStorage.setPlayerRebirth(p, rebirth);
-		prxAPI.taskedPlayers.remove(name);
+		PRXAPI.TASKED_PLAYERS.remove(name);
 		
 		}, 1);
 	}
 	
 	public void spawnHologram(List<String> format, int removeTime, int height, Player player) {
-		Player p = player;
-		String name = p.getName();
-		Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
-		hologram.setAllowPlaceholders(true);
+		String name = player.getName();
+		String nextRebirth = prxAPI.getPlayerNextRebirth(player);
+		IHologram hologram = main.hologramManager.createHologram("prx_" + nextRebirth + name, player.getLocation().add(0, height, 0), true);
 		for(String line : format) {
 			String updatedLine = main.getString(line.replace("%player%", name)
-					.replace("%player_display%", p.getDisplayName())
-					.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(p))
-					.replace("%nextrebirth_display%", main.getString(prxAPI.getPlayerNextRebirthDisplay(p)))
+					.replace("%player_display%", player.getDisplayName())
+					.replace("%nextrebirth%", nextRebirth)
+					.replace("%nextrebirth_display%", main.getString(prxAPI.getPlayerNextRebirthDisplay(player)))
 					, name);
-			hologram.appendTextLine(updatedLine);
+			hologram.addLine(updatedLine, false);
 		}
-        Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable () {public void run() {
-        	hologram.delete();
-        }}, 20L * removeTime);
+		hologram.delete(removeTime);
 	}
 }

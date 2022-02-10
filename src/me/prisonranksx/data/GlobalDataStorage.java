@@ -27,35 +27,35 @@ public interface GlobalDataStorage {
 	List<String> parseHexColorCodes(final List<String> message);
 	
 	public default Map<String, String> getStringMap() {
-		return this.stringData;
+		return stringData;
 	}
 	
 	public default Map<String, Integer> getIntegerMap() {
-		return this.integerData;
+		return integerData;
 	}
 	
 	public default Map<String, Double> getDoubleMap() {
-		return this.doubleData;
+		return doubleData;
 	}
 	
 	public default Map<String, Boolean> getBooleanMap() {
-		return this.booleanData;
+		return booleanData;
 	}
 	
 	public default Map<String, List<String>> getStringListMap() {
-		return this.stringListData;
+		return stringListData;
 	}
 	
 	public default Map<String, Set<String>> getStringSetMap() {
-		return this.stringSetData;
+		return stringSetData;
 	}
 	
 	public default Map<String, Map<String, Object>> getMap() {
-		return this.mapData;
+		return mapData;
 	}
 	
 	public default Map<String, Object> getGlobalMap() {
-		return this.globalData;
+		return globalData;
 	}
 	
 	/**
@@ -169,6 +169,7 @@ public interface GlobalDataStorage {
 		String forceDisplayOrder = registerStringData("Options.force-display-order");
 		boolean isForceRankDisplay = registerBooleanData("Options.force-rank-display");
 		boolean isForcePrestigeDisplay = registerBooleanData("Options.force-prestige-display");
+		boolean isFormatChat = registerBooleanData("Options.format-chat");
 		boolean isAllWorldsBroadcast = registerBooleanData("Options.allworlds-broadcast");
 		boolean isForceRebirthDisplay = registerBooleanData("Options.force-rebirth-display");
 		String noPrestigeDispaly = registerStringData("Options.no-prestige-display");

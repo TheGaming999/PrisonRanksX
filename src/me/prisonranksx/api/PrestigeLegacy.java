@@ -20,8 +20,8 @@ import me.prisonranksx.events.PrestigeUpdateEvent;
 import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.events.PrestigeUpdateCause;
 import me.prisonranksx.events.RankUpdateCause;
+import me.prisonranksx.utils.XSound;
 import me.prisonranksx.utils.XUUID;
-import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 public class PrestigeLegacy {
 	
@@ -42,7 +42,7 @@ public class PrestigeLegacy {
 		}
 		isAutoPrestigeTaskEnabled = true;
 		Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
-			for(String playerName : prxAPI.autoPrestigePlayers) {
+			for(String playerName : PRXAPI.AUTO_PRESTIGE_PLAYERS) {
 				this.prestige(Bukkit.getPlayer(playerName), true);
 			}
 		}, autoPrestigeDelay, autoPrestigeDelay);
@@ -52,12 +52,12 @@ public class PrestigeLegacy {
 		Player p = player;
 		String name = p.getName();
 		if(prxAPI.isAutoPrestigeEnabled(p)) {
-			prxAPI.autoPrestigePlayers.remove(name);
+			PRXAPI.AUTO_PRESTIGE_PLAYERS.remove(name);
 			if(prxAPI.g("autoprestige-disabled") != null && !prxAPI.g("autoprestige-disabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autoprestige-disabled"));
 			}
 		} else {
-			prxAPI.autoPrestigePlayers.add(name);
+			PRXAPI.AUTO_PRESTIGE_PLAYERS.add(name);
 			startAutoPrestigeTask();
 			if(prxAPI.g("autoprestige-enabled") != null && !prxAPI.g("autoprestige-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autoprestige-enabled"));
@@ -70,7 +70,7 @@ public class PrestigeLegacy {
 		String name = p.getName();
 		if(prxAPI.isAutoPrestigeEnabled(p)) {
 			if(!enable) {
-			prxAPI.autoPrestigePlayers.remove(name);
+			PRXAPI.AUTO_PRESTIGE_PLAYERS.remove(name);
 			if(prxAPI.g("autoprestige-disabled") != null && !prxAPI.g("autoprestige-disabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autoprestige-disabled"));
 			}
@@ -86,7 +86,7 @@ public class PrestigeLegacy {
 				}
 				return;
 			}
-			prxAPI.autoPrestigePlayers.add(name);
+			PRXAPI.AUTO_PRESTIGE_PLAYERS.add(name);
 			startAutoPrestigeTask();
 			if(prxAPI.g("autoprestige-enabled") != null && !prxAPI.g("autoprestige-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autoprestige-enabled"));
@@ -96,17 +96,17 @@ public class PrestigeLegacy {
 	
 	public void prestige(final Player player) {
 		String name = player.getName();
-		if(prxAPI.taskedPlayers.contains(name)) {
+		if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
 			player.sendMessage(prxAPI.g("commandspam"));
 			}
 			return;
 		}
-		prxAPI.taskedPlayers.add(name);
+		PRXAPI.TASKED_PLAYERS.add(name);
 		PrestigeUpdateEvent e = new PrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		Player p = player;
@@ -117,7 +117,7 @@ public class PrestigeLegacy {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(prestige.equalsIgnoreCase("LASTPRESTIGE")) {
@@ -126,14 +126,14 @@ public class PrestigeLegacy {
 				p.sendMessage(prxAPI.c(line));
 			}
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(!prxAPI.isLastRank(u) && !main.rankStorage.isAllowPrestige(prxAPI.getPlayerRankPath(u))) {
 			if(prxAPI.g("noprestige") != null && !prxAPI.g("noprestige").isEmpty()) {
 				p.sendMessage(prxAPI.g("noprestige"));
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
@@ -145,7 +145,7 @@ public class PrestigeLegacy {
 						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u))).replace("%nextprestige_cost_formatted%", prxAPI.getPlayerNextPrestigeCostFormatted(u)));
 			}
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		String prestigeMsg = prxAPI.g("prestige");
@@ -254,10 +254,10 @@ public class PrestigeLegacy {
 		if(!nextPrestigeSoundName.isEmpty() && nextPrestigeSoundName.length() > 1) {
 			float nextPrestigeSoundPitch = (float)main.globalStorage.getDoubleData("Options.prestigesound-pitch");
 		    float nextPrestigeSoundVolume = (float)main.globalStorage.getDoubleData("Options.prestigesound-volume");
-			p.playSound(p.getLocation(), Sounds.valueOf(nextPrestigeSoundName).bukkitSound(), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
+			p.playSound(p.getLocation(), XSound.matchSound(nextPrestigeSoundName), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
 		}
 		boolean nextPrestigeHologramIsEnable = main.globalStorage.getBooleanData("Holograms.prestige.enable");
-		if(nextPrestigeHologramIsEnable && main.isholo) {
+		if(nextPrestigeHologramIsEnable && main.hasHologramsPlugin) {
 			int nextPrestigeHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.prestige.remove-time");
 			int nextPrestigeHologramHeight = main.globalStorage.getIntegerData("Holograms.prestige.height");
 			List<String> nextPrestigeHologramFormat = main.globalStorage.getStringListData("Holograms.prestige.format");
@@ -272,7 +272,7 @@ public class PrestigeLegacy {
 			Bukkit.getScheduler().runTask(main, () -> {
 			RankUpdateEvent e1 = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
@@ -300,22 +300,22 @@ public class PrestigeLegacy {
            });
 		}
 		main.playerStorage.setPlayerPrestige(u, prestige);
-		prxAPI.taskedPlayers.remove(name);
+		PRXAPI.TASKED_PLAYERS.remove(name);
 	}
 	
 	public void prestige2(final Player player, boolean ignoreLastRank) {
 		String name = player.getName();
-		if(prxAPI.taskedPlayers.contains(name)) {
+		if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
 			player.sendMessage(prxAPI.g("commandspam"));
 			}
 			return;
 		}
-		prxAPI.taskedPlayers.add(name);
+		PRXAPI.TASKED_PLAYERS.add(name);
 		PrestigeUpdateEvent e = new PrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		Player p = player;
@@ -326,7 +326,7 @@ public class PrestigeLegacy {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(prestige.equalsIgnoreCase("LASTPRESTIGE")) {
@@ -335,7 +335,7 @@ public class PrestigeLegacy {
 				p.sendMessage(prxAPI.c(line));
 			}
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
@@ -347,7 +347,7 @@ public class PrestigeLegacy {
 						.replace("%nextprestige%", prxAPI.getPlayerNextPrestige(u)).replace("%nextprestige_display%", prxAPI.getPlayerNextPrestigeDisplayNoFallback(u))
 						.replace("%nextprestige_cost%", prxAPI.s(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u))).replace("%nextprestige_cost_formatted%", prxAPI.getPlayerNextPrestigeCostFormatted(u)));
 			}
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		String prestigeMsg = prxAPI.g("prestige");
@@ -456,10 +456,10 @@ public class PrestigeLegacy {
 		if(!nextPrestigeSoundName.isEmpty() && nextPrestigeSoundName.length() > 1) {
 			float nextPrestigeSoundPitch = (float)main.globalStorage.getDoubleData("Options.prestigesound-pitch");
 		    float nextPrestigeSoundVolume = (float)main.globalStorage.getDoubleData("Options.prestigesound-volume");
-			p.playSound(p.getLocation(), Sounds.valueOf(nextPrestigeSoundName).bukkitSound(), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
+			p.playSound(p.getLocation(), XSound.matchSound(nextPrestigeSoundName), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
 		}
 		boolean nextPrestigeHologramIsEnable = main.globalStorage.getBooleanData("Holograms.prestige.enable");
-		if(nextPrestigeHologramIsEnable && main.isholo) {
+		if(nextPrestigeHologramIsEnable && main.hasHologramsPlugin) {
 			int nextPrestigeHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.prestige.remove-time");
 			int nextPrestigeHologramHeight = main.globalStorage.getIntegerData("Holograms.prestige.height");
 			List<String> nextPrestigeHologramFormat = main.globalStorage.getStringListData("Holograms.prestige.format");
@@ -474,7 +474,7 @@ public class PrestigeLegacy {
 			Bukkit.getScheduler().runTask(main, () -> {
 			RankUpdateEvent e1 = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
@@ -502,22 +502,22 @@ public class PrestigeLegacy {
            });
 		}
 		main.playerStorage.setPlayerPrestige(u, prestige);
-		prxAPI.taskedPlayers.remove(name);
+		PRXAPI.TASKED_PLAYERS.remove(name);
 	}
 	
 	public void prestige(final Player player, boolean silent) {
 		String name = player.getName();
-		if(prxAPI.taskedPlayers.contains(name)) {
+		if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
 			player.sendMessage(prxAPI.g("commandspam"));
 			}
 			return;
 		}
-		prxAPI.taskedPlayers.add(name);
+		PRXAPI.TASKED_PLAYERS.add(name);
 		PrestigeUpdateEvent e = new PrestigeUpdateEvent(player, PrestigeUpdateCause.PRESTIGEUP);
 		Bukkit.getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		Player p = player;
@@ -528,19 +528,19 @@ public class PrestigeLegacy {
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(prestige.equalsIgnoreCase("LASTPRESTIGE")) {
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(!prxAPI.isLastRank(u) && !main.rankStorage.isAllowPrestige(prxAPI.getPlayerRankPath(u))) {
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		String prestigeMsg = prxAPI.g("prestige");
@@ -649,10 +649,10 @@ public class PrestigeLegacy {
 		if(!nextPrestigeSoundName.isEmpty() && nextPrestigeSoundName.length() > 1) {
 			float nextPrestigeSoundPitch = (float)main.globalStorage.getDoubleData("Options.prestigesound-pitch");
 		    float nextPrestigeSoundVolume = (float)main.globalStorage.getDoubleData("Options.prestigesound-volume");
-			p.playSound(p.getLocation(), Sounds.valueOf(nextPrestigeSoundName).bukkitSound(), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
+			p.playSound(p.getLocation(), XSound.matchSound(nextPrestigeSoundName), nextPrestigeSoundVolume, nextPrestigeSoundPitch);
 		}
 		boolean nextPrestigeHologramIsEnable = main.globalStorage.getBooleanData("Holograms.prestige.enable");
-		if(nextPrestigeHologramIsEnable && main.isholo) {
+		if(nextPrestigeHologramIsEnable && main.hasHologramsPlugin) {
 			int nextPrestigeHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.prestige.remove-time");
 			int nextPrestigeHologramHeight = main.globalStorage.getIntegerData("Holograms.prestige.height");
 			List<String> nextPrestigeHologramFormat = main.globalStorage.getStringListData("Holograms.prestige.format");
@@ -667,7 +667,7 @@ public class PrestigeLegacy {
 			Bukkit.getScheduler().runTask(main, () -> {
 			RankUpdateEvent e1 = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYPRESTIGE);
 			if(e1.isCancelled()) {
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
@@ -695,7 +695,7 @@ public class PrestigeLegacy {
            });
 		}
 		main.playerStorage.setPlayerPrestige(u, prestige);
-		prxAPI.taskedPlayers.remove(name);
+		PRXAPI.TASKED_PLAYERS.remove(name);
 	}
 	
 	public void spawnHologram(final List<String> format, final int removeTime, final int height, final Player player) {

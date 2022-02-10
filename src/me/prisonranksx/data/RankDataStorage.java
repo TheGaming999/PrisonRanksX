@@ -1,6 +1,5 @@
 package me.prisonranksx.data;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -16,6 +15,7 @@ import com.google.common.collect.Lists;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.utils.CollectionUtils;
+import me.prisonranksx.utils.MCTextEffect;
 
 public class RankDataStorage {
 
@@ -27,8 +27,6 @@ public class RankDataStorage {
 	private Map<String, List<String>> playerCommands;
 	private Map<String, List<String>> opCommands;
 	private Map<String, String> lastRankMap;
-	private static final Map<String, String> emptyStringToStringMap = new HashMap<>();
-	private static final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
 	private int pathsAmount;
 	
 	public RankDataStorage(PrisonRanksX main) {this.main = main;
@@ -118,7 +116,7 @@ public class RankDataStorage {
 				String rankupDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display", "");
 				boolean allowPrestige = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".allow-prestige");
 				List<String> rankupCommands = getList("Ranks." + pathName + "." +  rankupName + ".executecmds");
-				List<String> actionbarMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
+				List<String> actionbarMessages = MCTextEffect.parseGlow(main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text"));
 				int actionbarInterval = main.getConfigManager().ranksConfig.getInt("Ranks." + pathName + "." +  rankupName + ".actionbar.interval");
 				List<String> broadcastMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".broadcast");
 				List<String> messages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".msg");
@@ -126,12 +124,11 @@ public class RankDataStorage {
 				List<String> addPermissionList = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".addpermission");
 				List<String> delPermissionList = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
 				RankRandomCommands randomCommandsManager = new RankRandomCommands(rankupName, false, pathName, true);
-				FireworkManager fireworkManager = new FireworkManager(rankupName, LevelType.RANK, pathName);
 				boolean sendFirework = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 				RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 				RankPath rankPath = new RankPath(rankName, pathName);
-				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
-				Map<String, String> stringRequirements = emptyStringToStringMap;
+				Map<String, Double> numberRequirements = new LinkedHashMap<>();
+				Map<String, String> stringRequirements = new LinkedHashMap<>();
 				List<String> customRequirementMessage = Lists.newArrayList();
 				if(main.getConfigManager().ranksConfig.isSet("Ranks." + pathName + "." + rankupName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." + rankupName + ".requirements")) {
@@ -178,7 +175,7 @@ public class RankDataStorage {
                 rdh.setAddPermissionList(addPermissionList);
                 rdh.setDelPermissionList(delPermissionList);
                 rdh.setRandomCommandsManager(randomCommandsManager);
-                rdh.setFireworkManager(fireworkManager);
+                rdh.setFireworkDataHandler(main.getFireworkManager().readFromConfig(LevelType.RANK, rankName, pathName));
                 rdh.setSendFirework(sendFirework);
                 rdh.setPathName(pathName);
                 rdh.setRankCommands(getList("Ranks." + pathName + "." +  rankName + ".executecmds"));
@@ -235,7 +232,7 @@ public class RankDataStorage {
 		String rankupDisplayName = main.getConfigManager().ranksConfig.getString("Ranks." + pathName + "." +  rankupName + ".display");
 		boolean allowPrestige = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankName + ".allow-prestige");
 		List<String> rankupCommands = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".executecmds");
-		List<String> actionbarMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text");
+		List<String> actionbarMessages = MCTextEffect.parseGlow(main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".actionbar.text"));
 		int actionbarInterval = getInteger("Ranks." + pathName + "." +  rankupName + ".actionbar.interval");
 		List<String> broadcastMessages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".broadcast");
 		List<String> messages = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".text");
@@ -243,7 +240,6 @@ public class RankDataStorage {
 		List<String> addPermissionList = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".addpermission");
 		List<String> delPermissionList = main.getConfigManager().ranksConfig.getStringList("Ranks." + pathName + "." +  rankupName + ".delpermission");
 		RankRandomCommands randomCommandsManager = new RankRandomCommands(rankupName, false, pathName, true);
-		FireworkManager fireworkManager = new FireworkManager(rankupName, LevelType.RANK, pathName);
 		boolean sendFirework = main.getConfigManager().ranksConfig.getBoolean("Ranks." + pathName + "." +  rankupName + ".send-firework");
 		RankDataHandler rdh = new RankDataHandler(rankName, pathName);
 		rdh.setName(rankName);
@@ -263,7 +259,7 @@ public class RankDataStorage {
         rdh.setAddPermissionList(addPermissionList);
         rdh.setDelPermissionList(delPermissionList);
         rdh.setRandomCommandsManager(randomCommandsManager);
-        rdh.setFireworkManager(fireworkManager);
+        rdh.setFireworkDataHandler(main.getFireworkManager().readFromConfig(LevelType.RANK, rankName, pathName));
         rdh.setSendFirework(sendFirework);
         RankPath rankPath = new RankPath(rankName, pathName);
         rankData.put(rankPath.get(), rdh);
@@ -385,12 +381,8 @@ public class RankDataStorage {
 		return rankData.get(rankPath.get()).getRandomCommandsManager().getRandomCommandsMap();
 	}
 	
-	public FireworkManager getFireworkManager(RankPath rankPath) {
-		return rankData.get(rankPath.get()).getFireworkManager();
-	}
-	
-	public Map<String, Object> getFireworkBuilder(RankPath rankPath) {
-		return rankData.get(rankPath.get()).getFireworkManager().getFireworkBuilder();
+	public FireworkDataHandler getFireworkDataHandler(RankPath rankPath) {
+		return rankData.get(rankPath.get()).getFireworkDataHandler();
 	}
 	
 	public boolean isSendFirework(RankPath rankPath) {
@@ -440,6 +432,7 @@ public class RankDataStorage {
             setData("Ranks." + pathName + "." +  rankup + ".cost", rankData.get(rankPath.get()).getRankupCost());
             setData("Ranks." + pathName + "." +  rankup + ".display", rankData.get(rankPath.get()).getRankupDisplayName());
             setData("Ranks." + pathName + "." +  rankup + ".executecmds", rankData.get(rankPath.get()).getRankupCommands());
+            setData("Ranks." + pathName + "." + rankName + ".delpermission", rankData.get(rankPath.get()).getDelPermissionList());
            // setData("Ranks." + pathName + "." +  rankup + ".actionbar.interval", rankData.get(rankPath.get()).getActionbarInterval());
            // setData("Ranks." + pathName + "." +  rankup + ".actionbar.text", rankData.get(rankPath.get()).getActionbarMessages());
            // setData("Ranks." + pathName + "." +  rankup + ".broadcast", rankData.get(rankPath.get()).getBroadcast());
@@ -484,9 +477,7 @@ public class RankDataStorage {
                  if(rank.getValue().getRandomCommandsManager() != null) {
                 // setData("Ranks." + pathName + "." +  rankup + ".randomcmds", rank.getValue().getRandomCommandsManager().getRandomCommandsMap());
                  }
-                 if(rank.getValue().getFireworkManager() != null && rank.getValue().isSendFirework()) {
-                 // setData("Ranks." + pathName + "." +  rankup + ".firework-builder", rank.getValue().getFireworkManager().getFireworkBuilder());
-                 }
+
                  if(rank.getValue().isSendFirework()) {
                  setData("Ranks." + pathName + "." +  rankup + ".send-firework", rank.getValue().isSendFirework());
                  }

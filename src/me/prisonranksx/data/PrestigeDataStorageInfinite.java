@@ -1,15 +1,11 @@
 package me.prisonranksx.data;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.Map.Entry;
 
 
 import me.prisonranksx.PrisonRanksX;
@@ -168,12 +164,8 @@ public class PrestigeDataStorageInfinite implements IPrestigeDataStorage {
 		return getHandler(prestigeName).getRandomCommandsManager();
 	}
 	
-	public FireworkManager getFireworkManager(String prestigeName) {
-		return getHandler(prestigeName).getFireworkManager();
-	}
-	
-	public Map<String, Object> getFireworkBuilder(String prestigeName) {
-		return getHandler(prestigeName).getFireworkManager().getFireworkBuilder();
+	public FireworkDataHandler getFireworkDataHandler(String prestigeName) {
+		return getHandler(prestigeName).getFireworkDataHandler();
 	}
 	
 	public boolean isSendFirework(String prestigeName) {
@@ -279,4 +271,5 @@ public class PrestigeDataStorageInfinite implements IPrestigeDataStorage {
 		// TODO Auto-generated method stub
 		
 	}
+
 }

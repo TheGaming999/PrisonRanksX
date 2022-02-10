@@ -38,8 +38,7 @@ public interface IPrestigeDataStorage {
     public List<String> getAddPermissionList(String prestigeName);
     public List<String> getDelPermissionList(String prestigeName);
     public PrestigeRandomCommands getRandomCommandsManager(String prestigeName);
-    public FireworkManager getFireworkManager(String prestigeName);
-    public Map<String, Object> getFireworkBuilder(String prestigeName);
+    public FireworkDataHandler getFireworkDataHandler(String prestigeName);
     public boolean isSendFirework(String prestigeName);
     public String getValues(String prestigeName);
     public void savePrestigeData(String prestigeName);

@@ -1,8 +1,5 @@
 package me.prisonranksx.data;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,15 +7,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.google.common.collect.Lists;
+
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.MCTextEffect;
 
 public class RebirthDataStorage {
 	
 	public Map<String, RebirthDataHandler> rebirthData;
 	private PrisonRanksX main;
-	private final Map<String, String> emptyStringToStringMap = new HashMap<>();
-	private final Map<String, Double> emptyStringToDoubleMap = new HashMap<>();
-	private final List<String> emptyStringList = new ArrayList<>();
 	
 	public RebirthDataStorage(PrisonRanksX main) {
 		this.main = main;
@@ -55,7 +52,7 @@ public class RebirthDataStorage {
                 prestigeIncrease = loadDouble("Rebirths." + rebirthName + ".prestige_cost_increase_percentage");
 				List<String> rebirthCommands = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".executecmds");
 				//List<String> nextRebirthCommands = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + nextRebirthName + ".executecmds");
-				List<String> actionbarMessages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actionbar.text");
+				List<String> actionbarMessages = MCTextEffect.parseGlow(main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".actionbar.text"));
 				int actionbarInterval = main.getConfigManager().rebirthsConfig.getInt("Rebirths." + rebirthName + ".actionbar.interval");
 				List<String> broadcastMessages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".broadcast");
 				List<String> messages = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".msg");
@@ -65,12 +62,11 @@ public class RebirthDataStorage {
                 int requiredPrestiges = 0;
                 requiredPrestiges = loadInt("Rebirths." + rebirthName + ".required_prestiges");
 				RebirthRandomCommands randomCommandsManager = new RebirthRandomCommands(rebirthName, false, true);
-				FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
 				boolean sendFirework = main.getConfigManager().rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
 				RebirthDataHandler rbdh = new RebirthDataHandler(rebirthName);
-				Map<String, Double> numberRequirements = emptyStringToDoubleMap;
-				Map<String, String> stringRequirements = emptyStringToStringMap;
-				List<String> customRequirementMessage = emptyStringList;
+				Map<String, Double> numberRequirements = new LinkedHashMap<>();
+				Map<String, String> stringRequirements = new LinkedHashMap<>();
+				List<String> customRequirementMessage = Lists.newArrayList();
 				if(main.getConfigManager().rebirthsConfig.isSet("Rebirths." + rebirthName + ".requirements")) {
 					for(String requirementCondition : main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".requirements")) {
 						if(requirementCondition.contains("->")) {
@@ -117,7 +113,7 @@ public class RebirthDataStorage {
                 rbdh.setAddPermissionList(addPermissionList);
                 rbdh.setDelPermissionList(delPermissionList);
                 rbdh.setRandomCommandsManager(randomCommandsManager);
-                rbdh.setFireworkManager(fireworkManager);
+                rbdh.setFireworkDataHandler(main.getFireworkManager().readFromConfig(LevelType.REBIRTH, rebirthName, null));
                 rbdh.setSendFirework(sendFirework);
                 rbdh.setRequiredPrestiges(requiredPrestiges);
                 getRebirthData().put(rebirthName, rbdh);
@@ -154,7 +150,6 @@ public class RebirthDataStorage {
 		List<String> addPermissionList = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".addpermission");
 		List<String> delPermissionList = main.getConfigManager().rebirthsConfig.getStringList("Rebirths." + rebirthName + ".delpermission");
 		RebirthRandomCommands randomCommandsManager = new RebirthRandomCommands(rebirthName, true);
-		FireworkManager fireworkManager = new FireworkManager(rebirthName, LevelType.REBIRTH, "rebirth");
 		boolean sendFirework = main.getConfigManager().rebirthsConfig.getBoolean("Rebirths." + rebirthName + ".send-firework");
 		RebirthDataHandler rbdh = new RebirthDataHandler(rebirthName);
 		rbdh.setName(rebirthName);
@@ -173,7 +168,7 @@ public class RebirthDataStorage {
         rbdh.setAddPermissionList(addPermissionList);
         rbdh.setDelPermissionList(delPermissionList);
         rbdh.setRandomCommandsManager(randomCommandsManager);
-        rbdh.setFireworkManager(fireworkManager);
+        rbdh.setFireworkDataHandler(main.getFireworkManager().readFromConfig(LevelType.REBIRTH, rebirthName, null));
         rbdh.setSendFirework(sendFirework);
         getRebirthData().put(rebirthName, rbdh);
 	}
@@ -254,12 +249,8 @@ public class RebirthDataStorage {
 		return rebirthData.get(rebirthName).getRebirthCommands();
 	}
 	
-	public FireworkManager getFireworkManager(String rebirthName) {
-		return rebirthData.get(rebirthName).getFireworkManager();
-	}
-	
-	public Map<String, Object> getFireworkBuilder(String rebirthName) {
-		return rebirthData.get(rebirthName).getFireworkManager().getFireworkBuilder();
+	public FireworkDataHandler getFireworkDataHandler(String rebirthName) {
+		return rebirthData.get(rebirthName).getFireworkDataHandler();
 	}
 	
 	public boolean isSendFirework(String rebirthName) {
@@ -363,9 +354,6 @@ public class RebirthDataStorage {
                  setData("Rebirths." + rebirth.getKey() + ".required_prestiges", rebirth.getValue().getRequiredPrestiges());
                  if(rebirth.getValue().getRandomCommandsManager() != null) {
                 // setData("Rebirths." + rebirth.getKey() + ".randomcmds", rebirth.getValue().getRandomCommandsManager().getRandomCommandsMap());
-                 }
-                 if(rebirth.getValue().getFireworkManager() != null) {
-                // setData("Rebirths." + rebirth.getKey() + ".firework", rebirth.getValue().getFireworkManager());
                  }
                  if(rebirth.getValue().isSendFirework()) {
                  setData("Rebirths." + rebirth.getKey() + ".send-firework", rebirth.getValue().isSendFirework());
