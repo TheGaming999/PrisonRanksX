@@ -219,7 +219,12 @@ public interface GlobalDataStorage {
 	    boolean enableLeaderboard = registerBooleanData("Options.enable-leaderboard");
 	    boolean enabledWorldsInsteadOfDisabled = registerBooleanData("Options.enabled-worlds-instead-of-disabled");
 	    boolean infinitePrestige = registerBooleanData("Options.infinite-prestige");
+	    boolean infinitePrestigeCpuStabilizer = registerBooleanData("Options.infinite-prestige-cpu-stabilizer");
+	    int infinitePrestigeMaxCpuUsage = registerIntegerData("Options.infinite-prestige-max-cpu-usage");
 	    String prestigeMaxType = registerStringData("Options.prestigemax-type");
+	    boolean isPrestigeMaxPrestigeMsgLastPrestigeOnly = registerBooleanData("Options.prestigemax-prestigemsglastprestigeonly");
+	    String chatEventHandlingPriority = registerStringData("Options.chat-event-handling-priority");
+	    String loginEventHandlingPriority = registerStringData("Options.login-event-handling-priority");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");

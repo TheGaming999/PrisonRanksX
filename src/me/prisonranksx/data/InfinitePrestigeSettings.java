@@ -19,6 +19,7 @@ public class InfinitePrestigeSettings {
 	private String rankupCostIncreaseExpression;
 	private List<String> commands;
 	private List<String> broadcast;
+	private List<String> msg;
 	private long finalPrestige;
 	private Map<Long, InfinitePrestigeSettings> continuousPrestigeSettings;
 	private Map<Long, InfinitePrestigeSettings> constantPrestigeSettings;
@@ -48,6 +49,7 @@ public class InfinitePrestigeSettings {
 					String contCostExpression = infinitePrestigeConfig.getString("Continuous-Prestiges-Settings." + prestigeNumber + ".cost-expression");
 					List<String> commands = infinitePrestigeConfig.getStringList("Continuous-Prestiges-Settings." + prestigeNumber + ".executecmds");
 					List<String> broadcast = infinitePrestigeConfig.getStringList("Continuous-Prestiges-Settings." + prestigeNumber + ".broadcast");
+					List<String> msg = infinitePrestigeConfig.getStringList("Continuous-Prestiges-Settings." + prestigeNumber + ".msg");
 				    if(contDisplay != null)
 				    	newSetting.setDisplay(this.plugin.getChatColorReplacer().parseRegular(contDisplay));
 				    if(contCostExpression != null)
@@ -56,6 +58,8 @@ public class InfinitePrestigeSettings {
 				    	newSetting.setCommands(commands);
 				    if(!broadcast.isEmpty())
 				    	newSetting.setBroadcast(this.plugin.getChatColorReplacer().parseRegular(broadcast));
+				    if(!msg.isEmpty())
+				    	newSetting.setMsg(this.plugin.getChatColorReplacer().parseRegular(msg));
 				    this.continuousPrestigeSettings.put(Long.valueOf(prestigeNumber), newSetting);
 				}
 			}
@@ -126,6 +130,14 @@ public class InfinitePrestigeSettings {
 		this.broadcast = broadcast;
 	}
 
+	public List<String> getMsg() {
+		return msg;
+	}
+	
+	public void setMsg(List<String> msg) {
+		this.msg = msg;
+	}
+	
 	public long getFinalPrestige() {
 		return finalPrestige;
 	}

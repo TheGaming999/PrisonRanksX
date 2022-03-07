@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,11 +20,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
+
+import com.google.common.collect.Lists;
 
 import co.aikar.taskchain.TaskChain;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.utils.AccessibleBukkitTask;
 import me.prisonranksx.utils.AccessibleString;
+import me.prisonranksx.utils.AtomicFuture;
+import me.prisonranksx.utils.AtomicObject;
 import me.prisonranksx.utils.MySqlUtils;
 import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.XUUID;
@@ -36,12 +42,21 @@ public class PlayerDataStorage {
 	private String defaultPath = null;
 	private String defaultRank = null;
 	private int i = 0;
+	public int largeDataCounter;
+	public int databaseSaveSpeed = 1;
+	private CompletableFuture<BukkitTask> superTaskNotifier;
+	private CompletableFuture<Boolean> taskFinishNotifier;
 
-	public PlayerDataStorage(PrisonRanksX main) {this.main = main;
-	this.playerData = new HashMap<>();
-	this.loadedUUIDs = new HashSet<>();
-	this.defaultPath = this.main.globalStorage.getStringData("defaultpath");
-	this.defaultRank = this.main.globalStorage.getStringData("defaultrank");
+	public PlayerDataStorage(PrisonRanksX main) {
+		this.main = main;
+		this.playerData = new HashMap<>();
+		this.loadedUUIDs = new HashSet<>();
+		this.defaultPath = this.main.globalStorage.getStringData("defaultpath");
+		this.defaultRank = this.main.globalStorage.getStringData("defaultrank");
+		this.largeDataCounter = 125;
+		this.databaseSaveSpeed = 1;
+		this.superTaskNotifier = new CompletableFuture<>();
+		this.taskFinishNotifier = null;
 	}
 
 	public Set<String> getLoadedUUIDs() {
@@ -745,8 +760,26 @@ public class PlayerDataStorage {
 	}
 
 	public boolean setPlayerPrestige(UUID uuid, String prestigeName) {
-		getPlayerData().get(new XUser(uuid).getUUID().toString()).setPrestige(prestigeName);
-		return true;
+		if(getPlayerData().containsKey(uuid.toString())) {
+			getPlayerData().get(uuid.toString()).setPrestige(prestigeName);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public CompletableFuture<PlayerDataHandler> getPlayerDataHandler(UUID uuid) {
+		CompletableFuture<PlayerDataHandler> future = CompletableFuture.supplyAsync(() -> {
+			return getPlayerData().get(uuid.toString());
+		});
+		return future;
+	}
+
+	public PlayerDataHandler waitForPlayerDataHandler(UUID uuid) {
+		CompletableFuture<PlayerDataHandler> future = CompletableFuture.supplyAsync(() -> {
+			return getPlayerData().get(uuid.toString());
+		});
+		return future.join();
 	}
 
 	public String getPlayerRebirth(OfflinePlayer player) {
@@ -1007,40 +1040,56 @@ public class PlayerDataStorage {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void saveLargePlayersData() {
-		AtomicInteger i = new AtomicInteger(-1);
-		Entry<String, PlayerDataHandler>[] array = (Entry<String, PlayerDataHandler>[])getPlayerData().entrySet().toArray(new Entry[0]);
-		int size = array.length;
-
+	public synchronized CompletableFuture<Boolean> saveLargePlayersData() {
+		AtomicInteger entryIndexHolder = new AtomicInteger(-1);
+		AtomicBoolean stopEntrySwitching = new AtomicBoolean(false);
+		Entry<String, PlayerDataHandler>[] dataArray = (Entry<String, PlayerDataHandler>[])getPlayerData().entrySet().toArray(new Entry[0]);
+		int size = dataArray.length;
+		if(size != 0)
 		if(main.isMySql()) {
 			try {
 				main.getConnection().setAutoCommit(false);
 				String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET name=?,rank=?,prestige=?,rebirth=?,path=?,rankscore=?,prestigescore=?,rebirthscore=?,stagescore=? WHERE uuid=?";
 				PreparedStatement statement = main.getConnection().prepareStatement(sql);
-				AccessibleBukkitTask abTask = new AccessibleBukkitTask();
-				abTask.set(Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
-					TaskChain<?> saveChain = main.getTaskChainFactory().newSharedChain("dataSave");
-					saveChain.async(() -> {
-						i.incrementAndGet();
-						int b = i.get();
-						if(b >= size) {
-							i.set(-1);
-							saveChain.abortChain();
-							abTask.cancel();
+				AccessibleBukkitTask atomicTask = AccessibleBukkitTask.create();
+				atomicTask.set(Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
+					if(stopEntrySwitching.get()) return;
+					if(entryIndexHolder.get() == size-1) {
+						stopEntrySwitching.set(true);
+						int entryIndex = entryIndexHolder.get();
+						main.debug("[MYSQL-LARGEDATA] &aFinal data handler reached. Current: " + entryIndex + " / Final: " + (size-1));	
+						try {
+							main.debug("[MYSQL-LARGEDATA] Statement batch executed.");
+							statement.executeBatch();
+							main.debug("[MYSQL-LARGEDATA] Data committed by the connection.");
+							main.getConnection().commit();
+							main.debug("[MYSQL-LARGEDATA] Statement closed.");
+							statement.close();
+							main.console.sendMessage(PrisonRanksX.PREFIX + " §9Updated §a" + String.valueOf(entryIndex+1) + " §9" + getWordForm(entryIndex+1, "Entry", "Entries") + ".");
+						} catch (SQLException e) {
+							e.printStackTrace();
 						}
-						String uuid = array[b].getKey();
-						PlayerDataHandler value = array[b].getValue();
-						if(value.getRankPath() == null) {
-							value.setRankPath(new RankPath(defaultRank, defaultPath));
+						try {
+							main.getConnection().setAutoCommit(true);
+						} catch (SQLException e) {
+							e.printStackTrace();
 						}
+						main.debug("[MYSQL-LARGEDATA] Save task ended.");
+						superTaskNotifier = CompletableFuture.supplyAsync(() -> atomicTask.cancel());
+					} else if (entryIndexHolder.get() < size-1) {
+						entryIndexHolder.incrementAndGet();
+						int entryIndex = entryIndexHolder.get();
+						String uuid = dataArray[entryIndex].getKey();
+						PlayerDataHandler value = dataArray[entryIndex].getValue();
+						if(value.getRankPath() == null) value.setRankPath(new RankPath(defaultRank, defaultPath));
 						RankPath rp = value.getRankPath();
 						String rankName = rp.getRankName() == null ? defaultRank : value.getRankPath().getRankName();
 						String pathName = rp.getPathName() == null ? defaultPath : value.getRankPath().getPathName();
 						String prestigeName = value.getPrestige() == null ? "none" : value.getPrestige();
 						String rebirthName = value.getRebirth() == null ? "none" : value.getRebirth();
 						String name = value.getName();
+						main.debug("[MYSQL-LARGEDATA] Saving data for player: " + name);
 						try {
-
 							statement.setString(10, uuid);
 							statement.setString(1, name);
 							statement.setString(2, rankName);
@@ -1052,57 +1101,62 @@ public class PlayerDataStorage {
 							statement.setInt(8, main.prxAPI.getRebirthNumberX(rebirthName));
 							statement.setInt(9, main.prxAPI.getPower(rankName, pathName, prestigeName, rebirthName));
 							statement.addBatch();
+							main.debug("[MYSQL-LARGEDATA] Save information added for: " + name);
 						} catch (SQLException ex) {
-							Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+							main.console.sendMessage(PrisonRanksX.PREFIX + " §cSQL data update failed.");
 							ex.printStackTrace();
-							main.getLogger().info("<Error> Updating player sql data..");
+							main.debug("[MYSQL-LARGEDATA] Inside loop error.");
+							superTaskNotifier = CompletableFuture.supplyAsync(() -> atomicTask.cancel());
 						}
-					}).execute();
-				}, 1, 1));
-				statement.executeBatch();
-				main.getConnection().commit();
-				Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §9Updated §a" + String.valueOf(i.get()) + " §9" + getWordForm(i.get(), "Entry", "Entries") + ".");
-				statement.close();
-				main.getConnection().setAutoCommit(true);
+					}
+				}, this.databaseSaveSpeed, this.databaseSaveSpeed));
+
 			}
 			catch (SQLException e) {
-				Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+				main.console.sendMessage(PrisonRanksX.PREFIX + " §cSQL data update failed.");
 				e.printStackTrace();
-				main.getLogger().info("<Error> Updating player sql data..");
+				main.getLogger().info("<Error> Updating player sql data...");
+				main.debug("[MYSQL-LARGEDATA] Outside loop error.");
+				superTaskNotifier.completeExceptionally(e);
 			}
-			return;
+		} else {
+			AccessibleBukkitTask atomicTask = new AccessibleBukkitTask();
+			atomicTask.set(Bukkit.getScheduler().runTaskTimer(main, () -> {
+				TaskChain<?> saveChain = main.getTaskChainFactory().newSharedChain("dataSave");
+				saveChain.async(() -> {
+					entryIndexHolder.incrementAndGet();
+					int b = entryIndexHolder.get();
+					if(b >= size) {
+						entryIndexHolder.set(-1);
+						main.getConfigManager().saveRankDataConfig();
+						main.getConfigManager().savePrestigeDataConfig();
+						main.getConfigManager().saveRebirthDataConfig();
+						saveChain.abortChain();
+						atomicTask.cancel();
+					}
+					Entry<String, PlayerDataHandler> player = dataArray[b];
+					if(player.getKey() != null && !isDummy(player.getValue())) {
+						String key = player.getKey();
+						PlayerDataHandler value = player.getValue();
+						RankPath rp = value.getRankPath();
+						main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName() != null ? rp.getRankName() : defaultRank);
+						main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName() != null ? rp.getPathName() : defaultPath);
+						main.getConfigManager().rankDataConfig.set("players." + key + ".name", value.getName());
+						main.getConfigManager().prestigeDataConfig.set("players." + key, value.getPrestige());
+						main.getConfigManager().rebirthDataConfig.set("players." + key, value.getRebirth());
+					}
+				}).execute();
+			}, 1, 1));
 		}
-		AccessibleBukkitTask abTask = new AccessibleBukkitTask();
-		abTask.set(Bukkit.getScheduler().runTaskTimer(main, () -> {
-			TaskChain<?> saveChain = main.getTaskChainFactory().newSharedChain("dataSave");
-			saveChain.async(() -> {
-				i.incrementAndGet();
-				int b = i.get();
-				if(b >= size) {
-					i.set(-1);
-					main.getConfigManager().saveRankDataConfig();
-					main.getConfigManager().savePrestigeDataConfig();
-					main.getConfigManager().saveRebirthDataConfig();
-					saveChain.abortChain();
-					abTask.cancel();
-				}
-				Entry<String, PlayerDataHandler> player = array[b];
-				if(player.getKey() != null && !isDummy(player.getValue())) {
-					String key = player.getKey();
-					PlayerDataHandler value = player.getValue();
-					RankPath rp = value.getRankPath();
-					main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName() != null ? rp.getRankName() : defaultRank);
-					main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName() != null ? rp.getPathName() : defaultPath);
-					main.getConfigManager().rankDataConfig.set("players." + key + ".name", value.getName());
-					main.getConfigManager().prestigeDataConfig.set("players." + key, value.getPrestige());
-					main.getConfigManager().rebirthDataConfig.set("players." + key, value.getRebirth());
-				}
-			}).execute();
-		}, 1, 1));
+		taskFinishNotifier = CompletableFuture.supplyAsync(() -> {
+			superTaskNotifier.join();
+			return true;
+		});
+		return taskFinishNotifier;
 	}
 
 	public void savePlayersData() {
-		if(OnlinePlayers.size() > 125) {
+		if(OnlinePlayers.size() > largeDataCounter && main.isMySql()) {
 			saveLargePlayersData();
 			return;
 		}
@@ -1154,7 +1208,7 @@ public class PlayerDataStorage {
 				} catch (SQLException err) {
 					main.getLogger().warning("[MySql] Couldn't commit because autocommit is already enabled.");
 				}
-				Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §9Updated §a" + String.valueOf(updated) + " §9" + getWordForm(i, "Entry", "Entries") + ".");
+				Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §9Updated §a" + String.valueOf(i) + " §9" + getWordForm(i, "Entry", "Entries") + ".");
 				statement.close();
 				main.getConnection().setAutoCommit(true);
 			}
@@ -1184,8 +1238,88 @@ public class PlayerDataStorage {
 		main.getConfigManager().saveRebirthDataConfig();
 	}
 
+	public void savePlayersData(boolean ignoreLargeMethod) {
+
+			i = 0;
+			if(main.isMySql()) {
+				try {
+
+					String sql = "UPDATE " + main.getDatabase() + "." + main.getTable() + " SET `name`=?,`rank`=?,`prestige`=?,`rebirth`=?,`path`=?,`rankscore`=?,`prestigescore`=?,`rebirthscore`=?,`stagescore`=? WHERE uuid=?";
+					main.getConnection().setAutoCommit(false);
+					PreparedStatement statement = main.getConnection().prepareStatement(sql);
+
+					getPlayerData().values().stream().filter(val -> !isDummy(val)).forEach(val -> {
+						i++;
+						PlayerDataHandler value = val;
+						if(val.getUUID() == null) {
+							val.setUUID(UUID.randomUUID());
+						}
+						String uuid = val.getUUID().toString();
+						if(value.getRankPath() == null) {
+							value.setRankPath(new RankPath(defaultRank, defaultPath));
+						}
+						RankPath rp = value.getRankPath();
+						String rankName = rp.getRankName() == null ? defaultRank : value.getRankPath().getRankName();
+						String pathName = rp.getPathName() == null ? defaultPath : value.getRankPath().getPathName();
+						String prestigeName = value.getPrestige() == null ? "none" : value.getPrestige();
+						String rebirthName = value.getRebirth() == null ? "none" : value.getRebirth();
+						String name = value.getName();
+						try {
+							statement.setString(10, uuid);
+							statement.setString(1, name);
+							statement.setString(2, rankName);
+							statement.setString(3, prestigeName);
+							statement.setString(4, rebirthName);
+							statement.setString(5, pathName);
+							statement.setInt(6, main.prxAPI.getRankNumberX(pathName, rankName));
+							statement.setInt(7, main.prxAPI.getPrestigeNumberX(prestigeName));
+							statement.setInt(8, main.prxAPI.getRebirthNumberX(rebirthName));
+							statement.setInt(9, main.prxAPI.getPower(rankName, pathName, prestigeName, rebirthName));
+							statement.addBatch();
+						} catch (SQLException ex) {
+							Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+							ex.printStackTrace();
+							main.getLogger().info("<Error> Updating player sql data..");
+						}
+					});
+					int[] updated = statement.executeBatch();
+					try {
+						main.getConnection().commit();
+					} catch (SQLException err) {
+						main.getLogger().warning("[MySql] Couldn't commit because autocommit is already enabled.");
+					}
+					Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §9Updated §a" + String.valueOf(i) + " §9" + getWordForm(i, "Entry", "Entries") + ".");
+					statement.close();
+					main.getConnection().setAutoCommit(true);
+				}
+				catch (SQLException e) {
+					Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §cSQL data update failed.");
+					e.printStackTrace();
+					main.getLogger().info("<Error> Updating player sql data..");
+				}
+				return;
+			}
+			for(Entry<String, PlayerDataHandler> player : getPlayerData().entrySet()) {
+				if(player.getKey() != null && !isDummy(player.getValue())) {
+					String key = player.getKey();
+					PlayerDataHandler value = player.getValue();
+					if(value == null) return;
+					RankPath rp = value.getRankPath();
+					if(rp == null) return;
+					main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName() != null ? rp.getRankName() : defaultRank);
+					main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName() != null ? rp.getPathName() : defaultPath);
+					main.getConfigManager().rankDataConfig.set("players." + key + ".name", value.getName());
+					main.getConfigManager().prestigeDataConfig.set("players." + key, value.getPrestige());
+					main.getConfigManager().rebirthDataConfig.set("players." + key, value.getRebirth());
+				}
+			}
+			main.getConfigManager().saveRankDataConfig();
+			main.getConfigManager().savePrestigeDataConfig();
+			main.getConfigManager().saveRebirthDataConfig();
+	}
+
 	public void savePlayersDataMySql() {
-		if(OnlinePlayers.size() > 125) {
+		if(OnlinePlayers.size() > largeDataCounter) {
 			saveLargePlayersData();
 			return;
 		}
@@ -1283,7 +1417,9 @@ public class PlayerDataStorage {
 	 */
 	public void storePlayersData(PlayerDataType playerDataType) {
 		if(main.isMySql()) {
-			savePlayersDataMySql();
+			if(playerDataType == PlayerDataType.ALL) {
+				savePlayersDataMySql();
+			}
 		}
 		for(Entry<String, PlayerDataHandler> entry : this.getPlayerData().entrySet()) {
 			String key = entry.getKey();

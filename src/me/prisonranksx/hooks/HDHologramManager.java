@@ -1,9 +1,8 @@
 package me.prisonranksx.hooks;
 
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Location;
-import org.bukkit.plugin.Plugin;
 
 import me.prisonranksx.PrisonRanksX;
 
@@ -17,12 +16,7 @@ public class HDHologramManager implements HologramManager {
 	
 	@Override
 	public IHologram createHologram(String hologramName, Location location, boolean threadSafe) {
-		try {
-			return (new HDHologram()).create(plugin, hologramName, location, threadSafe);
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-			return null;
-		}
+		return (new HDHologram()).create(plugin, hologramName, location, threadSafe);
 	}
 
 	@Override
@@ -39,7 +33,7 @@ public class HDHologramManager implements HologramManager {
 	public void addHologramLine(IHologram hologram, String line, boolean threadSafe) {
 		try {
 			hologram.addLine(line, threadSafe);
-		} catch (IllegalArgumentException | InterruptedException | ExecutionException e) {
+		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		}
 	}

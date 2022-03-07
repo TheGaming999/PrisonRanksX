@@ -196,7 +196,7 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	
 	public void setMsg(List<String> messages) {
 		if(messages != null && !messages.isEmpty()) {
-		this.messages = messages;
+			this.messages = messages;
 		}
 	}
 	

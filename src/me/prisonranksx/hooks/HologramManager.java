@@ -1,5 +1,7 @@
 package me.prisonranksx.hooks;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.bukkit.Location;
 
 public interface HologramManager {

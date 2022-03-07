@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.CollectionUtils;
 import me.prisonranksx.utils.MCTextEffect;
 
 public class RankDataStorage {
@@ -431,6 +432,7 @@ public class RankDataStorage {
             setData("Ranks." + pathName + "." +  rankup + ".cost", rankData.get(rankPath.get()).getRankupCost());
             setData("Ranks." + pathName + "." +  rankup + ".display", rankData.get(rankPath.get()).getRankupDisplayName());
             setData("Ranks." + pathName + "." +  rankup + ".executecmds", rankData.get(rankPath.get()).getRankupCommands());
+            setData("Ranks." + pathName + "." + rankName + ".delpermission", rankData.get(rankPath.get()).getDelPermissionList());
            // setData("Ranks." + pathName + "." +  rankup + ".actionbar.interval", rankData.get(rankPath.get()).getActionbarInterval());
            // setData("Ranks." + pathName + "." +  rankup + ".actionbar.text", rankData.get(rankPath.get()).getActionbarMessages());
            // setData("Ranks." + pathName + "." +  rankup + ".broadcast", rankData.get(rankPath.get()).getBroadcast());

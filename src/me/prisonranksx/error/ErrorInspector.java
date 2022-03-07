@@ -58,7 +58,7 @@ public class ErrorInspector {
 		    	}
 		    });
 		    main.getConfigManager().saveRankDataConfig();
-			main.simulateAsyncAutoDataSave();
+		    main.performDataSave();
 			main.manager.reload();
 		}	
 	}
@@ -118,7 +118,7 @@ public class ErrorInspector {
 		}
 		if(hasFoundErrors.get()) {
 			main.getConfigManager().saveRankDataConfig();
-			main.simulateAsyncAutoDataSave();
+			main.performDataSaveAsynchronously();
 			main.manager.reload();
 		}
 	}
@@ -159,7 +159,7 @@ public class ErrorInspector {
 		if(saveMainConfig) main.getConfigManager().saveMainConfig();
 		if(hasFoundErrors.get()) {
 			main.getConfigManager().saveRankDataConfig();
-			main.simulateAsyncAutoDataSave();
+			main.performDataSaveAsynchronously();
 			main.manager.reload();
 		}
 	}

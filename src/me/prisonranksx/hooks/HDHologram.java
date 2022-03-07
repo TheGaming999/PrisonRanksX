@@ -1,6 +1,8 @@
 package me.prisonranksx.hooks;
 
-import java.util.concurrent.ExecutionException;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -9,6 +11,7 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.utils.AtomicObject;
 
 @SuppressWarnings("deprecation")
 public class HDHologram implements IHologram {
@@ -20,52 +23,65 @@ public class HDHologram implements IHologram {
 	private boolean threadSafe;
 	@SuppressWarnings("unused")
 	private String hologramName;
-	
+
 	public HDHologram() {}
-	
+
 	@Override
-	public IHologram create(PrisonRanksX plugin, String hologramName, Location location, boolean threadSafe) throws InterruptedException, ExecutionException {
-		this.plugin = plugin;
-		this.location = location;
-		this.threadSafe = threadSafe;
-		this.hologramName = hologramName;
-		if(threadSafe) { 
-			createThreadSafe(); 
+	public IHologram create(PrisonRanksX plugin, String hologramName, Location location, boolean threadSafe) {
+		HDHologram holo = new HDHologram();
+		holo.plugin = plugin;
+		holo.location = location;
+		holo.threadSafe = threadSafe;
+		holo.hologramName = hologramName;
+		if(threadSafe) {
+			holo.createThreadSafe();
 		} else {
-			createNonSafe();
+			holo.createNonSafe();
 		}
-		return this;
+		return holo;
 	}
 
 	@Override
 	public void addLine(String line, boolean threadSafe) {
 		if(threadSafe) {
-			Bukkit.getScheduler().runTask(plugin, () -> hologramHD.appendTextLine(line));
+			plugin.scheduler.runTaskLater(plugin, () -> hologramHD.appendTextLine(line), 1);
 		} else {
 			hologramHD.appendTextLine(line);
 		}
 	}
 
 	@Override
+	public void addLine(List<String> line, boolean threadSafe) {
+		if(threadSafe) {
+			Bukkit.getScheduler().runTaskLater(plugin, () -> {
+				line.forEach(hologramHD::appendTextLine);
+			}, 1);
+		} else {
+			line.forEach(hologramHD::appendTextLine);
+		}
+	}
+	
+	@Override
 	public void delete() {
-		this.hologramHD.delete();
+		plugin.scheduler.runTask(plugin, () -> this.hologramHD.delete());
 	}
 
 	@Override
 	public void delete(int removeTime) {
-		Bukkit.getScheduler().runTaskLater(plugin, () -> this.hologramHD.delete(), 20L * removeTime);
+		plugin.scheduler.runTaskLater(plugin, () -> this.hologramHD.delete(), 20L * removeTime);
 	}
-	
+
+	@SuppressWarnings("unused")
 	private void createNonSafe() {
 		this.hologramHD = HologramsAPI.createHologram(plugin, location);
 		this.hologramHD.setAllowPlaceholders(true);
 	}
-	
-	private void createThreadSafe() throws InterruptedException, ExecutionException {
+
+	private void createThreadSafe() {
 		Bukkit.getScheduler().runTask(plugin, () -> {
-		this.hologramHD = HologramsAPI.createHologram(plugin, location);
-		this.hologramHD.setAllowPlaceholders(true);  
+			this.hologramHD = HologramsAPI.createHologram(plugin, location);
+			this.hologramHD.setAllowPlaceholders(true);  
 		});
 	}
-	
+
 }

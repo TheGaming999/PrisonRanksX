@@ -705,4 +705,28 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 		
 	}
 
+	@Override
+	public void executeInfiniteTest(Player player) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void executeInfiniteTest2(Player player) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean hasStopSignal(String name) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean sendStopSignal(String name) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

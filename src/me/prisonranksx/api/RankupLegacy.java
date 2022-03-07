@@ -21,8 +21,8 @@ import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.AsyncAutoRankupEvent;
 import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.utils.XSound;
 import me.prisonranksx.utils.XUUID;
-import me.prisonranksx.utils.CompatibleSound.Sounds;
 
 /**
  *  for versions before 1.7
@@ -47,7 +47,7 @@ public class RankupLegacy {
 		}
 		isAutoRankupTaskEnabled = true;
 		Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
-			for(String playerName : prxAPI.autoRankupPlayers) {
+			for(String playerName : PRXAPI.AUTO_RANKUP_PLAYERS) {
 				this.rankup(Bukkit.getPlayer(playerName), true);
 			}
 		}, autoRankupDelay, autoRankupDelay);
@@ -57,12 +57,12 @@ public class RankupLegacy {
 		Player p = player;
 		String name = p.getName();
 		if(prxAPI.isAutoRankupEnabled(p)) {
-			prxAPI.autoRankupPlayers.remove(name);
+			PRXAPI.AUTO_RANKUP_PLAYERS.remove(name);
 			if(prxAPI.g("autorankup-disabled") != null && !prxAPI.g("autorankup-disabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-disabled"));
 			}
 		} else {
-			prxAPI.autoRankupPlayers.add(name);
+			PRXAPI.AUTO_RANKUP_PLAYERS.add(name);
 			startAutoRankupTask();
 			if(prxAPI.g("autorankup-enabled") != null && !prxAPI.g("autorankup-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-enabled"));
@@ -75,7 +75,7 @@ public class RankupLegacy {
 		String name = p.getName();
 		if(prxAPI.isAutoRankupEnabled(p)) {
 			if(!enable) {
-			prxAPI.autoRankupPlayers.remove(name);
+			PRXAPI.AUTO_RANKUP_PLAYERS.remove(name);
 			if(prxAPI.g("autorankup-disabled") != null && !prxAPI.g("autorankup-disabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-disabled"));
 			}
@@ -86,13 +86,13 @@ public class RankupLegacy {
 			}
 		} else {
 			if(!enable) {
-				prxAPI.autoRankupPlayers.remove(name);
+				PRXAPI.AUTO_RANKUP_PLAYERS.remove(name);
 				if(prxAPI.g("autorankup-disabled") != null && !prxAPI.g("autorankup-disabled").isEmpty()) {
 					p.sendMessage(prxAPI.g("autorankup-disabled"));
 				}
 				return;
 			}
-			prxAPI.autoRankupPlayers.add(name);
+			PRXAPI.AUTO_RANKUP_PLAYERS.add(name);
 			startAutoRankupTask();
 			if(prxAPI.g("autorankup-enabled") != null && !prxAPI.g("autorankup-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-enabled"));
@@ -102,18 +102,18 @@ public class RankupLegacy {
 	
 	    public void forceRankup(Player player, CommandSender sender) {
 	    	String name = player.getName();
-	    	if(prxAPI.taskedPlayers.contains(name)) {
+	    	if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 					return;
 				}
 				player.sendMessage(prxAPI.g("commandspam"));
 				return;
 			}
-			prxAPI.taskedPlayers.add(name);
+			PRXAPI.TASKED_PLAYERS.add(name);
 			RankUpdateEvent e = new RankUpdateEvent(player, RankUpdateCause.FORCE_RANKUP);
 			Bukkit.getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			Player p = player;
@@ -121,25 +121,25 @@ public class RankupLegacy {
 			RankPath rp = prxAPI.getPlayerRankPath(u);
 			if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {
 				if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
-					prxAPI.taskedPlayers.remove(name);
+					PRXAPI.TASKED_PLAYERS.remove(name);
 					return;
 				}
 				p.sendMessage(prxAPI.g("nopermission"));
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
 				if(!p.hasPermission(main.rankupCommand.getPermission() + "." + prxAPI.getPlayerNextRank(u)) && !p.hasPermission("*")) {
 					if(prxAPI.g("rankup-nopermission") == null || prxAPI.g("rankup-nopermission").isEmpty()) {
 						sender.sendMessage(prxAPI.g("forcerankup-nopermission").replace("%player%", p.getName()));
-						prxAPI.taskedPlayers.remove(name);
+						PRXAPI.TASKED_PLAYERS.remove(name);
 						return;
 					}
 					sender.sendMessage(prxAPI.g("forcerankup-nopermission").replace("%player%", p.getName()));
 					p.sendMessage(prxAPI.g("rankup-nopermission")
 							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
-					prxAPI.taskedPlayers.remove(name);
+					PRXAPI.TASKED_PLAYERS.remove(name);
 					return;
 				}
 			}
@@ -151,7 +151,7 @@ public class RankupLegacy {
 				for(String line : prxAPI.h("lastrank")) {
 					p.sendMessage(prxAPI.c(line));
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			String rankupMsg = prxAPI.g("rankup");
@@ -261,10 +261,10 @@ public class RankupLegacy {
 			if(!rankupSoundName.isEmpty() && rankupSoundName.length() > 1) {
 				float rankupSoundPitch = (float)main.globalStorage.getDoubleData("Options.rankupsound-pitch");
 			    float rankupSoundVolume = (float)main.globalStorage.getDoubleData("Options.rankupsound-volume");
-				p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
+				p.playSound(p.getLocation(), XSound.matchSound(rankupSoundName), rankupSoundVolume, rankupSoundPitch);
 			}
 			boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-			if(rankupHologramIsEnable && main.hasHolographicDisplays) {
+			if(rankupHologramIsEnable && main.hasHologramsPlugin) {
 				int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 				int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 				List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");
@@ -273,26 +273,26 @@ public class RankupLegacy {
 			main.sendRankFirework(p);
 			e.setRankup(main.rankStorage.getRankupName(rp));
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 	    }
 	
 		public void rankup(Player player) {
 			String name = player.getName();
 			Bukkit.getScheduler().runTask(main, () -> {
-			if(prxAPI.taskedPlayers.contains(name)) {
+			if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 					return;
 				}
 				player.sendMessage(prxAPI.g("commandspam"));
 				return;
 			}
-			prxAPI.taskedPlayers.add(name);
+			PRXAPI.TASKED_PLAYERS.add(name);
 			Player p = player;
 			UUID u = XUUID.tryNameConvert(name);
 			RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.NORMAL_RANKUP, prxAPI.getPlayerNextRank(u));
              Bukkit.getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			
@@ -302,7 +302,7 @@ public class RankupLegacy {
 					return;
 				}
 				p.sendMessage(prxAPI.g("nopermission"));
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
@@ -313,7 +313,7 @@ public class RankupLegacy {
 					p.sendMessage(prxAPI.g("rankup-nopermission")
 							.replace("%rankup%", prxAPI.getPlayerNextRank(u))
 							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u)));
-					prxAPI.taskedPlayers.remove(name);
+					PRXAPI.TASKED_PLAYERS.remove(name);
 					return;
 				}
 			}
@@ -324,7 +324,7 @@ public class RankupLegacy {
 				for(String line : prxAPI.h("lastrank")) {
 					p.sendMessage(prxAPI.c(line));
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			if(prxAPI.getPlayerRankupCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
@@ -336,7 +336,7 @@ public class RankupLegacy {
 							.replace("%rankup%", prxAPI.getPlayerNextRank(u)).replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(u))
 							.replace("%rankup_cost%", prxAPI.s(prxAPI.getPlayerRankupCostWithIncreaseDirect(u))).replace("%rankup_cost_formatted%", prxAPI.formatBalance(prxAPI.getPlayerRankupCostWithIncreaseDirect(u))));
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			String rankupMsg = prxAPI.g("rankup");
@@ -444,10 +444,10 @@ public class RankupLegacy {
 			if(!rankupSoundName.isEmpty() && rankupSoundName.length() > 1) {
 				float rankupSoundPitch = (float)main.globalStorage.getDoubleData("Options.rankupsound-pitch");
 			    float rankupSoundVolume = (float)main.globalStorage.getDoubleData("Options.rankupsound-volume");
-				p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
+				p.playSound(p.getLocation(), XSound.matchSound(rankupSoundName), rankupSoundVolume, rankupSoundPitch);
 			}
 			boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-			if(rankupHologramIsEnable && main.hasHolographicDisplays) {
+			if(rankupHologramIsEnable && main.hasHologramsPlugin) {
 				int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 				int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 				List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");
@@ -458,7 +458,7 @@ public class RankupLegacy {
 			e.setRankup(main.rankStorage.getRankupName(rp));
 			Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.playerStorage.setPlayerRank(u, main.rankStorage.getRankupName(rp));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			}, 1);
 			});
 		}
@@ -505,27 +505,27 @@ public class RankupLegacy {
 		
 		public void rankup(final Player player, boolean silent) {
 			String name = player.getName();
-			if(prxAPI.taskedPlayers.contains(name)) {
+			if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 				if(prxAPI.g("commandspam") == null || prxAPI.g("commandspam").isEmpty()) {
 					return;
 				}
 				return;
 			}
-			prxAPI.taskedPlayers.add(name);
+			PRXAPI.TASKED_PLAYERS.add(name);
 			Player p = player;
 			UUID u = XUUID.tryNameConvert(name);
 			RankPath rp = prxAPI.getPlayerRankPath(u);
 			AsyncAutoRankupEvent e = new AsyncAutoRankupEvent(p, main.prxAPI.getPlayerNextRank(p), rp.getRankName());
 			Bukkit.getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {
 				if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
 					return;
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
@@ -533,7 +533,7 @@ public class RankupLegacy {
 					if(prxAPI.g("rankup-nopermission") == null || prxAPI.g("rankup-nopermission").isEmpty()) {
 						return;
 					}
-					prxAPI.taskedPlayers.remove(name);
+					PRXAPI.TASKED_PLAYERS.remove(name);
 					return;
 				}
 			}
@@ -541,14 +541,14 @@ public class RankupLegacy {
 				if(prxAPI.h("lastrank") == null || prxAPI.h("lastrank").isEmpty()) {
 					return;
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			if(prxAPI.getPlayerRankupCostWithIncreaseDirect(u) > prxAPI.getPlayerMoney(p.getName())) {
 				if(prxAPI.h("notenoughmoney") == null || prxAPI.h("notenoughmoney").isEmpty()) {
 					return;
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			String rankupMsg = prxAPI.g("rankup");
@@ -656,10 +656,10 @@ public class RankupLegacy {
 			if(!rankupSoundName.isEmpty() && rankupSoundName.length() > 1) {
 				float rankupSoundPitch = (float)main.globalStorage.getDoubleData("Options.rankupsound-pitch");
 			    float rankupSoundVolume = (float)main.globalStorage.getDoubleData("Options.rankupsound-volume");
-				p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
+				p.playSound(p.getLocation(), XSound.matchSound(rankupSoundName), rankupSoundVolume, rankupSoundPitch);
 			}
 			boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-			if(rankupHologramIsEnable && main.hasHolographicDisplays) {
+			if(rankupHologramIsEnable && main.hasHologramsPlugin) {
 				int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 				int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 				List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");
@@ -669,7 +669,7 @@ public class RankupLegacy {
 			main.sendRankFirework(p);
 			main.econ.withdrawPlayer(name, prxAPI.getPlayerRankupCostWithIncreaseDirect(u));
 			main.playerStorage.setPlayerRank(u, main.rankStorage.getRankupName(rp));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			}, 1);
 		}
 }

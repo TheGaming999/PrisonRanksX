@@ -124,6 +124,7 @@ public class MessagesDataStorage {
 		String topRebirthsLastPageReached = registerStringMessage("top-rebirths-last-page-reached");
 		String rebirthFailed = registerStringMessage("rebirth-failed");
 		String rankupMax = registerStringMessage("rankupmax");
+		String prestigeMax = registerStringMessage("prestigemax");
 	}
 	
 	public String getStringMessage(String configMessage) {

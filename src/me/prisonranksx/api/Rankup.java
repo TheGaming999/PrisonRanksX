@@ -8,13 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 
 import io.samdev.actionutil.ActionUtil;
 import me.prisonranksx.PrisonRanksX;
@@ -23,8 +22,9 @@ import me.prisonranksx.data.RankRandomCommands;
 import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.AsyncAutoRankupEvent;
 import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.hooks.IHologram;
 import me.prisonranksx.utils.OnlinePlayers;
-import me.prisonranksx.utils.CompatibleSound.Sounds;
+import me.prisonranksx.utils.XSound;
 
 public class Rankup {
 
@@ -46,7 +46,7 @@ public class Rankup {
 		}
 		isAutoRankupTaskEnabled = true;
 		Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
-			for(String playerName : prxAPI.autoRankupPlayers) {
+			for(String playerName : PRXAPI.AUTO_RANKUP_PLAYERS) {
 				this.rankup(Bukkit.getPlayer(playerName), true);
 			}
 		}, autoRankupDelay, autoRankupDelay);
@@ -56,13 +56,13 @@ public class Rankup {
 		Player p = player;
 		String name = p.getName();
 		if(prxAPI.isAutoRankupEnabled(p)) {
-			prxAPI.autoRankupPlayers.remove(name);
+			PRXAPI.AUTO_RANKUP_PLAYERS.remove(name);
 			if(prxAPI.g("autorankup-disabled") != null && !prxAPI.g("autorankup-disabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-disabled"));
 			}
 			return false;
 		} else {
-			prxAPI.autoRankupPlayers.add(name);
+			PRXAPI.AUTO_RANKUP_PLAYERS.add(name);
 			startAutoRankupTask();
 			if(prxAPI.g("autorankup-enabled") != null && !prxAPI.g("autorankup-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-enabled"));
@@ -76,7 +76,7 @@ public class Rankup {
 		String name = p.getName();
 		if(prxAPI.isAutoRankupEnabled(p)) {
 			if(!enable) {
-				prxAPI.autoRankupPlayers.remove(name);
+				PRXAPI.AUTO_RANKUP_PLAYERS.remove(name);
 				if(prxAPI.g("autorankup-disabled") != null && !prxAPI.g("autorankup-disabled").isEmpty()) {
 					p.sendMessage(prxAPI.g("autorankup-disabled"));
 				}
@@ -87,13 +87,13 @@ public class Rankup {
 			}
 		} else {
 			if(!enable) {
-				prxAPI.autoRankupPlayers.remove(name);
+				PRXAPI.AUTO_RANKUP_PLAYERS.remove(name);
 				if(prxAPI.g("autorankup-disabled") != null && !prxAPI.g("autorankup-disabled").isEmpty()) {
 					p.sendMessage(prxAPI.g("autorankup-disabled"));
 				}
 				return;
 			}
-			prxAPI.autoRankupPlayers.add(name);
+			PRXAPI.AUTO_RANKUP_PLAYERS.add(name);
 			startAutoRankupTask();
 			if(prxAPI.g("autorankup-enabled") != null && !prxAPI.g("autorankup-enabled").isEmpty()) {
 				p.sendMessage(prxAPI.g("autorankup-enabled"));
@@ -107,24 +107,24 @@ public class Rankup {
 			return;
 		}
 		String name = player.getName();
-		if(prxAPI.taskedPlayers.contains(name)) {
+		if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 			if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {	
 				sender.sendMessage(prxAPI.g("commandspam"));
 			}
 			return;
 		}
-		prxAPI.taskedPlayers.add(name);
+		PRXAPI.TASKED_PLAYERS.add(name);
 
 		Player p = player;
 		RankPath rp = prxAPI.getPlayerRankPath(p);
 		String currentRank = rp.getRankName();
 		if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {
 			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			p.sendMessage(prxAPI.g("nopermission"));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		if(main.globalStorage.getBooleanData("Options.per-rank-permission")) {
@@ -132,7 +132,7 @@ public class Rankup {
 				if(prxAPI.g("rankup-nopermission") == null || prxAPI.g("rankup-nopermission").isEmpty()) {
 					if(sender != null) {
 						sender.sendMessage(prxAPI.g("forcerankup-nopermission").replace("%player%", p.getName()));
-						prxAPI.taskedPlayers.remove(name);
+						PRXAPI.TASKED_PLAYERS.remove(name);
 						return;
 					}
 				}
@@ -141,7 +141,7 @@ public class Rankup {
 					p.sendMessage(prxAPI.g("rankup-nopermission")
 							.replace("%rankup%", prxAPI.getPlayerNextRank(p))
 							.replace("%rankup_display%", prxAPI.getPlayerRankupDisplayR(p)));
-					prxAPI.taskedPlayers.remove(name);
+					PRXAPI.TASKED_PLAYERS.remove(name);
 					return;
 				}
 			}
@@ -152,7 +152,7 @@ public class Rankup {
 				for(String line : prxAPI.h("lastrank")) {
 					p.sendMessage(prxAPI.c(line));
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 		}
@@ -160,7 +160,7 @@ public class Rankup {
 		e.setRankup(prxAPI.getPlayerNextRank(player));
 		main.getServer().getPluginManager().callEvent(e);
 		if(e.isCancelled()) {
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 			return;
 		}
 		String rankupMsg = prxAPI.g("rankup");
@@ -279,33 +279,37 @@ public class Rankup {
 		if(!rankupSoundName.isEmpty() && rankupSoundName.length() > 1) {
 			float rankupSoundPitch = (float)main.globalStorage.getDoubleData("Options.rankupsound-pitch");
 			float rankupSoundVolume = (float)main.globalStorage.getDoubleData("Options.rankupsound-volume");
-			p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
+			p.playSound(p.getLocation(), XSound.matchSound(rankupSoundName), rankupSoundVolume, rankupSoundPitch);
 		}
 		boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-		if(rankupHologramIsEnable && main.hasHolographicDisplays) {
+		if(rankupHologramIsEnable && main.hasHologramsPlugin) {
 			int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 			int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 			List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");
-			spawnHologram(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
+			try {
+				spawnHologram(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
+			} catch (IllegalArgumentException | InterruptedException | ExecutionException e1) {
+				e1.printStackTrace();
+			}
 		}
 		main.sendRankFirework(p);
 		e.setRankup(main.rankStorage.getRankupName(rp));
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
-			prxAPI.taskedPlayers.remove(name);
+			PRXAPI.TASKED_PLAYERS.remove(name);
 		}, 1);
 	}
 
 	public void rankup(final Player player) {
 		String name = player.getName();
 		Bukkit.getScheduler().runTask(main, () -> {
-			if(prxAPI.taskedPlayers.contains(name)) {
+			if(PRXAPI.TASKED_PLAYERS.contains(name)) {
 				if(prxAPI.g("commandspam") != null && !prxAPI.g("commandspam").isEmpty()) {
 					player.sendMessage(prxAPI.g("commandspam"));
 				}
 				return;
 			}
-			prxAPI.taskedPlayers.add(name);
+			PRXAPI.TASKED_PLAYERS.add(name);
 			Player p = player;
 			RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.NORMAL_RANKUP, prxAPI.getPlayerNextRank(p));
 			RankPath rp = prxAPI.getPlayerRankPath(p);
@@ -317,7 +321,7 @@ public class Rankup {
 				if(prxAPI.g("nopermission") != null && !prxAPI.g("nopermission").isEmpty()) {
 					p.sendMessage(prxAPI.g("nopermission"));
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			if(main.rankStorage.getRankupName(rp).equalsIgnoreCase("LASTRANK")) {
@@ -326,7 +330,7 @@ public class Rankup {
 						p.sendMessage(prxAPI.c(line));
 					}
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 
@@ -352,7 +356,7 @@ public class Rankup {
 								.replace("%rankup_display%", nextRankDisplay)
 								.replace("%rank%", currentRank));
 					}
-					prxAPI.taskedPlayers.remove(name);
+					PRXAPI.TASKED_PLAYERS.remove(name);
 					return;
 				}
 			}
@@ -365,7 +369,7 @@ public class Rankup {
 								.replace("%rankup_cost%", prxAPI.s(rankupCostWithIncrease)).replace("%rankup_cost_formatted%", prxAPI.formatBalance(rankupCostWithIncrease)));
 					}
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			boolean failedRequirements = false;
@@ -393,12 +397,12 @@ public class Rankup {
 						p.sendMessage(prxAPI.cp(message, p));
 					});
 				}
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			main.getServer().getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
-				prxAPI.taskedPlayers.remove(name);
+				PRXAPI.TASKED_PLAYERS.remove(name);
 				return;
 			}
 			String rankupMsg = prxAPI.g("rankup");
@@ -518,63 +522,59 @@ public class Rankup {
 			if(!rankupSoundName.isEmpty() && rankupSoundName.length() > 1) {
 				float rankupSoundPitch = (float)main.globalStorage.getDoubleData("Options.rankupsound-pitch");
 				float rankupSoundVolume = (float)main.globalStorage.getDoubleData("Options.rankupsound-volume");
-				p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
+				p.playSound(p.getLocation(), XSound.matchSound(rankupSoundName), rankupSoundVolume, rankupSoundPitch);
 			}
 			boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-			if(rankupHologramIsEnable && main.hasHolographicDisplays) {
+			if(rankupHologramIsEnable && main.hasHologramsPlugin) {
 				int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 				int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 				List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");
-				spawnHologram(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
+				try {
+					spawnHologram(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
+				} catch (IllegalArgumentException | InterruptedException | ExecutionException e1) {
+					e1.printStackTrace();
+				}
 			}
 			main.sendRankFirework(p);
 			main.econ.withdrawPlayer(p, rankupCostWithIncrease);
 			e.setRankup(main.rankStorage.getRankupName(rp));
 			Bukkit.getScheduler().runTaskLater(main, () -> {
 				main.playerStorage.setPlayerRank(p, main.rankStorage.getRankupName(rp));
-				prxAPI.taskedPlayers.remove(name);
-
+				PRXAPI.TASKED_PLAYERS.remove(name);
 			}, 1);
 		});
 	}
 
-	public void spawnHologram(List<String> format, int removeTime, int height, Player player) {
+	public void spawnHologram(List<String> format, int removeTime, int height, Player player) throws IllegalArgumentException, InterruptedException, ExecutionException {
 		Player p = player;
 		String name = p.getName();
-		Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
-		hologram.setAllowPlaceholders(true);
+		String nextRank = prxAPI.getPlayerNextRank(p);
+		IHologram hologram = main.hologramManager.createHologram("prx_" + nextRank + name + prxAPI.numberAPI.getRandomInteger(0, 999999), p.getLocation().add(0, height, 0), false);
 		for(String line : format) {
 			String updatedLine = main.getString(line.replace("%player%", name)
 					.replace("%player_display%", p.getDisplayName())
-					.replace("%nextrank%", prxAPI.getPlayerNextRank(p))
+					.replace("%nextrank%", nextRank)
 					.replace("%nextrank_display%", main.getString(prxAPI.getPlayerRankupDisplay(p)))
 					, name);
-			hologram.appendTextLine(updatedLine);
+			hologram.addLine(updatedLine, false);
 		}
-		Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable () {public void run() {
-			hologram.delete();
-		}}, 20L * removeTime);
+		hologram.delete(removeTime);
 	}
 
-	public void spawnHologramAsync(List<String> format, int removeTime, int height, Player player) {
+	public void spawnHologramAsync(List<String> format, int removeTime, int height, Player player) throws IllegalArgumentException, InterruptedException, ExecutionException {
 		Player p = player;
 		String name = p.getName();
-		Bukkit.getScheduler().runTask(main, () -> {
-			Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
-			hologram.setAllowPlaceholders(true);
-			for(String line : format) {
-				String updatedLine = main.getString(line.replace("%player%", name)
-						.replace("%player_display%", p.getDisplayName())
-						.replace("%nextrank%", prxAPI.getPlayerNextRank(p))
-						.replace("%nextrank_display%", main.getString(prxAPI.getPlayerRankupDisplay(p)))
-						, name);
-				hologram.appendTextLine(updatedLine);
-			}
-			Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable () {@SuppressWarnings("deprecation")
-			public void run() {
-				hologram.delete();
-			}}, 20L * removeTime);
-		});
+		String nextRank = prxAPI.getPlayerNextRank(p);
+		IHologram hologram = main.hologramManager.createHologram("prx_" + nextRank + name + prxAPI.numberAPI.getRandomInteger(0, 999999), p.getLocation().add(0, height, 0), true);
+		for(String line : format) {
+			String updatedLine = main.getString(line.replace("%player%", name)
+					.replace("%player_display%", p.getDisplayName())
+					.replace("%nextrank%", nextRank)
+					.replace("%nextrank_display%", main.getString(prxAPI.getPlayerRankupDisplay(p)))
+					, name);
+			hologram.addLine(updatedLine, true);
+		}
+		hologram.delete(removeTime);
 	}
 
 	public void rankup(Player player, boolean silent) {
@@ -757,14 +757,18 @@ public class Rankup {
 		if(!rankupSoundName.isEmpty() && rankupSoundName.length() > 1) {
 			float rankupSoundPitch = (float)main.globalStorage.getDoubleData("Options.rankupsound-pitch");
 			float rankupSoundVolume = (float)main.globalStorage.getDoubleData("Options.rankupsound-volume");
-			p.playSound(p.getLocation(), Sounds.valueOf(rankupSoundName).bukkitSound(), rankupSoundVolume, rankupSoundPitch);
+			p.playSound(p.getLocation(), XSound.matchSound(rankupSoundName), rankupSoundVolume, rankupSoundPitch);
 		}
 		boolean rankupHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rankup.enable");
-		if(rankupHologramIsEnable && main.hasHolographicDisplays) {
+		if(rankupHologramIsEnable && main.hasHologramsPlugin) {
 			int rankupHologramRemoveTime = main.globalStorage.getIntegerData("Holograms.rankup.remove-time");
 			int rankupHologramHeight = main.globalStorage.getIntegerData("Holograms.rankup.height");
 			List<String> rankupHologramFormat = main.globalStorage.getStringListData("Holograms.rankup.format");
-			spawnHologramAsync(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
+			try {
+				spawnHologramAsync(rankupHologramFormat, rankupHologramRemoveTime, rankupHologramHeight, p);
+			} catch (IllegalArgumentException | InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
 		}
 		main.sendRankFirework(p);
 		main.econ.withdrawPlayer(p, rankupCostWithIncrease);
