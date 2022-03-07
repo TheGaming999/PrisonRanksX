@@ -14,6 +14,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 
+import co.aikar.taskchain.TaskChain;
 import me.prisonranksx.PrisonRanksX;
 
 public class PermissionManager {
@@ -53,26 +54,22 @@ public class PermissionManager {
 		return permission;
 	}
 	
-	public String addPermissionAsync(final Player player, final String permission) {
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+	public CompletableFuture<Boolean> addPermissionAsync(final Player player, final String permission) {
+		return CompletableFuture.supplyAsync(() -> {
 		        if(!permission.startsWith("[")) {
-		        	 return String.valueOf(main.getPermissions().playerAdd(null, player, permission));
+		        	 return (main.getPermissions().playerAdd(null, player, permission));
 		        }
 		        int worldIndex = permission.lastIndexOf("]");
 				String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
 				String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
-				return String.valueOf(main.getPermissions().playerAdd(Bukkit.getWorld(world).getName().trim(), player, node.trim()));
-		}).thenApply(checked -> {
-			return String.valueOf(player.isPermissionSet(permission));
+				return (main.getPermissions().playerAdd(Bukkit.getWorld(world).getName().trim(), player, node.trim()));
 		});
-		return future.join();
 	}
 	
-	public boolean addPermissionAsync(final Player player, final Collection<String> permissions) {
+	public void addPermissionAsync(final Player player, final Collection<String> permissions) {
 		for(String permission : permissions) {
 			addPermissionAsync(player, permission);
 		}
-		return true;
 	}
 	
 	public void addPermission(final Player player, final Collection<String> perm) {
@@ -180,22 +177,19 @@ public class PermissionManager {
 		return permission;
 	}
 	
-	public String delPermissionAsync(final Player player, final String permission) {
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(new Supplier<String>() {
+	public CompletableFuture<Boolean> delPermissionAsync(final Player player, final String permission) {
+		return CompletableFuture.supplyAsync(new Supplier<Boolean>() {
 		    @Override
-		    public String get() {
+		    public Boolean get() {
 		        if(!permission.startsWith("[")) {
-		        	 return String.valueOf(main.getPermissions().playerRemove(null, player, permission));
+		        	 return (main.getPermissions().playerRemove(null, player, permission));
 		        }
 		        int worldIndex = permission.lastIndexOf("]");
 				String node = permission.substring(worldIndex, permission.length()).replace("[", "").replace("]", "");
 				String world = permission.substring(0, worldIndex + 1).replace("[", "").replace("]", "");
-				return String.valueOf(main.getPermissions().playerRemove(Bukkit.getWorld(world).getName().trim(), player, node.trim()));
+				return (main.getPermissions().playerRemove(Bukkit.getWorld(world).getName().trim(), player, node.trim()));
 		    }
-		}).thenApply(checked -> {
-			return String.valueOf(!player.isPermissionSet(permission));
 		});
-		return future.join();
 	}
 	
 	public boolean delPermissionAsync(final Player player, final Collection<String> permissions) {

@@ -33,6 +33,7 @@ public class OnlinePlayers {
 	 * @return size amount of the entries in the online players list
 	 */
     public static int size() {
+    	amount = 0;
     	Bukkit.getWorlds().forEach(world -> {
     		world.getPlayers().forEach(player -> amount++);
   	    });

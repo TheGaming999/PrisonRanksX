@@ -45,6 +45,7 @@ public class LeaderboardManager {
 	private Map<UUID, PlayerDataHandler> globalMySQL;
 	private boolean update;
 	public boolean isMYSQL;
+	public boolean isRankEnabled;
 	
 	public LeaderboardManager(PrisonRanksX main) {
 		this.main = main;
@@ -52,6 +53,7 @@ public class LeaderboardManager {
 		if(!main.getGlobalStorage().getBooleanData("Options.enable-leaderboard")) {
 			return;
 		}
+		isRankEnabled = !main.rankStorage.getEntireData().isEmpty();
 		list = Collections.synchronizedList(new LinkedList<>());
 		listp = Collections.synchronizedList(new LinkedList<>());
 		listr = Collections.synchronizedList(new LinkedList<>());
@@ -108,7 +110,7 @@ public class LeaderboardManager {
 	 *  @null  null if there is not a player in that position || no player joined to take this position.
 	 */
 	public Entry<UUID, Integer> getPlayerFromPositionRank(final int position) {
-		main.debug(list);
+		if(!isRankEnabled) return null;
 		return indexExists(list, position - 1) ? list.get(position - 1) : null;
 	}
 	
@@ -139,6 +141,7 @@ public class LeaderboardManager {
 	}
 	
 	public String getPlayerNameFromPositionRank(final int position, final String fallback) {
+		if(!isRankEnabled) return fallback;
 		if(getPlayerFromPositionRank(position) == null) {
 			return fallback;
 		}
@@ -214,6 +217,7 @@ public class LeaderboardManager {
 	 * @String returns String fallback if there is no player took that position.
 	 */
 	public String getPlayerRankFromPosition(final int position, final String fallback) {
+		if(!isRankEnabled) return fallback;
 		Entry<UUID, Integer> entry = getPlayerFromPositionRank(position);
 		if(entry == null) {
 			return fallback;
@@ -224,6 +228,7 @@ public class LeaderboardManager {
 	}
 	
 	public String getPlayerRankDisplayNameFromPosition(final int position, final String fallback) {
+		if(!isRankEnabled) return fallback;
 		Entry<UUID, Integer> entry = getPlayerFromPositionRank(position);
 		if(entry == null) {
 			return fallback;
@@ -283,6 +288,7 @@ public class LeaderboardManager {
 	}
 	
 	public int getPlayerRankPosition(final OfflinePlayer player) {
+		if(!isRankEnabled) return -1;
 		players.clear();
 		players.addAll(getRankLeaderboard().keySet());
 		return players.indexOf(player.getUniqueId()) + 1;
@@ -295,6 +301,7 @@ public class LeaderboardManager {
 	}
 	
 	public int getPlayerRankValue(final OfflinePlayer player) {
+		if(!isRankEnabled) return -1;
 		return getRankLeaderboard().get(player.getUniqueId());
 	}
 	
@@ -311,6 +318,7 @@ public class LeaderboardManager {
 	}
 	
 	public synchronized Map<UUID, Integer> getRankLeaderboard() {
+		if(!isRankEnabled) return null;
 		if(!update && !updatedValues.isEmpty()) {
 			return updatedValues;
 		}

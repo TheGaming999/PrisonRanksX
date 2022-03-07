@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -23,7 +22,7 @@ public class PlayerLoginListenerLegacy implements IPlayerLoginListener, Listener
 		this.plugin = plugin;
 	}
 	
-	@EventHandler(priority=EventPriority.HIGHEST)
+	@EventHandler
 	@Override
 	public void onLogin(AsyncPlayerPreLoginEvent e) {
 		plugin.scheduler.runTaskAsynchronously(plugin, () -> registerUserData(null, e.getName()));

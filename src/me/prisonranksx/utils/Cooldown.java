@@ -2,6 +2,7 @@ package me.prisonranksx.utils;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.google.common.collect.Maps;
 
@@ -20,13 +21,11 @@ class IntegerLong {
 	public long getLong() { return n2; }	
 	
 	public int setInt(int number) {
-		this.n1 = number;
-		return n1;
+		return this.n1 = number;
 	}
 	
 	public long setLong(long number) {
-		this.n2 = number;
-		return n2;
+		return this.n2 = number;
 	}
 	
 	public IntegerLong set(int intNumber, long longNumber) {
@@ -39,7 +38,6 @@ class IntegerLong {
 
 /**
  * 
- * @author gamin
  * @apiNote Simple utility class to manage, create, and edit cooldowns using System time.
  */
 public class Cooldown {	
@@ -48,11 +46,11 @@ public class Cooldown {
 	private final static long th = 1000;
 		
 	/**
-	 * Begins a cooldown. Should be inserted after / underneath the code.
+	 * Begins a cooldown. Should be inserted after / under the code to be cooled down.
 	 * @param name player name / key name or any other identifier
 	 * @param cooldownTime how long should it take for the cooldown to finish in seconds, so the wanted process can be performed again
 	 */
-	public static void run(final String name, final int cooldownTime) {
+	public static void start(final String name, final int cooldownTime) {
 		cooldowns.put(name, new IntegerLong(cooldownTime, System.currentTimeMillis()));
 	}
 	
@@ -91,10 +89,26 @@ public class Cooldown {
 	
 	/**
 	 * @param name player name / key name or the wanted identifier
+	 * @param Performs the specified operation if cooldown has ended.
+	 * @return true when the cooldown is still going on, and false if the cooldown has ended or (name) doesn't have a cooldown yet.
+	 */
+	public static boolean checkAndDo(final String name, final Consumer<String> operation) {
+		if(cooldowns.containsKey(name)) {
+			IntegerLong mapValue = cooldowns.get(name);
+			long secondsLeft = ((mapValue.getLong()/th)+mapValue.getInt()) - (System.currentTimeMillis()/th);
+			if(secondsLeft>0) return true;
+			cooldowns.remove(name);
+		}
+		operation.accept(name);
+		return false;
+	}
+	
+	/**
+	 * @param name player name / key name or the wanted identifier
 	 * @return seconds left before the cooldown ends, and an exception if isCoolingDown(...) returns false.
 	 * @exception NullPointerException when (name) is not under cooldown
 	 */
-	public static long get(final String name) throws NullPointerException {
+	public static long getOrThrow(final String name) throws NullPointerException {
 		IntegerLong mapValue = cooldowns.get(name);
 		long secondsLeft = ((mapValue.getLong()/th)+mapValue.getInt()) - (System.currentTimeMillis()/th);
 		long correctedSecondsLeft = secondsLeft > 0 ? secondsLeft : 0;
@@ -104,13 +118,27 @@ public class Cooldown {
 	/**
 	 * 
 	 * @param name player name / key name or the wanted identifier
-	 * @return -1 if (name) is not under cooldown / cooldown ended, otherwise return cooldown in seconds.
+	 * @return null if (name) is not under cooldown / cooldown ended, otherwise return cooldown in seconds.
 	 */
-	public static long checkAndGet(final String name) {
+	public static Long getOrNull(final String name) {
 		IntegerLong mapValue = cooldowns.get(name);
-		if(mapValue == null) return -1;
+		if(mapValue == null) return null;
 		long secondsLeft = ((mapValue.getLong()/th)+mapValue.getInt()) - (System.currentTimeMillis()/th);
-		long correctedSecondsLeft = secondsLeft > 0 ? secondsLeft : -1;
+		long correctedSecondsLeft = secondsLeft > 0 ? secondsLeft : 0;
+		return correctedSecondsLeft;
+	}
+	
+	/**
+	 * 
+	 * @param name player name / key name or the wanted identifier
+	 * @param nullValue value to return when (name) is not under cooldown
+	 * @return (nullValue) if (name) is not under cooldown / cooldown ended, otherwise return cooldown in seconds.
+	 */
+	public static long getOrNull(final String name, final long nullValue) {
+		IntegerLong mapValue = cooldowns.get(name);
+		if(mapValue == null) return nullValue;
+		long secondsLeft = ((mapValue.getLong()/th)+mapValue.getInt()) - (System.currentTimeMillis()/th);
+		long correctedSecondsLeft = secondsLeft > 0 ? secondsLeft : 0;
 		return correctedSecondsLeft;
 	}
 	

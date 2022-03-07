@@ -1359,6 +1359,11 @@ public enum XSound {
         Validate.notEmpty(sound, "Cannot match XSound of a null or empty sound name");
         return Optional.ofNullable(Data.NAMES.get(format(sound)));
     }
+    
+    public static Sound matchSound(String sound) {
+    	Validate.notEmpty(sound, "Cannot match XSound of a null or empty sound name");
+    	return Optional.ofNullable(Data.NAMES.get(format(sound))).get().parseSound();
+    }
 
     /**
      * Parses the XSound with the given bukkit sound.

@@ -5,12 +5,12 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.api.PRXAPI;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.XUser;
 import me.prisonranksx.events.AsyncRankRegisterEvent;
@@ -25,7 +25,7 @@ public class PlayerLoginListener implements IPlayerLoginListener, Listener {
 		this.plugin = plugin;
 	}
 	
-	@EventHandler(priority=EventPriority.HIGHEST)
+	@EventHandler
 	@Override
 	public void onLogin(AsyncPlayerPreLoginEvent e) {
 		plugin.scheduler.runTaskAsynchronously(plugin, () -> registerUserData(e.getUniqueId(), e.getName()));
@@ -38,8 +38,8 @@ public class PlayerLoginListener implements IPlayerLoginListener, Listener {
 		Player p = e.getPlayer();
      	UUID playerUUID = p.getUniqueId();
      	String name = p.getName();
-		plugin.prxAPI.autoRankupPlayers.remove(name);
-		plugin.prxAPI.autoPrestigePlayers.remove(name);
+		PRXAPI.AUTO_RANKUP_PLAYERS.remove(name);
+		PRXAPI.AUTO_PRESTIGE_PLAYERS.remove(name);
 		plugin.scheduler.runTaskLater(plugin, () -> {
 		if(plugin.isVaultGroups && plugin.checkVault) {
 			if(plugin.vaultPlugin.equalsIgnoreCase("LuckPerms")) {

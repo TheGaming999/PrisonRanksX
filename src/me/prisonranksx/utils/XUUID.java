@@ -13,13 +13,17 @@ import me.prisonranksx.PrisonRanksX;
 public class XUUID {
 
 	private UUID uuid;
-	private static final PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+	private static PrisonRanksX main = PrisonRanksX.getInstance();
 	private static final Map<UUID, String> legacyPlayers = new HashMap<>();
 	private static final Map<String, UUID> legacyPlayers2 = new HashMap<>();
 	
+	public static PrisonRanksX getMain() {
+		return PrisonRanksX.getInstance();
+	}
+	
 	public XUUID(OfflinePlayer player) {
 		UUID u;
-		if(main.isBefore1_7) {
+		if(getMain().isBefore1_7) {
 			String playerName = player.getName();
 			u = UUID.nameUUIDFromBytes(playerName.getBytes());
 			legacyPlayers.put(u, playerName);
@@ -64,7 +68,7 @@ public class XUUID {
 	}
 	
 	public static String getNameFromUUID(UUID uuid) {
-		if(main.isBefore1_7) {
+		if(getMain().isBefore1_7) {
 		    return legacyPlayers.get(uuid);
 		}
 		return Bukkit.getOfflinePlayer(uuid).getName();
@@ -72,7 +76,7 @@ public class XUUID {
 	
 	@SuppressWarnings("deprecation")
 	public static UUID getUUIDFromName(String name) {
-		if(main.isBefore1_7) {
+		if(getMain().isBefore1_7) {
 			return legacyPlayers2.get(name);
 		}
 		return Bukkit.getOfflinePlayer(name).getUniqueId();
@@ -83,7 +87,7 @@ public class XUUID {
 	 * @return the correct uuid counting the server version.
 	 */
 	public static UUID fetchUUID(UUID uuid) {
-		if(main.isBefore1_7) {
+		if(getMain().isBefore1_7) {
 			if(legacyPlayers.containsKey(uuid)) {
 				return uuid;
 			} else {
