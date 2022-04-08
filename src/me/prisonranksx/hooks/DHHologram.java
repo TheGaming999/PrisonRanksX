@@ -1,12 +1,9 @@
 package me.prisonranksx.hooks;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Location;
-import org.bukkit.plugin.Plugin;
-
 
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
@@ -15,51 +12,58 @@ import me.prisonranksx.PrisonRanksX;
 public class DHHologram implements IHologram {
 
 	private Hologram hologramDH;
-	private CompletableFuture<DHHologram> hologramFuture;
-	
+	private PrisonRanksX plugin;
+
 	/**
 	 * DecentHolograms holograms are async, so holograms are always thread safe.
 	 */
 	@Override
 	public IHologram create(PrisonRanksX plugin, String hologramName, Location location, boolean threadSafe) {
-		hologramFuture = CompletableFuture.supplyAsync(() -> {
-		    this.hologramDH = DHAPI.createHologram(hologramName, location);
-		    return this;
-		});
-		try {
-			return hologramFuture.get();
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+		if(threadSafe) {
+			return CompletableFuture.supplyAsync(() -> {
+				DHHologram holo = new DHHologram();
+				holo.plugin = plugin;
+				holo.hologramDH = DHAPI.createHologram(hologramName, location);
+				return holo;
+			}).join();
+		} else {
+			DHHologram holo = new DHHologram();
+			holo.plugin = plugin;
+			holo.hologramDH = DHAPI.createHologram(hologramName, location);
+			return holo;
 		}
-		return null;
 	}
 
 	@Override
 	public void addLine(String line, boolean threadSafe) {
-		hologramFuture.thenRunAsync(() -> {
-			try {
-				DHAPI.addHologramLine(this.hologramDH, line);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} 
-		});
+		try {
+			DHAPI.addHologramLine(this.hologramDH, line);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} 
 	}
 
 	@Override
+	public void addLine(List<String> line, boolean threadSafe) {
+		try {
+			line.forEach(li -> {
+				DHAPI.addHologramLine(this.hologramDH, li);
+			});
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} 
+	}
+	
+	@Override
 	public void delete() {
-		hologramFuture.thenRunAsync(() -> hologramDH.delete());
+		hologramDH.delete();
 	}
 
 	@Override
 	public void delete(int removeTime) {
-		hologramFuture.thenRunAsync(() -> {
-			try {
-				TimeUnit.SECONDS.sleep(removeTime);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		plugin.scheduler.runTaskLater(plugin, () -> {
 			hologramDH.delete();
-		});
+		}, removeTime * 20);
 	}
-	
+
 }

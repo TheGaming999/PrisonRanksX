@@ -1,9 +1,6 @@
 package me.prisonranksx.hooks;
 
-import java.util.concurrent.ExecutionException;
-
 import org.bukkit.Location;
-import org.bukkit.plugin.Plugin;
 
 import me.prisonranksx.PrisonRanksX;
 

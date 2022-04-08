@@ -1,8 +1,11 @@
 package me.prisonranksx.hooks;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
@@ -18,18 +21,22 @@ import me.prisonranksx.api.PRXAPI;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.leaderboard.LeaderboardManager;
 import me.prisonranksx.utils.CollectionUtils;
+import me.prisonranksx.utils.MCTextEffect;
 
 public class PapiHook extends PlaceholderExpansion {
-	
-    private PrisonRanksX main;
-    private PRXAPI prxAPI;
-    private LeaderboardManager lbm;
-    private String nullNameRank;
-    private String nullValueRank;
-    private String nullNamePrestige;
-    private String nullValuePrestige;
-    private String nullNameRebirth;
-    private String nullValueRebirth;
+
+	private PrisonRanksX main;
+	private PRXAPI prxAPI;
+	private LeaderboardManager lbm;
+	private String nullNameRank;
+	private String nullValueRank;
+	private String nullNamePrestige;
+	private String nullValuePrestige;
+	private String nullNameRebirth;
+	private String nullValueRebirth;
+	private final static String PAPI = "PlaceholderAPI."; 
+	public final static DecimalFormat df = new DecimalFormat("###,###.##");
+	public final static NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
 
 	public PapiHook(PrisonRanksX main) {
 		super();
@@ -51,264 +58,215 @@ public class PapiHook extends PlaceholderExpansion {
 	public String getNullValueRank() {
 		return this.nullValueRank;
 	}
-	
+
 	public String getNullNamePrestige() {
 		return this.nullNamePrestige;
 	}
-	
+
 	public String getNullValuePrestige() {
 		return this.nullValuePrestige;
 	}
-	
+
 	public String getNullNameRebirth() {
 		return this.nullNameRebirth;
 	}
-	
+
 	public String getNullValueRebirth() {
 		return this.nullValueRebirth;
 	}
-	
-    @Override
-    public boolean persist(){
-        return true;
-    }
-    
-    @Override
-    public boolean canRegister(){
-        return true;
-    }
 
-    @Nonnull
-    public String getChatColorsInString(final String string) {
-    	String chatColors = "";
-    	if(string == null || !ChatColor.stripColor(string).contains("&")) {
-    		return chatColors;
-    	} else {
-    		int i = -1;
-    		for(char character : string.toCharArray()) {
-    			i++;
-    			if(character == '&') {
-    				chatColors = chatColors + String.valueOf(string.charAt(i + 1));
-    			}
-    		}
-    	}
-    	return chatColors;
-    }
-    
-    @Override
+	@Override
+	public boolean persist(){
+		return true;
+	}
+
+	@Override
+	public boolean canRegister(){
+		return true;
+	}
+
+	@Nonnull
+	public String getChatColorsInString(final String string) {
+		String chatColors = "";
+		if(string == null || !ChatColor.stripColor(string).contains("&")) {
+			return chatColors;
+		} else {
+			int i = -1;
+			for(char character : string.toCharArray()) {
+				i++;
+				if(character == '&') {
+					chatColors = chatColors + String.valueOf(string.charAt(i + 1));
+				}
+			}
+		}
+		return chatColors;
+	}
+
+	@Override
 	public String onRequest(OfflinePlayer arg0, String arg1) {
-        OfflinePlayer p = arg0;
-        if(arg1.equalsIgnoreCase("canprestige")) {
-        	return String.valueOf(prxAPI.canPrestige(p.getPlayer()));
-        }
-        if(arg1.equalsIgnoreCase("canrebirth")) {
-        	return String.valueOf(prxAPI.canRebirth(p.getPlayer()));
-        }
-        if(arg1.equalsIgnoreCase("currentrank_number")) {
-        	return String.valueOf(prxAPI.getPlayerRankNumber(p));
-        }
-        if(arg1.equalsIgnoreCase("currentprestige_number")) {
-        	return String.valueOf(prxAPI.getPlayerPrestigeNumber(p));
-        }
-        if(arg1.equalsIgnoreCase("currentrebirth_number")) {
-        	return String.valueOf(prxAPI.getPlayerRebirthNumber(p));
-        }
-        if(arg1.equalsIgnoreCase("current_displayname")) {
-        	return prxAPI.getStageDisplay(p.getPlayer(), " ", true);
-        }
-        if(arg1.startsWith("current_displayname_customspace_")) {
-        	String spaceChar = arg1.replace("current_displayname_customspace_", "");
-        	return prxAPI.getStageDisplay(p.getPlayer(), spaceChar, true);
-        }
-		if(arg1.equalsIgnoreCase("currentrank_name")) {
-			if(prxAPI.isLastRank(p) && prxAPI.main.globalStorage.getBooleanData("PlaceholderAPI.currentrank-lastrank-enabled")) {
-				return prxAPI.getPluginMainClass().getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.currentrank-lastrank"), arg0.getName());
-			}
-			return String.valueOf(prxAPI.getPlayerRank(p));
-		}
-		if(arg1.startsWith("currentrank_name_")) {
-			Player player = Bukkit.getPlayer(arg1.replace("currentrank_name_", ""));
-			if(player == null) {
-				return "null";
-			}
-			return String.valueOf(prxAPI.getPlayerRank(p));
-		}
-		if(arg1.equalsIgnoreCase("currentrank_displayname")) {
-			if(prxAPI.isLastRank(p) && prxAPI.main.globalStorage.getBooleanData("PlaceholderAPI.currentrank-lastrank-enabled")) {
-				return prxAPI.getPluginMainClass().getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.currentrank-lastrank"), arg0.getName());
-			}
-			return String.valueOf(prxAPI.getPlayerRankDisplay(p));
-		}
-		if(arg1.equalsIgnoreCase("currentrank_firstcolor")) {
+		OfflinePlayer p = arg0;
+		if (is(arg1, "canprestige")) return s(prxAPI.canPrestige(p.getPlayer()));        	
+		if (is(arg1, "canrebirth")) return s(prxAPI.canRebirth(p.getPlayer()));
+		if (is(arg1, "currentrank_number")) return s(prxAPI.getPlayerRankNumber(p));
+		if (is(arg1, "currentprestige_number")) return s(prxAPI.getPlayerPrestigeNumber(p));
+		if (is(arg1, "currentrebirth_number")) return s(prxAPI.getPlayerRebirthNumber(p));
+		if (is(arg1, "current_displayname")) return prxAPI.getStageDisplay(p.getPlayer(), " ", true);
+		if (is(arg1, "higheststage_name")) return prxAPI.getHighestStage(p.getPlayer());
+		if (is(arg1, "higheststage_displayname")) return prxAPI.getHighestStageDisplay(p.getPlayer());
+		if (is(arg1, "higheststage_name_norebirth")) return prxAPI.getHighestStage(p.getPlayer(), true);
+		if (is(arg1, "higheststage_displayname_norebirth")) return prxAPI.getHighestStageDisplay(p.getPlayer(), true);
+		if (sw(arg1, "current_displayname_customspace_")) return prxAPI.getStageDisplay(p.getPlayer(), swr(arg1, "current_displayname_customspace_"), true);
+		if (is(arg1, "currentrank_name")) return prxAPI.isLastRank(p) && boolDataP("currentrank-lastrank-enabled") ? stringDataP("currentrank-lastrank", arg0) : s(prxAPI.getPlayerRank(p));
+		if (sw(arg1, "currentrank_name_")) return swp(arg1, "currentrank_name_", "null", player -> prxAPI.getPlayerRank(player));
+		if (is(arg1, "currentrank_displayname")) return prxAPI.isLastRank(p) && boolDataP("currentrank-lastrank-enabled") ? stringDataP("currentrank-lastrank", arg0) : s(prxAPI.getPlayerRankDisplay(p));
+		if (is(arg1, "currentrank_firstcolor")) return s(MCTextEffect.getColorCodesAfterChar(prxAPI.getPlayerRankDisplay(p), 0));
+		if (is(arg1, "currentrank_lastchar")) return s(prxAPI.getPlayerRankDisplay(p).charAt(prxAPI.getPlayerRankDisplay(p).length() - 1));
+		if (is(arg1, "currentrank_lastcolors")) return s(ChatColor.getLastColors(prxAPI.getPlayerRankDisplay(p)));
+		if (is(arg1, "currentrank_secondcolor")) {
 			String stripped = ChatColor.stripColor(prxAPI.getPlayerRankDisplay(p));
-			return String.valueOf(stripped.charAt(1)) == null ? "&r" : String.valueOf(stripped.charAt(1));
+			char thirdChar = stripped.charAt(3);
+			return s(thirdChar) == null ? "&r" : s(thirdChar);
 		}
-		if(arg1.equalsIgnoreCase("currentrank_lastchar")) {
-			String rankDisplay = prxAPI.getPlayerRankDisplay(p);
-			return String.valueOf(rankDisplay.charAt(rankDisplay.length() - 1));
-		}
-		if(arg1.equalsIgnoreCase("currentrank_lastcolors")) {
-			String rankDisplay = prxAPI.getPlayerRankDisplay(p);
-			return String.valueOf(ChatColor.getLastColors(rankDisplay));
-		}
-		if(arg1.equalsIgnoreCase("currentrank_secondcolor")) {
+		if (is(arg1, "currentrank_thirdcolor")) {
 			String stripped = ChatColor.stripColor(prxAPI.getPlayerRankDisplay(p));
-			return String.valueOf(stripped.charAt(3)) == null ? "&r" : String.valueOf(stripped.charAt(3));
+			return s(stripped.charAt(5)) == null ? "&r" : s(stripped.charAt(5));
 		}
-		if(arg1.equalsIgnoreCase("currentrank_thirdcolor")) {
-			String stripped = ChatColor.stripColor(prxAPI.getPlayerRankDisplay(p));
-			return String.valueOf(stripped.charAt(5)) == null ? "&r" : String.valueOf(stripped.charAt(5));
-		}
-		if(arg1.equalsIgnoreCase("currentrank_afterbracketcolor")) {
+		if (is(arg1, "currentrank_afterbracketcolor")) {
 			String rankDisplay = prxAPI.getPlayerRankDisplay(p);
-			return String.valueOf(rankDisplay.charAt(rankDisplay.indexOf("[") + 2));
+			return s(rankDisplay.charAt(rankDisplay.indexOf("[") + 2));
 		}
-		if(arg1.equalsIgnoreCase("currentrank_afterspacecolor")) {
+		if (is(arg1, "currentrank_afterspacecolor")) {
 			String rankDisplay = prxAPI.getPlayerRankDisplay(p);
-			return String.valueOf(rankDisplay.charAt(rankDisplay.indexOf(" ") + 2));
+			return s(rankDisplay.charAt(rankDisplay.indexOf(" ") + 2));
 		}
-		if(arg1.equalsIgnoreCase("currentrank_colors")) {
-			String knownColors = getChatColorsInString(prxAPI.getPlayerRankDisplay(p));
-			return knownColors;
-		}
-		if(arg1.equalsIgnoreCase("rankup_percentage")) {
-			if(prxAPI.getPlayerNextRank(p) == null) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
+		if (is(arg1, "currentrank_colors")) return getChatColorsInString(prxAPI.getPlayerRankDisplay(p));
+		if (is(arg1, "rankup_percentage")) {
+			if (prxAPI.getPlayerNextRank(p) == null) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
 			}
-			if(prxAPI.isPercentSignBehind()) {
-			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageDirect(p));
+			if (prxAPI.isPercentSignBehind()) {
+				return prxAPI.getPercentSign() + s(prxAPI.getPlayerRankupPercentageDirect(p));
 			} else {
-				return String.valueOf(prxAPI.getPlayerRankupPercentageDirect(p)) + prxAPI.getPercentSign();
+				return s(prxAPI.getPlayerRankupPercentageDirect(p)) + prxAPI.getPercentSign();
 			}
 		}
-		
-		if(arg1.startsWith("rank_percentage_")) {
-			if(arg1.startsWith("rank_percentage_decimal_nolimit_")) {
+		if (sw(arg1, "rank_percentage_")) {
+			if (sw(arg1, "rank_percentage_decimal_nolimit_")) {
 				String path = prxAPI.getPlayerRankPath(p).getPathName();
-				String rank = arg1.replace("rank_percentage_decimal_nolimit_", "");
+				String rank = swr(arg1, "rank_percentage_decimal_nolimit_");
 				RankPath rp = RankPath.getRankPath(rank, path);
-				if(prxAPI.isPercentSignBehind()) {
-				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankPercentageDecimalNoLimitDirect(p, rp));
+				if (prxAPI.isPercentSignBehind()) {
+					return prxAPI.getPercentSign() + s(prxAPI.getPlayerRankPercentageDecimalNoLimitDirect(p, rp));
 				} else {
-					return String.valueOf(prxAPI.getPlayerRankPercentageDecimalNoLimitDirect(p, rp)) + prxAPI.getPercentSign();
+					return s(prxAPI.getPlayerRankPercentageDecimalNoLimitDirect(p, rp)) + prxAPI.getPercentSign();
 				}
-			 } else if(arg1.startsWith("rank_percentage_decimal_")) {
+			} else if (sw(arg1, "rank_percentage_decimal_")) {
 				String path = prxAPI.getPlayerRankPath(p).getPathName();
-				String rank = arg1.replace("rank_percentage_decimal_", "");
+				String rank = swr(arg1, "rank_percentage_decimal_");
 				RankPath rp = RankPath.getRankPath(rank, path);
-				if(prxAPI.isPercentSignBehind()) {
-				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankPercentageDecimalDirect(p, rp));
+				if (prxAPI.isPercentSignBehind()) {
+					return prxAPI.getPercentSign() + s(prxAPI.getPlayerRankPercentageDecimalDirect(p, rp));
 				} else {
-					return String.valueOf(prxAPI.getPlayerRankPercentageDecimalDirect(p, rp)) + prxAPI.getPercentSign();
+					return s(prxAPI.getPlayerRankPercentageDecimalDirect(p, rp)) + prxAPI.getPercentSign();
 				}
-			} else if(arg1.startsWith("rankup_percentage_plain_")) {
+			} else if (sw(arg1, "rankup_percentage_plain_")) {
 				String path = prxAPI.getPlayerRankPath(p).getPathName();
-				String rank = arg1.replace("rankup_percentage_plain_", "");
+				String rank = swr(arg1, "rankup_percentage_plain_");
 				RankPath rp = RankPath.getRankPath(rank, path);
-				return String.valueOf(prxAPI.getPlayerRankPercentage(p, rp));
-			} else if(arg1.startsWith("rank_percentage_nolimit_")) {
+				return s(prxAPI.getPlayerRankPercentage(p, rp));
+			} else if (sw(arg1, "rank_percentage_nolimit_")) {
 				String path = prxAPI.getPlayerRankPath(p).getPathName();
-				String rank = arg1.replace("rank_percentage_nolimit_", "");
+				String rank = swr(arg1, "rank_percentage_nolimit_");
 				RankPath rp = RankPath.getRankPath(rank, path);
-				if(prxAPI.isPercentSignBehind()) {
-				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankPercentageNoLimitDirect(p, rp));
+				if (prxAPI.isPercentSignBehind()) {
+					return prxAPI.getPercentSign() + s(prxAPI.getPlayerRankPercentageNoLimitDirect(p, rp));
 				} else {
-					return String.valueOf(prxAPI.getPlayerRankPercentageNoLimitDirect(p, rp)) + prxAPI.getPercentSign();
+					return s(prxAPI.getPlayerRankPercentageNoLimitDirect(p, rp)) + prxAPI.getPercentSign();
 				}
 			} else {
-			String path = prxAPI.getPlayerRankPath(p).getPathName();
-			String rank = arg1.replace("rank_percentage_", "");
-			RankPath rp = RankPath.getRankPath(rank, path);
-			if(prxAPI.isPercentSignBehind()) {
-			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankPercentage(p, rp));
+				String path = prxAPI.getPlayerRankPath(p).getPathName();
+				String rank = swr(arg1, "rank_percentage_");
+				RankPath rp = RankPath.getRankPath(rank, path);
+				if (prxAPI.isPercentSignBehind()) {
+					return prxAPI.getPercentSign() + s(prxAPI.getPlayerRankPercentage(p, rp));
+				} else {
+					return s(prxAPI.getPlayerRankPercentage(p, rp)) + prxAPI.getPercentSign();
+				}
+			}
+		}
+		if (is(arg1, "rankup_percentage_plain")) return prxAPI.getPlayerNextRank(p) == null ? "100" : s(prxAPI.getPlayerRankupPercentageDirect(p));
+		if (sw(arg1, "plaindecimal_")) {
+			String bsed = PlaceholderAPI.setBracketPlaceholders(p, swr(arg1, "plaindecimal_"));
+			if (!prxAPI.numberAPI.isNumber(bsed)) {
+				return s(prxAPI.numberAPI.keepNumbersWithDots(bsed));
+			}
+			return s(prxAPI.numberAPI.keepNumbersWithDots(prxAPI.numberAPI.deleteScientificNotationA(Double.valueOf(bsed))));
+		}
+		if (sw(arg1, "plain_")) {
+			String bsed = PlaceholderAPI.setBracketPlaceholders(p, swr(arg1, "plain_"));
+			return s(prxAPI.numberAPI.keepNumbers(bsed));
+		}
+		if (sw(arg1, "integerize_")) {
+			String integerize = PlaceholderAPI.setBracketPlaceholders(p, prxAPI.numberAPI.keepNumbersWithDots(swr(arg1, "integerize_")));
+			if (prxAPI.numberAPI.isNumber(integerize)) {
+				double val = Double.valueOf(integerize);
+				return s(prxAPI.numberAPI.toFakeInteger(val));
 			} else {
-				return String.valueOf(prxAPI.getPlayerRankPercentage(p, rp)) + prxAPI.getPercentSign();
+				return integerize;
 			}
-			}
 		}
-		if(arg1.equalsIgnoreCase("rankup_percentage_plain")) {
-			if(prxAPI.getPlayerNextRank(p) == null) {
-				  return "100";
-			}
-			return String.valueOf(prxAPI.getPlayerRankupPercentageDirect(p));
+		if (sw(arg1, "usformat_")) {
+			String bsed = PlaceholderAPI.setBracketPlaceholders(p, swr(arg1, "usformat_"));
+			return nf.format(Double.valueOf(bsed));
 		}
-		
-		if(arg1.startsWith("plaindecimal_")) {
-			String bsed = PlaceholderAPI.setBracketPlaceholders(p, arg1.replace("plaindecimal_", ""));
-			if(!prxAPI.numberAPI.isNumber(bsed)) {
-				String.valueOf(prxAPI.numberAPI.keepNumbersWithDots(bsed));
-			}
-			return String.valueOf(prxAPI.numberAPI.keepNumbersWithDots(prxAPI.numberAPI.deleteScientificNotationA(Double.valueOf(bsed))));
-		}
-		if(arg1.startsWith("plain_")) {
-			String bsed = PlaceholderAPI.setBracketPlaceholders(p, arg1.replace("plain_", ""));
-			return String.valueOf(prxAPI.numberAPI.keepNumbers(bsed));
-		}
-		if(arg1.startsWith("integerize_")) {
-			String integerize = PlaceholderAPI.setBracketPlaceholders(p, prxAPI.numberAPI.keepNumbersWithDots(arg1.replace("integerize_", "")));
-		    if(prxAPI.numberAPI.isNumber(integerize)) {
-		    double val = Double.valueOf(integerize);
-			return String.valueOf(prxAPI.numberAPI.toFakeInteger(val));
-		    } else {
-		    	return integerize;
-		    }
-		}
-		if(arg1.equalsIgnoreCase("next_percentage")) {
-			if(prxAPI.isPercentSignBehind()) {
-				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerNextPercentage(p).getPercentage());
+		if (is(arg1, "next_percentage")) {
+			if (prxAPI.isPercentSignBehind()) {
+				return prxAPI.getPercentSign() + s(prxAPI.getPlayerNextPercentage(p).getPercentage());
 			} else {
-				return String.valueOf(prxAPI.getPlayerNextPercentage(p).getPercentage()) + prxAPI.getPercentSign();
+				return s(prxAPI.getPlayerNextPercentage(p).getPercentage()) + prxAPI.getPercentSign();
 			}
 		}
-		if(arg1.equalsIgnoreCase("next_percentage_plain")) {
-               return String.valueOf(prxAPI.getPlayerNextPercentage(p).getPercentage());
+		if (is(arg1, "next_percentage_plain")) {
+			return s(prxAPI.getPlayerNextPercentage(p).getPercentage());
 		}
-		if(arg1.equalsIgnoreCase("next_percentage_decimal")) {
-			if(prxAPI.isPercentSignBehind()) {
-				return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerNextPercentageDecimal(p));
+		if (is(arg1, "next_percentage_decimal")) {
+			if (prxAPI.isPercentSignBehind()) {
+				return prxAPI.getPercentSign() + s(prxAPI.getPlayerNextPercentageDecimal(p));
 			} else {
-				return String.valueOf(prxAPI.getPlayerNextPercentageDecimal(p)) + prxAPI.getPercentSign();
+				return s(prxAPI.getPlayerNextPercentageDecimal(p)) + prxAPI.getPercentSign();
 			}
 		}
-		if(arg1.equalsIgnoreCase("rankup_percentage_decimal")) {
-			if(prxAPI.getPlayerNextRank(p) == null) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
+		if (is(arg1, "rankup_percentage_decimal")) {
+			if (prxAPI.getPlayerNextRank(p) == null) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
 			}
-			if(prxAPI.isPercentSignBehind()) {
-			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageDecimalDirect(p));
+			if (prxAPI.isPercentSignBehind()) {
+				return prxAPI.getPercentSign() + s(prxAPI.getPlayerRankupPercentageDecimalDirect(p));
 			} else {
-				return String.valueOf(prxAPI.getPlayerRankupPercentageDecimalDirect(p)) + prxAPI.getPercentSign();
+				return s(prxAPI.getPlayerRankupPercentageDecimalDirect(p)) + prxAPI.getPercentSign();
 			}
 		}
-		
-		if(arg1.equalsIgnoreCase("rankup_percentage_nolimit")) {
-			if(prxAPI.getPlayerNextRank(p) == null) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
+		if (is(arg1, "rankup_percentage_nolimit")) {
+			if (prxAPI.getPlayerNextRank(p) == null) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
 			}
-			if(prxAPI.isPercentSignBehind()) {
-			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageNoLimitDirect(p));
+			if (prxAPI.isPercentSignBehind()) {
+				return prxAPI.getPercentSign() + s(prxAPI.getPlayerRankupPercentageNoLimitDirect(p));
 			} else {
-				return String.valueOf(prxAPI.getPlayerRankupPercentageNoLimitDirect(p)) + prxAPI.getPercentSign();
+				return s(prxAPI.getPlayerRankupPercentageNoLimitDirect(p)) + prxAPI.getPercentSign();
 			}
-		}
-		
-		if(arg1.equalsIgnoreCase("rankup_percentage_decimal_nolimit")) {
-			if(prxAPI.getPlayerNextRank(p) == null) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
+		}	
+		if (is(arg1, "rankup_percentage_decimal_nolimit")) {
+			if (prxAPI.getPlayerNextRank(p) == null) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-percentage-lastrank"), arg0.getName());
 			}
-			if(prxAPI.isPercentSignBehind()) {
-			return prxAPI.getPercentSign() + String.valueOf(prxAPI.getPlayerRankupPercentageDecimalNoLimitDirect(p));
+			if (prxAPI.isPercentSignBehind()) {
+				return prxAPI.getPercentSign() + s(prxAPI.getPlayerRankupPercentageDecimalNoLimitDirect(p));
 			} else {
-				return String.valueOf(prxAPI.getPlayerRankupPercentageDecimalNoLimitDirect(p)) + prxAPI.getPercentSign();
+				return s(prxAPI.getPlayerRankupPercentageDecimalNoLimitDirect(p)) + prxAPI.getPercentSign();
 			}
 		}
-		
-		if(arg1.equalsIgnoreCase("rankup_progress")) {
-			if(prxAPI.getPlayerNextRank(p) == null) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-lastrank"), arg0.getName());
-			}
-			return String.valueOf(prxAPI.getPlayerRankupProgressBar(p));
-		}
+		if (is(arg1, "rankup_progress")) return prxAPI.getPlayerNextRank(p) == null ? stringDataP("rankup-progress-lastrank", arg0) : s(prxAPI.getPlayerRankupProgressBar(p));
 		if(arg1.startsWith("rank_progress_")) {
 			if(arg1.startsWith("rank_progress_double_")) {
 				String path = prxAPI.getPlayerRankPath(p).getPathName();
@@ -316,10 +274,10 @@ public class PapiHook extends PlaceholderExpansion {
 				RankPath rp = RankPath.getRankPath(rank, path);
 				return String.valueOf(prxAPI.getPlayerRankProgressBarExtended(p, rp));
 			} else {
-			String path = prxAPI.getPlayerRankPath(p).getPathName();
-			String rank = arg1.replace("rank_progress_", "");
-			RankPath rp = RankPath.getRankPath(rank, path);
-			return String.valueOf(prxAPI.getPlayerRankProgressBar(p, rp));
+				String path = prxAPI.getPlayerRankPath(p).getPathName();
+				String rank = arg1.replace("rank_progress_", "");
+				RankPath rp = RankPath.getRankPath(rank, path);
+				return String.valueOf(prxAPI.getPlayerRankProgressBar(p, rp));
 			}
 		}
 		if(arg1.equalsIgnoreCase("next_progress")) {
@@ -330,11 +288,10 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.equalsIgnoreCase("rankup_progress_double")) {
 			if(prxAPI.getPlayerNextRank(p) == null) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-lastrank"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-progress-lastrank"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerRankupProgressBarExtended(p));
 		}
-		
 		if(arg1.equalsIgnoreCase("rankup_name")) {
 			if(prxAPI.getPlayerNextRank(p) == null) {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-lastrank"), arg0.getName());
@@ -354,15 +311,12 @@ public class PapiHook extends PlaceholderExpansion {
 			}
 			return String.valueOf(prxAPI.getPlayerRankupDisplay(p));
 		}
-		if(arg1.equalsIgnoreCase("")) {
-			
-		}
 		if((arg1.equalsIgnoreCase("rankup_cost"))) {
 			if(prxAPI.getPlayerNextRank(p) == null) {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-cost-lastrank"), arg0.getName());
 			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return  String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerRankupCostWithIncreaseDirect(p));
 			} else {
 				return String.valueOf(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
@@ -372,7 +326,7 @@ public class PapiHook extends PlaceholderExpansion {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-cost-lastrank"), arg0.getName());
 			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return  String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
 			} else {
 				return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p))) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
@@ -381,10 +335,10 @@ public class PapiHook extends PlaceholderExpansion {
 			if(prxAPI.getPlayerNextRank(p) == null) {
 				return "0.0";
 			}
-           return String.valueOf(prxAPI.numberAPI.deleteScientificNotationA(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
+			return String.valueOf(prxAPI.numberAPI.deleteScientificNotationA(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
 		}
 		if((arg1.equalsIgnoreCase("rankup_cost_integer_plain"))) {
-           return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
+			return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
 		}
 
 		if((arg1.equalsIgnoreCase("rankup_cost_formatted"))) {
@@ -392,25 +346,23 @@ public class PapiHook extends PlaceholderExpansion {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rankup-cost-lastrank"), arg0.getName());
 			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPluginMainClass().formatBalance(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPluginMainClass().formatBalance(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)));
 			} else {
 				return String.valueOf(prxAPI.getPluginMainClass().formatBalance(prxAPI.getPlayerRankupCostWithIncreaseDirect(p)))  + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
 		}
 		if(arg1.equalsIgnoreCase("money_nonformatted")) {
-			return String.valueOf(prxAPI.getPluginMainClass().econ.getBalance(p));
+			return String.valueOf(prxAPI.getEconomy().getBalance(p));
 		}
 		if(arg1.equalsIgnoreCase("money_decimalformatted")) {
-			DecimalFormat df = new DecimalFormat("###,###.##");
-			String finalv = df.format(prxAPI.getPluginMainClass().econ.getBalance(p));
+			String finalv = df.format(prxAPI.getEconomy().getBalance(p));
 			return finalv;
 		}
 		if(arg1.startsWith("decimalformat_")) {
-			DecimalFormat df = new DecimalFormat("###,###.##");
 			try {
-			double placeholderToFormat = Double.valueOf(PlaceholderAPI.setBracketPlaceholders(p, prxAPI.numberAPI.keepNumbersWithDots(arg1.replace("decimalformat_", ""))));
-			String formatted = df.format(placeholderToFormat);
-			return formatted;
+				double placeholderToFormat = Double.valueOf(PlaceholderAPI.setBracketPlaceholders(p, (arg1.replace("decimalformat_", ""))));
+				String formatted = df.format(placeholderToFormat);
+				return formatted;
 			} catch (NumberFormatException nfe) {
 				return String.valueOf(PlaceholderAPI.setBracketPlaceholders(p, arg1.replace("decimalformat_", "")));
 			}
@@ -420,7 +372,7 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.equalsIgnoreCase("rebirth_name")) {
 			if(!prxAPI.hasRebirthed(p)) {
-			  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-notrebirthed"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-notrebirthed"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerRebirth(p));
 		}
@@ -433,13 +385,13 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.equalsIgnoreCase("rebirth_displayname")) {
 			if(!prxAPI.hasRebirthed(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-notrebirthed"), arg0.getName());
-				}
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-notrebirthed"), arg0.getName());
+			}
 			return String.valueOf(prxAPI.getPlayerRebirthDisplay(p));
 		}
 		if(arg1.equalsIgnoreCase("prestige_name")) {
 			if(!prxAPI.hasPrestiged(p)) {
-			  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerPrestige(p));
 		}
@@ -461,6 +413,15 @@ public class PapiHook extends PlaceholderExpansion {
 			}
 			return String.valueOf(prxAPI.formatBalance(prxAPI.getPlayerPrestigeNumber(p)));
 		}
+		if(arg1.equalsIgnoreCase("prestige_number_usformat")) {
+			if(!prxAPI.hasPrestiged(p)) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
+			}
+			if(main.isInfinitePrestige) {
+				return s(nf.format(Long.valueOf(prxAPI.getPlayerPrestige(p))));
+			}
+			return s(nf.format(prxAPI.getPlayerPrestigeNumber(p)));
+		}
 		if(arg1.startsWith("prestige_name_")) {
 			Player player = Bukkit.getPlayer(arg1.replace("prestige_name_", ""));
 			if(player == null) {
@@ -468,18 +429,34 @@ public class PapiHook extends PlaceholderExpansion {
 			}
 			return String.valueOf(prxAPI.getPlayerPrestige(p));
 		}
+		if(arg1.startsWith("prestige_number_usformat_")) {
+			Player player = Bukkit.getPlayer(arg1.replace("prestige_number_usformat_", ""));
+			if(player == null) {
+				return "null";
+			}
+			return String.valueOf(prxAPI.getPlayerPrestige(p));
+		}
 		if(arg1.equalsIgnoreCase("prestige_displayname")) {
 			if(!prxAPI.hasPrestiged(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
-				}
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
+			}
 			return String.valueOf(prxAPI.getPlayerPrestigeDisplay(p));
+		}
+		if(arg1.equalsIgnoreCase("prestige_displayname_usformat")) {
+			if(!prxAPI.hasPrestiged(p)) {
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
+			}
+			if(main.isInfinitePrestige) {
+				return main.getString(main.infinitePrestigeSettings.getNonReplacedDisplay(prxAPI.getPrestige(prxAPI.getPlayerPrestige(p))).replace("{number}", nf.format(Long.valueOf(prxAPI.getPlayerPrestige(p)))));
+			}
+			return s(nf.format(prxAPI.getNumberAPI().keepNumbersWith(prxAPI.getPlayerPrestigeDisplay(p), "§")));
 		}
 		if(arg1.equalsIgnoreCase("prestige_cost")) {
 			if(!prxAPI.hasPrestiged(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
-				}
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
+			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerPrestigeCost(p));
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerPrestigeCost(p));
 			} else {
 				return String.valueOf(prxAPI.getPlayerPrestigeCost(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
@@ -498,10 +475,10 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.equalsIgnoreCase("prestige_cost_formatted")) {
 			if(!prxAPI.hasPrestiged(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
-				}
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-notprestiged"), arg0.getName());
+			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerPrestigeCostFormatted(p));
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerPrestigeCostFormatted(p));
 			} else {
 				return String.valueOf(prxAPI.getPlayerPrestigeCostFormatted(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
@@ -511,7 +488,7 @@ public class PapiHook extends PlaceholderExpansion {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.nextrebirth-notrebirthed"), arg0.getName());
 			}
 			if(!prxAPI.hasNextRebirth(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerNextRebirth(p));
 		}
@@ -527,7 +504,7 @@ public class PapiHook extends PlaceholderExpansion {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.nextrebirth-notrebirthed"), arg0.getName());
 			}
 			if(!prxAPI.hasNextRebirth(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.rebirth-lastrebirth"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerNextRebirthDisplay(p));
 		}
@@ -536,7 +513,7 @@ public class PapiHook extends PlaceholderExpansion {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.nextprestige-notprestiged"), arg0.getName());
 			}
 			if(!prxAPI.hasNextPrestige(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerNextPrestige(p));
 		}
@@ -552,26 +529,26 @@ public class PapiHook extends PlaceholderExpansion {
 				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.nextprestige-notprestiged"), arg0.getName());
 			}
 			if(!prxAPI.hasNextPrestige(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
 			}
 			return String.valueOf(prxAPI.getPlayerNextPrestigeDisplay(p));
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_cost")) {
 			if(!prxAPI.hasNextPrestige(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
 			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)); 
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)); 
 			} else {
 				return String.valueOf(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol())); 
 			}
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_cost_integer")) {
 			if(!prxAPI.hasNextPrestige(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
 			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))); 
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))); 
 			} else {
 				return String.valueOf(prxAPI.numberAPI.toFakeInteger(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol())); 
 			}
@@ -616,10 +593,10 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.equalsIgnoreCase("nextprestige_cost_formatted")) {
 			if(!prxAPI.hasNextPrestige(p)) {
-				  return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
+				return main.getString(prxAPI.main.globalStorage.getStringData("PlaceholderAPI.prestige-lastprestige"), arg0.getName());
 			}
 			if(prxAPI.isCurrencySymbolBehind()) {
-			return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(main.formatBalance(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)));
+				return String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol()) + String.valueOf(main.formatBalance(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p)));
 			} else {
 				return String.valueOf(main.formatBalance(prxAPI.getPlayerNextPrestigeCostWithIncreaseDirect(p))) + String.valueOf(prxAPI.getPlaceholderAPICurrencySymbol());
 			}
@@ -763,7 +740,7 @@ public class PapiHook extends PlaceholderExpansion {
 		}
 		if(arg1.startsWith("name_stage_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
-            return String.valueOf(lbm.getPlayerNameFromPositionGlobal(position, getNullNameRank()));
+			return String.valueOf(lbm.getPlayerNameFromPositionGlobal(position, getNullNameRank()));
 		}
 		if(arg1.startsWith("value_stage_")) {
 			int position = Integer.valueOf(arg1.split("_")[2]);
@@ -794,7 +771,7 @@ public class PapiHook extends PlaceholderExpansion {
 			return null;
 		}
 		return null;
-		
+
 	}
 
 	@Override
@@ -811,5 +788,52 @@ public class PapiHook extends PlaceholderExpansion {
 	public String getVersion() {
 		return main.getDescription().getVersion();
 	}
- 
+
+	private boolean is(String arg1, String placeholder) {
+		return arg1.equalsIgnoreCase(placeholder);
+	}
+
+	private boolean sw(String arg1, String placeholder) {
+		return arg1.startsWith(placeholder);
+	}
+
+	private String swr(String arg1, String unwanted) {
+		return arg1.replace(unwanted, "");
+	}
+
+	private String swp(String arg1, String unwanted, String notOnlineResult, Function<Player, String> onlineFunctionResult) {
+		Player player = Bukkit.getPlayer(swr(arg1, unwanted));
+		return player == null ? notOnlineResult : onlineFunctionResult.apply(player);
+	}
+
+	private String stringData(String string) {
+		return main.getGlobalStorage().getStringData(string);
+	}
+
+	@SuppressWarnings("unused")
+	private String stringDataP(String string) {
+		return stringData(PAPI + string);
+	}
+
+	private String stringData(String string, OfflinePlayer player) {
+		return main.getString(stringData(string), player.getName());
+	}
+
+	private String stringDataP(String string, OfflinePlayer player) {
+		return stringData(PAPI + string, player);
+	}
+
+	@SuppressWarnings("unused")
+	private boolean boolData(String string) {
+		return main.getGlobalStorage().getBooleanData(string);
+	}
+
+	private boolean boolDataP(String string) {
+		return main.getGlobalStorage().getBooleanData(PAPI + string);
+	}
+
+	private String s(Object obj) {
+		return String.valueOf(obj);
+	}
+
 }

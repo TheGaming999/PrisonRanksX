@@ -2,10 +2,8 @@ package me.prisonranksx.gui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -67,7 +65,7 @@ public class GuiListManager {
 	guiViewers = new HashMap<>();
 	}
 
-	
+
 	public void setupConstantItems() {
 		if(!this.main.globalStorage.getStringListData("Ranklist-gui.constant-items").isEmpty()) {
 			List<String> constantItems = main.globalStorage.getStringListData("Ranklist-gui.constant-items");
@@ -84,7 +82,7 @@ public class GuiListManager {
 			for(String str : main.globalStorage.getStringData("Ranklist-gui.allowed-slots").split(",")) {
 				int x = Integer.valueOf(str);
 				if(!allowedRankSlots.contains(x)) {
-				allowedRankSlots.add(x);
+					allowedRankSlots.add(x);
 				}
 			}
 		}
@@ -103,7 +101,7 @@ public class GuiListManager {
 			for(String str : main.globalStorage.getStringData("Prestigelist-gui.allowed-slots").split(",")) {
 				int x = Integer.valueOf(str);
 				if(!allowedPrestigeSlots.contains(x)) {
-				allowedPrestigeSlots.add(x);
+					allowedPrestigeSlots.add(x);
 				}
 			}
 		}
@@ -122,32 +120,32 @@ public class GuiListManager {
 			for(String str : main.globalStorage.getStringData("Rebirthlist-gui.allowed-slots").split(",")) {
 				int x = Integer.valueOf(str);
 				if(!allowedRebirthSlots.contains(x)) {
-				allowedRebirthSlots.add(x);
+					allowedRebirthSlots.add(x);
 				}
 			}
 		}
 	}
-	
+
 	public RankItem getCustomItem(final RankState rankState) {
 		return main.getCustomRankItems().getCustomRankItems().containsKey(rankState.toString()) ? main.getCustomRankItems().getCustomRankItems().get(rankState.toString()) : emptyRankItem;
 	}
-	
+
 	public PrestigeItem getCustomItem(final PrestigeState prestigeState) {
 		return main.getCustomPrestigeItems().getCustomPrestigeItems().containsKey(prestigeState.toString()) ? main.getCustomPrestigeItems().getCustomPrestigeItems().get(prestigeState.toString()) : emptyPrestigeItem;
 	}
-	
+
 	public RebirthItem getCustomItem(final RebirthState rebirthState) {
 		return main.getCustomRebirthItems().getCustomRebirthItems().containsKey(rebirthState.toString()) ? main.getCustomRebirthItems().getCustomRebirthItems().get(rebirthState.toString()) : emptyRebirthItem;
 	}
-	
-	    
-		@SuppressWarnings("deprecation")
-		public ItemStack parseStack(String itemValue) {
-			ItemStack x = null;
-			String originalValue = itemValue;
-			itemValue = itemValue.toUpperCase();
-			try {
-				
+
+
+	@SuppressWarnings("deprecation")
+	public ItemStack parseStack(String itemValue) {
+		ItemStack x = null;
+		String originalValue = itemValue;
+		itemValue = itemValue.toUpperCase();
+		try {
+
 			if(itemValue.contains(";")) {
 				// 1.8 - 1.15
 				String[] nameAndData = itemValue.split(";");
@@ -174,18 +172,18 @@ public class GuiListManager {
 				if(data.length() > 16) {
 					if(data.contains("net")) {
 						main.debug("from url: " + data);
-					x = SkullCreator.itemWithUrl(x, data);
+						x = SkullCreator.itemWithUrl(x, data);
 					} else {
 						main.debug("from base64: " + data);
 						if(data.contains("=")) {
-					x = SkullCreator.itemWithBase64(x, data);
+							x = SkullCreator.itemWithBase64(x, data);
 						} else {
 							main.debug("from url: " + data);
 							x = SkullCreator.itemWithUrl(x, "http://textures.minecraft.net/texture/" + data);
 						}
 					}
 				} else {
-					   main.debug("from name: " + data);
+					main.debug("from name: " + data);
 					x = SkullCreator.itemFromName(data);
 				}
 			} else {
@@ -193,19 +191,19 @@ public class GuiListManager {
 				x = XMaterial.matchXMaterial(itemValue).get().parseItem();
 			}
 			return x;
-			} catch (Exception err) {
-			    main.getLogger().warning("Error while parsing an item name! unable to parse item: " + itemValue);
-			    main.getLogger().warning("Please try another format from the formats mentioned below current-format section underneath Ranklist-gui in config.yml");
-				err.printStackTrace();
-			   return new ItemStack(Material.BEDROCK, 1);	
-			}
-			
+		} catch (Exception err) {
+			main.getLogger().warning("Error while parsing an item name! unable to parse item: " + itemValue);
+			main.getLogger().warning("Please try another format from the formats mentioned below current-format section underneath Ranklist-gui in config.yml");
+			err.printStackTrace();
+			return new ItemStack(Material.BEDROCK, 1);	
 		}
-	
-		public String tr(String string) {
-			return main.getGlobalStorage().translateHexColorCodes(string);
-		}
-		
+
+	}
+
+	public String tr(String string) {
+		return main.getGlobalStorage().translateHexColorCodes(string);
+	}
+
 	public void openRanksGUI(Player player) {
 		Player p = player;
 		PaginatedGUI playerGUI = ranksGUI;
@@ -239,9 +237,9 @@ public class GuiListManager {
 						.replace("%completedrank_cost_formatted%", formattedRankCost) 
 						: 
 							main.globalStorage.getStringData("Ranklist-gui.completed-format.itemDISPLAYNAME").replace("%completedrank%", rankName)
-						.replace("%completedrank_display%", rankDisplayName)
-						.replace("%completedrank_cost%", rankCost)
-						.replace("%completedrank_cost_formatted%", formattedRankCost);
+							.replace("%completedrank_display%", rankDisplayName)
+							.replace("%completedrank_cost%", rankCost)
+							.replace("%completedrank_cost_formatted%", formattedRankCost);
 				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemLORE");
 				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemENCHANTMENTS");
 				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Ranklist-gui.completed-format.itemFLAGS");
@@ -263,7 +261,7 @@ public class GuiListManager {
 					completedMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				completedItem.setItemMeta(completedMeta);
 				GUIButton completedButton = new GUIButton(completedItem);
@@ -274,21 +272,21 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%completedrank%", rankName).replace("%completedrank_display%", rankName).replace("%completedrank_cost%", rankCost)
-            						.replace("%completedrank_cost_formatted%", formattedRankCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%completedrank%", rankName).replace("%completedrank_display%", rankName).replace("%completedrank_cost%", rankCost)
+									.replace("%completedrank_cost_formatted%", formattedRankCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRankSlots.isEmpty()) {
-			        playerGUI.setButton(allowedRankSlots.get(rankIndex), completedButton);
-					} else {
-						playerGUI.setButton(rankIndex, completedButton);
-					}
-		        
+					playerGUI.setButton(allowedRankSlots.get(rankIndex), completedButton);
+				} else {
+					playerGUI.setButton(rankIndex, completedButton);
+				}
+
 			}
 			if(playerRankIndex == rankIndex) { // if current
 				// placeholders {
@@ -309,9 +307,9 @@ public class GuiListManager {
 						.replace("%currentrank_cost_formatted%", formattedRankCost) 
 						: 
 							main.globalStorage.getStringData("Ranklist-gui.current-format.itemDISPLAYNAME").replace("%currentrank%", rankName)
-						.replace("%currentrank_display%", rankDisplayName)
-						.replace("%currentrank_cost%", rankCost)
-						.replace("%currentrank_cost_formatted%", formattedRankCost);
+							.replace("%currentrank_display%", rankDisplayName)
+							.replace("%currentrank_cost%", rankCost)
+							.replace("%currentrank_cost_formatted%", formattedRankCost);
 				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Ranklist-gui.current-format.itemLORE");
 				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Ranklist-gui.current-format.itemENCHANTMENTS");
 				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Ranklist-gui.current-format.itemFLAGS");
@@ -333,7 +331,7 @@ public class GuiListManager {
 					currentMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				currentItem.setItemMeta(currentMeta);
 				GUIButton currentButton = new GUIButton(currentItem);
@@ -344,20 +342,20 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%currentrank%", rankName).replace("%currentrank_display%", rankName)	.replace("%currentrank_cost%", rankCost)
-            						.replace("%currentrank_cost_formatted%", formattedRankCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%currentrank%", rankName).replace("%currentrank_display%", rankName)	.replace("%currentrank_cost%", rankCost)
+									.replace("%currentrank_cost_formatted%", formattedRankCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRankSlots.isEmpty()) {
-			        playerGUI.setButton(allowedRankSlots.get(rankIndex), currentButton);
-					} else {
-						playerGUI.setButton(rankIndex, currentButton);
-					}
+					playerGUI.setButton(allowedRankSlots.get(rankIndex), currentButton);
+				} else {
+					playerGUI.setButton(rankIndex, currentButton);
+				}
 			}
 			if(playerRankIndex < rankIndex) { // if not completed
 				// placeholders {
@@ -378,9 +376,9 @@ public class GuiListManager {
 						.replace("%otherrank_cost_formatted%", formattedRankCost) 
 						: 
 							main.globalStorage.getStringData("Ranklist-gui.other-format.itemDISPLAYNAME").replace("%otherrank%", rankName)
-						.replace("%otherrank_display%", rankDisplayName)
-						.replace("%otherrank_cost%", rankCost)
-						.replace("%otherrank_cost_formatted%", formattedRankCost);
+							.replace("%otherrank_display%", rankDisplayName)
+							.replace("%otherrank_cost%", rankCost)
+							.replace("%otherrank_cost_formatted%", formattedRankCost);
 				List<String> itemLore = getCustomItem(rs).getLore() != null ? getCustomItem(rs).getLore() : main.globalStorage.getStringListData("Ranklist-gui.other-format.itemLORE");
 				List<String> itemEnchantments = getCustomItem(rs).getEnchantments() != null ? getCustomItem(rs).getEnchantments() : main.globalStorage.getStringListData("Ranklist-gui.other-format.itemENCHANTMENTS");
 				List<String> itemFlags = getCustomItem(rs).getFlags() != null ? getCustomItem(rs).getFlags() : main.globalStorage.getStringListData("Ranklist-gui.other-format.itemFLAGS");
@@ -402,7 +400,7 @@ public class GuiListManager {
 					otherMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				otherItem.setItemMeta(otherMeta);
 				GUIButton otherButton = new GUIButton(otherItem);
@@ -413,17 +411,17 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%otherrank%", rankName).replace("%otherrank_display%", rankName).replace("%otherrank_cost%", rankCost)
-            						.replace("%otherrank_cost_formatted%", formattedRankCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%otherrank%", rankName).replace("%otherrank_display%", rankName).replace("%otherrank_cost%", rankCost)
+									.replace("%otherrank_cost_formatted%", formattedRankCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRankSlots.isEmpty()) {
-		        playerGUI.setButton(allowedRankSlots.get(rankIndex), otherButton);
+					playerGUI.setButton(allowedRankSlots.get(rankIndex), otherButton);
 				} else {
 					playerGUI.setButton(rankIndex, otherButton);
 				}
@@ -431,7 +429,7 @@ public class GuiListManager {
 		}
 		p.openInventory(playerGUI.getInventory());
 	}
-	
+
 	public void openPrestigesGUI(Player player) {
 		Player p = player;
 		PaginatedGUI playerGUI = prestigesGUI;
@@ -480,7 +478,7 @@ public class GuiListManager {
 					completedMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				completedItem.setItemMeta(completedMeta);
 				GUIButton completedButton = new GUIButton(completedItem);
@@ -491,20 +489,20 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%completedprestige%", prestigeName).replace("%completedprestige_display%", prestigeName).replace("%completedprestige_cost%", prestigeCost)
-            						.replace("%completedprestige_cost_formatted%", formattedPrestigeCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%completedprestige%", prestigeName).replace("%completedprestige_display%", prestigeName).replace("%completedprestige_cost%", prestigeCost)
+									.replace("%completedprestige_cost_formatted%", formattedPrestigeCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedPrestigeSlots.isEmpty()) {
-		        playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), completedButton);
-			    } else {
-			    	playerGUI.setButton(prestigeIndex, completedButton);
-			    }
+					playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), completedButton);
+				} else {
+					playerGUI.setButton(prestigeIndex, completedButton);
+				}
 			}
 			if(playerPrestigeIndex == prestigeIndex) { // if current
 				// placeholders {
@@ -544,7 +542,7 @@ public class GuiListManager {
 					currentMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				currentItem.setItemMeta(currentMeta);
 				GUIButton currentButton = new GUIButton(currentItem);
@@ -555,20 +553,20 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%currentprestige%", prestigeName).replace("%currentprestige_display%", prestigeName)	.replace("%currentprestige_cost%", prestigeCost)
-            						.replace("%currentprestige_cost_formatted%", formattedPrestigeCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%currentprestige%", prestigeName).replace("%currentprestige_display%", prestigeName)	.replace("%currentprestige_cost%", prestigeCost)
+									.replace("%currentprestige_cost_formatted%", formattedPrestigeCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedPrestigeSlots.isEmpty()) {
-			        playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), currentButton);
-				    } else {
-				    	playerGUI.setButton(prestigeIndex, currentButton);
-				    }
+					playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), currentButton);
+				} else {
+					playerGUI.setButton(prestigeIndex, currentButton);
+				}
 			}
 			if(playerPrestigeIndex < prestigeIndex) { // if not completed
 				// placeholders {
@@ -608,7 +606,7 @@ public class GuiListManager {
 					otherMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				otherItem.setItemMeta(otherMeta);
 				GUIButton otherButton = new GUIButton(otherItem);
@@ -619,25 +617,25 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%otherprestige%", prestigeName).replace("%otherprestige_display%", prestigeName).replace("%otherprestige_cost%", prestigeCost)
-            						.replace("%otherprestige_cost_formatted%", formattedPrestigeCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%otherprestige%", prestigeName).replace("%otherprestige_display%", prestigeName).replace("%otherprestige_cost%", prestigeCost)
+									.replace("%otherprestige_cost_formatted%", formattedPrestigeCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedPrestigeSlots.isEmpty()) {
-			        playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), otherButton);
-				    } else {
-				    	playerGUI.setButton(prestigeIndex, otherButton);
-				    }
+					playerGUI.setButton(allowedPrestigeSlots.get(prestigeIndex), otherButton);
+				} else {
+					playerGUI.setButton(prestigeIndex, otherButton);
+				}
 			}
 		}
 		p.openInventory(playerGUI.getInventory());
 	}
-	
+
 	public void openRebirthsGUI(Player player) {
 		Player p = player;
 		PaginatedGUI playerGUI = rebirthsGUI;
@@ -685,7 +683,7 @@ public class GuiListManager {
 					completedMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {completedMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				completedItem.setItemMeta(completedMeta);
 				GUIButton completedButton = new GUIButton(completedItem);
@@ -696,17 +694,17 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%completedrebirth%", rebirthName).replace("%completedrebirth_display%", rebirthName).replace("%completedrebirth_cost%", rebirthCost)
-            						.replace("%completedrebirth_cost_formatted%", formattedRebirthCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%completedrebirth%", rebirthName).replace("%completedrebirth_display%", rebirthName).replace("%completedrebirth_cost%", rebirthCost)
+									.replace("%completedrebirth_cost_formatted%", formattedRebirthCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRebirthSlots.isEmpty()) {
-		        playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), completedButton);
+					playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), completedButton);
 				} else {
 					playerGUI.setButton(rebirthIndex, completedButton);
 				}
@@ -748,7 +746,7 @@ public class GuiListManager {
 					currentMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {currentMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				currentItem.setItemMeta(currentMeta);
 				GUIButton currentButton = new GUIButton(currentItem);
@@ -759,20 +757,20 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%currentrebirth%", rebirthName).replace("%currentrebirth_display%", rebirthName)	.replace("%currentrebirth_cost%", rebirthCost)
-            						.replace("%currentrebirth_cost_formatted%", formattedRebirthCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%currentrebirth%", rebirthName).replace("%currentrebirth_display%", rebirthName)	.replace("%currentrebirth_cost%", rebirthCost)
+									.replace("%currentrebirth_cost_formatted%", formattedRebirthCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRebirthSlots.isEmpty()) {
-			        playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), currentButton);
-					} else {
-						playerGUI.setButton(rebirthIndex, currentButton);
-					}
+					playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), currentButton);
+				} else {
+					playerGUI.setButton(rebirthIndex, currentButton);
+				}
 			}
 			if(playerRebirthIndex < rebirthIndex) { // if not completed
 				// placeholders {
@@ -811,7 +809,7 @@ public class GuiListManager {
 					otherMeta.addEnchant(enchant, lvl, true);
 				});
 				if(!main.isBefore1_7) {
-				itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
+					itemFlags.forEach(line -> {otherMeta.addItemFlags(ItemFlagReader.matchItemFlag(line));});
 				}
 				otherItem.setItemMeta(otherMeta);
 				GUIButton otherButton = new GUIButton(otherItem);
@@ -822,20 +820,20 @@ public class GuiListManager {
 					if(itemCommands.contains("(closeinv)")) {
 						p.closeInventory();
 					}
-                    for(String command : itemCommands) {
-                    	if(command.startsWith("[")) {
-                    		realItemCommands.add(main.getString(command
-                    				.replace("%otherrebirth%", rebirthName).replace("%otherrebirth_display%", rebirthName).replace("%otherrebirth_cost%", rebirthCost)
-            						.replace("%otherrebirth_cost_formatted%", formattedRebirthCost), p.getName()));
-                    	}
-                    }
-                    main.executeCommands(p, realItemCommands);
+					for(String command : itemCommands) {
+						if(command.startsWith("[")) {
+							realItemCommands.add(main.getString(command
+									.replace("%otherrebirth%", rebirthName).replace("%otherrebirth_display%", rebirthName).replace("%otherrebirth_cost%", rebirthCost)
+									.replace("%otherrebirth_cost_formatted%", formattedRebirthCost), p.getName()));
+						}
+					}
+					main.executeCommands(p, realItemCommands);
 				});
 				if(!allowedRebirthSlots.isEmpty()) {
-			        playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), otherButton);
-					} else {
-						playerGUI.setButton(rebirthIndex, otherButton);
-					}
+					playerGUI.setButton(allowedRebirthSlots.get(rebirthIndex), otherButton);
+				} else {
+					playerGUI.setButton(rebirthIndex, otherButton);
+				}
 			}
 		}
 		p.openInventory(playerGUI.getInventory());

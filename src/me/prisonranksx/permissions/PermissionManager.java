@@ -1,10 +1,7 @@
 package me.prisonranksx.permissions;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,9 +9,7 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachment;
 
-import co.aikar.taskchain.TaskChain;
 import me.prisonranksx.PrisonRanksX;
 
 public class PermissionManager {
