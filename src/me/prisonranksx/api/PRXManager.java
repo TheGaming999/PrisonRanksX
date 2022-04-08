@@ -8,9 +8,6 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 
 import com.google.common.collect.Sets;
 
@@ -39,12 +36,13 @@ import me.prisonranksx.utils.OnlinePlayers;
 
 public class PRXManager {
 
-	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+	private PrisonRanksX main;
 	List<String> emptyList;
 	Set<String> emptySet;
 	private String defaultPath;
 
-	public PRXManager() {
+	public PRXManager(PrisonRanksX main) {
+		this.main = main;
 		emptyList = new ArrayList<String>();
 		emptySet = new HashSet<String>();
 		defaultPath = this.main.globalStorage.getStringData("defaultpath");
@@ -532,6 +530,15 @@ public class PRXManager {
 			main.getConfigManager().saveMainConfig();
 		}
 	}
+	
+	public void setLastPrestige(long name, boolean save) {
+		String nameConverted = String.valueOf(name);
+		main.globalStorage.getStringMap().put("lastprestige", nameConverted);
+		main.getConfig().set("lastprestige", name);
+		if(save) {
+			main.getConfigManager().saveMainConfig();
+		}
+	}
 
 	public void setLastRebirth(final String name, boolean save) {
 		main.globalStorage.getStringMap().put("lastrebirth", name);
@@ -566,7 +573,7 @@ public class PRXManager {
 		main.getConfigManager().reloadMainConfig();
 		main.getConfigManager().reloadConfigs();
 		main.getConfigManager().loadConfigs();
-		if(Bukkit.getVersion().contains("1.16") || Bukkit.getVersion().contains("1.17") || Bukkit.getVersion().contains("1.18")) {
+		if(main.isModernVersion) {
 			main.globalStorage = new GlobalDataStorage1_16(main);
 		} else {
 			main.globalStorage = new GlobalDataStorage1_8(main);
@@ -669,6 +676,7 @@ public class PRXManager {
 			main.errorInspector.validateRanks();
 			main.errorInspector.validatePrestiges(Bukkit.getConsoleSender());
 		}
+		main.prestigeMax = main.isBefore1_7 ? new PrestigeMaxLegacy(main) : new PrestigeMax(main);
 		main.unregisterListeners();
 		main.registerListeners();
 	}

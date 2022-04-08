@@ -29,6 +29,8 @@ import me.prisonranksx.utils.XUUID;
  * @author TheGaming999 | Al3rb | SandwichaKSA
  *
  */
+
+@SuppressWarnings("deprecation")
 public class RankupLegacy {
 	
 	private boolean isAutoRankupTaskEnabled;

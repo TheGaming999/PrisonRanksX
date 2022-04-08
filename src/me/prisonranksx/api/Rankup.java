@@ -548,7 +548,7 @@ public class Rankup {
 		Player p = player;
 		String name = p.getName();
 		String nextRank = prxAPI.getPlayerNextRank(p);
-		IHologram hologram = main.hologramManager.createHologram("prx_" + nextRank + name, p.getLocation().add(0, height, 0), false);
+		IHologram hologram = main.hologramManager.createHologram("prx_" + nextRank + name + prxAPI.numberAPI.getRandomInteger(0, 999999), p.getLocation().add(0, height, 0), false);
 		for(String line : format) {
 			String updatedLine = main.getString(line.replace("%player%", name)
 					.replace("%player_display%", p.getDisplayName())
@@ -564,7 +564,7 @@ public class Rankup {
 		Player p = player;
 		String name = p.getName();
 		String nextRank = prxAPI.getPlayerNextRank(p);
-		IHologram hologram = main.hologramManager.createHologram("prx_" + nextRank + name, p.getLocation().add(0, height, 0), true);
+		IHologram hologram = main.hologramManager.createHologram("prx_" + nextRank + name + prxAPI.numberAPI.getRandomInteger(0, 999999), p.getLocation().add(0, height, 0), true);
 		for(String line : format) {
 			String updatedLine = main.getString(line.replace("%player%", name)
 					.replace("%player_display%", p.getDisplayName())

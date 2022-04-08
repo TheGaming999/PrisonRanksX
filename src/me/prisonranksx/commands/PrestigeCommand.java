@@ -12,6 +12,7 @@ public class PrestigeCommand extends BukkitCommand {
 	
 	public PrestigeCommand(String commandName) {
 		super(commandName);
+		this.main = PrisonRanksX.getInstance();
 		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "get promoted to a higher level of ranks")));
 		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/prestige")));
 		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.prestige"));

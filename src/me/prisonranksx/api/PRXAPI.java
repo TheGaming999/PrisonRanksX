@@ -35,7 +35,6 @@ import me.prisonranksx.data.IPrestigeDataStorage;
 import me.prisonranksx.data.LevelType;
 import me.prisonranksx.data.PercentageState;
 import me.prisonranksx.data.PrestigeDataHandler;
-import me.prisonranksx.data.PrestigeDataStorage;
 import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataHandler;
@@ -82,7 +81,7 @@ public class PRXAPI {
 	public void forceLoadMain() {
 		main = null;
 		try {
-			main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+			main = PrisonRanksX.getInstance();
 		} catch (ClassCastException err) {
 			Bukkit.getLogger().info("Couldn't update main field.");
 		}
@@ -91,7 +90,7 @@ public class PRXAPI {
 	public void loadMain() {
 		if(main == null) {
 			try {
-				main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+				main = PrisonRanksX.getInstance();
 			} catch (java.lang.ClassCastException err) {
 				Bukkit.getLogger().info("Main class is already casted");
 			}
@@ -358,13 +357,17 @@ public class PRXAPI {
 	}
 
 	public boolean prestigeExistsAny(String prestige) {
-		if(main.isInfinitePrestige) {
+		if(!main.isInfinitePrestige) {
 			return main.prestigeStorage.getPrestigeData().get(prestige) != null;
 		} else {
-			long pre = Long.valueOf(prestige);
-			if(pre > main.infinitePrestigeSettings.getFinalPrestige() || pre < 0) {
+			try {
+				long pre = Long.valueOf(prestige);
+				if(pre > main.infinitePrestigeSettings.getFinalPrestige() || pre < 0) {
+					return false;
+				}
+			} catch (NumberFormatException ex) {
 				return false;
-			}
+			}	
 			return true;
 		}
 	}
@@ -1627,7 +1630,10 @@ public class PRXAPI {
 	}
 
 	public int getRankNumberX(String pathName, String rankName) {
+		if(pathName == null || rankName == null) return 1;
 		List<String> collection = main.rankStorage.pathRanks.get(pathName);
+		if(collection == null)
+			return 1;
 		return collection.indexOf(rankName) + 1;
 	}
 	/**
@@ -1649,7 +1655,15 @@ public class PRXAPI {
 	}
 
 	public synchronized int getPrestigeNumberX(String prestigeName) {
-		return main.isInfinitePrestige ? Integer.valueOf(prestigeName) : getPrestigesCollection().indexOf(prestigeName) + 1;
+		if(main.isInfinitePrestige) {
+			if(prestigeName == null || prestigeName.equals("none")) {
+				return 0;
+			} else {
+				return Integer.valueOf(prestigeName);
+			}
+		} else {
+			return getPrestigesCollection().indexOf(prestigeName) + 1;
+		}
 	}
 
 	public long getPrestigeSize() {
@@ -2188,7 +2202,7 @@ public class PRXAPI {
 		String nextPrestigeDisplay = main.prestigeStorage.getNextPrestigeDisplayName(getPlayerPrestige(offlinePlayer));
 		return nextPrestigeDisplay;
 	}
-	
+
 	/**
 	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * 
@@ -2905,6 +2919,55 @@ public class PRXAPI {
 		}
 	}
 
+	public String getHighestStage(final Player player) {
+		if(this.hasRebirthed(player)) {
+			return this.getPlayerRebirth(player);
+		} else if (this.hasPrestiged(player)) {
+			return this.getPlayerPrestige(player);
+		} else {
+			return this.getPlayerRank(player);
+		}
+	}
+
+	public String getHighestStageDisplay(final Player player) {
+		if(this.hasRebirthed(player)) {
+			return this.getPlayerRebirthDisplay(player);
+		} else if (this.hasPrestiged(player)) {
+			return this.getPlayerPrestigeDisplay(player);
+		} else {
+			return this.getPlayerRankDisplay(player);
+		}
+	}
+
+	public String getHighestStage(final Player player, final boolean ignoreRebirth) {
+		if (this.hasPrestiged(player)) {
+			return this.getPlayerPrestige(player);
+		} else {
+			return this.getPlayerRank(player);
+		}
+	}
+
+	public String getHighestStageDisplay(final Player player, final boolean ignoreRebirth) {
+		if (this.hasPrestiged(player)) {
+			return this.getPlayerPrestigeDisplay(player);
+		} else {
+			return this.getPlayerRankDisplay(player);
+		}
+	}
+
+	public String getNextStage(final Player player) {
+		LevelType nextLevelType = this.getPlayerNextPercentage(player).getLevelType();
+		if(nextLevelType.getLevelType() == LevelType.RANK) {
+			return this.getPlayerNextRank(player);
+		} else if (nextLevelType.getLevelType() == LevelType.PRESTIGE) {
+			return this.getPlayerNextPrestige(player);
+		} else if (nextLevelType.getLevelType() == LevelType.REBIRTH) {
+			return this.getPlayerNextRebirth(player);
+		} else {
+			return c(main.getGlobalStorage().getStringData("next-progress-full-islast"));
+		}
+	}
+
 	/**
 	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param player
@@ -3212,39 +3275,30 @@ public class PRXAPI {
 	 * @return player power (made for leaderboards)
 	 */
 	public int getPlayerPromotionsAmount(final UUID uuid) {
-		if(uuid == null) return 0;
-		RankPath rp = getPlayerRankPath(uuid);
-		if(rp == null) return 0;
-		if(hasRebirthed(uuid)) {
-			return (((getPlayerRebirthNumber(uuid)+1) * ((int)getPrestigeSize()+1))+getPlayerPrestigeNumber(uuid)+1) * (((getPlayerRebirthNumber(uuid)+1) * (getRanksCollection(rp.getPathName()).size()+1)) + getPlayerRankNumber(uuid)+1);
-		} else {
-			if(hasPrestiged(uuid)) {
-				int rankSize = rp.getPathName() == null ? 1 : getRanksCollection(rp.getPathName()).size();
-				return (getPlayerPrestigeNumber(uuid) * (rankSize+1)) + (getPlayerRankNumber(uuid)+1);
-			} else {
-				return getPlayerRankNumber(uuid)+1;
-			}
-		}
+		long lastPrestige = this.getPrestigeSize();
+		int rebirthNumber = this.getPlayerRebirthNumber(uuid);
+		int prestigeNumber = this.getPlayerPrestigeNumber(uuid);
+		int firstResult = (int)(lastPrestige*(rebirthNumber+1))+(prestigeNumber);
+		RankPath playerRankPath = this.getPlayerRankPath(uuid);
+		String pathName = playerRankPath.getPathName();
+		int lastRank = this.getRanksCollection(pathName).size();
+		int rankNumber = this.getRankNumberX(pathName, playerRankPath.getRankName());
+		int finalResult = (int)(lastRank*(firstResult+(rebirthNumber+1)))+rankNumber;
+		return finalResult;
 	}
 
 	/**
 	 * @return a score counting all the stages (made for leaderboard)
 	 */
 	public int getPower(final String rank, @Nullable final String path, @Nullable final String prestige, @Nullable final String rebirth) {
-		if(rebirth != null) {
-			if(prestige != null) {
-				return (((this.getRebirthNumberX(rebirth)+1) * ((int)getPrestigeSize()+1)+Integer.valueOf(this.getPrestigeNumber(prestige)+1)) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
-			} else {
-				return (((this.getRebirthNumberX(rebirth)+1) * ((int)getPrestigeSize()+1)+1) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
-			}
-		} else {
-			if(prestige != null) {
-				int rankSize = path == null ? 1 : getRanksCollection(path).size();
-				return (Integer.valueOf(getPrestigeNumber(prestige)+1) * (rankSize+1)) + Integer.valueOf(getRankNumber(path, rank)+1);
-			} else {
-				return Integer.valueOf(getRankNumber(path, rank)+1);
-			}
-		}
+		long lastPrestige = this.getPrestigeSize();
+		int rebirthNumber = this.getRebirthNumberX(rebirth);
+		int prestigeNumber = this.getPrestigeNumberX(prestige);
+		int firstResult = (int)(lastPrestige * (rebirthNumber+1)) + (prestigeNumber);
+		int lastRank = this.getRanksCollection(path).size();
+		int rankNumber = this.getRankNumberX(path, rank);
+		int finalResult = (int)(lastRank*(firstResult+(rebirthNumber+1))) + rankNumber;
+		return finalResult;
 	}
 
 	/**
@@ -3252,20 +3306,14 @@ public class PRXAPI {
 	 * @return a score counting all the stages (made for leaderboard)
 	 */
 	public int getPromotionsAmount(final String rank, @Nullable final String path, @Nullable final String prestige, @Nullable final String rebirth) {
-		if(rebirth != null) {
-			if(prestige != null) {
-				return (((this.getRebirthNumberX(rebirth)+1) * ((int)getPrestigeSize()+1)+Integer.valueOf(this.getPrestigeNumber(prestige)+1)) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
-			} else {
-				return (((this.getRebirthNumberX(rebirth)+1) * ((int)getPrestigeSize()+1)+1) * ((this.getRebirthNumberX(rebirth)+1) * (getRanksCollection(path).size()+1) + this.getRankNumberX(path, rank)+1));
-			}
-		} else {
-			if(prestige != null) {
-				int rankSize = path == null ? 1 : getRanksCollection(path).size();
-				return (Integer.valueOf(getPrestigeNumber(prestige)+1) * (rankSize+1)) + Integer.valueOf(getRankNumber(path, rank)+1);
-			} else {
-				return Integer.valueOf(getRankNumber(path, rank)+1);
-			}
-		}
+		long lastPrestige = this.getPrestigeSize();
+		int rebirthNumber = this.getRebirthNumberX(rebirth);
+		int prestigeNumber = this.getPrestigeNumberX(prestige);
+		int firstResult = (int)(lastPrestige * (rebirthNumber+1)) + (prestigeNumber);
+		int lastRank = this.getRanksCollection(path).size();
+		int rankNumber = this.getRankNumberX(path, rank);
+		int finalResult = (int)(lastRank*(firstResult+(rebirthNumber+1))) + rankNumber;
+		return finalResult;
 	}
 
 	/**
@@ -3890,20 +3938,20 @@ public class PRXAPI {
 		Player p = player;
 		World world = p.getWorld();
 		Bukkit.getScheduler().runTask(main, () -> {
-			if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN) {
+			if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN_DAY) {
 				Entity ent = world.spawnEntity(p.getLocation().add(0, 1, 0), EntityType.BAT);
 				FastParticle.spawnParticle(world, ParticleType.FLAME, p.getLocation().add(0, 1, 0), 5);
 				FastParticle.spawnParticle(world, ParticleType.DRIP_LAVA, p.getLocation().add(0, 1, 0), 5);
 				Bukkit.getScheduler().runTaskLater(main, () -> {
 					ent.remove();
 				}, 25);
-			} else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS) {
+			} else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS_EVE) {
 				FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(1, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 1), 3);
 				FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(0, 0, 0), 3);
 				sendTempBlockChange(p, p.getLocation(), XMaterial.SNOW.parseMaterial(), (byte)0);
-			} else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE) {
+			} else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE_DAY) {
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(1, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 1), 3);
@@ -3921,20 +3969,20 @@ public class PRXAPI {
 		Player p = player;
 		World world = p.getWorld();
 		Bukkit.getScheduler().runTask(main, () -> {
-			if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN) {
+			if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN_DAY) {
 				Entity ent = world.spawnEntity(p.getLocation().add(0, 1, 0), EntityType.BAT);
 				FastParticle.spawnParticle(world, ParticleType.FLAME, p.getLocation().add(0, 1, 0), 5);
 				FastParticle.spawnParticle(world, ParticleType.DRIP_LAVA, p.getLocation().add(0, 1, 0), 5);
 				Bukkit.getScheduler().runTaskLater(main, () -> {
 					ent.remove();
 				}, 25);
-			} else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS) {
+			} else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS_EVE) {
 				FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(1, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 1), 3);
 				FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(0, 0, 0), 3);
 				sendTempBlockChange(p, p.getLocation(), XMaterial.SNOW.parseMaterial(), (byte)0);
-			} else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE) {
+			} else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE_DAY) {
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(1, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 1), 3);

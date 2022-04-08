@@ -7,17 +7,14 @@ import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
-import me.prisonranksx.data.IPrestigeDataHandler;
-import me.prisonranksx.data.PrestigeDataHandler;
-import me.prisonranksx.events.AsyncPrestigeMaxEvent;
-import me.prisonranksx.events.PrePrestigeMaxEvent;
-import me.prisonranksx.utils.AccessibleBukkitTask;
 
 public class PrestigeMaxCommand extends BukkitCommand {
-	
+
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+	
 	public PrestigeMaxCommand(String commandName) {
 		super(commandName);
+		this.main = PrisonRanksX.getInstance();
 		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "prestige to the latest prestige you can reach")));
 		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/prestigemax")));
 		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.prestigemax"));
@@ -31,61 +28,47 @@ public class PrestigeMaxCommand extends BukkitCommand {
 			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
-		if(!main.isPrestigeEnabled) {
-			return true;
-		}
+		if(!main.isPrestigeEnabled) return true;
 		if(args.length == 0) {
-	      if(!(sender instanceof Player)) {
-	    	  return true;
-	      } 
-	      Player p = (Player)sender;
-	      if(main.isInDisabledWorld(p)) {return true;}
-	      String prestigeMaxType = main.getGlobalStorage().getStringData("Options.prestigemax-type");
-	      prestigeMaxType = prestigeMaxType == null ? "AMTQ" : prestigeMaxType;
-	      if(main.isInfinitePrestige) {
-	    	  // main.prxAPI.getPrestigeMax().executeOnAsyncQueue(p, true);
-	    	  if(prestigeMaxType.equals("AMTQ")) {
-	    	  main.prxAPI.getPrestigeMax().executeInfinite(p);
-	    	  } else if (prestigeMaxType.equals("AR")) {
-	    		  main.prxAPI.getPrestigeMax().executeOnAsyncQueue(p);
-	    	  } else if (prestigeMaxType.equals("ASTQ")) {
-	    		  main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
-	    	  }
-	    	  return true;
-	      }
-	      if(prestigeMaxType.equals("AR")) {
-	    	  main.prxAPI.getPrestigeMax().execute(p);
-	      } else if (prestigeMaxType.equals("ASTQ")) {
-	    	  main.prxAPI.getPrestigeMax().executeOnAsyncQueue(p);
-	      } else if (prestigeMaxType.equals("AMTQ")) {
-	          main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
-	      } else if (prestigeMaxType.equals("ARS")) {
-	    	  main.prxAPI.getPrestigeMax().execute(p, true);
-	      } else if (prestigeMaxType.equals("OG")) {
-	    	  PrePrestigeMaxEvent event = new PrePrestigeMaxEvent(p, main.prxAPI.getPrestige(main.prxAPI.getPlayerPrestige(p)));
-	    	  Bukkit.getPluginManager().callEvent(event);
-	    	  if(event.isCancelled()) {
-	    		  return true;
-	    	  }
-	    	  Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
-	    	  String startingPrestige = main.prxAPI.getPlayerPrestige(p);
-	    	  int counter = 0;
-	    	  for(int i = 0; i < main.prestigeStorage.getNativeLinkedPrestigesCollection().size(); i++) {
-	    		  if(main.prxAPI.canPrestige(p, true)) {
-	    			  main.prestigeAPI.prestige(p, true);
-	    			  counter++;
-	    		  } else {
-	    			  break;
-	    		  }
-	    	  }
-	    	  String finalPrestige = main.prxAPI.getPlayerPrestige(p);
-	    	  AsyncPrestigeMaxEvent e = new AsyncPrestigeMaxEvent(p, startingPrestige, finalPrestige, counter, -1);
-	    	  Bukkit.getPluginManager().callEvent(e);
-	    	  p.sendMessage("Prestige max stopped.");
-	    	  });
-	      } else { 
-	    	  main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
-	      }
+			if(!(sender instanceof Player)) {
+				// not player
+				return true;
+			} 
+			Player p = (Player)sender;
+			if(main.isInDisabledWorld(p)) return true;
+			String prestigeMaxType = main.getGlobalStorage().getStringData("Options.prestigemax-type");
+			prestigeMaxType = prestigeMaxType == null ? "AMTQ" : prestigeMaxType;
+			if(main.isInfinitePrestige) {
+				String name = p.getName();
+				if(main.getPrestigeMax().isProcessing(name)) {
+					main.getPrestigeMax().sendStopSignal(name);
+					main.debug("Signal sent for: " + name);
+					return true;
+				}
+				if(prestigeMaxType.equals("AMTQ")) {
+					main.prxAPI.getPrestigeMax().executeInfinite(p);
+				} else if (prestigeMaxType.equals("AR")) {
+					main.prxAPI.getPrestigeMax().executeOnAsyncQueue(p);
+				} else if (prestigeMaxType.equals("ASTQ")) {
+					main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
+				} else if (prestigeMaxType.equals("IT")) {
+					main.prxAPI.getPrestigeMax().executeInfiniteTest(p);
+				} else if (prestigeMaxType.equals("IT2")) {
+					main.prxAPI.getPrestigeMax().executeInfiniteTest2(p);
+				}
+				return true;
+			}
+			if(prestigeMaxType.equals("AR")) {
+				main.prxAPI.getPrestigeMax().execute(p);
+			} else if (prestigeMaxType.equals("ASTQ")) {
+				main.prxAPI.getPrestigeMax().executeOnAsyncQueue(p);
+			} else if (prestigeMaxType.equals("AMTQ")) {
+				main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
+			} else if (prestigeMaxType.equals("ARS")) {
+				main.prxAPI.getPrestigeMax().execute(p, true);
+			} else { 
+				main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
+			}
 		}
 		return true;
 	}

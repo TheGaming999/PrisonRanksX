@@ -12,6 +12,7 @@ public class RankupCommand extends BukkitCommand {
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	public RankupCommand(String commandName) {
 		super(commandName);
+		this.main = PrisonRanksX.getInstance();
 		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "get promoted to the next rank")));
 		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/rankup [player]")));
 		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.rankup"));

@@ -1,17 +1,11 @@
 package me.prisonranksx.commands;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -26,6 +20,7 @@ import com.google.common.io.Files;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.api.PRXAPI;
+import me.prisonranksx.api.PrestigeMax;
 import me.prisonranksx.data.IPrestigeDataHandler;
 import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
@@ -37,15 +32,13 @@ import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.events.PrestigeUpdateEvent;
 import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.events.RebirthUpdateEvent;
-import me.prisonranksx.hooks.IHologram;
 import me.prisonranksx.utils.AccessibleBukkitTask;
-import me.prisonranksx.utils.AccessibleString;
 import me.prisonranksx.utils.CollectionUtils;
 import me.prisonranksx.utils.ConfigCreator;
 import me.prisonranksx.utils.Cooldown;
+import me.prisonranksx.utils.EventPriorityManager;
 import me.prisonranksx.utils.HolidayUtils.Holiday;
-import me.prisonranksx.utils.MCTextEffect;
-import me.prisonranksx.utils.NonRepeatingNumber;
+import me.prisonranksx.utils.OnlinePlayers;
 
 public class PRXCommand extends BukkitCommand {
 
@@ -54,6 +47,7 @@ public class PRXCommand extends BukkitCommand {
 	private List<String> placeholders;
 	private boolean is1_16;
 	private Set<String> confirmation;
+
 	public PRXCommand(String commandName) {
 		super(commandName);
 		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "Manage ranks,prestiges,rebirths settings")));
@@ -61,6 +55,7 @@ public class PRXCommand extends BukkitCommand {
 		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.admin"));
 		this.setPermissionMessage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission-message", "&cYou don't have permission to execute this command.")));
 		this.setAliases(main.getConfigManager().commandsConfig.getStringList("commands." + commandName + ".aliases"));
+		main = PrisonRanksX.getInstance();
 		ver = main.getDescription().getVersion();
 		is1_16 = main.isModernVersion;
 		placeholders = Arrays.asList(
@@ -310,17 +305,16 @@ public class PRXCommand extends BukkitCommand {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
 		if(!sender.hasPermission(this.getPermission())) {
-
 			sender.sendMessage(this.getPermissionMessage());
 			return true;
 		}
-
 		if(args.length == 0) {
-			if(main.isInDisabledWorld(sender)) {return true;}
-			main.getHolidayUtils().getHelpMessage1().forEach(line -> {
+			if(main.isInDisabledWorld(sender)) return true;
+			main.getMessagesStorage().getHelpMessage(1).forEach(line -> {
 				sender.sendMessage(line.replace("%version%", ver));
 			});
 		} else if (args.length == 1) {
@@ -336,50 +330,61 @@ public class PRXCommand extends BukkitCommand {
 					main.lbm.getGlobalLeaderboard();
 				});
 				sender.sendMessage(main.prxAPI.c("&e&lThe leaderboard has been bananized successfully."));
-			}
-			else if (args[0].equalsIgnoreCase("halloween")) {
+			} else if (args[0].equalsIgnoreCase("halloween")) {
 				if(!main.allowEasterEggs) return true;
 				Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 					sender.sendMessage(main.prxAPI.c("&6Changing help menu theme..."));
-					main.getHolidayUtils().setHoliday(Holiday.HALLOWEEN);
-					main.getHolidayUtils().setup();
+					main.getHolidayUtils().setHoliday(Holiday.HALLOWEEN_DAY);
+					main.getMessagesStorage().setupHelpMessage();
 					sender.sendMessage(main.prxAPI.c("&6Done."));
 				});
-			}
-			else if (args[0].equalsIgnoreCase("christmas")) {
+			} else if (args[0].equalsIgnoreCase("christmas")) {
 				if(!main.allowEasterEggs) return true;
 				Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 					sender.sendMessage(main.prxAPI.c("&aChanging &chelp &amenu &ctheme&a..."));
-					main.getHolidayUtils().setHoliday(Holiday.CHRISTMAS);
-					main.getHolidayUtils().setup();
+					main.getHolidayUtils().setHoliday(Holiday.CHRISTMAS_EVE);
+					main.getMessagesStorage().setupHelpMessage();
 					sender.sendMessage(main.prxAPI.c("&aD&co&an&ce&a."));
 				});
-			}
-			else if (args[0].equalsIgnoreCase("valentine")) {
+			} else if (args[0].equalsIgnoreCase("valentine")) {
 				if(!main.allowEasterEggs) return true;
 				Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 					sender.sendMessage(main.prxAPI.c("&4Changing help menu theme&c..."));
-					main.getHolidayUtils().setHoliday(Holiday.VALENTINE);
-					main.getHolidayUtils().setup();
+					main.getHolidayUtils().setHoliday(Holiday.VALENTINE_DAY);
+					main.getMessagesStorage().setupHelpMessage();
 					sender.sendMessage(main.prxAPI.c("&4Done&c."));
 				});
-			}
-			else if (args[0].equalsIgnoreCase("none")) {
+			} else if (args[0].equalsIgnoreCase("none")) {
 				if(!main.allowEasterEggs) return true;
 				Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 					sender.sendMessage(main.prxAPI.c("&7Changing help menu theme..."));
 					main.getHolidayUtils().setHoliday(Holiday.NONE);
-					main.getHolidayUtils().setup();
+					main.getMessagesStorage().setupHelpMessage();
 					sender.sendMessage(main.prxAPI.c("&7Done."));
 				});
 			}
 			else if (args[0].equalsIgnoreCase("saveplayerdata")) {
-				Bukkit.getScheduler().runTaskAsynchronously(main, () -> main.simulateAsyncAutoDataSave());
+				main.scheduler.runTaskAsynchronously(main, () -> main.performDataSave());
+			} else if (args[0].equalsIgnoreCase("saveplayerdatamysql")) {
+				main.performMySQLAsyncDataSave();
 			} else if (args[0].equalsIgnoreCase("ranksplease")) { 
 				if(!main.allowEasterEggs) return true;
 				sender.sendMessage(main.prxAPI.c("&a&oPleasing you with a ranks file..."));
-				Bukkit.getScheduler().runTaskAsynchronously(main, () -> ConfigCreator.createNonUsableConfig("ranks_preconfigured.yml"));
+				main.scheduler.runTaskAsynchronously(main, () -> ConfigCreator.setup(main).createDummyConfig("ranks_preconfigured.yml"));
 				sender.sendMessage(main.prxAPI.c("&a&oYou have been pleased with a ranks file successfully!"));
+			} else if (args[0].equalsIgnoreCase("prestigemaxtest1")) {
+				main.prxAPI.getPrestigeMax().executeInfiniteTest((Player)sender);
+			} else if (args[0].equalsIgnoreCase("prestigemaxtest2")) {
+				main.prxAPI.getPrestigeMax().executeInfiniteTest2((Player)sender);
+			} else if (args[0].equalsIgnoreCase("prestigemaxall")) {
+				OnlinePlayers.getPlayers().forEach(main.prxAPI.getPrestigeMax()::executeInfiniteTest2);
+			} else if (args[0].equalsIgnoreCase("stopprestigemaxall")) {
+				OnlinePlayers.getPlayers().stream().map(Player::getName)
+				.filter(main.getPrestigeMax()::isProcessing)
+				.forEach(main.getPrestigeMax()::sendStopSignal);
+			} else if (args[0].equalsIgnoreCase("resetprestigeall")) {
+				OnlinePlayers.getPlayers().stream().map(Player::getUniqueId)
+				.forEach(main.prxAPI::deletePlayerPrestige);
 			} else if (args[0].equalsIgnoreCase("info")) {
 				if(!main.allowEasterEggs) return true;
 				String isInfinitePrestige = main.isInfinitePrestige ? "&a [INFINITE]" : "&c [NORMAL]";
@@ -392,8 +397,10 @@ public class PRXCommand extends BukkitCommand {
 				sender.sendMessage(main.prxAPI.c("&econfig.yml &7lastrank: &b" + main.prxAPI.getLastRank()));
 				sender.sendMessage(main.prxAPI.c("&eranks.yml &7default/first rank: &b" + main.rankStorage.getRanksCollection(main.prxAPI.getDefaultPath()).get(0)));
 				sender.sendMessage(main.prxAPI.c("&eranks.yml &7last rank: &b" + main.rankStorage.getLastRank(main.prxAPI.getDefaultPath())));
+				sender.sendMessage(main.prxAPI.c("&aLogin event handler priority: &b" + EventPriorityManager.getPriorities(main.playerLoginListener).get("onLogin").name()));
+				sender.sendMessage(main.prxAPI.c("&aChat event handler priority: &b" + EventPriorityManager.getPriorities(main.playerChatListener).get("onChat").name()));
 			} else if (args[0].equalsIgnoreCase("fix") || args[0].equalsIgnoreCase("scan")) {
-				Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+				main.scheduler.runTaskAsynchronously(main, () -> {
 					sender.sendMessage(main.prxAPI.c("&b&lScanning..."));
 					main.errorInspector.validateRanks(sender);
 					main.errorInspector.validatePrestiges(sender);
@@ -402,7 +409,7 @@ public class PRXCommand extends BukkitCommand {
 			} else if (args[0].startsWith("blabla")) {
 
 			} else if (args[0].equalsIgnoreCase("resetplayerdata")) {
-				
+
 				sender.sendMessage(main.prxAPI.c("&7Are you sure you want to reset all player data?"));
 				sender.sendMessage(main.prxAPI.c("&7What will happen:"));
 				sender.sendMessage(main.prxAPI.c("&7Their prestiges and rebirths will be removed, ranks will be reset to first"));
@@ -475,7 +482,7 @@ public class PRXCommand extends BukkitCommand {
 				}
 			}
 			else if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
-				main.getHolidayUtils().getHelpMessage1().forEach(line -> {
+				main.getMessagesStorage().getHelpMessage(1).forEach(line -> {
 					sender.sendMessage(line.replace("%version%", ver));
 				});
 			} else if (args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("rl")) {
@@ -524,11 +531,18 @@ public class PRXCommand extends BukkitCommand {
 					sender.sendMessage(main.prxAPI.c(error));
 				});
 			} else if (args[0].equalsIgnoreCase("save")) {
-				Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
-					sender.sendMessage(main.prxAPI.c("&eSaving data..."));
-					main.manager.save();
-					sender.sendMessage(main.prxAPI.g("save"));
-				});
+				Cooldown.run(sender.getName())
+				.ifTrue(() -> {
+					main.scheduler.runTaskAsynchronously(main, () -> {
+						sender.sendMessage(main.prxAPI.c("&eSaving data..."));
+						main.manager.save();
+						sender.sendMessage(main.prxAPI.g("save"));
+					});
+				})
+				.orElse(i -> sender.sendMessage(main.prxAPI.c("&ePlease wait " + i + " seconds.")))
+				.schedule(3);
+			} else if (args[0].equalsIgnoreCase("test")) {
+
 			} else if (args[0].equalsIgnoreCase("debug")) {
 				if(main.debug) {
 					main.debug = false;
@@ -594,15 +608,15 @@ public class PRXCommand extends BukkitCommand {
 		} else if(args.length == 2) {
 			if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
 				if(args[1].equalsIgnoreCase("1")) {
-					main.getHolidayUtils().getHelpMessage1().forEach(line -> {
+					main.getMessagesStorage().getHelpMessage(1).forEach(line -> {
 						sender.sendMessage(line.replace("%version%", ver));
 					});
 				} else if (args[1].equalsIgnoreCase("2")) {
-					main.getHolidayUtils().getHelpMessage2().forEach(line -> {
+					main.getMessagesStorage().getHelpMessage(2).forEach(line -> {
 						sender.sendMessage(line.replace("%version%", ver));
 					});
 				} else if (args[1].equalsIgnoreCase("3")) {
-					main.getHolidayUtils().getHelpMessage3().forEach(line -> {
+					main.getMessagesStorage().getHelpMessage(3).forEach(line -> {
 						sender.sendMessage(line.replace("%version%", ver));
 					});
 				} else if (args[1].equalsIgnoreCase("member")) {
@@ -617,65 +631,35 @@ public class PRXCommand extends BukkitCommand {
 					sender.sendMessage(main.prxAPI.c("&6/autorankup"));
 					sender.sendMessage(main.prxAPI.c("&6/autoprestige"));
 				}
-			} else if (args[0].equalsIgnoreCase("test")) {
-				main.prxAPI.getRanksCollection("default").forEach(rank -> {
-					Bukkit.dispatchCommand(sender, "give " + sender.getName() + " diamond 1");
-				});
-			} else if (args[0].equalsIgnoreCase("test2")) {
-				sender.sendMessage("Giving perms...");
-				Set<String> shesh = new HashSet<>();
-				main.prxAPI.getRanksCollection("default").forEach(rank -> shesh.add("essentials.warps." + rank));
-				shesh.remove("essentials.warps.A");
-				main.debug("Read permissions: " + shesh.toString());
-				main.perm.addPermissionAsync((Player)sender, shesh);
-				sender.sendMessage("Permissions given.");
-			} else if (args[0].equalsIgnoreCase("test3")) {
-				sender.sendMessage("Giving perms...");
-				Set<String> shesh = new HashSet<>();
-				main.prxAPI.getRanksCollection("default").forEach(rank -> shesh.add("essentials.warps." + rank));
-				shesh.remove("essentials.warps.A");
-				main.debug("Read permissions: " + shesh.toString());
-				main.perm.addPermissionAsync((Player)sender, shesh);
-				sender.sendMessage("Permissions given.");
-				main.prxAPI.resetPlayerRank((Player)sender);
-				sender.sendMessage("Rank reset.");
-				main.rankupMaxAPI.rankupMax((Player)sender);
-				main.prxAPI.resetPlayerRank((Player)sender);
-			} else if (args[0].equalsIgnoreCase("test4")) {
-				sender.sendMessage("Giving perms...");
-				Set<String> shesh = new HashSet<>();
-				main.prxAPI.getRanksCollection("default").forEach(rank -> shesh.add("essentials.warps." + rank));
-				shesh.remove("essentials.warps.A");
-				main.debug("Read permissions: " + shesh.toString());
-				CompletableFuture<Void> add1
-				= CompletableFuture.runAsync(() -> {
-					main.perm.addPermissionAsync((Player)sender, shesh);
-				});
-				
-				sender.sendMessage("Permissions given.");
-				sender.sendMessage("Removing perms...");
-				CompletableFuture<Void> add2
-				= add1.thenRunAsync(() -> {
-					try {
-						// TimeUnit.MILLISECONDS.wait(50);
-						Thread.sleep(50);
-						main.perm.delPermissionAsync((Player)sender, shesh);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				});
-				add2.join();
-				sender.sendMessage("Permissions removed.");
-			} else if (args[0].equalsIgnoreCase("test5")) {
-				Set<String> shesh = new HashSet<>();
-				main.prxAPI.getRanksCollection("default").forEach(rank -> shesh.add("essentials.warps." + rank));
-				shesh.remove("essentials.warps.A");
-				main.debug("Read permissions: " + shesh.toString());
-				sender.sendMessage("Removing perms...");
-				main.perm.delPermissionAsync((Player)sender, shesh);		
-				sender.sendMessage("Permissions removed.");
-			} else if (args[0].equalsIgnoreCase("test6")) {
-
+			} else if (args[0].equalsIgnoreCase("settheme")) {
+				Holiday holi = main.getHolidayUtils().matchHoliday(args[1]);
+				if(holi == null) {
+					sender.sendMessage("null");
+					return true;
+				}
+				main.getHolidayUtils().setHoliday(holi);
+				sender.sendMessage("Chosen theme: " + holi.name());
+				main.getMessagesStorage().setupHelpMessage();
+			} else if (args[0].equalsIgnoreCase("setlargedatacounter")) {
+				main.getPlayerStorage().largeDataCounter = Integer.parseInt(args[1]);
+				sender.sendMessage("New largeDataCounter value: " + main.getPlayerStorage().largeDataCounter);
+			} else if (args[0].equalsIgnoreCase("togglecpusaver")) {
+				PrestigeMax pmax = (PrestigeMax)main.getPrestigeMax();
+				pmax.cpuSaver = !pmax.cpuSaver;
+				sender.sendMessage("New cpuSaver value: " + pmax.cpuSaver);
+			} else if (args[0].equalsIgnoreCase("registerplayerdata")) {
+				Player p = Bukkit.getPlayer(args[1]);
+				main.scheduler.runTaskAsynchronously(main, () -> main.playerLoginListener.registerUserData(p.getUniqueId(), p.getName()));
+				sender.sendMessage("Registered: " + p.getName() + " ," + p.getUniqueId().toString());
+			} else if (args[0].equalsIgnoreCase("setsavespeed")) {
+				main.getPlayerStorage().databaseSaveSpeed = Integer.parseInt(args[1]);
+				sender.sendMessage("New database save speed: " + main.getPlayerStorage().databaseSaveSpeed);
+			} else if (args[0].equalsIgnoreCase("setchateventhandlingpriority")) {
+				EventPriorityManager.setPriorities(main.playerChatListener, args[1]);
+				sender.sendMessage("Changed EventPriority of chat event handler.");
+			} else if (args[0].equalsIgnoreCase("setlogineventhandlingpriority")) {
+				EventPriorityManager.setPriorities(main.playerLoginListener, args[1]);
+				sender.sendMessage("Changed EventPriority of login event handler.");
 			} else if (args[0].equalsIgnoreCase("createrank")) {
 				sender.sendMessage(main.prxAPI.c("&c/&6prx createrank <name> &4<cost> &c[displayname]"));
 			} else if (args[0].equalsIgnoreCase("createprestige")) {
@@ -731,8 +715,9 @@ public class PRXCommand extends BukkitCommand {
 						sender.sendMessage(main.prxAPI.c("&7Please write &a/prx resetplayerdata &7first."));
 					} else {
 						AccessibleBukkitTask abt = new AccessibleBukkitTask();
-						main.simulateAsyncAutoDataSave();
-						abt.set(Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+
+						abt.set(main.scheduler.runTaskAsynchronously(main, () -> {
+							main.performDataSave();
 							sender.sendMessage(main.prxAPI.c("&7Starting the reset process..."));
 							sender.sendMessage(main.prxAPI.c("&7Creating a backup..."));
 							//Files.copy(main.getConfigManager().rankDataFile, new File(main.getConfigManager().rankDataFile.getPath().replace("rankdata.yml", "rankdata_old.yml")));
@@ -856,7 +841,8 @@ public class PRXCommand extends BukkitCommand {
 					if(main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds").contains("[rankpermissions] remove")) {
 						Set<String> perms = main.prxAPI.allRankAddPermissions;
 						main.perm.delPermissionAsync(p, perms);
-					} if (main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds").contains("[prestigepermissions] remove")) {
+					} 
+					if(main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds").contains("[prestigepermissions] remove")) {
 						Set<String> perms2 = main.prxAPI.allPrestigeAddPermissions;
 						main.perm.delPermissionAsync(p, perms2);
 					}
@@ -872,7 +858,7 @@ public class PRXCommand extends BukkitCommand {
 					sender.sendMessage(main.prxAPI.g("delplayerrebirth").replace("%player%", p.getName()));
 
 				}
-			} else  if (args[0].equalsIgnoreCase("resetrank")) {
+			} else if (args[0].equalsIgnoreCase("resetrank")) {
 				String parsedPlayerName = args[1];
 				if(Bukkit.getPlayer(parsedPlayerName) == null) {
 					sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
@@ -881,9 +867,7 @@ public class PRXCommand extends BukkitCommand {
 				Player p = Bukkit.getPlayer(parsedPlayerName);
 				RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.RANKSET, main.prxAPI.getDefaultRank());
 				Bukkit.getServer().getPluginManager().callEvent(e);
-				if(e.isCancelled()) {
-					return true;
-				}
+				if(e.isCancelled()) return true;
 				main.prxAPI.resetPlayerRank(p);
 				sender.sendMessage(main.prxAPI.g("resetrank").replace("%target%", p.getName())
 						.replace("%firstrank%", main.prxAPI.getDefaultRank()));
@@ -899,7 +883,6 @@ public class PRXCommand extends BukkitCommand {
 						main.executeCommand(p, command);
 					}
 				}
-
 			} else if (args[0].equalsIgnoreCase("resetprestige")) {
 				String parsedPlayerName = args[1];
 				if(Bukkit.getPlayer(parsedPlayerName) == null) {
@@ -986,9 +969,21 @@ public class PRXCommand extends BukkitCommand {
 				main.manager.setFirstPrestige(prestigen, true);
 				sender.sendMessage(main.prxAPI.g("setfirstprestige").replace("%args1%", prestigen));
 			} else if (args[0].equalsIgnoreCase("setlastprestige")) {
-				String prestigen = main.manager.matchPrestige(args[1]);
-				main.manager.setLastPrestige(prestigen, true);
-				sender.sendMessage(main.prxAPI.g("setlastprestige").replace("%args1%", prestigen));
+				main.scheduler.runTaskAsynchronously(main, () -> {
+					String prestigen = null; 
+					if(main.isInfinitePrestige) {
+						prestigen = main.manager.matchPrestigeInfinite(args[1]);
+						long parsed = Long.parseLong(prestigen);
+						main.manager.setLastPrestige(parsed, true);
+						main.infinitePrestigeSettings.setFinalPrestige(parsed);
+						main.getConfigManager().infinitePrestigeConfig.set("Global-Settings.final-prestige", parsed);
+						main.getConfigManager().saveInfinitePrestigeConfig();
+					} else {
+						prestigen = main.manager.matchPrestige(args[1]);
+						main.manager.setLastPrestige(prestigen, true);
+					}
+					sender.sendMessage(main.prxAPI.g("setlastprestige").replace("%args1%", prestigen));
+				});
 			} else if (args[0].equalsIgnoreCase("setfirstrebirth")) {
 				String rebirthn = main.manager.matchRebirth(args[1]);
 				main.manager.setFirstRebirth(rebirthn, true);

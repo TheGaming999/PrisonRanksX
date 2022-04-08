@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 import me.prisonranksx.PrisonRanksX;
 
 public interface GlobalDataStorage {
-	
+
 	Map<String, String> stringData = new HashMap<>();
 	Map<String, Integer> integerData = new HashMap<>();
 	Map<String, Double> doubleData = new HashMap<>();
@@ -20,44 +20,44 @@ public interface GlobalDataStorage {
 	Map<String, Map<String, Object>> mapData = new HashMap<>();
 	Map<String, Object> globalData = new HashMap<>();
 	PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
-	
+
 	String translateHexColorCodes(final String message);
 	String parseHexColorCodes(final String message);
 	List<String> translateHexColorCodes(final List<String> message);
 	List<String> parseHexColorCodes(final List<String> message);
-	
+
 	public default Map<String, String> getStringMap() {
 		return stringData;
 	}
-	
+
 	public default Map<String, Integer> getIntegerMap() {
 		return integerData;
 	}
-	
+
 	public default Map<String, Double> getDoubleMap() {
 		return doubleData;
 	}
-	
+
 	public default Map<String, Boolean> getBooleanMap() {
 		return booleanData;
 	}
-	
+
 	public default Map<String, List<String>> getStringListMap() {
 		return stringListData;
 	}
-	
+
 	public default Map<String, Set<String>> getStringSetMap() {
 		return stringSetData;
 	}
-	
+
 	public default Map<String, Map<String, Object>> getMap() {
 		return mapData;
 	}
-	
+
 	public default Map<String, Object> getGlobalMap() {
 		return globalData;
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -68,7 +68,7 @@ public interface GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getString(configNode));
 		return main.getConfig().getString(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -79,7 +79,7 @@ public interface GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getInt(configNode));
 		return main.getConfig().getInt(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -90,7 +90,7 @@ public interface GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getDouble(configNode));
 		return main.getConfig().getDouble(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -101,7 +101,7 @@ public interface GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getBoolean(configNode, true));
 		return main.getConfig().getBoolean(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -112,7 +112,7 @@ public interface GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getStringList(configNode));
 		return main.getConfig().getStringList(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -123,7 +123,7 @@ public interface GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getKeys(false));
 		return main.getConfig().getConfigurationSection(configNode).getKeys(false);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -135,17 +135,17 @@ public interface GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getKeys(withKeys));
 		return main.getConfig().getConfigurationSection(configNode).getKeys(withKeys);
 	}
-	
+
 	public default Map<String, Object> registerMapData(String configNode, boolean withKeys) {
 		if(main.getConfig().getConfigurationSection(configNode) != null) {
-		getMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
-		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
-		return main.getConfig().getConfigurationSection(configNode).getValues(withKeys);
+			getMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
+			getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
+			return main.getConfig().getConfigurationSection(configNode).getValues(withKeys);
 		} else {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -155,7 +155,7 @@ public interface GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().get(configNode));
 		return main.getConfig().get(configNode);
 	}
-	
+
 	/**
 	 * must be run onEnable()
 	 */
@@ -199,27 +199,32 @@ public interface GlobalDataStorage {
 		boolean isRankupVaultGroupsCheck = registerBooleanData("Options.rankup-vault-groups-check");
 		boolean isAutoRankup = registerBooleanData("Options.autorankup");
 		boolean rankupMaxWithPrestige = registerBooleanData("Options.rankupmax-with-prestige");
-	    int autoRankupDelay = registerIntegerData("Options.autorankup-delay");
-	    int autoPrestigeDelay = registerIntegerData("Options.autoprestige-delay");
-	    int autoRebirthDelay = registerIntegerData("Options.autorebirth-delay");
-	    boolean actionbarProgress = registerBooleanData("Options.actionbar-progress");
-	    boolean actionbarProgressOnlyPickaxe = registerBooleanData("Options.actionbar-progress-only-pickaxe");
-	    String actionbarProgressFormat = registerStringData("Options.actionbar-progress-format");
-	    int actionbarProgressUpdater = registerIntegerData("Options.actionbar-progress-updater");
-	    boolean expbarProgress = registerBooleanData("Options.expbar-progress");
-	    int expbarProgressUpdater = registerIntegerData("Options.expbar-progress-updater");
-	    String expbarProgressFormat = registerStringData("Options.expbar-progress-format");
-	    boolean autoSave = registerBooleanData("Options.autosave");
-	    int autoSaveTime = registerIntegerData("Options.autosave-time");
-	    boolean saveNotification = registerBooleanData("Options.save-notification");
-	    boolean forceSave = registerBooleanData("Options.forcesave");
-	    boolean saveOnLeave = registerBooleanData("Options.save-on-leave");
-	    boolean rankupMaxWarpFilter = registerBooleanData("Options.rankupmax-warp-filter");
-	    boolean allowEasterEggs = registerBooleanData("Options.allow-easter-eggs");
-	    boolean enableLeaderboard = registerBooleanData("Options.enable-leaderboard");
-	    boolean enabledWorldsInsteadOfDisabled = registerBooleanData("Options.enabled-worlds-instead-of-disabled");
-	    boolean infinitePrestige = registerBooleanData("Options.infinite-prestige");
-	    String prestigeMaxType = registerStringData("Options.prestigemax-type");
+		int autoRankupDelay = registerIntegerData("Options.autorankup-delay");
+		int autoPrestigeDelay = registerIntegerData("Options.autoprestige-delay");
+		int autoRebirthDelay = registerIntegerData("Options.autorebirth-delay");
+		boolean actionbarProgress = registerBooleanData("Options.actionbar-progress");
+		boolean actionbarProgressOnlyPickaxe = registerBooleanData("Options.actionbar-progress-only-pickaxe");
+		String actionbarProgressFormat = registerStringData("Options.actionbar-progress-format");
+		int actionbarProgressUpdater = registerIntegerData("Options.actionbar-progress-updater");
+		boolean expbarProgress = registerBooleanData("Options.expbar-progress");
+		int expbarProgressUpdater = registerIntegerData("Options.expbar-progress-updater");
+		String expbarProgressFormat = registerStringData("Options.expbar-progress-format");
+		boolean autoSave = registerBooleanData("Options.autosave");
+		int autoSaveTime = registerIntegerData("Options.autosave-time");
+		boolean saveNotification = registerBooleanData("Options.save-notification");
+		boolean forceSave = registerBooleanData("Options.forcesave");
+		boolean saveOnLeave = registerBooleanData("Options.save-on-leave");
+		boolean rankupMaxWarpFilter = registerBooleanData("Options.rankupmax-warp-filter");
+		boolean allowEasterEggs = registerBooleanData("Options.allow-easter-eggs");
+		boolean enableLeaderboard = registerBooleanData("Options.enable-leaderboard");
+		boolean enabledWorldsInsteadOfDisabled = registerBooleanData("Options.enabled-worlds-instead-of-disabled");
+		boolean infinitePrestige = registerBooleanData("Options.infinite-prestige");
+		boolean infinitePrestigeCpuStabilizer = registerBooleanData("Options.infinite-prestige-cpu-stabilizer");
+		int infinitePrestigeMaxCpuUsage = registerIntegerData("Options.infinite-prestige-max-cpu-usage");
+		String prestigeMaxType = registerStringData("Options.prestigemax-type");
+		boolean isPrestigeMaxPrestigeMsgLastPrestigeOnly = registerBooleanData("Options.prestigemax-prestigemsglastprestigeonly");
+		String chatEventHandlingPriority = registerStringData("Options.chat-event-handling-priority");
+		String loginEventHandlingPriority = registerStringData("Options.login-event-handling-priority");
 		//Under Ranklist-text
 		String rankListText_rankCurrentFormat = registerStringData("Ranklist-text.rank-current-format");
 		String rankListText_rankCompletedFormat = registerStringData("Ranklist-text.rank-completed-format");
@@ -442,66 +447,66 @@ public interface GlobalDataStorage {
 		boolean nextProgressFullIsRebirthEnabled = registerBooleanData("PlaceholderAPI.next-progress-full-isrebirth-enabled");
 		boolean nextProgressFullIsLastEnabled = registerBooleanData("PlaceholderAPI.next-progress-full-islast-enabled");
 		String nextProgressFullIsRankup = registerStringData("PlaceholderAPI.next-progress-full-isrankup");
-	    String nextProgressFullIsPrestige = registerStringData("PlaceholderAPI.next-progress-full-isprestige");
-	    String nextProgressFullIsRebirth = registerStringData("PlaceholderAPI.next-progress-full-isrebirth");
-	    String nextProgressFullIsLast = registerStringData("PlaceholderAPI.next-progress-full-islast");
-	    String leaderboardNameRankNull = registerStringData("PlaceholderAPI.leaderboard-name-rank-null");
-	    String leaderboardValueRankNull = registerStringData("PlaceholderAPI.leaderboard-value-rank-null");
-	    String leaderboardNamePrestigeNull = registerStringData("PlaceholderAPI.leaderboard-name-prestige-null");
-	    String leaderboardValuePrestigeNull = registerStringData("PlaceholderAPI.leaderboard-value-prestige-null");
-	    String leaderboardNameRebirthNull = registerStringData("PlaceholderAPI.leaderboard-name-rebirth-null");
-	    String leaderboardValueRebirthNull = registerStringData("PlaceholderAPI.leaderboard-value-rebirth-null");
-	    //Under MoneyFormatter
-	    String thousand = registerStringData("MoneyFormatter.thousand");
-	    String million = registerStringData("MoneyFormatter.million");
-	    String billion = registerStringData("MoneyFormatter.billion");
-	    String trillion = registerStringData("MoneyFormatter.trillion");
-	    String quadrillion = registerStringData("MoneyFormatter.quadrillion");
-	    String quintillion = registerStringData("MoneyFormatter.quintillion");
-	    String sextillion = registerStringData("MoneyFormatter.sextillion");
-	    String septillion = registerStringData("MoneyFormatter.septillion");
-	    String octillion = registerStringData("MoneyFormatter.octillion");
-	    String nonillion = registerStringData("MoneyFormatter.nonillion");
-	    String decillion = registerStringData("MoneyFormatter.decillion");
-	    String undecillion = registerStringData("MoneyFormatter.undecillion");
-	    String duoDecillion = registerStringData("MoneyFormatter.Duodecillion");
-	    String zillion = registerStringData("MoneyFormatter.zillion");
-	    //Under 'NOTHING'
-	    String defaultRank = registerStringData("defaultrank");
-	    String lastRank = registerStringData("lastrank");
-	    String defaultPath = registerStringData("defaultpath");
-	    String firstPrestige = registerStringData("firstprestige");
-	    String lastPrestige = registerStringData("lastprestige");
-	    String firstRebirth = registerStringData("firstrebirth");
-	    String lastRebirth = registerStringData("lastrebirth");
+		String nextProgressFullIsPrestige = registerStringData("PlaceholderAPI.next-progress-full-isprestige");
+		String nextProgressFullIsRebirth = registerStringData("PlaceholderAPI.next-progress-full-isrebirth");
+		String nextProgressFullIsLast = registerStringData("PlaceholderAPI.next-progress-full-islast");
+		String leaderboardNameRankNull = registerStringData("PlaceholderAPI.leaderboard-name-rank-null");
+		String leaderboardValueRankNull = registerStringData("PlaceholderAPI.leaderboard-value-rank-null");
+		String leaderboardNamePrestigeNull = registerStringData("PlaceholderAPI.leaderboard-name-prestige-null");
+		String leaderboardValuePrestigeNull = registerStringData("PlaceholderAPI.leaderboard-value-prestige-null");
+		String leaderboardNameRebirthNull = registerStringData("PlaceholderAPI.leaderboard-name-rebirth-null");
+		String leaderboardValueRebirthNull = registerStringData("PlaceholderAPI.leaderboard-value-rebirth-null");
+		//Under MoneyFormatter
+		String thousand = registerStringData("MoneyFormatter.thousand");
+		String million = registerStringData("MoneyFormatter.million");
+		String billion = registerStringData("MoneyFormatter.billion");
+		String trillion = registerStringData("MoneyFormatter.trillion");
+		String quadrillion = registerStringData("MoneyFormatter.quadrillion");
+		String quintillion = registerStringData("MoneyFormatter.quintillion");
+		String sextillion = registerStringData("MoneyFormatter.sextillion");
+		String septillion = registerStringData("MoneyFormatter.septillion");
+		String octillion = registerStringData("MoneyFormatter.octillion");
+		String nonillion = registerStringData("MoneyFormatter.nonillion");
+		String decillion = registerStringData("MoneyFormatter.decillion");
+		String undecillion = registerStringData("MoneyFormatter.undecillion");
+		String duoDecillion = registerStringData("MoneyFormatter.Duodecillion");
+		String zillion = registerStringData("MoneyFormatter.zillion");
+		//Under 'NOTHING'
+		String defaultRank = registerStringData("defaultrank");
+		String lastRank = registerStringData("lastrank");
+		String defaultPath = registerStringData("defaultpath");
+		String firstPrestige = registerStringData("firstprestige");
+		String lastPrestige = registerStringData("lastprestige");
+		String firstRebirth = registerStringData("firstrebirth");
+		String lastRebirth = registerStringData("lastrebirth");
 	}
-	
+
 	public default String getStringData(String configNode) {
 		return getStringMap().get(configNode);
 	}
-	
+
 	public default int getIntegerData(String configNode) {
 		return getIntegerMap().get(configNode);
 	}
-	
+
 	public default double getDoubleData(String configNode) {
 		return getDoubleMap().get(configNode);
 	}
-	
+
 	public default boolean getBooleanData(String configNode) {
 		return getBooleanMap().get(configNode);
 	}
-	
+
 	public default List<String> getStringListData(String configNode) {
 		return getStringListMap().get(configNode);
 	}
-	
+
 	public default Set<String> getStringSetData(String configNode) {
 		return getStringSetMap().get(configNode);
 	}
-	
+
 	public default Object getData(String configNode) {
 		return getGlobalMap().get(configNode);
 	}
-	
+
 }

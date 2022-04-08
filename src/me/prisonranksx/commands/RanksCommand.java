@@ -14,6 +14,7 @@ public class RanksCommand extends BukkitCommand {
 	
 	public RanksCommand(String commandName) {
 		super(commandName);
+		this.main = PrisonRanksX.getInstance();
 		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "shows a list of prison ranks")));
 		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/ranks")));
 		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.ranks"));

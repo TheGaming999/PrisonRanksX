@@ -25,14 +25,16 @@ import me.prisonranksx.events.RankUpdateEvent;
 import me.prisonranksx.utils.XSound;
 import me.prisonranksx.utils.XUUID;
 
+@SuppressWarnings("deprecation")
 public class RebirthLegacy {
+
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	private PRXAPI prxAPI;
-	
+
 	public RebirthLegacy() {
 		this.prxAPI = main.prxAPI;
 	}
-	
+
 	public void rebirth(final Player player) {
 		String name = player.getName();
 		if(PRXAPI.TASKED_PLAYERS.contains(name)) {
@@ -91,14 +93,14 @@ public class RebirthLegacy {
 		}
 		int requiredPrestiges = prxAPI.getRequiredPrestiges(rebirth);
 		if(requiredPrestiges > 0) {
-		if(requiredPrestiges > prxAPI.getPlayerPrestiges(u)) {
-			// ouh
-			int left = requiredPrestiges - prxAPI.getPlayerPrestiges(u);
-			p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
-					.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
-			PRXAPI.TASKED_PLAYERS.remove(name);
-			return;
-		}
+			if(requiredPrestiges > prxAPI.getPlayerPrestiges(u)) {
+				// ouh
+				int left = requiredPrestiges - prxAPI.getPlayerPrestiges(u);
+				p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", String.valueOf(left))
+						.replace("%prestiges_amount%", String.valueOf(requiredPrestiges)));
+				PRXAPI.TASKED_PLAYERS.remove(name);
+				return;
+			}
 		} else {
 			if(!prxAPI.hasNextPrestige(u)) {
 				p.sendMessage(prxAPI.g("rebirth-failed").replace("%prestiges_amount_left%", "")
@@ -111,9 +113,9 @@ public class RebirthLegacy {
 		if(rebirthMsg != null) {
 			if(!rebirthMsg.isEmpty()) {
 				if(main.globalStorage.getBooleanData("Options.send-rebirthmsg")) {
-				p.sendMessage(prxAPI.cp(rebirthMsg
-						.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
-						.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(u)), p));
+					p.sendMessage(prxAPI.cp(rebirthMsg
+							.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
+							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(u)), p));
 				}
 			}
 		}
@@ -121,10 +123,10 @@ public class RebirthLegacy {
 		if(addPermissionList != null) {
 			if(!addPermissionList.isEmpty()) {
 				for(String permission : addPermissionList) {
-				main.perm.addPermission(name, permission
-						.replace("%player%", name)
-						.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
-						.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(u)));
+					main.perm.addPermission(name, permission
+							.replace("%player%", name)
+							.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
+							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallback(u)));
 				}
 			}
 		}
@@ -161,12 +163,12 @@ public class RebirthLegacy {
 		if(actionbarText != null) {
 			if(!actionbarText.isEmpty()) {
 				List<String> newActionbarText = new LinkedList<>();
-	            for(String line : actionbarText) {
-	            	newActionbarText.add(line.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
-	            			.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallbackR(u)));
-	            }
-			     int actionbarInterval = main.rebirthStorage.getActionbarInterval(rebirth);
-			     main.animateActionbar(p, actionbarInterval, newActionbarText);
+				for(String line : actionbarText) {
+					newActionbarText.add(line.replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u))
+							.replace("%nextrebirth_display%", prxAPI.getPlayerNextRebirthDisplayNoFallbackR(u)));
+				}
+				int actionbarInterval = main.rebirthStorage.getActionbarInterval(rebirth);
+				main.animateActionbar(p, actionbarInterval, newActionbarText);
 			}
 		}
 		List<String> broadcastMessages = main.rebirthStorage.getBroadcast(rebirth);
@@ -193,25 +195,25 @@ public class RebirthLegacy {
 		Map<String, Double> chances = new HashMap<String, Double>();
 		RebirthRandomCommands rrc = main.rebirthStorage.getRandomCommandsManager(rebirth);
 		if(rrc != null && rrc.getRandomCommandsMap() != null && !rrc.getRandomCommandsMap().isEmpty()) {
-		for(String section : rrc.getRandomCommandsMap().keySet()) {
-			Double chance = rrc.getChance(section);
-			chances.put(section, chance);
-		}
-		String randomSection = prxAPI.numberAPI.getChanceFromWeightedMap(chances);
-		if(rrc.getCommands(randomSection) != null) {
-		List<String> commands = rrc.getCommands(randomSection);
-		List<String> replacedCommands = new ArrayList<>();
-		  for(String cmd : commands) {
-			String pCMD = prxAPI.cp(cmd.replace("%player%", name).replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u)), p);
-			replacedCommands.add(pCMD);
-		  }
-		main.executeCommands(p, replacedCommands);
-		}
+			for(String section : rrc.getRandomCommandsMap().keySet()) {
+				Double chance = rrc.getChance(section);
+				chances.put(section, chance);
+			}
+			String randomSection = prxAPI.numberAPI.getChanceFromWeightedMap(chances);
+			if(rrc.getCommands(randomSection) != null) {
+				List<String> commands = rrc.getCommands(randomSection);
+				List<String> replacedCommands = new ArrayList<>();
+				for(String cmd : commands) {
+					String pCMD = prxAPI.cp(cmd.replace("%player%", name).replace("%nextrebirth%", prxAPI.getPlayerNextRebirth(u)), p);
+					replacedCommands.add(pCMD);
+				}
+				main.executeCommands(p, replacedCommands);
+			}
 		}
 		String nextRebirthSoundName = main.globalStorage.getStringData("Options.rebirthsound-name");
 		if(!nextRebirthSoundName.isEmpty() && nextRebirthSoundName.length() > 1) {
 			float nextRebirthSoundPitch = (float)main.globalStorage.getDoubleData("Options.rebirthsound-pitch");
-		    float nextRebirthSoundVolume = (float)main.globalStorage.getDoubleData("Options.rebirthsound-volume");
+			float nextRebirthSoundVolume = (float)main.globalStorage.getDoubleData("Options.rebirthsound-volume");
 			p.playSound(p.getLocation(), XSound.matchSound(nextRebirthSoundName), nextRebirthSoundVolume, nextRebirthSoundPitch);
 		}
 		boolean nextRebirthHologramIsEnable = main.globalStorage.getBooleanData("Holograms.rebirth.enable");
@@ -230,9 +232,9 @@ public class RebirthLegacy {
 			RankUpdateEvent xrue = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYREBIRTH, main.globalStorage.getStringData("defaultrank"));
 			Bukkit.getScheduler().runTask(main, () -> {
 				Bukkit.getPluginManager().callEvent(xrue);
-			if(xrue.isCancelled()) {
-				return;
-			}
+				if(xrue.isCancelled()) {
+					return;
+				}
 			});
 			main.playerStorage.setPlayerRank(u, main.globalStorage.getStringData("defaultrank"));
 		}
@@ -240,36 +242,36 @@ public class RebirthLegacy {
 			PrestigeUpdateEvent xpue = new PrestigeUpdateEvent(p, PrestigeUpdateCause.SETPRESTIGE_BY_REBIRTH);
 			Bukkit.getScheduler().runTask(main, () -> {
 				Bukkit.getPluginManager().callEvent(xpue);
-			if(xpue.isCancelled()) {
-				return;
-			}
+				if(xpue.isCancelled()) {
+					return;
+				}
 			});
 			main.playerStorage.setPlayerPrestige(u, prxAPI.getFirstPrestige());
 		}
 		List<String> rebirthCommands = main.globalStorage.getStringListData("RebirthOptions.rebirth-cmds");
 		if(!rebirthCommands.isEmpty()) {
-           rebirthCommands.forEach(cmd -> {
-        	   if(cmd.startsWith("[rankpermissions]")) {
-        		   prxAPI.allRankAddPermissions.forEach(permission -> {
-        		   main.perm.delPermission(name, permission);
-        		   });
-        	   } else if (cmd.startsWith("[prestigepermissions]")) {
-        		   prxAPI.allPrestigeAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(name, permission);
-        		   });
-        	   } else if (cmd.startsWith("[rebirthpermissions]")) {
-        		   prxAPI.allRebirthAddPermissions.forEach(permission -> {
-        			   main.perm.delPermission(name, permission);
-        		   });
-        	   } else {
-        		   main.executeCommand(p, cmd);
-        	   }
-           });
+			rebirthCommands.forEach(cmd -> {
+				if(cmd.startsWith("[rankpermissions]")) {
+					prxAPI.allRankAddPermissions.forEach(permission -> {
+						main.perm.delPermission(name, permission);
+					});
+				} else if (cmd.startsWith("[prestigepermissions]")) {
+					prxAPI.allPrestigeAddPermissions.forEach(permission -> {
+						main.perm.delPermission(name, permission);
+					});
+				} else if (cmd.startsWith("[rebirthpermissions]")) {
+					prxAPI.allRebirthAddPermissions.forEach(permission -> {
+						main.perm.delPermission(name, permission);
+					});
+				} else {
+					main.executeCommand(p, cmd);
+				}
+			});
 		}
 		main.playerStorage.setPlayerRebirth(u, rebirth);
 		PRXAPI.TASKED_PLAYERS.remove(name);
 	}
-	
+
 	public void spawnHologram(final List<String> format, final int removeTime, final int height, final Player player) {
 		Player p = player;
 		String name = p.getName();
@@ -284,8 +286,8 @@ public class RebirthLegacy {
 					, name);
 			hologram.appendTextLine(updatedLine);
 		}
-        Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable () {public void run() {
-        	hologram.delete();
-        }}, 20L * removeTime);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable () {public void run() {
+			hologram.delete();
+		}}, 20L * removeTime);
 	}
 }

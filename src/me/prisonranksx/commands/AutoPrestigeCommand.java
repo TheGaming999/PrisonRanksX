@@ -13,6 +13,7 @@ public class AutoPrestigeCommand extends BukkitCommand
 	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
 	public AutoPrestigeCommand(String commandName) {
 		super(commandName);
+		this.main = PrisonRanksX.getInstance();
 		this.setDescription(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".description", "automatically prestige while having enough money to rankup")));
 		this.setUsage(main.getString(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".usage", "/autoprestige")));
 		this.setPermission(main.getConfigManager().commandsConfig.getString("commands." + commandName + ".permission", "prisonranksx.autoprestige"));

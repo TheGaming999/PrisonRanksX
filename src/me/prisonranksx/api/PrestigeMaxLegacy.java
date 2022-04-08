@@ -47,6 +47,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 		this.noPrestigeMessage = this.api.g("noprestige");
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void execute(Player player) {
 		Player p = player;
@@ -247,6 +248,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
         });
  	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void execute(Player player, boolean silent) {
 		if(!silent) execute(player);
@@ -509,6 +511,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 		
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void executeInfinite(Player player) {
 		Player p = player;
@@ -703,6 +706,30 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 	public void removeProcessingPlayer(String name) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void executeInfiniteTest(Player player) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void executeInfiniteTest2(Player player) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean hasStopSignal(String name) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean sendStopSignal(String name) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

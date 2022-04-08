@@ -308,7 +308,7 @@ public class Prestiges {
             	int finalPage = CollectionUtils.getAccurateFinalPage(size, prestigePerPage)-1;
             	long currentPrestige = prestigeName != null ? Long.valueOf(prestigeName) : 0;
             	String finalPrestige = String.valueOf(size);
-            	int currentPage = Integer.valueOf(pageNumber);;
+            	int currentPage = Integer.valueOf(pageNumber);
             	List<String> virtualList = new LinkedList<>();
             	int counter = 0;
             	if(currentPage > finalPage) {
