@@ -700,6 +700,8 @@ public class PrisonRanksX extends JavaPlugin {
 	public void registerListeners() {
 		playerLoginListener = isBefore1_7 ? new PlayerLoginListenerLegacy(this) : new PlayerLoginListener(this);
 		playerQuitListener = isBefore1_7 ? new PlayerQuitListenerLegacy(this) : new PlayerQuitListener(this);
+		prisonRanksXListener = new PrisonRanksXListener(this);
+		inventoryListener = new InventoryListener(this);
 		rankForceDisplay = globalStorage.getBooleanData("Options.force-rank-display");
 		prestigeForceDisplay = globalStorage.getBooleanData("Options.force-prestige-display");
 		rebirthForceDisplay = globalStorage.getBooleanData("Options.force-rebirth-display");
