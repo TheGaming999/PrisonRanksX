@@ -20,50 +20,50 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 	private PrisonRanksX main;
 	public boolean isRankEnabled;
 	public String rankupProgressStyle;
-	
+
 	/**
 	 * If you want to register your config thing just use one of register#### methods onEnable of your plugin
 	 */
 	public GlobalDataStorage1_8(PrisonRanksX main) {
 		this.main = main;
-	    this.stringData = new HashMap<String, String>();
-	    this.integerData = new HashMap<String, Integer>();
-	    this.doubleData = new HashMap<String, Double>();
-	    this.booleanData = new HashMap<String, Boolean>();
-	    this.stringListData = new HashMap<String, List<String>>();
-	    this.stringSetData = new HashMap<String, Set<String>>();
-	    this.mapData = new HashMap<String, Map<String, Object>>();
-	    this.globalData = new HashMap<String, Object>();
+		this.stringData = new HashMap<String, String>();
+		this.integerData = new HashMap<String, Integer>();
+		this.doubleData = new HashMap<String, Double>();
+		this.booleanData = new HashMap<String, Boolean>();
+		this.stringListData = new HashMap<String, List<String>>();
+		this.stringSetData = new HashMap<String, Set<String>>();
+		this.mapData = new HashMap<String, Map<String, Object>>();
+		this.globalData = new HashMap<String, Object>();
 	}
-	
+
 	public Map<String, String> getStringMap() {
 		return this.stringData;
 	}
-	
+
 	public Map<String, Integer> getIntegerMap() {
 		return this.integerData;
 	}
-	
+
 	public Map<String, Double> getDoubleMap() {
 		return this.doubleData;
 	}
-	
+
 	public Map<String, Boolean> getBooleanMap() {
 		return this.booleanData;
 	}
-	
+
 	public Map<String, List<String>> getStringListMap() {
 		return this.stringListData;
 	}
-	
+
 	public Map<String, Set<String>> getStringSetMap() {
 		return this.stringSetData;
 	}
-	
+
 	public Map<String, Map<String, Object>> getMap() {
 		return this.mapData;
 	}
-	
+
 	public Map<String, Object> getGlobalMap() {
 		return this.globalData;
 	}
@@ -77,7 +77,7 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getString(configNode));
 		return main.getConfig().getString(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -88,7 +88,7 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getInt(configNode));
 		return main.getConfig().getInt(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -99,7 +99,7 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getDouble(configNode));
 		return main.getConfig().getDouble(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -110,7 +110,7 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getBoolean(configNode));
 		return main.getConfig().getBoolean(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -121,7 +121,7 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getStringList(configNode));
 		return main.getConfig().getStringList(configNode);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -132,7 +132,7 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getKeys(false));
 		return main.getConfig().getConfigurationSection(configNode).getKeys(false);
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -144,17 +144,17 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getKeys(withKeys));
 		return main.getConfig().getConfigurationSection(configNode).getKeys(withKeys);
 	}
-	
+
 	public Map<String, Object> registerMapData(String configNode, boolean withKeys) {
 		if(main.getConfig().getConfigurationSection(configNode) != null) {
-		getMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
-		getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
-		return main.getConfig().getConfigurationSection(configNode).getValues(withKeys);
+			getMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
+			getGlobalMap().put(configNode, main.getConfig().getConfigurationSection(configNode).getValues(withKeys));
+			return main.getConfig().getConfigurationSection(configNode).getValues(withKeys);
 		} else {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param configNode
@@ -164,31 +164,31 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		getGlobalMap().put(configNode, main.getConfig().get(configNode));
 		return main.getConfig().get(configNode);
 	}
-	
+
 	public String getStringData(String configNode) {
 		return getStringMap().get(configNode);
 	}
-	
+
 	public int getIntegerData(String configNode) {
 		return getIntegerMap().get(configNode);
 	}
-	
+
 	public double getDoubleData(String configNode) {
 		return getDoubleMap().get(configNode);
 	}
-	
+
 	public boolean getBooleanData(String configNode) {
 		return getBooleanMap().get(configNode);
 	}
-	
+
 	public List<String> getStringListData(String configNode) {
 		return getStringListMap().get(configNode);
 	}
-	
+
 	public Set<String> getStringSetData(String configNode) {
 		return getStringSetMap().get(configNode);
 	}
-	
+
 	public Object getData(String configNode) {
 		return getGlobalMap().get(configNode);
 	}
@@ -214,5 +214,5 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 		// TODO Auto-generated method stub
 		return message;
 	}
-	
+
 }

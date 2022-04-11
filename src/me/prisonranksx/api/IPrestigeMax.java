@@ -46,10 +46,6 @@ public interface IPrestigeMax {
 
 	void executeInfinite(Player player);
 	
-	void executeInfiniteTest(Player player);
-	
-	void executeInfiniteTest2(Player player);
-	
 	boolean hasStopSignal(String name);
 	
 	boolean sendStopSignal(String name);

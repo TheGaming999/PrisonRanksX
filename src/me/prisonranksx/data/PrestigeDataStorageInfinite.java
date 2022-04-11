@@ -35,6 +35,7 @@ public class PrestigeDataStorageInfinite implements IPrestigeDataStorage {
 	public GlobalDataStorage gds() {
 		return this.main.globalStorage;
 	}
+	
 	/**
 	 * Should only be used onEnable()
 	 * can be used as a reload

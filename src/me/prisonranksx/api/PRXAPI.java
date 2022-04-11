@@ -357,13 +357,17 @@ public class PRXAPI {
 	}
 
 	public boolean prestigeExistsAny(String prestige) {
-		if(main.isInfinitePrestige) {
+		if(!main.isInfinitePrestige) {
 			return main.prestigeStorage.getPrestigeData().get(prestige) != null;
 		} else {
-			long pre = Long.valueOf(prestige);
-			if(pre > main.infinitePrestigeSettings.getFinalPrestige() || pre < 0) {
+			try {
+				long pre = Long.valueOf(prestige);
+				if(pre > main.infinitePrestigeSettings.getFinalPrestige() || pre < 0) {
+					return false;
+				}
+			} catch (NumberFormatException ex) {
 				return false;
-			}
+			}	
 			return true;
 		}
 	}
@@ -2198,7 +2202,7 @@ public class PRXAPI {
 		String nextPrestigeDisplay = main.prestigeStorage.getNextPrestigeDisplayName(getPlayerPrestige(offlinePlayer));
 		return nextPrestigeDisplay;
 	}
-	
+
 	/**
 	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * 
@@ -2924,7 +2928,7 @@ public class PRXAPI {
 			return this.getPlayerRank(player);
 		}
 	}
-	
+
 	public String getHighestStageDisplay(final Player player) {
 		if(this.hasRebirthed(player)) {
 			return this.getPlayerRebirthDisplay(player);
@@ -2934,7 +2938,7 @@ public class PRXAPI {
 			return this.getPlayerRankDisplay(player);
 		}
 	}
-	
+
 	public String getHighestStage(final Player player, final boolean ignoreRebirth) {
 		if (this.hasPrestiged(player)) {
 			return this.getPlayerPrestige(player);
@@ -2942,7 +2946,7 @@ public class PRXAPI {
 			return this.getPlayerRank(player);
 		}
 	}
-	
+
 	public String getHighestStageDisplay(final Player player, final boolean ignoreRebirth) {
 		if (this.hasPrestiged(player)) {
 			return this.getPlayerPrestigeDisplay(player);
@@ -2950,7 +2954,7 @@ public class PRXAPI {
 			return this.getPlayerRankDisplay(player);
 		}
 	}
-	
+
 	public String getNextStage(final Player player) {
 		LevelType nextLevelType = this.getPlayerNextPercentage(player).getLevelType();
 		if(nextLevelType.getLevelType() == LevelType.RANK) {
@@ -2963,7 +2967,7 @@ public class PRXAPI {
 			return c(main.getGlobalStorage().getStringData("next-progress-full-islast"));
 		}
 	}
-	
+
 	/**
 	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param player
@@ -3009,7 +3013,7 @@ public class PRXAPI {
 			}
 		}
 	}
-	
+
 	/**
 	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid
@@ -3934,20 +3938,20 @@ public class PRXAPI {
 		Player p = player;
 		World world = p.getWorld();
 		Bukkit.getScheduler().runTask(main, () -> {
-			if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN) {
+			if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN_DAY) {
 				Entity ent = world.spawnEntity(p.getLocation().add(0, 1, 0), EntityType.BAT);
 				FastParticle.spawnParticle(world, ParticleType.FLAME, p.getLocation().add(0, 1, 0), 5);
 				FastParticle.spawnParticle(world, ParticleType.DRIP_LAVA, p.getLocation().add(0, 1, 0), 5);
 				Bukkit.getScheduler().runTaskLater(main, () -> {
 					ent.remove();
 				}, 25);
-			} else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS) {
+			} else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS_EVE) {
 				FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(1, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 1), 3);
 				FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(0, 0, 0), 3);
 				sendTempBlockChange(p, p.getLocation(), XMaterial.SNOW.parseMaterial(), (byte)0);
-			} else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE) {
+			} else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE_DAY) {
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(1, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 1), 3);
@@ -3965,20 +3969,20 @@ public class PRXAPI {
 		Player p = player;
 		World world = p.getWorld();
 		Bukkit.getScheduler().runTask(main, () -> {
-			if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN) {
+			if(main.getHolidayUtils().getHoliday() == Holiday.HALLOWEEN_DAY) {
 				Entity ent = world.spawnEntity(p.getLocation().add(0, 1, 0), EntityType.BAT);
 				FastParticle.spawnParticle(world, ParticleType.FLAME, p.getLocation().add(0, 1, 0), 5);
 				FastParticle.spawnParticle(world, ParticleType.DRIP_LAVA, p.getLocation().add(0, 1, 0), 5);
 				Bukkit.getScheduler().runTaskLater(main, () -> {
 					ent.remove();
 				}, 25);
-			} else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS) {
+			} else if (main.getHolidayUtils().getHoliday() == Holiday.CHRISTMAS_EVE) {
 				FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(1, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.SNOWBALL, p.getLocation().add(0, 1, 1), 3);
 				FastParticle.spawnParticle(world, ParticleType.FIREWORKS_SPARK, p.getLocation().add(0, 0, 0), 3);
 				sendTempBlockChange(p, p.getLocation(), XMaterial.SNOW.parseMaterial(), (byte)0);
-			} else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE) {
+			} else if (main.getHolidayUtils().getHoliday() == Holiday.VALENTINE_DAY) {
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(1, 1, 0), 3);
 				FastParticle.spawnParticle(world, ParticleType.HEART, p.getLocation().add(0, 1, 1), 3);

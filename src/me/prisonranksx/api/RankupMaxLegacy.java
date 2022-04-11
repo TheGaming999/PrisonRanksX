@@ -52,7 +52,7 @@ public class RankupMaxLegacy {
 		this.isRankupMaxMsg = main.globalStorage.getBooleanData("Options.send-rankupmaxmsg");
 	}
 	
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "deprecation" })
 	public void rankupMax(final Player player) {
         Player p = player;
         String name = p.getName();
@@ -326,7 +326,7 @@ public class RankupMaxLegacy {
  	  });
 	}
 	
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "deprecation" })
 	public void rankupMax(final Player player, final String rankLimit) {
         Player p = player;
         String name = p.getName();

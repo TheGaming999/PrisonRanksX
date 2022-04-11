@@ -23,6 +23,7 @@ import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.utils.XSound;
 import me.prisonranksx.utils.XUUID;
 
+@SuppressWarnings("deprecation")
 public class PrestigeLegacy {
 	
 	

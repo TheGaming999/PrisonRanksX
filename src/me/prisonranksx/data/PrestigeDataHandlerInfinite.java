@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import me.prisonranksx.PrisonRanksX;
 
 public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
-	
+
 	private String prestigeName;
 	private String prestigeDisplayName;
 	private double prestigeCost;
@@ -30,225 +30,216 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	private Map<String, String> stringRequirements;
 	private List<String> customRequirementMessage;
 	private PrisonRanksX instance;
-	private InfinitePrestigeSettings ips;
-	private Map<Long, InfinitePrestigeSettings> cps;
-	
-	public PrestigeDataHandlerInfinite(String prestigeName) {this.prestigeName = prestigeName;
-	this.sendFirework = false;
-	this.instance = PrisonRanksX.getInstance();
-	this.ips = instance.infinitePrestigeSettings;
-	this.cps = instance.infinitePrestigeSettings.getConstantPrestigeSettings();}
-	
+	public InfinitePrestigeSettings ips;
+	public Map<Long, InfinitePrestigeSettings> cps;
+
+	public PrestigeDataHandlerInfinite(String prestigeName) {
+		this.prestigeName = prestigeName;
+		this.sendFirework = false;
+		this.instance = PrisonRanksX.getInstance();
+		this.ips = instance.infinitePrestigeSettings;
+		this.cps = instance.infinitePrestigeSettings.getConstantPrestigeSettings();
+	}
+
 	public String getValues() {
 		String x = "[]";
 		try {
-		x = "[@prestige.name: " + prestigeName + ", " + "@prestige.display.name: " + prestigeDisplayName + ", " +
-		"@prestige.cost: " + String.valueOf(prestigeCost) + ", " + "@next.prestige.name: " + nextPrestigeName + ", " +
-				"@next.prestige.display.name: " + nextPrestigeDisplayName + ", " + "@next.prestige.cost: " + 
-		String.valueOf(nextPrestigeCost) + ", " + "@rankup.cost.increase.percentage: " + 
-				String.valueOf(rankupCostIncreasePercentage) + ", " + "@prestige.commands: " + prestigeCommands.toString() +
-				", " + "@actionbar.messages: " + actionbarMessages.toString() + ", " + "@actionbar.interval: " + String.valueOf(actionbarInterval) +
-				", " + "@actions: " + actions.toString() + ", " + "@broadcast.messages: " + broadcastMessages.toString() +
-				", " + "@messages: " + messages.toString() + ", " + "@add.permission.list: " + addPermissionList.toString() +
-				", " + "@del.permission.list: " + delPermissionList.toString() + ", " + "@send.firework: " + sendFirework.toString() +
-				", " + "@random.commands.manager: %OOP_OBJECT%" + ", @firework.manager: %OOP_OBJECT%]";
+			x = "[@prestige.name: " + prestigeName + ", " + "@prestige.display.name: " + prestigeDisplayName + ", " +
+					"@prestige.cost: " + String.valueOf(prestigeCost) + ", " + "@next.prestige.name: " + nextPrestigeName + ", " +
+					"@next.prestige.display.name: " + nextPrestigeDisplayName + ", " + "@next.prestige.cost: " + 
+					String.valueOf(nextPrestigeCost) + ", " + "@rankup.cost.increase.percentage: " + 
+					String.valueOf(rankupCostIncreasePercentage) + ", " + "@prestige.commands: " + prestigeCommands.toString() +
+					", " + "@actionbar.messages: " + actionbarMessages.toString() + ", " + "@actionbar.interval: " + String.valueOf(actionbarInterval) +
+					", " + "@actions: " + actions.toString() + ", " + "@broadcast.messages: " + broadcastMessages.toString() +
+					", " + "@messages: " + messages.toString() + ", " + "@add.permission.list: " + addPermissionList.toString() +
+					", " + "@del.permission.list: " + delPermissionList.toString() + ", " + "@send.firework: " + sendFirework.toString() +
+					", " + "@random.commands.manager: %OOP_OBJECT%" + ", @firework.manager: %OOP_OBJECT%]";
 		} catch (NullPointerException err) {
 			x = "[NullPointerException] %String% getValues()";
 		}
 		return x;
 	}
-	
+
 	public String getName() {
 		return prestigeName;
 	}
-	
+
 	public PrestigeDataHandlerInfinite setName(String prestigeName) {
 		this.prestigeName = prestigeName;
 		return this;
 	}
-	
+
 	public double getCost() {
-			return instance.prxAPI.numberAPI.calculate(ips.getCostExpression()
-					.replace("{number}", getName()));
+		return instance.prxAPI.numberAPI.calculate(ips.getCostExpression()
+				.replace("{number}", getName()));
 	}
-	
+
 	public void setCost(double prestigeCost) {
 		this.prestigeCost = prestigeCost;
 	}
-	
+
 	public String getDisplayName() {
 		String display = ips.getDisplay().replace("{number}", getName());
 		if(!cps.isEmpty()) {
-		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
-		   		long prestigeNumber = Long.valueOf(prestigeName);
-		   		InfinitePrestigeSettings ipsc = cons.getValue();
-		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
-		   			display = ipsc.getDisplay().replace("{number}", getName());
-		   			break;
-		   		}
-		   	}
+			for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
+				long prestigeNumber = Long.valueOf(prestigeName);
+				InfinitePrestigeSettings ipsc = cons.getValue();
+				if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+					display = ipsc.getDisplay().replace("{number}", getName());
+					break;
+				}
+			}
 		}	
 		return display;
 	}
-	
+
 	public void setDisplayName(String prestigeDisplayName) {
 		this.prestigeDisplayName = prestigeDisplayName;
 	}
-	
+
 	public String getNextPrestigeName() {
 		return String.valueOf(Integer.parseInt(getName())+1);
 	}
-	
+
 	public void setNextPrestigeName(String nextPrestigeName) {
 		this.nextPrestigeName = nextPrestigeName;
 	}
-	
+
 	public String getNextPrestigeDisplayName() {
 		String display = ips.getDisplay().replace("{number}", getNextPrestigeName());
 		if(!cps.isEmpty()) {
-		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
-		   		long prestigeNumber = Long.valueOf(prestigeName);
-		   		InfinitePrestigeSettings ipsc = cons.getValue();
-		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
-		   			display = ipsc.getDisplay().replace("{number}", getNextPrestigeName());
-		   			break;
-		   		}
-		   	}
+			for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
+				long prestigeNumber = Long.valueOf(prestigeName);
+				InfinitePrestigeSettings ipsc = cons.getValue();
+				if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+					display = ipsc.getDisplay().replace("{number}", getNextPrestigeName());
+					break;
+				}
+			}
 		}	
 		return display;
 	}
-	
+
 	public void setNextPrestigeDisplayName(String nextPrestigeDisplayName) {
 		this.nextPrestigeDisplayName = nextPrestigeDisplayName;
 	}
-	
+
 	public double getNextPrestigeCost() {
 		return instance.prxAPI.numberAPI.calculate(ips.getCostExpression()
 				.replace("{number}", getNextPrestigeName()));
 	}
-	
+
 	public void setNextPrestigeCost(double nextPrestigeCost) {
 		this.nextPrestigeCost = nextPrestigeCost;
 	}
-	
+
 	public double getRankupCostIncreasePercentage() {
 		return 100;
 	}
-	
+
 	public void setRankupCostIncreasePercentage(double rankupCostIncreasePercentage) {
 		this.rankupCostIncreasePercentage = rankupCostIncreasePercentage;
 	}
-	
+
 	public List<String> getPrestigeCommands() {
 		List<String> commands = prestigeCommands;
 		if(!cps.isEmpty()) {
-		   	for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
-		   		long prestigeNumber = Long.valueOf(prestigeName);
-		   		InfinitePrestigeSettings ipsc = cons.getValue();
-		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
-		   			commands = ipsc.getCommands();
-		   			break;
-		   		}
-		   	}
+			for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
+				long prestigeNumber = Long.valueOf(prestigeName);
+				InfinitePrestigeSettings ipsc = cons.getValue();
+				if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+					commands = ipsc.getCommands();
+					break;
+				}
+			}
 		}	
 		return commands;
 	}
-	
+
 	public void setPrestigeCommands(List<String> nextPrestigeCommands) {
-		if(nextPrestigeCommands != null && !nextPrestigeCommands.isEmpty()) {
-		this.prestigeCommands = nextPrestigeCommands;
-        }
+		if(nextPrestigeCommands != null && !nextPrestigeCommands.isEmpty())
+			this.prestigeCommands = nextPrestigeCommands;
 	}
-	
+
 	public List<String> getActionbarMessages() {
 		return actionbarMessages;
 	}
-	
+
 	public void setActionbarMessages(List<String> actionbarMessages) {
-		if(actionbarMessages != null && !actionbarMessages.isEmpty()) {
-		this.actionbarMessages = actionbarMessages;
-		}
+		if(actionbarMessages != null && !actionbarMessages.isEmpty())
+			this.actionbarMessages = actionbarMessages;
 	}
-	
+
 	public int getActionbarInterval() {
 		return actionbarInterval;
 	}
-	
+
 	public void setActionbarInterval(int actionbarInterval) {
-		if(actionbarMessages != null && actionbarInterval != 0 && !actionbarMessages.isEmpty()) {
-		this.actionbarInterval = actionbarInterval;
-		}
+		if(actionbarMessages != null && actionbarInterval != 0 && !actionbarMessages.isEmpty())
+			this.actionbarInterval = actionbarInterval;
 	}
-	
+
 	public List<String> getBroadcast() {
 		return broadcastMessages;
 	}
-	
+
 	public void setBroadcastMessages(List<String> broadcastMessages) {
-		if(broadcastMessages != null && !broadcastMessages.isEmpty()) {
-		this.broadcastMessages = broadcastMessages;
-		}
+		if(broadcastMessages != null && !broadcastMessages.isEmpty())
+			this.broadcastMessages = broadcastMessages;
 	}
-	
+
 	public List<String> getMsg() {
 		return messages;
 	}
-	
+
 	public void setMsg(List<String> messages) {
-		if(messages != null && !messages.isEmpty()) {
+		if(messages != null && !messages.isEmpty())
 			this.messages = messages;
-		}
 	}
-	
+
 	public List<String> getActions() {
 		return actions;
 	}
-	
+
 	public void setActions(List<String> actions) {
-		if(actions != null && !actions.isEmpty()) {
-		this.actions = actions;
-		}
+		if(actions != null && !actions.isEmpty())
+			this.actions = actions;
 	}
-	
+
 	public List<String> getAddPermissionList() {
 		return addPermissionList;
 	}
-	
+
 	public void setAddPermissionList(List<String> addPermissionList) {
-		if(addPermissionList != null && !addPermissionList.isEmpty()) {
-		this.addPermissionList = addPermissionList;
-		}
+		if(addPermissionList != null && !addPermissionList.isEmpty())
+			this.addPermissionList = addPermissionList;
 	}
-	
+
 	public List<String> getDelPermissionList() {
 		return delPermissionList;
 	}
-	
+
 	public void setDelPermissionList(List<String> delPermissionList) {
-		if(delPermissionList != null && !delPermissionList.isEmpty()) {
-		this.delPermissionList = delPermissionList;
-		}
+		if(delPermissionList != null && !delPermissionList.isEmpty())
+			this.delPermissionList = delPermissionList;
 	}
-	
+
 	public PrestigeRandomCommands getRandomCommandsManager() {
 		return randomCommandsManager;
 	}
-	
+
 	public void setRandomCommandsManager(PrestigeRandomCommands randomCommandsSet) {
 		if(randomCommandsSet != null && randomCommandsSet.getRandomCommandsMap() != null
-				&& !randomCommandsSet.getRandomCommandsMap().isEmpty()) {
-		this.randomCommandsManager = randomCommandsSet;
-		}
+				&& !randomCommandsSet.getRandomCommandsMap().isEmpty())
+			this.randomCommandsManager = randomCommandsSet;
 	}
-	
+
 	public boolean getSendFirework() {
 		return sendFirework;
 	}
-	
+
 	public void setSendFirework(boolean sendFirework) {
-		if(sendFirework) {
 		this.sendFirework = sendFirework;
-		}
 	}
 
 	public Map<String, Double> getNumberRequirements() {
@@ -274,7 +265,7 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	public void setCustomRequirementMessage(List<String> customRequirementMessage) {
 		this.customRequirementMessage = customRequirementMessage;
 	}
-	
+
 	/**
 	 * @return prestige data as string
 	 */
@@ -297,5 +288,5 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	public void setFireworkDataHandler(FireworkDataHandler fireworkDataHandler) {
 		this.fireworkDataHandler = fireworkDataHandler;
 	}
-	
+
 }

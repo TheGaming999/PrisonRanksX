@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -90,6 +91,22 @@ public class InfinitePrestigeSettings {
 		}
 	}
 
+	public String getNonReplacedDisplay(IPrestigeDataHandler prestigeDataHandler) {
+		PrestigeDataHandlerInfinite prestigeDataHandlerI = (PrestigeDataHandlerInfinite)prestigeDataHandler;
+		String display = prestigeDataHandlerI.ips.getDisplay();
+		if(!prestigeDataHandlerI.cps.isEmpty()) {
+		   	for(Entry<Long, InfinitePrestigeSettings> cons : prestigeDataHandlerI.cps.entrySet()) {
+		   		long prestigeNumber = Long.valueOf(prestigeDataHandlerI.getName());
+		   		InfinitePrestigeSettings ipsc = cons.getValue();
+		   		if(prestigeNumber >= cons.getKey() && prestigeNumber < ipsc.getFinalPrestige()) {
+		   			display = ipsc.getDisplay();
+		   			break;
+		   		}
+		   	}
+		}	
+		return display;
+	}
+	
 	public String getDisplay() {
 		return display;
 	}

@@ -30,6 +30,4 @@ public class FireworkDataHandler {
 		return this.fireworkEffects;
 	}
 	
-	
-	
 }
