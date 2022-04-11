@@ -2,7 +2,6 @@ package me.prisonranksx.hooks;
 
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -11,7 +10,6 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 
 import me.prisonranksx.PrisonRanksX;
-import me.prisonranksx.utils.AtomicObject;
 
 @SuppressWarnings("deprecation")
 public class HDHologram implements IHologram {

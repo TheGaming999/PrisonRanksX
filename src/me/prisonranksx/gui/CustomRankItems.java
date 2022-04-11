@@ -12,17 +12,20 @@ public class CustomRankItems {
 
 	private Map<String, RankItem> customRankItems;
 	private PrisonRanksX main;
-	
-	public CustomRankItems(PrisonRanksX main) {this.customRankItems = new HashMap<>(); this.main = main;}
-	
+
+	public CustomRankItems(PrisonRanksX main) {
+		this.customRankItems = new HashMap<>(); this.main = main;
+	}
+
 	public Map<String, RankItem> getCustomRankItems() {
 		return this.customRankItems;
 	}
-	
+
 	public GlobalDataStorage gds() {
 		return main.getGlobalStorage();
 	}
-	
+
+	@SuppressWarnings("deprecation")
 	public void setup() {
 		for(String path : main.rankStorage.getEntireData().keySet()) {
 			RankPath rankPath = RankPath.getRankPath(path);
@@ -46,5 +49,5 @@ public class CustomRankItems {
 			}
 		}
 	}
-	
+
 }

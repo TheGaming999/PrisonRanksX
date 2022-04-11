@@ -2,13 +2,12 @@ package me.prisonranksx.listeners;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
 
-public class PlayerChatListener implements IPlayerChatListener, Listener {
+public class PlayerChatListener implements IPlayerChatListener {
 
 	private PrisonRanksX plugin;
 	private final String rc = "&r";

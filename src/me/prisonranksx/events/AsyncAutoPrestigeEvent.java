@@ -26,16 +26,13 @@ public class AsyncAutoPrestigeEvent extends Event implements Cancellable {
 	    	this.prestigeFrom = prestigeFrom;
 	    	this.prestigeTo = prestigeTo;
 	    	this.isCancelled = false;
-	    	
 	    }
 
 		public boolean isCancelled() {
-			// TODO Auto-generated method stub
 			return this.isCancelled;
 		}
 
 		public void setCancelled(boolean cancel) {
-			// TODO Auto-generated method stub
 			this.isCancelled = cancel;
 		}
 		

@@ -13,7 +13,6 @@ import me.prisonranksx.PrisonRanksX;
 public class XUUID {
 
 	private UUID uuid;
-	private static PrisonRanksX main = PrisonRanksX.getInstance();
 	private static final Map<UUID, String> legacyPlayers = new HashMap<>();
 	private static final Map<String, UUID> legacyPlayers2 = new HashMap<>();
 	

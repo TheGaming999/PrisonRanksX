@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
@@ -12,9 +11,10 @@ import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.XUser;
 import me.prisonranksx.events.AsyncRankRegisterEvent;
+import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.XUUID;
 
-public class PlayerLoginListenerLegacy implements IPlayerLoginListener, Listener {
+public class PlayerLoginListenerLegacy implements IPlayerLoginListener {
 
 	private PrisonRanksX plugin;
 	
@@ -31,6 +31,7 @@ public class PlayerLoginListenerLegacy implements IPlayerLoginListener, Listener
 	@EventHandler
 	@Override
 	public void onJoin(PlayerJoinEvent e) {
+		OnlinePlayers.add(e.getPlayer());
 		plugin.scheduler.runTaskAsynchronously(plugin, () -> registerUserData(null, e.getPlayer().getName()));
 	}
 	

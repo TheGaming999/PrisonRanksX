@@ -26,16 +26,6 @@ import org.bukkit.Color;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -49,7 +39,6 @@ import me.prisonranksx.api.Prestige;
 import me.prisonranksx.api.PrestigeLegacy;
 import me.prisonranksx.api.IPrestigeMax;
 import me.prisonranksx.api.PrestigeMaxLegacy;
-import me.prisonranksx.api.PrestigeMaxTest;
 import me.prisonranksx.api.PrestigeMax;
 import me.prisonranksx.api.Prestiges;
 import me.prisonranksx.api.Ranks;
@@ -87,17 +76,7 @@ import me.prisonranksx.data.PrestigeDataStorageInfinite;
 import me.prisonranksx.data.RankDataStorage;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataStorage;
-import me.prisonranksx.dev.DeveloperMenu;
 import me.prisonranksx.error.ErrorInspector;
-import me.prisonranksx.events.RankUpdateCause;
-import me.prisonranksx.events.AsyncAutoPrestigeEvent;
-import me.prisonranksx.events.AsyncAutoRankupEvent;
-import me.prisonranksx.events.AsyncPrestigeMaxEvent;
-import me.prisonranksx.events.AsyncRankupMaxEvent;
-import me.prisonranksx.events.PrePrestigeMaxEvent;
-import me.prisonranksx.events.PrestigeUpdateEvent;
-import me.prisonranksx.events.RankUpdateEvent;
-import me.prisonranksx.events.RebirthUpdateEvent;
 import me.prisonranksx.gui.CustomItemsManager;
 import me.prisonranksx.gui.CustomPrestigeItems;
 import me.prisonranksx.gui.CustomRankItems;
@@ -112,18 +91,27 @@ import me.prisonranksx.hooks.PapiHook;
 import me.prisonranksx.leaderboard.LeaderboardManager;
 import me.prisonranksx.listeners.IPlayerChatListener;
 import me.prisonranksx.listeners.IPlayerLoginListener;
+import me.prisonranksx.listeners.IPlayerQuitListener;
+import me.prisonranksx.listeners.InventoryListener;
 import me.prisonranksx.listeners.PlayerChatListener;
 import me.prisonranksx.listeners.PlayerChatListenerForceDisplay;
 import me.prisonranksx.listeners.PlayerLoginListener;
 import me.prisonranksx.listeners.PlayerLoginListenerLegacy;
+import me.prisonranksx.listeners.PlayerQuitListener;
+import me.prisonranksx.listeners.PlayerQuitListenerLegacy;
+import me.prisonranksx.listeners.PrisonRanksXListener;
+import me.prisonranksx.permissions.CommandVaultDataUpdater;
+import me.prisonranksx.permissions.GMVaultDataUpdater;
+import me.prisonranksx.permissions.IVaultDataUpdater;
+import me.prisonranksx.permissions.LPVaultDataUpdater;
+import me.prisonranksx.permissions.PEXVaultDataUpdater;
 import me.prisonranksx.permissions.PermissionManager;
+import me.prisonranksx.permissions.VaultDataUpdater;
 import me.prisonranksx.reflections.Actionbar;
 import me.prisonranksx.reflections.ActionbarLegacy;
 import me.prisonranksx.reflections.ActionbarProgress;
 import me.prisonranksx.reflections.ExpbarProgress;
-import me.prisonranksx.utils.XUUID;
 import me.prisonranksx.utils.HolidayUtils.Holiday;
-import me.prisonranksx.utils.AtomicObject;
 import me.prisonranksx.utils.ChatColorReplacer;
 import me.prisonranksx.utils.ChatColorReplacer1_16;
 import me.prisonranksx.utils.ChatColorReplacer1_8;
@@ -131,15 +119,13 @@ import me.prisonranksx.utils.CollectionUtils;
 import me.prisonranksx.utils.CommandLoader;
 import me.prisonranksx.utils.ConfigManager;
 import me.prisonranksx.utils.ConfigUpdater;
+import me.prisonranksx.utils.EZLuckPerms;
 import me.prisonranksx.utils.EventPriorityManager;
 import me.prisonranksx.utils.HolidayUtils;
-import me.prisonranksx.utils.LuckPermsUtils;
 import me.prisonranksx.utils.MessageCenterizer;
-import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.PlaceholderReplacer;
 import me.prisonranksx.utils.PlaceholderReplacerDefault;
 import me.prisonranksx.utils.PlaceholderReplacerPAPI;
-import me.prisonranksx.utils.TimeCounter;
 
 import com.google.common.collect.Sets;
 
@@ -147,13 +133,11 @@ import cloutteam.samjakob.gui.types.PaginatedGUI;
 import co.aikar.taskchain.BukkitTaskChainFactory;
 import co.aikar.taskchain.TaskChain;
 import co.aikar.taskchain.TaskChainFactory;
-import net.luckperms.api.LuckPerms;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
-public class PrisonRanksX extends JavaPlugin implements Listener {
+public class PrisonRanksX extends JavaPlugin {
 
 	// GENERAL BOOLEAN FIELDS
 	public boolean hasMVdWPAPI, isApiLoaded, isActionUtil, debug, terminateMode,
@@ -172,7 +156,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	// ======================
 	// INTERFACE FIELDS
 	public GlobalDataStorage globalStorage;
-	public LuckPerms luckperms;
 	public Actionbar actionBar;
 	public IPrestigeMax prestigeMax;
 	public PlaceholderReplacer placeholderReplacer;
@@ -189,7 +172,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	private Permission perms;
 	public PermissionManager perm;
 	public String vaultPlugin;
-	public LuckPermsUtils lpUtils;
+	public IVaultDataUpdater vaultDataUpdater;
 	public GMHook groupManager;
 	// ======================
 	// API FIELDS
@@ -206,7 +189,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	public RebirthLegacy rebirthLegacy;
 	public Rebirths rebirthsAPI;
 	public PRXManager manager;
-	public PrestigeMaxTest prestigeMaxTest;
 	// ======================
 	// COMMAND FIELDS
 	public PRXCommand prxCommand;
@@ -236,7 +218,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	private CommandLoader commandLoader;
 	private ConfigManager configManager;
 	private FireworkManager fireworkManager;
-	private TimeCounter timeCounter;
 	// ======================
 	// HOOK FIELDS
 	public MVdWPapiHook mvdw;
@@ -273,11 +254,13 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	private final List<String> oldVersions = Arrays.asList("1.15", "1.14", "1.13", "1.12", "1.11", "1.10", "1.9", "1.8", "1.7", "1.6", "1.5", "1.4");
 	private final List<String> ancientVersions = Arrays.asList("1.6", "1.5", "1.4");
 	public final static String PREFIX = "§e[§9PrisonRanks§cX§e]";
-	private DeveloperMenu developerMenu;
 	// ======================
 	// LISTENERS
 	public IPlayerLoginListener playerLoginListener;
 	public IPlayerChatListener playerChatListener;
+	public IPlayerQuitListener playerQuitListener;
+	public PrisonRanksXListener prisonRanksXListener;
+	public InventoryListener inventoryListener;
 	// ======================
 	private TaskChainFactory taskChainFactory;
 
@@ -293,21 +276,10 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		return this.actionBar;
 	}
 
-	public void setupLuckPerms() {
-		RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-		if (provider != null) {
-			luckperms = provider.getProvider();
-		}
-	}
-
 	private boolean setupEconomy() {
-		if (getServer().getPluginManager().getPlugin("Vault") == null) {
-			return false;
-		}
+		if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-		if (rsp == null) {
-			return false;
-		}
+		if (rsp == null) return false;
 		econ = rsp.getProvider();
 		return econ != null;
 	}
@@ -388,9 +360,8 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	 * @param name Player Name
 	 */
 	public void saveDataAsynchronously(UUID u, String name) {
-		TaskChain <?> tc = taskChainFactory.newSharedChain("dataSave");
-		tc.delay(30)
-		.async(() -> {
+		TaskChain <?> saveDataChain = taskChainFactory.newSharedChain("dataSave");
+		saveDataChain.async(() -> {
 			playerStorage.savePlayerData(u);
 			if(!isMySql()) {
 				configManager.saveRankDataConfig();
@@ -409,9 +380,8 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	 * @param name Player Name
 	 */
 	public void saveData(UUID u) {
-		TaskChain <?> tc = taskChainFactory.newSharedChain("dataSave");
-		tc.delay(30)
-		.current(() -> {
+		TaskChain <?> saveDataChain = taskChainFactory.newSharedChain("dataSave");
+		saveDataChain.current(() -> {
 			playerStorage.savePlayerData(u);
 			configManager.saveRankDataConfig();
 			configManager.savePrestigeDataConfig();
@@ -458,9 +428,12 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		this.U = globalStorage.getStringData("MoneyFormatter.undecillion");
 		this.D = globalStorage.getStringData("MoneyFormatter.Duodecillion");
 		this.Z = globalStorage.getStringData("MoneyFormatter.zillion");
-		String[] abbreviations = {"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, v("II"), v("III"), v("IV"), v("V"), v("VI"), v("VII"), v("VIII"), v("IX"), v("X")
-				, v("11"), v("12"), v("13"), v("14"), v("15"), v("16"), v("17") , v("18") , v("19"), v("20"), v("21"), v("22"), v("23"), v("24"), v("25"), v("26")
-				, v("27"), v("28"), v("29"), v("30"), "~", "~!", "~?", "~@", "#", "^", "&", "*", "-", "+", "+2", "+3", "+4", "+5", "+6", "ALOT!"
+		String[] abbreviations = {"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, Z + "II", Z + "III", Z + "IV",
+				Z + "V", Z + "VI", Z + "VII", Z + "VIII", Z + "IX", Z + "X", Z + "11", Z + "12",
+				Z + "13", Z + "14", Z + "15", Z + "16", Z + "17" , Z + "18" , Z + "19", Z + "20",
+				Z + "21", Z + "22", Z + "23", Z + "24", Z + "25", Z + "26", Z + "27", Z + "28",
+				Z + "29", Z + "30", "~", "~!", "~?", "~@", "#", "^", "&", "*", "-", "+", "+2", "+3",
+				"+4", "+5", "+6", "ALOT!"
 		};
 		this.abbreviations = abbreviations;
 	}
@@ -471,15 +444,13 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		console = Bukkit.getConsoleSender();
 		pluginManager = Bukkit.getPluginManager();
 		taskChainFactory = BukkitTaskChainFactory.create(this);
-		holidayUtils = new HolidayUtils(this);
-		holidayUtils.setup();
+		holidayUtils = new HolidayUtils();
 		actionbarAnimationHolder = new HashMap<>();
 		actionbarTaskHolder = new HashMap<>();
 		String version = Bukkit.getVersion();
 		commandLoader = new CommandLoader();
 		if(CollectionUtils.containsFromList(version, ancientVersions)) isBefore1_7 = true;
 		if(!CollectionUtils.containsFromList(version, oldVersions)) isModernVersion = true;
-		Bukkit.getPluginManager().registerEvents(this, this);
 		getConfig().options().copyDefaults(true);
 		saveDefaultConfig();
 		try {
@@ -567,16 +538,28 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			} else {
 				cout(PREFIX + " §2Started without ActionUtil.");
 			}
-			if(hasPlugin("LuckPerms") && isVaultGroups) {
-				setupLuckPerms();
-				lpUtils = new LuckPermsUtils(luckperms);
-			} else if (hasPlugin("GroupManager") && isVaultGroups) {
-				groupManager = new GMHook(this);
-			}
 
-			if(holidayUtils.getHoliday() == Holiday.CHRISTMAS) {
+			if(isVaultGroups) this.vaultPlugin = globalStorage.getStringData("Options.rankup-vault-groups-plugin");
+
+			if(isVaultGroups && vaultPlugin != null) {
+				if(hasPlugin("LuckPerms") && vaultPlugin.equalsIgnoreCase("LuckPerms")) {
+					EZLuckPerms.getLuckPerms();
+					vaultDataUpdater = new LPVaultDataUpdater(this);
+				} else if (hasPlugin("GroupManager") && vaultPlugin.equalsIgnoreCase("GroupManager")) {
+					groupManager = new GMHook(this);
+					vaultDataUpdater = new GMVaultDataUpdater(this);
+				} else if (hasPlugin("PermissionsEX") && vaultPlugin.equalsIgnoreCase("PermissionsEX")) {
+					PermissionsEx.getPermissionManager();
+					vaultDataUpdater = new PEXVaultDataUpdater(this);
+				} else if (vaultPlugin.equalsIgnoreCase("Vault")) {
+					vaultDataUpdater = new VaultDataUpdater(this);
+				} else {
+					vaultDataUpdater = new CommandVaultDataUpdater(this);
+				}
+			}
+			if(holidayUtils.getHoliday() == Holiday.CHRISTMAS_EVE) {
 				cout(PREFIX + " §2Merry §4Christmas§f!");
-			} else if (holidayUtils.getHoliday() == Holiday.HALLOWEEN) {
+			} else if (holidayUtils.getHoliday() == Holiday.HALLOWEEN_DAY) {
 				cout(PREFIX + " §6Happy Halloween§7!");
 			}
 			if(configManager.commandsConfig.getBoolean("commands.rankup.enable", true)) {
@@ -636,13 +619,12 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			checkVault = globalStorage.getBooleanData("Options.rankup-vault-groups-check");
 			allowEasterEggs = globalStorage.getBooleanData("Options.allow-easter-eggs");
 			disabledWorlds = Sets.newHashSet(globalStorage.getStringListData("worlds"));
+
 			try {
 				ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			if(isVaultGroups) this.vaultPlugin = globalStorage.getStringData("Options.rankup-vault-groups-plugin");
 
 			if(configManager.commandsConfig.getBoolean("commands.topprestiges.enable")) {
 				topPrestigesCommand = new TopPrestigesCommand("topprestiges");
@@ -686,7 +668,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			crri.setup();
 			prestigeMax = isBefore1_7 ? new PrestigeMaxLegacy(this) : new PrestigeMax(this);
 		}
-		if(allowEasterEggs) developerMenu = new DeveloperMenu(this);
 		guiManager = new GuiListManager(this);
 		if(!isBefore1_7) {
 			guiManager.setupConstantItems();
@@ -707,22 +688,20 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		errorInspector.inspect();
 		errorInspector.validateRanks(console);
 		errorInspector.validatePrestiges(console);
-		if(getGlobalStorage().getBooleanData("Options.autosave")) {
-			startAsyncUpdateTask();
-		}
-		prestigeMaxTest = new PrestigeMaxTest(this);
+		if(getGlobalStorage().getBooleanData("Options.autosave")) startAsyncUpdateTask();	
 		registerListeners();
-		OnlinePlayers.getPlayers().forEach(player -> {
-			this.playerLoginListener.registerUserData(player.getUniqueId(), player.getName());
-		});
 		instance = this;
 		cout(PREFIX + " §aEnabled.");
 	}
+
 	/**
 	 * Registers plugin listeners in the other classes.
 	 */
 	public void registerListeners() {
 		playerLoginListener = isBefore1_7 ? new PlayerLoginListenerLegacy(this) : new PlayerLoginListener(this);
+		playerQuitListener = isBefore1_7 ? new PlayerQuitListenerLegacy(this) : new PlayerQuitListener(this);
+		prisonRanksXListener = new PrisonRanksXListener(this);
+		inventoryListener = new InventoryListener(this);
 		rankForceDisplay = globalStorage.getBooleanData("Options.force-rank-display");
 		prestigeForceDisplay = globalStorage.getBooleanData("Options.force-prestige-display");
 		rebirthForceDisplay = globalStorage.getBooleanData("Options.force-rebirth-display");
@@ -739,7 +718,9 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		}
 		pluginManager.registerEvents(playerLoginListener, this);
 		EventPriorityManager.setPriorities(playerLoginListener, globalStorage.getStringData("Options.login-event-handling-priority"));
-		if(developerMenu != null) pluginManager.registerEvents(developerMenu, this);
+		pluginManager.registerEvents(playerQuitListener, this);
+		pluginManager.registerEvents(prisonRanksXListener, this);
+		pluginManager.registerEvents(inventoryListener, this);
 		if(!messWithChat) return;
 		pluginManager.registerEvents(playerChatListener, this);
 		EventPriorityManager.setPriorities(playerChatListener, globalStorage.getStringData("Options.chat-event-handling-priority"));
@@ -749,9 +730,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 	 * Unregister listeners from the other classes.
 	 */
 	public void unregisterListeners() {
-		AsyncPlayerChatEvent.getHandlerList().unregister(playerChatListener);
-		AsyncPlayerPreLoginEvent.getHandlerList().unregister(playerLoginListener);
-		PlayerJoinEvent.getHandlerList().unregister(playerLoginListener);
+		playerChatListener.unregister();
+		playerLoginListener.unregister();
+		playerQuitListener.unregister();
+		prisonRanksXListener.unregister();
+		inventoryListener.unregister();
 	}
 
 	/**
@@ -772,7 +755,6 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 				try {
 					openConnection();
 				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				statement = getConnection().createStatement(); 
@@ -852,9 +834,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 			prop.setProperty("password", password);
 			prop.setProperty("useSSL", String.valueOf(useSSL));
 			prop.setProperty("autoReconnect", String.valueOf(autoReconnect));
-			if(useCursorFetch) {
-				prop.setProperty("useCursorFetch", String.valueOf(useCursorFetch));
-			}
+			if(useCursorFetch) prop.setProperty("useCursorFetch", String.valueOf(useCursorFetch));
 			setConnection(DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.getDatabase() + "?characterEncoding=utf8", prop));
 		}
 	}
@@ -922,26 +902,13 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		cout(PREFIX + " §aData saved.");
 		cout(PREFIX + " §cDisabled.");
 	}
-	
+
 	public void debug(String message) {
 		if(debug) Bukkit.broadcastMessage(getString("&9[DEBUG] " + message));
 	}
 
 	public void debugPreEnable(String message) {
 		if(debug) System.out.println("[DEBUG] " + message);		
-	}
-
-	@EventHandler(priority=EventPriority.HIGHEST)
-	public void onInventoryClick(InventoryClickEvent e) {
-		Inventory inv = e.getInventory();
-		if(inv == null) return;
-		InventoryHolder holder = inv.getHolder();
-		if(holder == null) return;
-		if(holder instanceof PaginatedGUI) {
-			e.setResult(org.bukkit.event.Event.Result.DENY);
-			e.setCancelled(true);
-			debug("Yes it's a prisonranksx inventory");
-		}
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -984,83 +951,38 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		}
 	}
 
+
+	// one line methods
 	public PlayerDataStorage getPlayerStorage() { return this.playerStorage; }
 	public GlobalDataStorage getGlobalStorage() { return this.globalStorage; }
-
-	@EventHandler(priority=EventPriority.HIGHEST)
-	public void onQuit(PlayerQuitEvent e) {
-		Player p = e.getPlayer();
-		String name = p.getName();
-		PRXAPI.AUTO_RANKUP_PLAYERS.remove(name);
-		PRXAPI.AUTO_PRESTIGE_PLAYERS.remove(name);
-		PRXAPI.TASKED_PLAYERS.remove(name);
-		if(this.getPrestigeMax().isProcessing(name)) {
-			this.debug("player " + name + " left while he/she is prestiging using prestige max. Sending stop signal...");
-			this.getPrestigeMax().sendStopSignal(name);
-		}
-		if(!isBefore1_7) {
-			this.rankupMaxAPI.rankupMaxProcess.remove(name);
-		} else {
-			this.rankupMaxLegacy.rankupMaxProcess.remove(p);
-		}
-		if(isSaveOnLeave) {
-			UUID uuid = null;
-			AtomicObject atomicUUID = new AtomicObject();
-			if(!isBefore1_7) {
-				uuid = p.getUniqueId();
-			} else {
-				uuid = XUUID.tryNameConvert(name);
-			}
-			atomicUUID.set(uuid);
-			taskChainFactory.newSharedChain("dataSave").async(() -> {
-				if(isMySql()) {
-					// this.updateMySqlData(p);
-					this.updateMySqlData((UUID)atomicUUID.get(), name);
-				} else {
-					UUID uuidNew = (UUID)atomicUUID.get();
-					getPlayerStorage().savePlayerData(uuidNew);
-					getConfigManager().saveRankDataConfig();
-					getConfigManager().savePrestigeDataConfig();
-					getConfigManager().saveRebirthDataConfig();
-					getPlayerStorage().unload(uuidNew);
-				}
-			}).execute();
-		}
-		if(isEBProgress)
-			this.ebprogress.disable(p);
-		if(!isABProgress)
-			return;
-		this.abprogress.disable(p);
-	}
-
 	public void cout(String string) { console.sendMessage(string); }
-
 	public boolean hasPlugin(String pluginName) { return pluginManager.isPluginEnabled(pluginName); }
-
 	public boolean hasActionbarOn(UUID uuid) { return actionbarInUse.contains(uuid); }
+	public Color getColor(String temp) { return fireworkManager.getColor(temp); }
+	public void sendRebirthFirework(Player p) { fireworkManager.sendRebirthFirework(p); }
+	public void sendPrestigeFirework(Player p) { fireworkManager.sendPrestigeFirework(p); }
+	public void sendRankFirework(Player p) { fireworkManager.sendRankFirework(p); }
+
 	/**
 	 * 
-	 * @param player the player that will receive the action bar message
+	 * @param player the player that will receive the action bar messages
 	 * @param interval action bar animation in ticks // 20 ticks = 1 second
-	 * @param actionbar action bar messages to be sent
+	 * @param actionbarLines action bar messages to be sent and animated
 	 */
 	public void animateActionbar(Player player, Integer interval, List<String> actionbarLines) {
-		if(isBefore1_7 || actionbarLines == null)
-			return;
-		if(actionbarLines.size() == 0)
-			return;
+		if(isBefore1_7 || actionbarLines == null) return;
+		if(actionbarLines.size() == 0) return;
 		Player p = player;
 		String name = p.getName();
 		UUID uuid = p.getUniqueId();
 		actionbarInUse.add(uuid);
 		int linesAmount = actionbarLines.size();
 		if(linesAmount == 1) {
-			getActionbar().sendActionBar(p, getString(actionbarLines.get(0), name).replace("%rankup%", getString(prxAPI.getPlayerRank(p), name)).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), name)));
+			getActionbar().sendActionBar(p, getString(actionbarLines.get(0), name).replace("%rankup%", prxAPI.getPlayerRank(p)).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), name)));
 			return;
 		}
 		BukkitTask savedTask = actionbarTaskHolder.get(p);
-		if (savedTask != null)
-			savedTask.cancel();
+		if(savedTask != null) savedTask.cancel();
 		// skip older action bar
 		actionbarTaskHolder.put(p, null);
 		actionbarTask = actionbarTaskHolder.get(p);
@@ -1068,9 +990,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		actionbarAnimationHolder.put(p, 0);
 		actionbarTask = new BukkitRunnable() {
 			public void run() {
-				if(actionbarTaskHolder.containsKey(p)) {
-					actionbarTaskHolder.put(p, actionbarTask);
-				}
+				if(actionbarTaskHolder.containsKey(p)) actionbarTaskHolder.put(p, actionbarTask);
 				boolean animationEnded = actionbarAnimationHolder.get(p) >= linesAmount;
 				if(animationEnded) {
 					scheduler.runTaskLaterAsynchronously(instance, () -> actionbarInUse.remove(uuid), 20);
@@ -1078,43 +998,22 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 					return;
 				}
 				String currentLine = actionbarLines.get(actionbarAnimationHolder.get(p));
-				getActionbar().sendActionBar(p, getString(currentLine, name).replace("%rankup%", getString(playerStorage.getPlayerRank(p), name)).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), name)));
-				if(!animationEnded)
-					actionbarAnimationHolder.put(p, actionbarAnimationHolder.get(p)+1);
+				getActionbar().sendActionBar(p, getString(currentLine, name).replace("%rankup%", playerStorage.getPlayerRank(p)).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), name)));
+				if(!animationEnded) actionbarAnimationHolder.put(p, actionbarAnimationHolder.get(p)+1);
 			}
 		}.runTaskTimerAsynchronously(this, 1L, interval);
 	}
 
-	public Color getColor(String temp) {
-		return fireworkManager.getColor(temp);
+	public void sendListMessage(Player p, List<String> stringLines) {
+		stringLines.forEach(messageLine -> p.sendMessage(getString(messageLine, p.getName())));
 	}
 
-	public void sendRebirthFirework(Player p) {
-		fireworkManager.sendRebirthFirework(p);
+	public void sendListMessage(CommandSender s, List<String> stringLines) {
+		stringLines.forEach(messageLine -> s.sendMessage(getString(messageLine, s.getName()).replace("%player%", s.getName())));
 	}
 
-	public void sendPrestigeFirework(Player p) {
-		fireworkManager.sendPrestigeFirework(p);
-	}
-
-	public void sendRankFirework(Player p) {
-		fireworkManager.sendRankFirework(p);
-	}
-
-	public void sendListMessage(Player p, List<String> list) {
-		for(String messageLine : list) {
-			p.sendMessage(getString(messageLine, p.getName()));
-		}
-	}
-	public void sendListMessage(CommandSender s, List<String> list) {
-		for(String messageLine : list) {
-			s.sendMessage(getString(messageLine, s.getName()).replace("%player%", s.getName()));
-		}
-	}
-	public void sendListMessage(String playerName, List<String> list) {
-		for(String messageLine : list) {
-			Bukkit.getPlayer(playerName).sendMessage(getString(messageLine, playerName));
-		}
+	public void sendListMessage(String playerName, List<String> stringLines) {
+		sendListMessage(Bukkit.getPlayer(playerName), stringLines);
 	}
 
 	public void executeCachedCommandsWithWarpFilter(Player player, RankPath rank) {
@@ -1122,16 +1021,15 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		Player p = player;
 		String name = p.getName();
 		if(rankStorage.getConsoleCommands().containsKey(rankpath)) {
-			for(String string : rankStorage.getConsoleCommands().get(rankpath)) {
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string.replace("%player%", name));
-			}
+			rankStorage.getConsoleCommands().get(rankpath).forEach(commandLine ->
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getString(commandLine.replace("%player%", name), player)));	
 		}
 		if(rankStorage.getPlayerCommands().containsKey(rankpath)) {
-			for(String string : rankStorage.getPlayerCommands().get(rankpath)) {
-				if(!string.contains("warp")) {
-					Bukkit.dispatchCommand(p, string.replace("%player%", name));
-				}
-			}
+			rankStorage.getPlayerCommands().get(rankpath).stream()
+			.filter(commandLine ->
+			!commandLine.contains("warp"))
+			.forEach(commandLine -> 
+			Bukkit.dispatchCommand(p, commandLine.replace("%player%", name)));
 		}
 	}
 
@@ -1141,12 +1039,12 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		String name = p.getName();
 		if(rankStorage.getConsoleCommands().containsKey(rankpath)) {
 			for(String string : rankStorage.getConsoleCommands().get(rankpath)) {
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string.replace("%player%", name));
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getString(string.replace("%player%", name), player));
 			}
 		}
 		if(rankStorage.getPlayerCommands().containsKey(rankpath)) {
 			for(String string : rankStorage.getPlayerCommands().get(rankpath)) {
-				Bukkit.dispatchCommand(p, string.replace("%player%", name));
+				Bukkit.dispatchCommand(p, getString(string.replace("%player%", name), player));
 			}
 		}
 	}
@@ -1155,7 +1053,7 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		Player p = player;
 		for(String command : stringList) {
 			if(command.startsWith("[console]")) {
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(10).replace("%player%", p.getName()));
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getString(command.substring(10).replace("%player%", p.getName()), player));
 			} else if (command.startsWith("[player]")) {
 				Bukkit.dispatchCommand(p, command.substring(9).replace("%player%", p.getName()));
 			} else {
@@ -1164,16 +1062,14 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		}
 	}
 
-	public void executeCommands(Player player, List<String> stringList) {
-		if(stringList.isEmpty())
-			return;
+	public void executeCommands(Player player, final List<String> commandsList) {
+		if(commandsList.isEmpty()) return;
 		newSharedChain("command").current(() -> {
-			List<String> commandsList = stringList;
 			scheduler.runTaskLater(this, () ->{
 				Player p = player;
 				for(String command : commandsList) {
 					if(command.startsWith("[console]")) {
-						Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(10).replace("%player%", p.getName()));
+						Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getString(command.substring(10).replace("%player%", p.getName()), player));
 					} else if (command.startsWith("[player]")) {
 						Bukkit.dispatchCommand(p, command.substring(9).replace("%player%", p.getName()));
 					} else {
@@ -1188,17 +1084,13 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		Player p = player;
 		scheduler.runTask(this, () -> {
 			if(command.startsWith("[console]")) {
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(10).replace("%player%", p.getName()));
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getString(command.substring(10).replace("%player%", p.getName()), player));
 			} else if (command.startsWith("[player]")) {
 				Bukkit.dispatchCommand(p, command.substring(9).replace("%player%", p.getName()));
 			} else {
 				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", p.getName()));
 			}
 		});
-	}
-
-	private String v(String string) {
-		return Z + string;
 	}
 
 	public String formatBalance(double y)
@@ -1218,15 +1110,21 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 		return sb.toString().trim();
 	}
 
+	/**
+	 * 
+	 * @param text to centerize
+	 * @return sets the message to the center if it starts with [center] prefix
+	 */
 	public String center(String text) {
 		if(text.startsWith("[center]")) return MessageCenterizer.centerMessage(text.substring(8));
 		return text;
 	}
+
 	/**
 	 * 
-	 * @param text to be parsed
+	 * @param text to process and format
 	 * @param playerName player name whom the placeholders should be parsed for
-	 * @return <i>Colored string with symbols & placeholders aswell if PAPI is present.
+	 * @return Formatted colored string with symbols and optionally, PlaceholderAPI placeholders.
 	 */
 	public String getString(String text, String playerName) {
 		return center(getChatColorReplacer().parsePlaceholders(text, playerName));
@@ -1234,9 +1132,9 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 
 	/**
 	 * 
-	 * @param text to be parsed
+	 * @param text to process and format
 	 * @param player the player whom the placeholders should be parsed for
-	 * @return <i>Colored string with symbols & placeholders aswell if PAPI is present.
+	 * @return Formatted colored string with symbols and optionally, PlaceholderAPI placeholders.
 	 */
 	public String getString(String text, Player player) {
 		return center(getChatColorReplacer().parsePlaceholders(text, player));
@@ -1244,128 +1142,11 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 
 	/**
 	 * 
-	 * @param text
-	 * @return <i>Colored String with symbols.
+	 * @param text to process and format
+	 * @return Formatted colored string with symbols.
 	 */
 	public String getString(String text) {
 		return center(getChatColorReplacer().parsePlaceholders(text));
-	}
-
-	@Deprecated
-	public List<String> getStringList(List<String> stringList, String playerName) {
-		List<String> newList = new ArrayList<>();
-		stringList.forEach(line -> {
-			newList.add(center(getChatColorReplacer().parsePlaceholders(line, playerName)));
-		});
-		return newList;
-	}
-
-	@Deprecated
-	public List<List<String>> getStringListAll(List<String> stringList) {
-		List<List<String>> newLists = new ArrayList<>();
-		OnlinePlayers.getPlayers().forEach(p -> {
-			List<String> newList = new ArrayList<>();
-			stringList.forEach(line -> {
-				newList.add(getChatColorReplacer().parsePlaceholders(line));
-			});
-			newLists.add(newList);
-		});
-		return newLists;
-	}	
-
-	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-	public void onRankup(RankUpdateEvent e) {
-		if(isBefore1_7) return;
-		if(e.getCause() == RankUpdateCause.RANKUPMAX) return;
-		Player p = e.getPlayer();
-		UUID uuid = p.getUniqueId();
-		String name = p.getName();
-		if(isForceSave()) saveDataAsynchronously(uuid, name);
-		String currentRank = prxAPI.getPlayerRank(p);
-		String nextRank = e.getRankup();
-		updateVaultData(p, uuid, name, currentRank, nextRank);
-	}
-
-	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-	public void onAutoRankup(AsyncAutoRankupEvent e) {
-		if(isBefore1_7) return;
-		Player p = e.getPlayer();
-		String name = p.getName();
-		if(isForceSave()) saveDataAsynchronously(p.getUniqueId(), name);
-		UUID uuid = p.getUniqueId();
-		String currentRank = e.getRankupFrom();
-		String nextRank = e.getRankupTo();
-		updateVaultData(p, uuid, name, currentRank, nextRank);
-	}
-
-	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-	public void onRankupMax(AsyncRankupMaxEvent e) {
-		if(isBefore1_7) return;
-		Player p = e.getPlayer();
-		UUID uuid = p.getUniqueId();
-		String name = p.getName();
-		if(isForceSave()) saveDataAsynchronously(uuid, name);	
-		String currentRank = e.getRankupFrom();
-		String nextRank = e.getFinalRankup();
-		updateVaultData(p, uuid, name, currentRank, nextRank);
-	}
-
-	public void updateVaultData(Player p, UUID uuid, String name, String currentRank, String nextRank) {
-		if(isVaultGroups) { 
-			if(vaultPlugin.equalsIgnoreCase("Vault")) {
-				newSharedChain("vault").async(() -> {
-					if(perms.playerInGroup(p, currentRank)) perms.playerRemoveGroup(p, currentRank);
-					perms.playerAddGroup(p, nextRank);
-				}).execute();
-			} else if (vaultPlugin.equalsIgnoreCase("LuckPerms")) {
-				newSharedChain("luckperms").async(() -> lpUtils.setGroup(uuid, nextRank, true)).execute();
-			} else if (vaultPlugin.equalsIgnoreCase("GroupManager")) {
-				newSharedChain("groupmanager").async(() -> groupManager.setGroup(p, nextRank)).execute();
-			} else if (vaultPlugin.equalsIgnoreCase("PermissionsEX")) {
-				newSharedChain("permissionsex").sync(() -> {
-					PermissionUser user = PermissionsEx.getUser(p);
-					if(user.inGroup(currentRank)) user.removeGroup(currentRank);
-					user.addGroup(nextRank);
-				}).execute();
-			} else {
-				scheduler.runTask(this, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), globalStorage.getStringData("Options.rankup-vault-groups-plugin").replace("%player%", name).replace("%rank%", nextRank)));
-			}
-		}
-	}
-
-
-
-	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-	public void onPrestige(PrestigeUpdateEvent e) {
-		if(isBefore1_7) return;
-		Player p = e.getPlayer();
-		if(isForceSave()) saveDataAsynchronously(p.getUniqueId(), p.getName());
-	}
-
-	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-	public void onRebirth(RebirthUpdateEvent e) {
-		if(isBefore1_7) return;
-		Player p = e.getPlayer();
-		if(isForceSave()) saveDataAsynchronously(p.getUniqueId(), p.getName());
-	}
-
-	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-	public void onPrestigeMax(AsyncPrestigeMaxEvent e) {
-		if(isBefore1_7) return;
-		Player p = e.getPlayer();
-		debug(timeCounter.tryEndingAsSecondsFormatted());
-		if(isForceSave()) saveDataAsynchronously(p.getUniqueId(), p.getName());
-	}
-
-	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-	public void onAutoPrestige(AsyncAutoPrestigeEvent e) {
-		Player p = e.getPlayer();
-		if(isForceSave()) saveDataAsynchronously(p.getUniqueId(), p.getName());
-	}
-
-	@EventHandler
-	public void onPrePrestigeMax(PrePrestigeMaxEvent e) {
-		timeCounter = new TimeCounter(true);
 	}
 
 	public String getDatabase() {
@@ -1467,6 +1248,10 @@ public class PrisonRanksX extends JavaPlugin implements Listener {
 
 	public FireworkManager getFireworkManager() {
 		return this.fireworkManager;
+	}
+
+	public MessagesDataStorage getMessagesStorage() {
+		return this.messagesStorage;
 	}
 
 }
