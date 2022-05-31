@@ -8,6 +8,8 @@ As in any big plugin, we have a wiki overhere which can help you reach the desir
 
 The source code is not that organized due to fear from removing something and ruining the whole thing as it was very messy in the dusty versions. It's not bad but not the best. It does the job.
 
+Gonna recode this mess soon.  
+
 ##### Help & Support
 
 [WIKI](https://github.com/TheGaming999/PrisonRanksX/wiki)  
