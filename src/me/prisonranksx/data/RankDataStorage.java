@@ -430,8 +430,8 @@ public class RankDataStorage {
 			setData("Ranks." + pathName + "." +  rankup + ".cost", handler.getRankupCost());
 			setData("Ranks." + pathName + "." +  rankup + ".display", handler.getRankupDisplayName());
 			setData("Ranks." + pathName + "." +  rankup + ".executecmds", handler.getRankupCommands());
-			setData("Ranks." + pathName + "." +  rankup + ".actionbar.interval", handler.getActionbarInterval());
-			setData("Ranks." + pathName + "." +  rankup + ".actionbar.text", handler.getActionbarMessages());
+			// setData("Ranks." + pathName + "." +  rankup + ".actionbar.interval", handler.getActionbarInterval());
+			// setData("Ranks." + pathName + "." +  rankup + ".actionbar.text", handler.getActionbarMessages());
 			setData("Ranks." + pathName + "." +  rankup + ".broadcast", handler.getBroadcast());
 			setData("Ranks." + pathName + "." +  rankup + ".msg", handler.getMsg());
 			setData("Ranks." + pathName + "." +  rankup + ".actions", handler.getActions());
@@ -450,7 +450,7 @@ public class RankDataStorage {
 	}
 
 	public boolean isLastRank(RankPath rankPath) {
-		return lastRankMap.get(rankPath.getPathName()).equalsIgnoreCase(rankPath.getRankName());
+		return rankPath == null || lastRankMap.isEmpty() || lastRankMap.get(rankPath.getPathName()).equalsIgnoreCase(rankPath.getRankName());
 	}
 
 	public boolean isSetToLastRank(String rankName) {

@@ -268,7 +268,6 @@ public class ConfigManager {
 		try {
 			ConfigUpdater.update(main, "config.yml", new File(main.getDataFolder() + "/config.yml"), ignoredSections);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		main.reloadConfig();
@@ -279,7 +278,6 @@ public class ConfigManager {
 		try {
 			ConfigUpdater.update(main, "config.yml", new File(main.getDataFolder() + "/config.yml"), ignoredSections);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -288,7 +286,6 @@ public class ConfigManager {
 		try {
 			ConfigUpdater.update(main, "messages.yml", new File(main.getDataFolder() + "/messages.yml"), new ArrayList<String>());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		messagesConfig = YamlConfiguration.loadConfiguration(new File("plugins/PrisonRanksX/messages.yml"));

@@ -9,7 +9,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.data.RankPath;
-import me.prisonranksx.data.XUser;
 import me.prisonranksx.events.AsyncRankRegisterEvent;
 import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.XUUID;
@@ -37,12 +36,7 @@ public class PlayerLoginListenerLegacy implements IPlayerLoginListener {
 	
 	@Override
 	public void registerUserData(UUID uuid, String name) {
-		if(!plugin.isRankEnabled) {
-			return;
-		}
-		XUser user;
-		user = new XUser(XUUID.tryNameConvert(name));
-		UUID playerUUID = user.getUUID();
+		UUID playerUUID = XUUID.getUUID(name);
 		RankPath defaultRankPath = RankPath.getRankPath(plugin.prxAPI.getDefaultRank(), plugin.prxAPI.getDefaultPath());
 		AsyncRankRegisterEvent event = new AsyncRankRegisterEvent(playerUUID, name, defaultRankPath);
 		if(!plugin.getPlayerStorage().hasData(playerUUID) && !plugin.getPlayerStorage().isRegistered(playerUUID)) {
@@ -51,7 +45,7 @@ public class PlayerLoginListenerLegacy implements IPlayerLoginListener {
 		    	return;
 		    }
 		    plugin.getPlayerStorage().register(playerUUID, name, true);
-		    plugin.prxAPI.setPlayerRankPath(playerUUID, defaultRankPath);
+		    plugin.prxAPI.setPlayerRankPath(playerUUID, plugin.isRankEnabled ? defaultRankPath : null);
 			if(plugin.isMySql()) plugin.updateMySqlData(playerUUID, name);
 		} else {
 			plugin.getPlayerStorage().loadPlayerData(playerUUID, name);

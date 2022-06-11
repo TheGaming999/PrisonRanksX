@@ -23,7 +23,7 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	private List<String> messages;
 	private List<String> addPermissionList;
 	private List<String> delPermissionList;
-	private Boolean sendFirework;
+	private boolean sendFirework;
 	private PrestigeRandomCommands randomCommandsManager;
 	private FireworkDataHandler fireworkDataHandler;
 	private Map<String, Double> numberRequirements;
@@ -52,7 +52,7 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 					", " + "@actionbar.messages: " + actionbarMessages.toString() + ", " + "@actionbar.interval: " + String.valueOf(actionbarInterval) +
 					", " + "@actions: " + actions.toString() + ", " + "@broadcast.messages: " + broadcastMessages.toString() +
 					", " + "@messages: " + messages.toString() + ", " + "@add.permission.list: " + addPermissionList.toString() +
-					", " + "@del.permission.list: " + delPermissionList.toString() + ", " + "@send.firework: " + sendFirework.toString() +
+					", " + "@del.permission.list: " + delPermissionList.toString() + ", " + "@send.firework: " + String.valueOf(sendFirework) +
 					", " + "@random.commands.manager: %OOP_OBJECT%" + ", @firework.manager: %OOP_OBJECT%]";
 		} catch (NullPointerException err) {
 			x = "[NullPointerException] %String% getValues()";
@@ -142,6 +142,7 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 	}
 
 	public List<String> getPrestigeCommands() {
+		/*
 		List<String> commands = prestigeCommands;
 		if(!cps.isEmpty()) {
 			for(Entry<Long, InfinitePrestigeSettings> cons : cps.entrySet()) {
@@ -152,8 +153,9 @@ public class PrestigeDataHandlerInfinite implements IPrestigeDataHandler {
 					break;
 				}
 			}
-		}	
-		return commands;
+		}
+		*/	
+		return prestigeCommands;
 	}
 
 	public void setPrestigeCommands(List<String> nextPrestigeCommands) {

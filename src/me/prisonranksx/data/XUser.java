@@ -17,11 +17,11 @@ public class XUser {
 	}
 
 	public static XUser getXUser(OfflinePlayer offlinePlayer) {
-		return new XUser(XUUID.getXUUID(offlinePlayer));
+		return new XUser(XUUID.getUUIDOffline(offlinePlayer));
 	}
 
 	public static XUser getXUser(Player player) {
-		return new XUser(XUUID.getXUUID(player));
+		return new XUser(XUUID.getUUID(player));
 	}
 
 	public static XUser getXUser(String uuid) {

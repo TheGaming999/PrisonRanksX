@@ -21,9 +21,6 @@ public class GlobalDataStorage1_8 implements GlobalDataStorage {
 	public boolean isRankEnabled;
 	public String rankupProgressStyle;
 
-	/**
-	 * If you want to register your config thing just use one of register#### methods onEnable of your plugin
-	 */
 	public GlobalDataStorage1_8(PrisonRanksX main) {
 		this.main = main;
 		this.stringData = new HashMap<String, String>();

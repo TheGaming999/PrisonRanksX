@@ -392,7 +392,7 @@ public class PlayerDataStorage {
 	}
 
 	public boolean isRegistered(OfflinePlayer player) {
-		return getPlayerData().get(XUUID.getXUUID(player).toString()) != null;
+		return getPlayerData().get(XUUID.getUUIDOffline(player).toString()) != null;
 	}
 
 	public boolean isRegistered(String uuid) {
@@ -440,7 +440,7 @@ public class PlayerDataStorage {
 		PlayerDataHandler pdh = new PlayerDataHandler(xuser);
 		if(defaultValues) {
 			pdh.setRankPath(new RankPath(defaultRank, defaultPath));
-			pdh.setUUID(XUUID.getXUUID(player));
+			pdh.setUUID(XUUID.getUUIDOffline(player));
 			pdh.setName(player.getName());
 			getPlayerData().put(xuser.getUUID().toString(), pdh);
 		} else {
@@ -632,7 +632,10 @@ public class PlayerDataStorage {
 	}
 
 	public boolean setPlayerRank(OfflinePlayer player, String rankName) {
-		RankPath rankPath = new RankPath(rankName, getPlayerData().get(XUser.getXUser(player).getUUID().toString()).getRankPath().getPathName());
+		PlayerDataHandler playerData = getPlayerData().get(XUser.getXUser(player).getUUID().toString());
+		if(playerData == null || playerData.getRankPath() == null) this.register(player, true);
+		playerData = getPlayerData().get(XUser.getXUser(player).getUUID().toString());
+		RankPath rankPath = new RankPath(rankName, playerData.getRankPath().getPathName());
 		getPlayerData().get(XUser.getXUser(player).getUUID().toString()).setRankPath(rankPath);
 		return true;
 	}
@@ -674,22 +677,19 @@ public class PlayerDataStorage {
 				try {
 					statement = main.getConnection().createStatement();
 					result = statement.executeQuery("SELECT * FROM " + main.getDatabase() + "." + main.getTable() + " WHERE uuid = '" + uuidString + "';");
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				};
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 				try {
 					while (result.next()) {
 						prestige.setString(result.getString("prestige").equals("none") ? null : result.getString("prestige"));
 					}
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				try {
 					statement.close();
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}).execute();
@@ -1006,7 +1006,7 @@ public class PlayerDataStorage {
 	 * @return true if player data is useless
 	 */
 	public boolean isDummy(@Nonnull final PlayerDataHandler handler) {
-		if(handler.getRankPath() == null) {
+		if(main.isRankEnabled && handler.getRankPath() == null) {
 			return true;
 		}
 		if(handler.getName() == null || handler.getName().equals("null")) {
@@ -1015,15 +1015,15 @@ public class PlayerDataStorage {
 		if(handler.getUUID() == null) {
 			return true;
 		}
-		if(handler.getRankPath().getRankName() == null || handler.getRankPath().getPathName() == null) {
+		if(main.isRankEnabled && (handler.getRankPath().getRankName() == null || handler.getRankPath().getPathName() == null)) {
 			main.getLogger().info(handler.getName() + " has invalid data, fixing...");
 			this.fixNulls(handler.getUUID(), handler.getName());
 			return false;
 		}
-		if(!handler.getRankPath().getRankName().equalsIgnoreCase(defaultRank)) {
+		if(main.isRankEnabled && (!handler.getRankPath().getRankName().equalsIgnoreCase(defaultRank))) {
 			return false;
 		} else {
-			if(handler.getPrestige() == null && handler.getRebirth() == null) {
+			if(!main.isRankEnabled && (handler.getPrestige() == null && handler.getRebirth() == null)) {
 				return true;
 			} else {
 				return false;
@@ -1420,6 +1420,7 @@ public class PlayerDataStorage {
 			PlayerDataHandler pdh = entry.getValue();
 			if(playerDataType == PlayerDataType.RANK) {
 				RankPath rp = pdh.getRankPath();
+				if(rp == null) return;
 				main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
 				main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
 			} else if (playerDataType == PlayerDataType.PRESTIGE) {
@@ -1430,8 +1431,10 @@ public class PlayerDataStorage {
 				main.getConfigManager().rankDataConfig.set("players." + key + ".name", pdh.getName());
 			} else {
 				RankPath rp = pdh.getRankPath();
-				main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
-				main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
+				if(rp != null) {
+					main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
+					main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
+				}
 				main.getConfigManager().rankDataConfig.set("players." + key + ".name", pdh.getName());
 				main.getConfigManager().prestigeDataConfig.set("players." + key, pdh.getPrestige());
 				main.getConfigManager().rebirthDataConfig.set("players." + key, pdh.getRebirth());
@@ -1449,9 +1452,11 @@ public class PlayerDataStorage {
 			PlayerDataHandler pdh = entry.getValue();
 			if(playerDataType == PlayerDataType.RANK) {
 				RankPath rp = pdh.getRankPath();
-				main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
-				main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
-				saveRankDisk = true;
+				if(rp != null) {
+					main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
+					main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
+					saveRankDisk = true;
+				}
 			} else if (playerDataType == PlayerDataType.PRESTIGE) {
 				main.getConfigManager().prestigeDataConfig.set("players." + key, pdh.getPrestige());
 				savePrestigeDisk = true;
@@ -1463,8 +1468,10 @@ public class PlayerDataStorage {
 				saveRankDisk = true;
 			} else {
 				RankPath rp = pdh.getRankPath();
-				main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
-				main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
+				if(rp != null) {
+					main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
+					main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
+				}
 				main.getConfigManager().rankDataConfig.set("players." + key + ".name", pdh.getName());
 				main.getConfigManager().prestigeDataConfig.set("players." + key, pdh.getPrestige());
 				main.getConfigManager().rebirthDataConfig.set("players." + key, pdh.getRebirth());
@@ -1490,9 +1497,11 @@ public class PlayerDataStorage {
 		PlayerDataHandler pdh = this.getPlayerData().get(key);
 		if(playerDataType == PlayerDataType.RANK) {
 			RankPath rp = pdh.getRankPath();
-			main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
-			main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
-			if(saveToDisk) main.getConfigManager().saveRankDataConfig();
+			if(rp != null) {
+				main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
+				main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
+				if(saveToDisk) main.getConfigManager().saveRankDataConfig();
+			}
 		} else if (playerDataType == PlayerDataType.PRESTIGE) {
 			main.getConfigManager().prestigeDataConfig.set("players." + key, pdh.getPrestige());
 			if(saveToDisk) main.getConfigManager().savePrestigeDataConfig();
@@ -1504,8 +1513,10 @@ public class PlayerDataStorage {
 			if(saveToDisk) main.getConfigManager().saveRankDataConfig();
 		} else {
 			RankPath rp = pdh.getRankPath();
-			main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
-			main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
+			if(rp != null) {
+				main.getConfigManager().rankDataConfig.set("players." + key + ".rank", rp.getRankName());
+				main.getConfigManager().rankDataConfig.set("players." + key + ".path", rp.getPathName());
+			}
 			main.getConfigManager().rankDataConfig.set("players." + key + ".name", pdh.getName());
 			main.getConfigManager().prestigeDataConfig.set("players." + key, pdh.getPrestige());
 			main.getConfigManager().rebirthDataConfig.set("players." + key, pdh.getRebirth());
@@ -1526,7 +1537,7 @@ public class PlayerDataStorage {
 		UUID player = uuid;
 		if(main.isMySql()) {
 			if(player != null) {
-				PlayerDataHandler value = getPlayerData().get(XUUID.fetchUUID(player).toString());
+				PlayerDataHandler value = getPlayerData().get(player.toString());
 				try {
 					String u = value.getUUID().toString();
 					String rankName = value.getRankPath().getRankName() == null ? defaultRank : value.getRankPath().getRankName();
@@ -1563,7 +1574,7 @@ public class PlayerDataStorage {
 		}
 
 		if(player != null) {
-			PlayerDataHandler pdh = getPlayerData().get(XUUID.fetchUUID(player).toString());
+			PlayerDataHandler pdh = getPlayerData().get(player.toString());
 			if(pdh == null) {
 				return;
 			}
@@ -1571,8 +1582,10 @@ public class PlayerDataStorage {
 				return;
 			}
 			String u = pdh.getUUID().toString();
-			main.getConfigManager().rankDataConfig.set("players." + u + ".rank", pdh.getRankPath().getRankName() != null ? pdh.getRankPath().getRankName() : defaultRank);
-			main.getConfigManager().rankDataConfig.set("players." + u + ".path", pdh.getRankPath().getPathName() != null ? pdh.getRankPath().getPathName() : defaultPath);
+			if(main.isRankEnabled) {
+				main.getConfigManager().rankDataConfig.set("players." + u + ".rank", pdh.getRankPath().getRankName() != null ? pdh.getRankPath().getRankName() : defaultRank);
+				main.getConfigManager().rankDataConfig.set("players." + u + ".path", pdh.getRankPath().getPathName() != null ? pdh.getRankPath().getPathName() : defaultPath);
+			}
 			main.getConfigManager().rankDataConfig.set("players." + u + ".name", pdh.getName());
 			main.getConfigManager().prestigeDataConfig.set("players." + u, pdh.getPrestige());
 			main.getConfigManager().rebirthDataConfig.set("players." + u, pdh.getRebirth());
@@ -1583,7 +1596,7 @@ public class PlayerDataStorage {
 	public void savePlayerData(Player player) {
 		if(main.isMySql()) {
 			if(player != null) {
-				PlayerDataHandler value = getPlayerData().get(XUUID.getXUUID(player).toString());
+				PlayerDataHandler value = getPlayerData().get(XUUID.getUUID(player).toString());
 				try {
 					String u = value.getUUID().toString();
 					String rankName = value.getRankPath().getRankName() == null ? defaultRank : value.getRankPath().getRankName();
@@ -1617,9 +1630,8 @@ public class PlayerDataStorage {
 
 			return;
 		}
-
 		if(player != null) {
-			PlayerDataHandler pdh = getPlayerData().get(XUUID.getXUUID(player).toString());
+			PlayerDataHandler pdh = getPlayerData().get(XUUID.getUUID(player).toString());
 			if(pdh.getUUID() == null) {
 				return;
 			}
@@ -1630,9 +1642,6 @@ public class PlayerDataStorage {
 			main.getConfigManager().prestigeDataConfig.set("players." + u, pdh.getPrestige());
 			main.getConfigManager().rebirthDataConfig.set("players." + u, pdh.getRebirth());
 		}
-
-
-
 	}
 
 	public boolean fixNulls(final UUID uuid, final String name) {

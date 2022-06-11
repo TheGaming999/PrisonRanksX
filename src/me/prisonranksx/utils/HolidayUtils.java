@@ -105,6 +105,10 @@ public class HolidayUtils {
 		return null;
 	}
 	
+	public Holiday parseHoliday(String name) {
+		return Holiday.valueOf(name.toUpperCase());
+	}
+	
 	public void setHoliday(Holiday holiday) {
 		this.holiday = holiday;
 	}

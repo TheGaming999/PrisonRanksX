@@ -1,6 +1,5 @@
 package me.prisonranksx.commands;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
@@ -9,9 +8,9 @@ import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.utils.CollectionUtils;
 import me.prisonranksx.utils.CollectionUtils.PaginatedList;
 
-public class PrestigesCommand extends BukkitCommand{
+public class PrestigesCommand extends BukkitCommand {
 
-	private PrisonRanksX main = (PrisonRanksX)Bukkit.getPluginManager().getPlugin("PrisonRanksX");
+	private PrisonRanksX main;
 
 	public PrestigesCommand(String commandName) {
 		super(commandName);
