@@ -261,6 +261,12 @@ public class Prestige {
 						});
 					});
 				}
+				List<String> maxPrestigeCommands = main.infinitePrestigeSettings.getMaxPrestigeCommands();
+				if(maxPrestigeCommands != null) {
+					maxPrestigeCommands.forEach(commandLine -> {
+						main.executeCommand(p, commandLine.replace("%amount%", "1"));
+					});
+				}
 				List<String> broadcast = main.infinitePrestigeSettings.getBroadcast();
 				if(broadcast != null && !broadcast.isEmpty()) {
 					broadcast.forEach(broadcastMessage -> {
@@ -598,6 +604,12 @@ public class Prestige {
 					});
 				});
 			}
+			List<String> maxPrestigeCommands = main.infinitePrestigeSettings.getMaxPrestigeCommands();
+			if(maxPrestigeCommands != null) {
+				maxPrestigeCommands.forEach(commandLine -> {
+					main.executeCommand(p, commandLine.replace("%amount%", "1"));
+				});
+			}
 			List<String> broadcast = main.infinitePrestigeSettings.getBroadcast();
 			if(broadcast != null && !broadcast.isEmpty()) {
 				broadcast.forEach(broadcastMessage -> {
@@ -928,6 +940,12 @@ public class Prestige {
 						main.executeCommand(p, main.getString(cmd
 								.replace("{number}", prestige)));
 					});
+				});
+			}
+			List<String> maxPrestigeCommands = main.infinitePrestigeSettings.getMaxPrestigeCommands();
+			if(maxPrestigeCommands != null) {
+				maxPrestigeCommands.forEach(commandLine -> {
+					main.executeCommand(p, commandLine.replace("%amount%", "1"));
 				});
 			}
 			List<String> broadcast = main.infinitePrestigeSettings.getBroadcast();

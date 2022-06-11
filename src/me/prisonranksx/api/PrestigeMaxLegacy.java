@@ -52,7 +52,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 	public void execute(Player player) {
 		Player p = player;
 		String name = p.getName();
-		UUID uuid = XUUID.tryNameConvert(name);
+		UUID uuid = XUUID.getUUID(name);
 		if(isProcessing(name)) {
 			p.sendMessage(getAPI().cp("prestigemax-is-on", p));
 			return;
@@ -516,7 +516,7 @@ public class PrestigeMaxLegacy implements IPrestigeMax {
 	public void executeInfinite(Player player) {
 		Player p = player;
 		String name = p.getName();
-		UUID uuid = XUUID.tryNameConvert(name);
+		UUID uuid = XUUID.getUUID(name);
 		if(isProcessing(name)) {
 			p.sendMessage(getAPI().g("prestigemax-is-on"));
 			return;

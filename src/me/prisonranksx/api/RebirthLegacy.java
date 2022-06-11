@@ -52,7 +52,7 @@ public class RebirthLegacy {
 			return;
 		}
 		Player p = player;
-		UUID u = XUUID.tryNameConvert(p.getName());
+		UUID u = XUUID.getUUID(p.getName());
 		String rebirth = prxAPI.getPlayerNextRebirth(u);
 		if(!p.hasPermission(main.rebirthCommand.getPermission()) && !p.hasPermission("*")) {
 			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
@@ -246,7 +246,7 @@ public class RebirthLegacy {
 					return;
 				}
 			});
-			main.playerStorage.setPlayerPrestige(u, prxAPI.getFirstPrestige());
+			main.playerStorage.setPlayerPrestige(u, null);
 		}
 		List<String> rebirthCommands = main.globalStorage.getStringListData("RebirthOptions.rebirth-cmds");
 		if(!rebirthCommands.isEmpty()) {
@@ -275,7 +275,7 @@ public class RebirthLegacy {
 	public void spawnHologram(final List<String> format, final int removeTime, final int height, final Player player) {
 		Player p = player;
 		String name = p.getName();
-		UUID u = XUUID.tryNameConvert(name);
+		UUID u = XUUID.getUUID(name);
 		Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
 		hologram.setAllowPlaceholders(true);
 		for(String line : format) {

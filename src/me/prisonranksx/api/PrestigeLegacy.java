@@ -111,7 +111,7 @@ public class PrestigeLegacy {
 			return;
 		}
 		Player p = player;
-		UUID u = XUUID.tryNameConvert(name);
+		UUID u = XUUID.getUUID(name);
 		String prestige = prxAPI.getPlayerNextPrestige(u);
 		if(!p.hasPermission(main.prestigeCommand.getPermission()) && !p.hasPermission("*")) {
 			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
@@ -320,7 +320,7 @@ public class PrestigeLegacy {
 			return;
 		}
 		Player p = player;
-		UUID u = XUUID.tryNameConvert(name);
+		UUID u = XUUID.getUUID(name);
 		String prestige = prxAPI.getPlayerNextPrestige(u);
 		if(!p.hasPermission(main.prestigeCommand.getPermission()) && !p.hasPermission("*")) {
 			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
@@ -522,7 +522,7 @@ public class PrestigeLegacy {
 			return;
 		}
 		Player p = player;
-		UUID u = XUUID.tryNameConvert(name);
+		UUID u = XUUID.getUUID(name);
 		String prestige = prxAPI.getPlayerNextPrestige(u);
 		if(!p.hasPermission(main.prestigeCommand.getPermission()) && !p.hasPermission("*")) {
 			if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
@@ -701,7 +701,7 @@ public class PrestigeLegacy {
 	
 	public void spawnHologram(final List<String> format, final int removeTime, final int height, final Player player) {
 		Bukkit.getScheduler().runTask(main, () -> {
-		UUID u = XUUID.tryNameConvert(player.getName());
+		UUID u = XUUID.getUUID(player.getName());
 		Hologram hologram = HologramsAPI.createHologram(main, player.getLocation().add(0, height, 0));
 		hologram.setAllowPlaceholders(true);
 		for(String line : format) {
