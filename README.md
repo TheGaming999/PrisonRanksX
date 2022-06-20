@@ -6,9 +6,7 @@ As in any big plugin, we have a wiki overhere which can help you reach the desir
 
 ##### About the Source Code
 
-The source code is not that organized due to fear from removing something and ruining the whole thing as it was very messy in the dusty versions. It's not bad and not the best. It does the job.
-
-Working on a recode.  
+Currently working on a recode.  
 
 ##### Help & Support
 
