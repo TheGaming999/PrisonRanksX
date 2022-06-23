@@ -34,8 +34,10 @@ import java.util.function.Consumer;
 
 class SharedTaskChain<R> extends TaskChain<R> {
     private final String name;
-    private final Map<String, Queue<SharedTaskChain>> sharedChains;
-    private Queue<SharedTaskChain> queue;
+    @SuppressWarnings("rawtypes")
+	private final Map<String, Queue<SharedTaskChain>> sharedChains;
+    @SuppressWarnings("rawtypes")
+	private Queue<SharedTaskChain> queue;
     private volatile boolean isPending;
     private volatile boolean canExecute = true;
 
@@ -79,7 +81,8 @@ class SharedTaskChain<R> extends TaskChain<R> {
     /**
      * Launches the next TaskChain in the queue if it is ready, or cleans up the queue if nothing left to do.
      */
-    private void processQueue() {
+    @SuppressWarnings("rawtypes")
+	private void processQueue() {
         this.queue.poll(); // Remove self
         final SharedTaskChain next;
         synchronized (this.sharedChains) {

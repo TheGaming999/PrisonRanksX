@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.prisonranksx.PrisonRanksX;
+import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.utils.CollectionUtils;
 import me.prisonranksx.utils.CollectionUtils.PaginatedList;
@@ -300,7 +301,7 @@ public class Prestiges {
 				return;
 			}	
 			Player p = (Player)sender;
-			String pathName = main.prxAPI.getPlayerRankPath(p).getPathName();
+			String pathName = main.isRankEnabled ? main.prxAPI.getPlayerRankPath(p).getPathName() : null;
             String prestigeName = main.prxAPI.getPlayerPrestige(p);
             String rebirth = main.prxAPI.getPlayerRebirth(p);
             if(main.isInfinitePrestige) {
@@ -337,8 +338,8 @@ public class Prestiges {
 				currentPrestiges.clear();
 				otherPrestiges.clear();
     			if(currentPage <= 1) {
-    				String lastRank = main.prxAPI.getLastRank(pathName);
-    				String lastRankDisplay = main.prxAPI.getRank(RankPath.getRankPath(lastRank, pathName)).getDisplayName();
+    				String lastRank = pathName != null ? main.prxAPI.getLastRank(pathName) : "";
+    				String lastRankDisplay = pathName != null ? main.prxAPI.getRank(RankPath.getRankPath(lastRank, pathName)).getDisplayName() : "";
     				String firstPrestige = "1";
     				String firstPrestigeDisplay = main.prestigeStorage.getDisplayName(firstPrestige);
     				double firstPrestigeCost = main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(firstPrestige));
@@ -484,8 +485,9 @@ public class Prestiges {
 			completedPrestiges.clear();
 			otherPrestiges.clear();
 			if(currentPage <= 1) {
-			String lastRank = main.prxAPI.getLastRank(pathName);
-			String lastRankDisplay = main.prxAPI.getRank(RankPath.getRankPath(lastRank, pathName)).getDisplayName();
+			String lastRank = pathName != null ? main.prxAPI.getLastRank(pathName) : "";
+			RankDataHandler lastRankData = pathName != null ? main.prxAPI.getRank(RankPath.getRankPath(lastRank, pathName)) : null;
+			String lastRankDisplay = lastRankData != null ? lastRankData.getDisplayName() : "";
 			String firstPrestige = main.prxAPI.getFirstPrestige();
 			String firstPrestigeDisplay = main.prestigeStorage.getDisplayName(firstPrestige);
 			double firstPrestigeCost = main.prxAPI.getIncreasedPrestigeCost(rebirth, main.prxAPI.getPrestigeCost(firstPrestige));

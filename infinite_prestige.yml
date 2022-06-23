@@ -6,10 +6,11 @@
 Global-Settings:
   display: "&8[&9P{number}&8]"
   cost-expression: "{number} * 100000"
-  commands:
-  - "eco give %player% 500"
+  commands: []
   broadcast: []
   final-prestige: 1000000
+  max-prestige-commands:
+  - "eco give %player% %amount%"
 # Execute at that specific prestige number.
 Prestiges-Settings:
   # ~Possible actions~
@@ -19,15 +20,25 @@ Prestiges-Settings:
   # - "&6a broadcast message line."
   # - "&e%player% &7just prestiged."
   500:
-    executecmds: []
+    executecmds:
+    - "say 500"
+  1000:
+    executecmds:
+    - "say 1000"
+  1500:
+    executecmds:
+    - "say 1500"
+  2000:
+    executecmds:
+    - "say 2000"
 # Execute every X prestige.
 # Actions that will be performed every time the player passes X amount of prestiges.
 # So if a player passes 500/1000/1500/etc.... prestiges, this message will be broadcasted.
 # Accepts: executecmds, broadcast.
 Continuous-Prestiges-Settings:
   500:
-    broadcast:
-    - "&6%player% has passed &a500 &6prestiges."
+    executecmds:
+    - "say 500"
 # Edit at X prestige.
 # Permanent changes to prestige settings. Below, what will happen is, that prestiges numbered from 500 till 999 will have their
 # display changed. Then, it will also get changed again when the player reaches prestige 1000.

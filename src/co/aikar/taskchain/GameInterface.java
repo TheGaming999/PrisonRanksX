@@ -25,7 +25,6 @@ package co.aikar.taskchain;
 
 import java.util.concurrent.TimeUnit;
 
-@SuppressWarnings("WeakerAccess")
 public interface GameInterface {
     /**
      * Determines if the current thread is the main thread or not.

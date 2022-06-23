@@ -23,5 +23,5 @@
 
 package co.aikar.taskchain;
 
-@SuppressWarnings("PublicInnerClass,WeakerAccess")
+@SuppressWarnings("serial")
 public class AbortChainException extends Exception {}

@@ -33,6 +33,7 @@ import me.prisonranksx.leaderboard.LeaderboardManager;
 import me.prisonranksx.reflections.ActionbarProgress;
 import me.prisonranksx.reflections.ExpbarProgress;
 import me.prisonranksx.utils.OnlinePlayers;
+import me.prisonranksx.workloads.WorkloadManager.WorkloadRunnable;
 
 public class PRXManager {
 
@@ -340,7 +341,7 @@ public class PRXManager {
 		main.rankStorage.putData(rp.get(), rdh);
 		main.rankStorage.saveRankData(rp);
 	}
-	
+
 	/**
 	 * requires main.configManager.saveRanksConfig();
 	 * @param name
@@ -369,7 +370,7 @@ public class PRXManager {
 		main.rankStorage.putData(rp.get(), newRankDataHandler);
 		main.rankStorage.saveRankData(rp);
 	}
-	
+
 	/**
 	 * requires main.configManager.saveRanksConfig();
 	 * @param name
@@ -530,7 +531,7 @@ public class PRXManager {
 			main.getConfigManager().saveMainConfig();
 		}
 	}
-	
+
 	public void setLastPrestige(long name, boolean save) {
 		String nameConverted = String.valueOf(name);
 		main.globalStorage.getStringMap().put("lastprestige", nameConverted);
@@ -573,11 +574,7 @@ public class PRXManager {
 		main.getConfigManager().reloadMainConfig();
 		main.getConfigManager().reloadConfigs();
 		main.getConfigManager().loadConfigs();
-		if(main.isModernVersion) {
-			main.globalStorage = new GlobalDataStorage1_16(main);
-		} else {
-			main.globalStorage = new GlobalDataStorage1_8(main);
-		}
+		main.globalStorage = main.isModernVersion ? new GlobalDataStorage1_16(main) : new GlobalDataStorage1_8(main);
 		main.globalStorage.loadGlobalData();
 		main.rankStorage = new RankDataStorage(main);
 		main.rankStorage.loadRanksData();
@@ -590,10 +587,17 @@ public class PRXManager {
 			Bukkit.getConsoleSender().sendMessage("§e[§9PrisonRanksX§e] §7Infinite Prestige option is §aenabled§7.");
 		} 
 		main.prestigeStorage.loadPrestigesData();
+		if (main.isInfinitePrestige)
+			WorkloadRunnable.refreshValues();
 		main.rebirthStorage = new RebirthDataStorage(main);
 		main.rebirthStorage.loadRebirthsData();
 		if(main.hasPAPI) {
 			Bukkit.getScheduler().runTask(main, () -> {
+				try {
+					main.papi.unregister();
+				} catch (NoSuchMethodError ex) {
+					main.getLogger().warning("Couldn't unregister PlaceholderAPI placeholders because of the old version you're using.");
+				}
 				main.papi = new PapiHook(main);
 				main.papi.register();
 			});
@@ -645,6 +649,7 @@ public class PRXManager {
 		if(main.topRebirthsCommand != null) {
 			main.topRebirthsCommand.load();
 		}
+		main.isABProgress = main.globalStorage.getBooleanData("Options.actionbar-progress");
 		try {
 			if(main.isABProgress) {
 				main.abprogress.clear(true);
@@ -1026,6 +1031,28 @@ public class PRXManager {
 		return matchedRank;
 	}
 
+	public String matchRankAny(String rankName) {
+		String matchedRank = rankName;
+		for(String path : main.getRankDataStorage().getPaths()) {
+			for(String str : main.prxAPI.getRanksCollection(path)) {
+				if(str.equalsIgnoreCase(rankName)) {
+					matchedRank = str;
+				}
+			}
+		}
+		return matchedRank;
+	}
+
+	public boolean isRank(String rankName) {
+		boolean flag = false;
+		for(String path : main.getRankDataStorage().getPaths()) {
+			if(main.prxAPI.getRanksCollection(path).contains(rankName)) {
+				flag = true;
+			}
+		}
+		return flag;
+	}
+
 	/**
 	 * 
 	 * @param rankName in any case
@@ -1033,7 +1060,10 @@ public class PRXManager {
 	 */
 	public String matchRank(String rankName, String pathName) {
 		String matchedRank = rankName;
-		for(String str : main.prxAPI.getRanksCollection(pathName)) {
+		if(!main.prxAPI.pathExists(pathName)) return matchedRank;
+		List<String> ranksCollection = main.prxAPI.getRanksCollection(pathName);
+		if(ranksCollection == null) return matchedRank;
+		for(String str : ranksCollection) {
 			if(str.equalsIgnoreCase(rankName)) {
 				matchedRank = str;
 			}
@@ -1116,7 +1146,7 @@ public class PRXManager {
 	public String matchPath(String path) {
 		String matchedPath = path;
 		for(String paths : main.rankStorage.getEntireData().keySet()) {
-			String pathSplit = paths.split("#~#")[0];
+			String pathSplit = paths.split("#~#")[1];
 			if(pathSplit.equalsIgnoreCase(path)) {
 				matchedPath = pathSplit;
 			}

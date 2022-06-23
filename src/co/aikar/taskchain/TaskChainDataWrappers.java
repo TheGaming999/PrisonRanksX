@@ -23,7 +23,6 @@
 
 package co.aikar.taskchain;
 
-@SuppressWarnings("WeakerAccess")
 public final class TaskChainDataWrappers {
     public static class Data2 <D1, D2> {
         public final D1 var1;

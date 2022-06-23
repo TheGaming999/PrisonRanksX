@@ -3,8 +3,8 @@ package me.prisonranksx.data;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,6 +18,7 @@ public class InfinitePrestigeSettings {
 	private String display;
 	private String costExpression;
 	private String rankupCostIncreaseExpression;
+	private List<String> maxPrestigeCommands;
 	private List<String> commands;
 	private List<String> broadcast;
 	private List<String> msg;
@@ -32,6 +33,7 @@ public class InfinitePrestigeSettings {
 		this.infinitePrestigeConfig = this.plugin.getConfigManager().infinitePrestigeConfig;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void load() {
 		this.display = this.plugin.getChatColorReplacer().parseRegular(infinitePrestigeConfig.getString("Global-Settings.display"));
 		this.costExpression = infinitePrestigeConfig.getString("Global-Settings.cost-expression");
@@ -39,6 +41,7 @@ public class InfinitePrestigeSettings {
 		this.commands = infinitePrestigeConfig.getStringList("Global-Settings.commands");
 		this.broadcast = this.plugin.getChatColorReplacer().parseRegular(infinitePrestigeConfig.getStringList("Global-Settings.broadcast"));
 		this.finalPrestige = infinitePrestigeConfig.getLong("Global-Settings.final-prestige");
+		this.maxPrestigeCommands = (List<String>)infinitePrestigeConfig.getList("Global-Settings.max-prestige-commands", null);
 		ConfigurationSection continuous = infinitePrestigeConfig.getConfigurationSection("Continuous-Prestiges-Settings");
 		ConfigurationSection constant = infinitePrestigeConfig.getConfigurationSection("Constant-Prestiges-Settings");
 		if(continuous != null) {
@@ -177,6 +180,14 @@ public class InfinitePrestigeSettings {
 
 	public void setConstantPrestigeSettings(Map<Long, InfinitePrestigeSettings> constantPrestigeSettings) {
 		this.constantPrestigeSettings = constantPrestigeSettings;
+	}
+
+	public List<String> getMaxPrestigeCommands() {
+		return maxPrestigeCommands;
+	}
+
+	public void setMaxPrestigeCommands(List<String> maxPrestigeCommands) {
+		this.maxPrestigeCommands = maxPrestigeCommands;
 	}
 	
 }

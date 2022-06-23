@@ -51,10 +51,6 @@ public class PrestigeMaxCommand extends BukkitCommand {
 					main.prxAPI.getPrestigeMax().executeOnAsyncQueue(p);
 				} else if (prestigeMaxType.equals("ASTQ")) {
 					main.prxAPI.getPrestigeMax().executeOnAsyncMultiThreadedQueue(p);
-				} else if (prestigeMaxType.equals("IT")) {
-					main.prxAPI.getPrestigeMax().executeInfiniteTest(p);
-				} else if (prestigeMaxType.equals("IT2")) {
-					main.prxAPI.getPrestigeMax().executeInfiniteTest2(p);
 				}
 				return true;
 			}

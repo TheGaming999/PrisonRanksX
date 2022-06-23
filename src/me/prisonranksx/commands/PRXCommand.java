@@ -20,22 +20,20 @@ import com.google.common.io.Files;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.api.PRXAPI;
-import me.prisonranksx.api.PrestigeMax;
 import me.prisonranksx.data.IPrestigeDataHandler;
 import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataHandler;
 import me.prisonranksx.data.XUser;
 import me.prisonranksx.events.PrestigeUpdateCause;
-import me.prisonranksx.events.RankUpdateCause;
-import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.events.PrestigeUpdateEvent;
+import me.prisonranksx.events.RankUpdateCause;
 import me.prisonranksx.events.RankUpdateEvent;
+import me.prisonranksx.events.RebirthUpdateCause;
 import me.prisonranksx.events.RebirthUpdateEvent;
 import me.prisonranksx.utils.AccessibleBukkitTask;
 import me.prisonranksx.utils.CollectionUtils;
 import me.prisonranksx.utils.ConfigCreator;
-import me.prisonranksx.utils.Cooldown;
 import me.prisonranksx.utils.EventPriorityManager;
 import me.prisonranksx.utils.HolidayUtils.Holiday;
 import me.prisonranksx.utils.OnlinePlayers;
@@ -172,139 +170,6 @@ public class PRXCommand extends BukkitCommand {
 		}
 	}
 
-	/**
-	 * Create a backup file without replacing the same backup file, but instead add a number to the end of the file name
-	 * in the following format: <p><i>(filename)(suffix)_(index).(extension)</i>, for example:
-	 * <p>file_backup_0.txt, file_backup_1.txt, file_backup_2.txt, ....
-	 * @param file to be copied
-	 * @param suffix text to be inserted after the original file name
-	 */
-	public void backupFile(File file, String suffix) {
-		if(file == null) return;
-		int index = 0;
-		String fileName = file.getName(); // rankdata.yml
-		String safeName = fileName.split("\\.")[0]; // rankdata
-		String fileExtension = fileName.split("\\.")[1]; // .yml
-		String firstName = safeName + suffix; // rankdata_backup
-		String newPath = file.getPath().replace(safeName, firstName); // rankdata_backup.yml
-		while (true) {
-			final String source = newPath.replace("." + fileExtension, "_" + index + "." + fileExtension);
-			File newFile = new File(source);
-			if (newFile.exists()) {  
-				index++;      
-			} else {
-				try {
-					Files.copy(file, newFile);
-					break;
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-			}
-		}
-	}
-
-	/**
-	 * Create a backup file without replacing the same backup file, but instead add a number to the end of the file name
-	 * in the following format: <p><i>(filename)(suffix)(indexPrefix)(index).(extension)</i>, for example:
-	 * <p>Parameters ( file: file.txt, suffix: _backup, indexPrefix: _ )
-	 * <p>file_backup_0.txt, file_backup_1.txt, file_backup_2.txt, ....
-	 * @param file to be copied
-	 * @param suffix text to be inserted after the original file name ( _backup )
-	 * @param indexPrefix text to be inserted before the numbering and after the suffix ( _ )
-	 */
-	public void backupFile(File file, String suffix, String indexPrefix) {
-		if(file == null) return;
-		int index = 0;
-		String fileName = file.getName(); // rankdata.yml
-		String safeName = fileName.split("\\.")[0]; // rankdata
-		String fileExtension = fileName.split("\\.")[1]; // .yml
-		String firstName = safeName + suffix; // rankdata_backup
-		String newPath = file.getPath().replace(safeName, firstName); // rankdata_backup.yml
-		while (true) {
-			final String source = newPath.replace("." + fileExtension, indexPrefix + index + "." + fileExtension);
-			File newFile = new File(source);
-			if (newFile.exists()) {  
-				index++;      
-			} else {
-				try {
-					Files.copy(file, newFile);
-					break;
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-			}
-		}
-	}
-
-	/**
-	 * Create a backup file without replacing the same backup file, but instead add a number to the end of the file name
-	 * in the following format: <p><i>(filename)(suffix)(indexPrefix)(index).(extension)</i>, for example:
-	 * <p>Parameters ( file: file.txt, suffix: _backup, indexPrefix: _ )
-	 * <p>file_backup_0.txt, file_backup_1.txt, file_backup_2.txt, ....
-	 * @param file to be copied
-	 * @param suffix text to be inserted after the original file name ( _backup )
-	 * @param indexPrefix text to be inserted before the numbering and after the suffix ( _ )
-	 * @param backupPath where the file should get copied to
-	 */
-	public void backupFile(File file, String suffix, String indexPrefix, String backupPath) {
-		if(file == null) return;
-		int index = 0;
-		String fileName = file.getName(); // rankdata.yml
-		String safeName = fileName.split("\\.")[0]; // rankdata
-		String fileExtension = fileName.split("\\.")[1]; // .yml
-		String firstName = safeName + suffix; // rankdata_backup
-		String newPath = file.getPath().replace(safeName, firstName); // rankdata_backup.yml
-		while (true) {
-			String source = newPath.replace("." + fileExtension, indexPrefix + index + "." + fileExtension);
-			String oldPath = file.getParent();
-			File directory = new File(backupPath);
-			directory.mkdirs();
-			File newFile = new File(source.replace(oldPath, backupPath));
-			if (newFile.exists()) {  
-				index++;      
-			} else {
-				try {
-					Files.copy(file, newFile);
-					break;
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-			}
-		}
-	}
-
-	/**
-	 * Create a backup file without replacing the same backup file, but instead add a number to the end of the file name
-	 * in the following format: <p><i>(filename)_backup_(index).(extension)</i>, for example:
-	 * <p>file_backup_0.txt, file_backup_1.txt, file_backup_2.txt, ....
-	 * @param file to be copied
-	 * @param backupPath where the file should get copied to, including file name and extension
-	 */
-	public void backupFileTo(File file, String backupPath) {
-		if(file == null) return;
-		int index = 0;
-		while (true) {
-			String newExtension = backupPath.split("\\.")[1];
-			String newFilePathNoExt = backupPath.replace("." + newExtension, "");
-			final String source = newFilePathNoExt + index + newExtension;
-			File newFile = new File(source);
-			if (newFile.exists()) {  
-				index++;      
-			} else {
-				try {
-					Files.copy(file, newFile);
-					break;
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-			}
-		}
-	}
-
 	@SuppressWarnings("deprecation")
 	@Override
 	public boolean execute(CommandSender sender, String label, String[] args) {
@@ -372,12 +237,8 @@ public class PRXCommand extends BukkitCommand {
 				sender.sendMessage(main.prxAPI.c("&a&oPleasing you with a ranks file..."));
 				main.scheduler.runTaskAsynchronously(main, () -> ConfigCreator.setup(main).createDummyConfig("ranks_preconfigured.yml"));
 				sender.sendMessage(main.prxAPI.c("&a&oYou have been pleased with a ranks file successfully!"));
-			} else if (args[0].equalsIgnoreCase("prestigemaxtest1")) {
-				main.prxAPI.getPrestigeMax().executeInfiniteTest((Player)sender);
-			} else if (args[0].equalsIgnoreCase("prestigemaxtest2")) {
-				main.prxAPI.getPrestigeMax().executeInfiniteTest2((Player)sender);
 			} else if (args[0].equalsIgnoreCase("prestigemaxall")) {
-				OnlinePlayers.getPlayers().forEach(main.prxAPI.getPrestigeMax()::executeInfiniteTest2);
+				OnlinePlayers.getPlayers().forEach(main.prxAPI.getPrestigeMax()::executeInfinite);
 			} else if (args[0].equalsIgnoreCase("stopprestigemaxall")) {
 				OnlinePlayers.getPlayers().stream().map(Player::getName)
 				.filter(main.getPrestigeMax()::isProcessing)
@@ -385,6 +246,7 @@ public class PRXCommand extends BukkitCommand {
 			} else if (args[0].equalsIgnoreCase("resetprestigeall")) {
 				OnlinePlayers.getPlayers().stream().map(Player::getUniqueId)
 				.forEach(main.prxAPI::deletePlayerPrestige);
+
 			} else if (args[0].equalsIgnoreCase("info")) {
 				if(!main.allowEasterEggs) return true;
 				String isInfinitePrestige = main.isInfinitePrestige ? "&a [INFINITE]" : "&c [NORMAL]";
@@ -469,8 +331,7 @@ public class PRXCommand extends BukkitCommand {
 						sender.sendMessage(main.prxAPI.c("&cPrestige data is already converted."));
 					}
 				});
-			}
-			else if(args[0].equalsIgnoreCase("terminate")) {
+			} else if(args[0].equalsIgnoreCase("terminate")) {
 				if(main.terminateMode) {
 					sender.sendMessage(main.prxAPI.c("&7Terminate mode &cdisabled&7."));
 					sender.sendMessage(main.prxAPI.c("&aThe data will be saved on server shutdown."));
@@ -480,8 +341,7 @@ public class PRXCommand extends BukkitCommand {
 					sender.sendMessage(main.prxAPI.c("&7The data will not be saved on server shutdown."));
 					main.terminateMode = true;
 				}
-			}
-			else if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
+			} else if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
 				main.getMessagesStorage().getHelpMessage(1).forEach(line -> {
 					sender.sendMessage(line.replace("%version%", ver));
 				});
@@ -531,16 +391,11 @@ public class PRXCommand extends BukkitCommand {
 					sender.sendMessage(main.prxAPI.c(error));
 				});
 			} else if (args[0].equalsIgnoreCase("save")) {
-				Cooldown.run(sender.getName())
-				.ifTrue(() -> {
-					main.scheduler.runTaskAsynchronously(main, () -> {
-						sender.sendMessage(main.prxAPI.c("&eSaving data..."));
-						main.manager.save();
-						sender.sendMessage(main.prxAPI.g("save"));
-					});
-				})
-				.orElse(i -> sender.sendMessage(main.prxAPI.c("&ePlease wait " + i + " seconds.")))
-				.schedule(3);
+				main.scheduler.runTaskAsynchronously(main, () -> {
+					sender.sendMessage(main.prxAPI.c("&eSaving data..."));
+					main.manager.save();
+					sender.sendMessage(main.prxAPI.g("save"));
+				});
 			} else if (args[0].equalsIgnoreCase("test")) {
 
 			} else if (args[0].equalsIgnoreCase("debug")) {
@@ -643,10 +498,6 @@ public class PRXCommand extends BukkitCommand {
 			} else if (args[0].equalsIgnoreCase("setlargedatacounter")) {
 				main.getPlayerStorage().largeDataCounter = Integer.parseInt(args[1]);
 				sender.sendMessage("New largeDataCounter value: " + main.getPlayerStorage().largeDataCounter);
-			} else if (args[0].equalsIgnoreCase("togglecpusaver")) {
-				PrestigeMax pmax = (PrestigeMax)main.getPrestigeMax();
-				pmax.cpuSaver = !pmax.cpuSaver;
-				sender.sendMessage("New cpuSaver value: " + pmax.cpuSaver);
 			} else if (args[0].equalsIgnoreCase("registerplayerdata")) {
 				Player p = Bukkit.getPlayer(args[1]);
 				main.scheduler.runTaskAsynchronously(main, () -> main.playerLoginListener.registerUserData(p.getUniqueId(), p.getName()));
@@ -876,7 +727,11 @@ public class PRXCommand extends BukkitCommand {
 				}
 				if(main.globalStorage.getStringListMap().get("RankOptions.rank-reset-cmds").contains("[rankpermissions] remove")) {
 					Set<String> perms = main.prxAPI.allRankAddPermissions;
-					main.perm.delPermissionAsync(p, perms);
+					if(main.isBefore1_7) {
+						perms.forEach(perm -> main.perm.delPermission(p.getName(), perm));
+					} else {
+						main.perm.delPermissionAsync(p, perms);
+					}			
 				}
 				for(String command : main.globalStorage.getStringListMap().get("RankOptions.rank-reset-cmds")) {
 					if(!command.startsWith("[rankpermissions") && !command.startsWith("[prestigeperm") && !command.startsWith("[rebirthp")) {
@@ -906,9 +761,8 @@ public class PRXCommand extends BukkitCommand {
 				}
 				if(main.globalStorage.getStringListMap().get("PrestigeOptions.prestige-reset-cmds").contains("[prestigepermissions$1] remove")) {
 					Set<String> perms = main.prxAPI.allPrestigeAddPermissions;
-					main.prestigeStorage.getAddPermissionList(main.prxAPI.getFirstPrestige()).forEach(fperm -> {
-						perms.remove(fperm);
-					});
+					List<String> addPermissionList = main.prestigeStorage.getAddPermissionList(main.prxAPI.getFirstPrestige());
+					if(addPermissionList != null) addPermissionList.forEach(perms::remove);
 					main.perm.delPermissionAsync(p, perms);
 				}
 				for(String cmd : main.globalStorage.getStringListMap().get("PrestigeOptions.prestige-reset-cmds")) {
@@ -945,9 +799,8 @@ public class PRXCommand extends BukkitCommand {
 				}
 				if(main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-reset-cmds").contains("[rebirthpermissions$1] remove")) {
 					Set<String> perms = main.prxAPI.allRebirthAddPermissions;
-					main.rebirthStorage.getAddPermissionList(main.prxAPI.getFirstRebirth()).forEach(fperm -> {
-						perms.remove(fperm);
-					});
+					List<String> addPermissionList = main.rebirthStorage.getAddPermissionList(main.prxAPI.getFirstRebirth());
+					if(addPermissionList != null) addPermissionList.forEach(perms::remove);
 					main.perm.delPermissionAsync(p, perms);
 				}
 				for(String cmd : main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-reset-cmds")) {
@@ -1028,14 +881,13 @@ public class PRXCommand extends BukkitCommand {
 				XUser user = XUser.getXUser(p);
 				RebirthUpdateEvent e = new RebirthUpdateEvent(p, RebirthUpdateCause.DELREBIRTH);
 				Bukkit.getPluginManager().callEvent(e);
-				if(e.isCancelled()) {
-					return true;
-				}
+				if(e.isCancelled()) return true;
 				main.manager.delPlayerRebirth(user);
 				if(main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds").contains("[rankpermissions] remove")) {
 					Set<String> perms = main.prxAPI.allRankAddPermissions;
 					main.perm.delPermissionAsync(p, perms);
-				} if (main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds").contains("[prestigepermissions] remove")) {
+				} 
+				if(main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds").contains("[prestigepermissions] remove")) {
 					Set<String> perms2 = main.prxAPI.allPrestigeAddPermissions;
 					main.perm.delPermissionAsync(p, perms2);
 				}
@@ -1043,56 +895,42 @@ public class PRXCommand extends BukkitCommand {
 					Set<String> perms = main.prxAPI.allRebirthAddPermissions;
 					main.perm.delPermissionAsync(p, perms);
 				}
-				for(String cmd : main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds")) {
-					if(!cmd.endsWith("permissions] remove")) {
-						main.executeCommand(p, cmd);
-					}
-				}
+				for(String cmd : main.globalStorage.getStringListMap().get("RebirthOptions.rebirth-delete-cmds"))
+					if(!cmd.endsWith("permissions] remove")) main.executeCommand(p, cmd);
+				
 				sender.sendMessage(main.prxAPI.g("delplayerrebirth").replace("%player%", p.getName()));
 			}
 		} else if(args.length == 3) {
 			if(args[0].equalsIgnoreCase("createrank")) {
-				double costy;
-				if(!main.prxAPI.numberAPI.isNumber(args[2])) {
-					costy = main.prxAPI.numberAPI.parseBalance(args[2]);
-				} else {
-					costy = Double.valueOf(args[2]);
-				}
-				main.manager.createRank(args[1], Double.valueOf(costy));
+				double cost = main.prxAPI.numberAPI.isNumber(args[2]) ? 
+						main.prxAPI.numberAPI.parseBalance(args[2]) 
+						: Double.parseDouble(args[2]);
+				main.manager.createRank(args[1], Double.valueOf(cost));
 				main.getConfigManager().saveRanksConfig();
 				sender.sendMessage(main.prxAPI.g("createrank").replace("%createdrank%", args[1])
 						.replace("%rankcost%", args[2]));
 			} else if (args[0].equalsIgnoreCase("createprestige")) {
-				double costy;
-				if(!main.prxAPI.numberAPI.isNumber(args[2])) {
-					costy = main.prxAPI.numberAPI.parseBalance(args[2]);
-				} else {
-					costy = Double.valueOf(args[2]);
-				}
-				main.manager.createPrestige(args[1], Double.valueOf(costy));
+				double cost = main.prxAPI.numberAPI.isNumber(args[2]) ? 
+						main.prxAPI.numberAPI.parseBalance(args[2]) 
+						: Double.parseDouble(args[2]);
+				main.manager.createPrestige(args[1], Double.valueOf(cost));
 				main.getConfigManager().savePrestigesConfig();
 				sender.sendMessage(main.prxAPI.g("createprestige").replace("%createdprestige%", args[1])
 						.replace("%prestigecost%", args[2]));
 			} else if (args[0].equalsIgnoreCase("createrebirth")) {
-				double costy;
-				if(!main.prxAPI.numberAPI.isNumber(args[2])) {
-					costy = main.prxAPI.numberAPI.parseBalance(args[2]);
-				} else {
-					costy = Double.valueOf(args[2]);
-				}
-				main.manager.createRebirth(args[1], Double.valueOf(costy));
+				double cost = main.prxAPI.numberAPI.isNumber(args[2]) ? 
+						main.prxAPI.numberAPI.parseBalance(args[2]) 
+						: Double.parseDouble(args[2]);
+				main.manager.createRebirth(args[1], Double.valueOf(cost));
 				main.getConfigManager().saveRebirthsConfig();
 				sender.sendMessage(main.prxAPI.g("createrebirth").replace("%createdrebirth%", args[1])
 						.replace("%rebirthcost%", args[2]));
 			} else if (args[0].equalsIgnoreCase("setrankcost")) {
-				double costy;
-				if(!main.prxAPI.numberAPI.isNumber(args[2])) {
-					costy = main.prxAPI.numberAPI.parseBalance(args[2]);
-				} else {
-					costy = Double.valueOf(args[2]);
-				}
+				double cost = main.prxAPI.numberAPI.isNumber(args[2]) ? 
+						main.prxAPI.numberAPI.parseBalance(args[2]) 
+						: Double.parseDouble(args[2]);
 				String matchedRank = main.manager.matchRank(args[1]);
-				main.manager.setRankCost(matchedRank, costy);
+				main.manager.setRankCost(matchedRank, cost);
 				main.getConfigManager().saveRanksConfig();
 				sender.sendMessage(main.prxAPI.g("setrankcost").replace("%args1%", matchedRank)
 						.replace("%args2%", args[2]));
@@ -1138,7 +976,7 @@ public class PRXCommand extends BukkitCommand {
 				String matchedRebirth = main.manager.matchRebirth(args[1]);
 				String newDisplayName = main.getArgs(args, 2);
 				main.manager.setRebirthDisplayName(matchedRebirth, newDisplayName);
-				main.getConfigManager().savePrestigesConfig();
+				main.getConfigManager().saveRebirthsConfig();
 				sender.sendMessage(main.prxAPI.g("setrebirthdisplay").replace("%rebirth%", matchedRebirth)
 						.replace("%changeddisplay%", newDisplayName + " §f=> " + main.getString(main.getGlobalStorage().translateHexColorCodes(newDisplayName))));
 			} else if (args[0].equalsIgnoreCase("setrank")) {
@@ -1147,34 +985,30 @@ public class PRXCommand extends BukkitCommand {
 					return true;
 				}
 				Player p = Bukkit.getPlayer(args[1]);
-				String newRank = main.manager.matchRank(args[2]);
-				if(!main.prxAPI.rankExists(newRank)) {
+				String pathName = main.prxAPI.getPlayerRankPath(p).getPathName();
+				String newRank = main.manager.matchRank(args[2], pathName);
+				if(!main.prxAPI.rankExists(newRank, pathName)) {
 					sender.sendMessage(main.prxAPI.g("rank-notfound").replace("%rank%", newRank));
 					return true;
 				}
 				try {
 					RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.RANKSET, newRank);
 					Bukkit.getPluginManager().callEvent(e);
-					if(e.isCancelled()) {
-						return true;
-					}
+					if(e.isCancelled()) return true;
 					main.prxAPI.setPlayerRank(p, newRank);
-					RankDataHandler rdh = main.prxAPI.getRank(RankPath.getRankPath(newRank, main.prxAPI.getDefaultPath()));
-					if(rdh.getRankCommands() != null)
-						main.executeCommands(p, rdh.getRankCommands()); 
-					if(rdh.getCurrentAddPermissionList() != null) {rdh.getCurrentAddPermissionList().forEach(line -> {
-						main.perm.addPermission(p, line);
-					});}
-					if(rdh.getCurrentDelPermissionList() != null) {rdh.getCurrentDelPermissionList().forEach(line -> {
-						main.perm.delPermission(p, line);
-					});}
+					RankDataHandler rdh = main.prxAPI.getRank(RankPath.getRankPath(newRank, pathName));
+					List<String> rankCommands = rdh.getRankCommands();
+					List<String> addPermissionList = rdh.getCurrentAddPermissionList();
+					List<String> delPermissionList = rdh.getCurrentDelPermissionList();
+					if(rankCommands != null) main.executeCommands(p, rankCommands); 		
+					if(addPermissionList != null) addPermissionList.forEach(perm -> main.perm.addPermission(p, perm));
+					if(delPermissionList != null) delPermissionList.forEach(perm -> main.perm.delPermission(p, perm));
 				} catch (Exception exception) {
 					exception.printStackTrace();
-
 				}
-				sender.sendMessage(main.prxAPI.g("setrank").replace("%target%", p.getName())
+				sender.sendMessage(main.prxAPI.g("setrank")
+						.replace("%target%", p.getName())
 						.replace("%settedrank%", newRank));
-
 			} else if (args[0].equalsIgnoreCase("setpath")) {
 				if(Bukkit.getPlayer(args[1]) == null) {
 					sender.sendMessage(main.prxAPI.g("playernotfound").replace("%player%", args[1]));
@@ -1341,7 +1175,7 @@ public class PRXCommand extends BukkitCommand {
 					return true;
 				}
 				Player p = Bukkit.getPlayer(args[1]);
-				String newRank = main.manager.matchRank(args[2]);
+				String newRank = main.manager.matchRankAny(args[2]);
 				if(!main.prxAPI.rankExists(newRank, true)) {
 					sender.sendMessage(main.prxAPI.g("rank-notfound").replace("%rank%", newRank));
 					return true;
@@ -1352,6 +1186,7 @@ public class PRXCommand extends BukkitCommand {
 					sender.sendMessage(main.prxAPI.g("path-notfound").replace("%path%", newPath));
 					return true;
 				}
+				main.debug(newPath + ":" + newRank);
 				RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.RANKSET_BYCONVERT);
 				Bukkit.getPluginManager().callEvent(e);
 				if(e.isCancelled()) {

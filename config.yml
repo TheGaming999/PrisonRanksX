@@ -19,16 +19,6 @@
 # "[|]"
 # "[center]" = put it at the beginning of any message and the message will get in the center of the chat box (not guaranteed to work everywhere).
 # ============================================================================================================================================================================
-# || Disabled Worlds List ||
-# ============================================================================================================================================================================
-# Any world added here, will have the following functions disabled:
-# [You will not see the messages of other worlds if allworlds-broadcast is set to false]
-# [You won't be able to rankup]
-# [You won't be able to prestige]
-# [You won't be able to rebirth]
-# [You won't be able to use /prx commands]
-# [The chat won't be touched]
-# ============================================================================================================================================================================
 # !! VERY IMPORTANT !!
 # !! VERY IMPORTANT !!
 # !! VERY IMPORTANT !!
@@ -42,7 +32,16 @@ firstprestige: P1
 lastprestige: P2
 firstrebirth: R1
 lastrebirth: R2
-# ================================================
+# ============================================================================================================================================================================
+# || Disabled Worlds List ||
+# ============================================================================================================================================================================
+# Any world added here, will have the following functions disabled:
+# [You will not see the messages of other worlds if allworlds-broadcast is set to false]
+# [You won't be able to rankup]
+# [You won't be able to prestige]
+# [You won't be able to rebirth]
+# [You won't be able to use /prx commands]
+# [The chat won't be touched]
 worlds:
 - "disabled_world"
 - "disabled_world2"
@@ -61,9 +60,9 @@ Options:
   force-prestige-display: true
   # True: The same story.
   force-rebirth-display: true
-  # What will be shown when a player doesn't have a prestige on his/her chat format. Notice that this is only for chat messages. Look below for PlaceholderAPI placeholders.
+  # What will be shown when a player doesn't have a prestige on his/her chat format. Notice that this is only for chat messages and chat placeholders {rank},{prestige},{rebirth}. Scroll down to find the one for PlaceholderAPI placeholders (It's not under Options section).
   no-prestige-display: ""
-  # What will be shown when a player doesn't have a rebirth on his/her chat format. Notice that this is only for chat messages. Look below for PlaceholderAPI placeholders.
+  # What will be shown when a player doesn't have a rebirth on his/her chat format. Notice that this is only for chat messages and chat placeholders {rank},{prestige},{rebirth}. Scroll down to find the one for PlaceholderAPI placeholders (It's not under Options section).
   no-rebirth-display: ""
   # True: Allows PrisonRanksX to replace the chat placeholders {rank}, {prestige}, and {rebirth}. This can be safely disabled if you are only using PlaceholderAPI placeholders, which can improve performance by a little.
   format-chat: true
@@ -159,8 +158,17 @@ Options:
   enabled-worlds-instead-of-disabled: false
   # Prestige Max Types: AMTQ, ASTQ, AR, ARS. Only change when the developer tells you to do so.
   prestigemax-type: "AMTQ"
+  # True: Sends prestige message only when it's the last prestige in the prestige max process.
+  # Also!! If you enable this, it will boost prestigemax process by a lot. REALLY REALLY A LOT.
+  prestigemax-prestigemsglastprestigeonly: true
   # True: Enables infinite prestige config file, and ignores prestiges.yml.
   infinite-prestige: false
+  # In case of conflict with other plugins, you could try altering the following values:
+  # Possible values: LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR.
+  # Chat format.
+  chat-event-handling-priority: NORMAL
+  # Data registeration.
+  login-event-handling-priority: NORMAL
 Ranklist-text: # Text based ranks list
   # Placeholders: %rank_name% %rank_displayname% %nextrank_name% %nextrank_displayname% %nextrank_cost% %nextrank_cost_formatted%
   rank-current-format: "%rank_displayname% &a> %nextrank_displayname% &a[|] &2$&e%nextrank_cost_formatted% &a<&m---"

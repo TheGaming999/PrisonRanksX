@@ -45,6 +45,7 @@ public class PrestigeDataStorage implements IPrestigeDataStorage {
 	 * can be used as a reload
 	 */
 	public void loadPrestigesData() {
+		prestiges.clear();
 		for(String prestigeName : main.getConfigManager().prestigesConfig.getConfigurationSection("Prestiges").getKeys(false)) {
 			String nextPrestigeName = loadString("Prestiges." + prestigeName + ".nextprestige");
 			String prestigeDisplayName = loadString("Prestiges." + prestigeName + ".display");
@@ -112,9 +113,7 @@ public class PrestigeDataStorage implements IPrestigeDataStorage {
 			pdh.setFireworkDataHandler(main.getFireworkManager().readFromConfig(LevelType.PRESTIGE, prestigeName, null));
 			pdh.setSendFirework(sendFirework);
 			getPrestigeData().put(prestigeName, pdh);
-			if(!prestiges.contains(prestigeName)) {
-				prestiges.add(prestigeName);
-			}
+			prestiges.add(prestigeName);
 		}
 	}
 

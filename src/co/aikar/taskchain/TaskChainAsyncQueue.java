@@ -28,7 +28,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings("WeakerAccess")
 public class TaskChainAsyncQueue implements AsyncQueue {
     private static final AtomicInteger threadId = new AtomicInteger();
     private final ThreadPoolExecutor executor;

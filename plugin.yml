@@ -1,7 +1,7 @@
 main: me.prisonranksx.PrisonRanksX
-version: "2.8.3"
+version: "2.8.5"
 name: PrisonRanksX
-author: "TheGaming999/Sandwicha"
+author: "TheGaming999"
 depend: [Vault]
 softdepend: [PlaceholderAPI,MVdWPlaceholderAPI,HolographicDisplays,ActionUtil,PermissionsEX,GroupManager,LuckPerms,DecentHolograms]
-api-version: 1.13
+api-version: 1.19

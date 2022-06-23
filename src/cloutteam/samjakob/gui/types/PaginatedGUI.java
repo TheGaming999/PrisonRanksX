@@ -39,25 +39,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.material.Skull;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class PaginatedGUI implements InventoryHolder {
@@ -303,6 +293,7 @@ public class PaginatedGUI implements InventoryHolder {
     }
     
     
+	@SuppressWarnings("deprecation")
 	public ItemStack parseStack(String itemValue) {
 		ItemStack x = null;
 		String originalValue = itemValue;
@@ -330,7 +321,7 @@ public class PaginatedGUI implements InventoryHolder {
 		} else if (itemValue.contains("@HEAD@")) {
 			String[] nameAndData = originalValue.split("@HEAD@");
 			String data = nameAndData[1];
-			x = XMaterial.PLAYER_HEAD.parseItem(true);
+			x = XMaterial.PLAYER_HEAD.parseItem();
 			if(data.length() > 16) {
 				if(data.contains("net")) {
 					

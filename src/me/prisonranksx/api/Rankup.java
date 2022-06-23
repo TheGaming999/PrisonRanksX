@@ -334,7 +334,7 @@ public class Rankup {
 			}
 
 			String nextRankDisplay = prxAPI.getPlayerRankupDisplayR(p);
-			if(!main.prxAPI.rankExists(nextRank)) {
+			if(!main.prxAPI.rankExists(nextRank, rp.getPathName())) {
 				if(!p.isOp()) {
 					p.sendMessage(prxAPI.c("&cRankup failed! Please inform the administrators."));
 				} else {

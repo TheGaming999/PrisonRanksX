@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.utils.HolidayUtils;
 import me.prisonranksx.utils.HolidayUtils.Holiday;
-import net.md_5.bungee.api.ChatColor;
 
 public class MessagesDataStorage {
 
@@ -28,7 +27,6 @@ public class MessagesDataStorage {
 		this.helpMessage1 = new ArrayList<>();
 		this.helpMessage2 = new ArrayList<>();
 		this.helpMessage3 = new ArrayList<>();
-		this.setupHelpMessage();
 	}
 
 	public GlobalDataStorage gds() {
@@ -36,14 +34,15 @@ public class MessagesDataStorage {
 	}
 
 	public String colorize(String textToColorize) {
-		return ChatColor.translateAlternateColorCodes('&', textToColorize);
+		return main.getChatColorReplacer().parsePlaceholders(textToColorize);
 	}
 
 	public List<String> colorize(String... textToColorize) {
 		List<String> list = new ArrayList<>();
 		for (String line : textToColorize) {
-			list.add(colorize(line));
+			list.add(main.getChatColorReplacer().parsePlaceholders(line));
 		}
+		
 		return list;
 	}
 
@@ -59,6 +58,7 @@ public class MessagesDataStorage {
 
 	@SuppressWarnings("unused")
 	public void loadMessages() {
+		setupHelpMessage();
 		List<String> notEnoughMoney = registerStringListMessage("notenoughmoney");
 		List<String> notEnoughMoneyOther = registerStringListMessage("notenoughmoney-other");
 		String noPermission = registerStringMessage("nopermission");

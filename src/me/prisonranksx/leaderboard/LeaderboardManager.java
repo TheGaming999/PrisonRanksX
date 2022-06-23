@@ -281,7 +281,7 @@ public class LeaderboardManager {
 	}
 
 	public synchronized Map<UUID, Integer> getRankLeaderboard() {
-		if(!isRankEnabled) return null;
+		if(!isRankEnabled) return updatedValues;
 		if(!update && !updatedValues.isEmpty()) return updatedValues;
 		plugin.getTaskChainFactory().newSharedChain("dataSave").current(() -> {
 			updatedValues.clear();
@@ -346,6 +346,7 @@ public class LeaderboardManager {
 	}
 
 	public synchronized Map<UUID, Integer> getPrestigeLeaderboard() {
+		if(!plugin.isPrestigeEnabled) return updatedValuesP;
 		if(!update && !updatedValuesP.isEmpty()) return updatedValuesP;
 		plugin.getTaskChainFactory().newSharedChain("dataSave").current(() -> {
 			updatedValuesP.clear();
@@ -402,6 +403,7 @@ public class LeaderboardManager {
 	}
 
 	public synchronized Map<UUID, Integer> getRebirthLeaderboard() {
+		if(!plugin.isRebirthEnabled) return updatedValuesR;
 		if(!update && !updatedValuesR.isEmpty()) return updatedValuesR;
 		plugin.getTaskChainFactory().newSharedChain("dataSave").current(() -> {
 			updatedValuesR.clear();

@@ -28,6 +28,10 @@ public class MCTextEffect {
 	
 	// <glow first=&c middle=&4 last=&c>hello guys</glow>
 	
+	@SuppressWarnings("unused")
+	private final static String COLORS = "0123456789AaBbCcDdEeFfKkLlMmNnOoRr";
+
+	
 	/**
 	 * 
 	 * @param text to be parsed, <%effect_start%>%effect_text%<%effect_end%>
@@ -112,6 +116,31 @@ public class MCTextEffect {
 			}
 		}
 		return retrievedColorCodes;
+	}
+	
+	/**
+	 * @param fullString whole string with the color codes
+	 * @param stringPart a word/part of a string to get color codes of 
+	 * @return all color codes that come before this string part or empty string if no colors were found
+	 */
+	public static String getPartColors(String fullString, String stringPart) {
+		StringBuilder colorStringBuilder = new StringBuilder();
+		boolean firstColorCodeFound = false;
+		int stringPartIndex = fullString.indexOf(stringPart);
+		if(stringPartIndex == -1) return colorStringBuilder.toString();
+		if(fullString.indexOf("&") == -1) return colorStringBuilder.toString();
+		for(int i = stringPartIndex; i > -1; i--) {
+			char indexChar = fullString.charAt(i);
+			if(indexChar == '&' || fullString.charAt(i-1) == '&') {
+				if(indexChar == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRr".indexOf(fullString.charAt(i+1)) != -1) {
+					colorStringBuilder.insert(0, String.valueOf(fullString.charAt(i)) + String.valueOf(fullString.charAt(i+1)));
+					firstColorCodeFound = true;
+				}
+			} else {
+				if(firstColorCodeFound) break;
+			}
+		}
+		return colorStringBuilder.toString();
 	}
 	
 	/**

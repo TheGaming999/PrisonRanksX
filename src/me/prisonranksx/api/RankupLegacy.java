@@ -119,7 +119,7 @@ public class RankupLegacy {
 				return;
 			}
 			Player p = player;
-			UUID u = XUUID.tryNameConvert(name);
+			UUID u = XUUID.getUUID(name);
 			RankPath rp = prxAPI.getPlayerRankPath(u);
 			if(!p.hasPermission(main.rankupCommand.getPermission()) && !p.hasPermission("*")) {
 				if(prxAPI.g("nopermission") == null || prxAPI.g("nopermission").isEmpty()) {
@@ -290,7 +290,7 @@ public class RankupLegacy {
 			}
 			PRXAPI.TASKED_PLAYERS.add(name);
 			Player p = player;
-			UUID u = XUUID.tryNameConvert(name);
+			UUID u = XUUID.getUUID(name);
 			RankUpdateEvent e = new RankUpdateEvent(p, RankUpdateCause.NORMAL_RANKUP, prxAPI.getPlayerNextRank(u));
              Bukkit.getPluginManager().callEvent(e);
 			if(e.isCancelled()) {
@@ -468,7 +468,7 @@ public class RankupLegacy {
 		public void spawnHologram(List<String> format, int removeTime, int height, Player player) {
 			Player p = player;
 			String name = p.getName();
-			UUID u = XUUID.tryNameConvert(name);
+			UUID u = XUUID.getUUID(name);
 			Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
 			hologram.setAllowPlaceholders(true);
 			for(String line : format) {
@@ -488,7 +488,7 @@ public class RankupLegacy {
 			Player p = player;
 			String name = p.getName();
 			Bukkit.getScheduler().runTask(main, () -> {
-			UUID u = XUUID.tryNameConvert(name);
+			UUID u = XUUID.getUUID(name);
 			Hologram hologram = HologramsAPI.createHologram(main, p.getLocation().add(0, height, 0));
 			hologram.setAllowPlaceholders(true);
 			for(String line : format) {
@@ -515,7 +515,7 @@ public class RankupLegacy {
 			}
 			PRXAPI.TASKED_PLAYERS.add(name);
 			Player p = player;
-			UUID u = XUUID.tryNameConvert(name);
+			UUID u = XUUID.getUUID(name);
 			RankPath rp = prxAPI.getPlayerRankPath(u);
 			AsyncAutoRankupEvent e = new AsyncAutoRankupEvent(p, main.prxAPI.getPlayerNextRank(p), rp.getRankName());
 			Bukkit.getPluginManager().callEvent(e);

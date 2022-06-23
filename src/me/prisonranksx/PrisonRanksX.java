@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -123,9 +123,11 @@ import me.prisonranksx.utils.EZLuckPerms;
 import me.prisonranksx.utils.EventPriorityManager;
 import me.prisonranksx.utils.HolidayUtils;
 import me.prisonranksx.utils.MessageCenterizer;
+import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.PlaceholderReplacer;
 import me.prisonranksx.utils.PlaceholderReplacerDefault;
 import me.prisonranksx.utils.PlaceholderReplacerPAPI;
+import me.prisonranksx.utils.XUUID;
 
 import com.google.common.collect.Sets;
 
@@ -362,11 +364,11 @@ public class PrisonRanksX extends JavaPlugin {
 	public void saveDataAsynchronously(UUID u, String name) {
 		TaskChain <?> saveDataChain = taskChainFactory.newSharedChain("dataSave");
 		saveDataChain.async(() -> {
-			playerStorage.savePlayerData(u);
+			getPlayerStorage().savePlayerData(u);
 			if(!isMySql()) {
-				configManager.saveRankDataConfig();
-				configManager.savePrestigeDataConfig();
-				configManager.saveRebirthDataConfig(); 
+				getConfigManager().saveRankDataConfig();
+				getConfigManager().savePrestigeDataConfig();
+				getConfigManager().saveRebirthDataConfig(); 
 			} else {
 				this.updateMySqlData(u);
 			}
@@ -382,10 +384,10 @@ public class PrisonRanksX extends JavaPlugin {
 	public void saveData(UUID u) {
 		TaskChain <?> saveDataChain = taskChainFactory.newSharedChain("dataSave");
 		saveDataChain.current(() -> {
-			playerStorage.savePlayerData(u);
-			configManager.saveRankDataConfig();
-			configManager.savePrestigeDataConfig();
-			configManager.saveRebirthDataConfig(); 
+			getPlayerStorage().savePlayerData(u);
+			getConfigManager().saveRankDataConfig();
+			getConfigManager().savePrestigeDataConfig();
+			getConfigManager().saveRebirthDataConfig(); 
 		})
 		.execute();
 	}
@@ -414,20 +416,20 @@ public class PrisonRanksX extends JavaPlugin {
 	 * Initiate data for balance formatting.
 	 */
 	public void setupBalanceFormat() {
-		this.k = globalStorage.getStringData("MoneyFormatter.thousand");
-		this.M = globalStorage.getStringData("MoneyFormatter.million");
-		this.B = globalStorage.getStringData("MoneyFormatter.billion");
-		this.T = globalStorage.getStringData("MoneyFormatter.trillion");
-		this.q = globalStorage.getStringData("MoneyFormatter.quadrillion");
-		this.Q = globalStorage.getStringData("MoneyFormatter.quintillion");
-		this.s = globalStorage.getStringData("MoneyFormatter.sextillion");
-		this.S = globalStorage.getStringData("MoneyFormatter.septillion");
-		this.O = globalStorage.getStringData("MoneyFormatter.octillion");
-		this.N = globalStorage.getStringData("MoneyFormatter.nonillion");
-		this.d = globalStorage.getStringData("MoneyFormatter.decillion");
-		this.U = globalStorage.getStringData("MoneyFormatter.undecillion");
-		this.D = globalStorage.getStringData("MoneyFormatter.Duodecillion");
-		this.Z = globalStorage.getStringData("MoneyFormatter.zillion");
+		this.k = getGlobalStorage().getStringData("MoneyFormatter.thousand");
+		this.M = getGlobalStorage().getStringData("MoneyFormatter.million");
+		this.B = getGlobalStorage().getStringData("MoneyFormatter.billion");
+		this.T = getGlobalStorage().getStringData("MoneyFormatter.trillion");
+		this.q = getGlobalStorage().getStringData("MoneyFormatter.quadrillion");
+		this.Q = getGlobalStorage().getStringData("MoneyFormatter.quintillion");
+		this.s = getGlobalStorage().getStringData("MoneyFormatter.sextillion");
+		this.S = getGlobalStorage().getStringData("MoneyFormatter.septillion");
+		this.O = getGlobalStorage().getStringData("MoneyFormatter.octillion");
+		this.N = getGlobalStorage().getStringData("MoneyFormatter.nonillion");
+		this.d = getGlobalStorage().getStringData("MoneyFormatter.decillion");
+		this.U = getGlobalStorage().getStringData("MoneyFormatter.undecillion");
+		this.D = getGlobalStorage().getStringData("MoneyFormatter.Duodecillion");
+		this.Z = getGlobalStorage().getStringData("MoneyFormatter.zillion");
 		String[] abbreviations = {"",k,M,B,T,q,Q,s,S,O,N,d,U,D,Z, Z + "II", Z + "III", Z + "IV",
 				Z + "V", Z + "VI", Z + "VII", Z + "VIII", Z + "IX", Z + "X", Z + "11", Z + "12",
 				Z + "13", Z + "14", Z + "15", Z + "16", Z + "17" , Z + "18" , Z + "19", Z + "20",
@@ -445,16 +447,15 @@ public class PrisonRanksX extends JavaPlugin {
 		pluginManager = Bukkit.getPluginManager();
 		taskChainFactory = BukkitTaskChainFactory.create(this);
 		holidayUtils = new HolidayUtils();
-		actionbarAnimationHolder = new HashMap<>();
-		actionbarTaskHolder = new HashMap<>();
+		actionbarAnimationHolder = new WeakHashMap<>();
+		actionbarTaskHolder = new WeakHashMap<>();
 		String version = Bukkit.getVersion();
 		commandLoader = new CommandLoader();
 		if(CollectionUtils.containsFromList(version, ancientVersions)) isBefore1_7 = true;
 		if(!CollectionUtils.containsFromList(version, oldVersions)) isModernVersion = true;
-		getConfig().options().copyDefaults(true);
 		saveDefaultConfig();
 		try {
-			ConfigUpdater.update(this, "config.yml", new File(this.getDataFolder() + "/config.yml"), ignoredSections);
+			ConfigUpdater.update(this, "config.yml", new File(this.getDataFolder(), "config.yml"), ignoredSections);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -473,41 +474,15 @@ public class PrisonRanksX extends JavaPlugin {
 			prestigeStorage = new PrestigeDataStorage(this);
 			rebirthStorage = new RebirthDataStorage(this);
 			messagesStorage = new MessagesDataStorage(this);
-			configManager.loadConfigs();
+			getConfigManager().loadConfigs();
 			fireworkManager = new FireworkManager(this);
-			chatColorReplacer = isModernVersion ? new ChatColorReplacer1_16(this) : new ChatColorReplacer1_8(this);
-			if(!isBefore1_7) this.actionBar = new ActionbarLegacy();
-			globalStorage.loadGlobalData();
-			isInfinitePrestige = globalStorage.getBooleanData("Options.infinite-prestige");
-			rankStorage.loadRanksData();
-			if(isInfinitePrestige) {
-				infinitePrestigeSettings = new InfinitePrestigeSettings(this);
-				infinitePrestigeSettings.load();
-				prestigeStorage = new PrestigeDataStorageInfinite(this);
-				cout(PREFIX + " §7Infinite Prestige: §aON");
-			} 
-			isMySql = globalStorage.getBooleanData("MySQL.enable");
-			isVaultGroups = globalStorage.getBooleanData("Options.rankup-vault-groups");
-			isRankEnabled = globalStorage.getBooleanData("Options.rank-enabled");
-			isPrestigeEnabled = globalStorage.getBooleanData("Options.prestige-enabled");
-			isRebirthEnabled = globalStorage.getBooleanData("Options.rebirth-enabled");
-			prestigeStorage.loadPrestigesData();
-			rebirthStorage.loadRebirthsData();
-			messagesStorage.loadMessages(); 
-			playerStorage = new PlayerDataStorage(this);
-			prxAPI = new PRXAPI();
-			prxAPI.setup();
-			setupMySQL();
-			lbm = new LeaderboardManager(this);	
+			
 			if(hasPlugin("PlaceholderAPI")) {
 				cout(PREFIX + " §eLoading PlaceholderAPI placeholders...");
 				papi = new PapiHook(this);
-				papi.register();
-				cout(PREFIX + " §aPlaceholderAPI hooked.");
 				hasPAPI = true;
 				placeholderReplacer = new PlaceholderReplacerPAPI();
 			} else {
-				cout(PREFIX + " §2Started without PlaceholderAPI.");
 				hasPAPI = false;
 				placeholderReplacer = new PlaceholderReplacerDefault();
 			}
@@ -539,7 +514,7 @@ public class PrisonRanksX extends JavaPlugin {
 				cout(PREFIX + " §2Started without ActionUtil.");
 			}
 
-			if(isVaultGroups) this.vaultPlugin = globalStorage.getStringData("Options.rankup-vault-groups-plugin");
+			if(isVaultGroups) this.vaultPlugin = getGlobalStorage().getStringData("Options.rankup-vault-groups-plugin");
 
 			if(isVaultGroups && vaultPlugin != null) {
 				if(hasPlugin("LuckPerms") && vaultPlugin.equalsIgnoreCase("LuckPerms")) {
@@ -557,68 +532,99 @@ public class PrisonRanksX extends JavaPlugin {
 					vaultDataUpdater = new CommandVaultDataUpdater(this);
 				}
 			}
+			chatColorReplacer = isModernVersion ? new ChatColorReplacer1_16(this) : new ChatColorReplacer1_8(this);
+			if(hasPAPI) {
+				papi.register();
+				cout(PREFIX + " §aPlaceholderAPI hooked.");
+			} else {
+				cout(PREFIX + " §2Started without PlaceholderAPI.");
+			}
+			if(!isBefore1_7) this.actionBar = new ActionbarLegacy();
+			getGlobalStorage().loadGlobalData();
+			isInfinitePrestige = getGlobalStorage().getBooleanData("Options.infinite-prestige");
+			getRankDataStorage().loadRanksData();
+			if(isInfinitePrestige) {
+				infinitePrestigeSettings = new InfinitePrestigeSettings(this);
+				infinitePrestigeSettings.load();
+				prestigeStorage = new PrestigeDataStorageInfinite(this);
+				cout(PREFIX + " §7Infinite Prestige: §aON");
+			} 
+			isMySql = getGlobalStorage().getBooleanData("MySQL.enable");
+			isVaultGroups = getGlobalStorage().getBooleanData("Options.rankup-vault-groups");
+			isRankEnabled = getGlobalStorage().getBooleanData("Options.rank-enabled");
+			isPrestigeEnabled = getGlobalStorage().getBooleanData("Options.prestige-enabled");
+			isRebirthEnabled = getGlobalStorage().getBooleanData("Options.rebirth-enabled");
+			getPrestigeDataStorage().loadPrestigesData();
+			getRebirthDataStorage().loadRebirthsData();
+			getMessagesStorage().loadMessages(); 
+			playerStorage = new PlayerDataStorage(this);
+			prxAPI = new PRXAPI();
+			prxAPI.setup();
+			setupMySQL();
+			lbm = new LeaderboardManager(this);	
+			if(hasPAPI) papi.refreshValues(this);
 			if(holidayUtils.getHoliday() == Holiday.CHRISTMAS_EVE) {
 				cout(PREFIX + " §2Merry §4Christmas§f!");
 			} else if (holidayUtils.getHoliday() == Holiday.HALLOWEEN_DAY) {
 				cout(PREFIX + " §6Happy Halloween§7!");
 			}
-			if(configManager.commandsConfig.getBoolean("commands.rankup.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.rankup.enable", true)) {
 				rankupCommand = new RankupCommand("rankup");
 				commandLoader.registerCommand("rankup", rankupCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.prestige.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.prestige.enable", true)) {
 				prestigeCommand = new PrestigeCommand("prestige");
 				commandLoader.registerCommand("prestige", prestigeCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.rankupmax.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.rankupmax.enable", true)) {
 				rankupMaxCommand = new RankupMaxCommand("rankupmax");
 				commandLoader.registerCommand("rankupmax", rankupMaxCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.ranks.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.ranks.enable", true)) {
 				ranksCommand = new RanksCommand("ranks");
 				commandLoader.registerCommand("ranks", ranksCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.rebirth.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.rebirth.enable", true)) {
 				rebirthCommand = new RebirthCommand("rebirth");
 				commandLoader.registerCommand("rebirth", rebirthCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.prestiges.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.prestiges.enable", true)) {
 				prestigesCommand = new PrestigesCommand("prestiges");
 				commandLoader.registerCommand("prestiges", prestigesCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.rebirths.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.rebirths.enable", true)) {
 				rebirthsCommand = new RebirthsCommand("rebirths");
 				commandLoader.registerCommand("rebirths", rebirthsCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.prx.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.prx.enable", true)) {
 				prxCommand = new PRXCommand("prx");
 				commandLoader.registerCommand("prx", prxCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.autorankup.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.autorankup.enable", true)) {
 				autoRankupCommand = new AutoRankupCommand("autorankup");
 				commandLoader.registerCommand("autorankup", autoRankupCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.autoprestige.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.autoprestige.enable", true)) {
 				autoPrestigeCommand = new AutoPrestigeCommand("autoprestige");
 				commandLoader.registerCommand("autoprestige", autoPrestigeCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.forcerankup.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.forcerankup.enable", true)) {
 				forceRankupCommand = new ForceRankupCommand("forcerankup");
 				commandLoader.registerCommand("forcerankup", forceRankupCommand);
 			}
-			if(configManager.commandsConfig.getBoolean("commands.prestigemax.enable", true)) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.prestigemax.enable", true)) {
 				prestigeMaxCommand = new PrestigeMaxCommand("prestigemax");
 				commandLoader.registerCommand("prestigemax", prestigeMaxCommand);
 			}	  
 
 			setupBalanceFormat();
 
-			autoSaveTime = globalStorage.getIntegerData("Options.autosave-time");
-			forceSave = globalStorage.getBooleanData("Options.forcesave");
-			isRankupMaxWarpFilter = globalStorage.getBooleanData("Options.rankupmax-warp-filter");
-			checkVault = globalStorage.getBooleanData("Options.rankup-vault-groups-check");
-			allowEasterEggs = globalStorage.getBooleanData("Options.allow-easter-eggs");
-			disabledWorlds = Sets.newHashSet(globalStorage.getStringListData("worlds"));
+			autoSaveTime = getGlobalStorage().getIntegerData("Options.autosave-time");
+			forceSave = getGlobalStorage().getBooleanData("Options.forcesave");
+			isRankupMaxWarpFilter = getGlobalStorage().getBooleanData("Options.rankupmax-warp-filter");
+			checkVault = getGlobalStorage().getBooleanData("Options.rankup-vault-groups-check");
+			allowEasterEggs = getGlobalStorage().getBooleanData("Options.allow-easter-eggs");
+			disabledWorlds = Sets.newHashSet(getGlobalStorage().getStringListData("worlds"));
 
 			try {
 				ConfigUpdater.update(this, "messages.yml", new File(this.getDataFolder() + "/messages.yml"), new ArrayList<String>());
@@ -626,12 +632,12 @@ public class PrisonRanksX extends JavaPlugin {
 				e.printStackTrace();
 			}
 
-			if(configManager.commandsConfig.getBoolean("commands.topprestiges.enable")) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.topprestiges.enable")) {
 				topPrestigesCommand = new TopPrestigesCommand("topprestiges");
 				commandLoader.registerCommand("topprestiges", topPrestigesCommand);
 				topPrestigesCommand.load();
 			}
-			if(configManager.commandsConfig.getBoolean("commands.toprebirths.enable")) {
+			if(getConfigManager().commandsConfig.getBoolean("commands.toprebirths.enable")) {
 				topRebirthsCommand = new TopRebirthsCommand("toprebirths");
 				commandLoader.registerCommand("toprebirths", topRebirthsCommand);
 				topRebirthsCommand.load();
@@ -674,15 +680,11 @@ public class PrisonRanksX extends JavaPlugin {
 			abprogress = new ActionbarProgress(this);
 		}
 		ebprogress = new ExpbarProgress(this);
-		isEBProgress = globalStorage.getBooleanData("Options.expbar-progress");
-		if(!isBefore1_7) {
-			isABProgress = globalStorage.getBooleanData("Options.actionbar-progress");
-		} else {
-			isABProgress = false;
-		}
-		isSaveOnLeave = globalStorage.getBooleanData("Options.save-on-leave");
-		saveNotification = globalStorage.getBooleanData("Options.save-notification");
-		isEnabledInsteadOfDisabled = globalStorage.getBooleanData("Options.enabled-worlds-instead-of-disabled");
+		isEBProgress = getGlobalStorage().getBooleanData("Options.expbar-progress");
+		isABProgress = isBefore1_7 ? false : getGlobalStorage().getBooleanData("Options.actionbar-progress");
+		isSaveOnLeave = getGlobalStorage().getBooleanData("Options.save-on-leave");
+		saveNotification = getGlobalStorage().getBooleanData("Options.save-notification");
+		isEnabledInsteadOfDisabled = getGlobalStorage().getBooleanData("Options.enabled-worlds-instead-of-disabled");
 		actionbarInUse = new HashSet<>();
 		errorInspector = new ErrorInspector(this);
 		errorInspector.inspect();
@@ -691,6 +693,14 @@ public class PrisonRanksX extends JavaPlugin {
 		if(getGlobalStorage().getBooleanData("Options.autosave")) startAsyncUpdateTask();	
 		registerListeners();
 		instance = this;
+		if(!OnlinePlayers.isEmpty()) {
+			OnlinePlayers.getPlayers().forEach(player -> {
+				this.playerLoginListener.registerUserData(XUUID.getUUID(player), player.getName());
+				if(!isABProgress)
+					return;
+				abprogress.enable(player);
+			});
+		}
 		cout(PREFIX + " §aEnabled.");
 	}
 
@@ -702,10 +712,10 @@ public class PrisonRanksX extends JavaPlugin {
 		playerQuitListener = isBefore1_7 ? new PlayerQuitListenerLegacy(this) : new PlayerQuitListener(this);
 		prisonRanksXListener = new PrisonRanksXListener(this);
 		inventoryListener = new InventoryListener(this);
-		rankForceDisplay = globalStorage.getBooleanData("Options.force-rank-display");
-		prestigeForceDisplay = globalStorage.getBooleanData("Options.force-prestige-display");
-		rebirthForceDisplay = globalStorage.getBooleanData("Options.force-rebirth-display");
-		formatChat = globalStorage.getBooleanData("Options.format-chat");
+		rankForceDisplay = getGlobalStorage().getBooleanData("Options.force-rank-display");
+		prestigeForceDisplay = getGlobalStorage().getBooleanData("Options.force-prestige-display");
+		rebirthForceDisplay = getGlobalStorage().getBooleanData("Options.force-rebirth-display");
+		formatChat = getGlobalStorage().getBooleanData("Options.format-chat");
 		boolean messWithChat = false;
 		if(rankForceDisplay || prestigeForceDisplay || rebirthForceDisplay) {
 			playerChatListener = new PlayerChatListenerForceDisplay(this);
@@ -717,23 +727,32 @@ public class PrisonRanksX extends JavaPlugin {
 			}
 		}
 		pluginManager.registerEvents(playerLoginListener, this);
-		EventPriorityManager.setPriorities(playerLoginListener, globalStorage.getStringData("Options.login-event-handling-priority"));
+		String loginPriority = getGlobalStorage().getStringData("Options.login-event-handling-priority");
+		if(!loginPriority.equals("NORMAL") && loginPriority != null)
+		EventPriorityManager.setPriorities(playerLoginListener, getGlobalStorage().getStringData("Options.login-event-handling-priority"));
 		pluginManager.registerEvents(playerQuitListener, this);
 		pluginManager.registerEvents(prisonRanksXListener, this);
 		pluginManager.registerEvents(inventoryListener, this);
 		if(!messWithChat) return;
 		pluginManager.registerEvents(playerChatListener, this);
-		EventPriorityManager.setPriorities(playerChatListener, globalStorage.getStringData("Options.chat-event-handling-priority"));
+		String chatPriority = getGlobalStorage().getStringData("Options.chat-event-handling-priority");
+		if(!chatPriority.equals("NORMAL") && chatPriority != null)
+		EventPriorityManager.setPriorities(playerChatListener, getGlobalStorage().getStringData("Options.chat-event-handling-priority"));
 	}
 
 	/**
 	 * Unregister listeners from the other classes.
 	 */
 	public void unregisterListeners() {
+		if(playerChatListener != null)
 		playerChatListener.unregister();
+		if(playerLoginListener != null)
 		playerLoginListener.unregister();
+		if(playerQuitListener != null)
 		playerQuitListener.unregister();
+		if(prisonRanksXListener != null)
 		prisonRanksXListener.unregister();
+		if(inventoryListener != null)
 		inventoryListener.unregister();
 	}
 
@@ -771,15 +790,15 @@ public class PrisonRanksX extends JavaPlugin {
 	 * Initiate MySQL data.
 	 */
 	public void setupMySQL() {
-		host = String.valueOf(globalStorage.getStringData("MySQL.host"));
-		port = globalStorage.getIntegerData("MySQL.port");
-		database = globalStorage.getStringData("MySQL.database");
-		username = globalStorage.getStringData("MySQL.username");
-		password = globalStorage.getStringData("MySQL.password");   
-		table = globalStorage.getStringData("MySQL.table"); 
-		useSSL = globalStorage.getBooleanData("MySQL.useSSL");
-		autoReconnect = globalStorage.getBooleanData("MySQL.autoReconnect");
-		useCursorFetch = globalStorage.getBooleanData("MySQL.useCursorFetch");
+		host = String.valueOf(getGlobalStorage().getStringData("MySQL.host"));
+		port = getGlobalStorage().getIntegerData("MySQL.port");
+		database = getGlobalStorage().getStringData("MySQL.database");
+		username = getGlobalStorage().getStringData("MySQL.username");
+		password = getGlobalStorage().getStringData("MySQL.password");   
+		table = getGlobalStorage().getStringData("MySQL.table"); 
+		useSSL = getGlobalStorage().getBooleanData("MySQL.useSSL");
+		autoReconnect = getGlobalStorage().getBooleanData("MySQL.autoReconnect");
+		useCursorFetch = getGlobalStorage().getBooleanData("MySQL.useCursorFetch");
 		if(isMySql) {
 			try {    
 				openConnection();
@@ -876,28 +895,26 @@ public class PrisonRanksX extends JavaPlugin {
 			return;
 		}
 		cout(PREFIX + " §eSaving data...");
-		playerStorage.savePlayersData(true);
-		configManager.saveRankDataConfig();
-		configManager.savePrestigeDataConfig();
-		configManager.saveRebirthDataConfig();
+		getPlayerStorage().savePlayersData(true);
+		getConfigManager().saveRankDataConfig();
+		getConfigManager().savePrestigeDataConfig();
+		getConfigManager().saveRebirthDataConfig();
 		unregisterListeners();
-		playerStorage.getPlayerData().clear();
-		rankStorage.getEntireData().clear();
-		prestigeStorage.getPrestigeData().clear();
-		rebirthStorage.getRebirthData().clear();
-		globalStorage.getDoubleMap().clear();
-		globalStorage.getStringMap().clear();
-		globalStorage.getBooleanMap().clear();
-		globalStorage.getStringListMap().clear();
-		globalStorage.getIntegerMap().clear();
-		globalStorage.getStringSetMap().clear();
-		globalStorage.getGlobalMap().clear();
-		messagesStorage.stringData.clear();
-		messagesStorage.stringListData.clear();
+		getPlayerStorage().getPlayerData().clear();
+		getRankDataStorage().getEntireData().clear();
+		getPrestigeDataStorage().getPrestigeData().clear();
+		getRebirthDataStorage().getRebirthData().clear();
+		getGlobalStorage().getDoubleMap().clear();
+		getGlobalStorage().getStringMap().clear();
+		getGlobalStorage().getBooleanMap().clear();
+		getGlobalStorage().getStringListMap().clear();
+		getGlobalStorage().getIntegerMap().clear();
+		getGlobalStorage().getStringSetMap().clear();
+		getGlobalStorage().getGlobalMap().clear();
 		isActionUtil = false;
 		hasPAPI = false;
 		hasHologramsPlugin = false;
-		scheduler.cancelTasks(this);
+		if(isABProgress) abprogress.clear(true);
 		closeConnection();
 		cout(PREFIX + " §aData saved.");
 		cout(PREFIX + " §cDisabled.");
@@ -954,6 +971,9 @@ public class PrisonRanksX extends JavaPlugin {
 
 	// one line methods
 	public PlayerDataStorage getPlayerStorage() { return this.playerStorage; }
+	public IPrestigeDataStorage getPrestigeDataStorage() { return this.prestigeStorage; }
+	public RankDataStorage getRankDataStorage() { return this.rankStorage; }
+	public RebirthDataStorage getRebirthDataStorage() { return this.rebirthStorage; }
 	public GlobalDataStorage getGlobalStorage() { return this.globalStorage; }
 	public void cout(String string) { console.sendMessage(string); }
 	public boolean hasPlugin(String pluginName) { return pluginManager.isPluginEnabled(pluginName); }
@@ -998,7 +1018,7 @@ public class PrisonRanksX extends JavaPlugin {
 					return;
 				}
 				String currentLine = actionbarLines.get(actionbarAnimationHolder.get(p));
-				getActionbar().sendActionBar(p, getString(currentLine, name).replace("%rankup%", playerStorage.getPlayerRank(p)).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), name)));
+				getActionbar().sendActionBar(p, getString(currentLine, name).replace("%rankup%", getPlayerStorage().getPlayerRank(p)).replace("%rankup_display%", getString(prxAPI.getPlayerRankDisplay(p), name)));
 				if(!animationEnded) actionbarAnimationHolder.put(p, actionbarAnimationHolder.get(p)+1);
 			}
 		}.runTaskTimerAsynchronously(this, 1L, interval);
@@ -1020,12 +1040,12 @@ public class PrisonRanksX extends JavaPlugin {
 		String rankpath = rank.get();
 		Player p = player;
 		String name = p.getName();
-		if(rankStorage.getConsoleCommands().containsKey(rankpath)) {
-			rankStorage.getConsoleCommands().get(rankpath).forEach(commandLine ->
+		if(getRankDataStorage().getConsoleCommands().containsKey(rankpath)) {
+			getRankDataStorage().getConsoleCommands().get(rankpath).forEach(commandLine ->
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getString(commandLine.replace("%player%", name), player)));	
 		}
-		if(rankStorage.getPlayerCommands().containsKey(rankpath)) {
-			rankStorage.getPlayerCommands().get(rankpath).stream()
+		if(getRankDataStorage().getPlayerCommands().containsKey(rankpath)) {
+			getRankDataStorage().getPlayerCommands().get(rankpath).stream()
 			.filter(commandLine ->
 			!commandLine.contains("warp"))
 			.forEach(commandLine -> 
@@ -1037,13 +1057,13 @@ public class PrisonRanksX extends JavaPlugin {
 		String rankpath = rank.get();
 		Player p = player;
 		String name = p.getName();
-		if(rankStorage.getConsoleCommands().containsKey(rankpath)) {
-			for(String string : rankStorage.getConsoleCommands().get(rankpath)) {
+		if(getRankDataStorage().getConsoleCommands().containsKey(rankpath)) {
+			for(String string : getRankDataStorage().getConsoleCommands().get(rankpath)) {
 				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getString(string.replace("%player%", name), player));
 			}
 		}
-		if(rankStorage.getPlayerCommands().containsKey(rankpath)) {
-			for(String string : rankStorage.getPlayerCommands().get(rankpath)) {
+		if(getRankDataStorage().getPlayerCommands().containsKey(rankpath)) {
+			for(String string : getRankDataStorage().getPlayerCommands().get(rankpath)) {
 				Bukkit.dispatchCommand(p, getString(string.replace("%player%", name), player));
 			}
 		}

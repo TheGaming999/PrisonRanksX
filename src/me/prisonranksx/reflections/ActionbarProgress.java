@@ -23,7 +23,7 @@ public class ActionbarProgress {
 	private BukkitTask scheduler;
 	private boolean actionbarProgressOnlyPickaxe;
 	private Material diamondPickaxe;
-	
+
 	public ActionbarProgress(PrisonRanksX main) {
 		this.main = main;
 		this.players = Sets.newConcurrentHashSet();
@@ -33,69 +33,70 @@ public class ActionbarProgress {
 		this.actionbarProgressOnlyPickaxe = this.main.globalStorage.getBooleanData("Options.actionbar-progress-only-pickaxe");
 		this.diamondPickaxe = XMaterial.DIAMOND_PICKAXE.parseMaterial();
 	}
-	
+
 	public boolean isOnlyPickaxe() {
 		return this.actionbarProgressOnlyPickaxe;
 	}
-	
+
 	public void setOnlyPickaxe(boolean onlyPickaxe) {
 		this.actionbarProgressOnlyPickaxe = onlyPickaxe;
 	}
-	
+
 	public void setDiamondPickaxe(Material material) {
 		this.diamondPickaxe = material;
 	}
-	
+
 	public Material getDiamondPickaxe() {
 		return this.diamondPickaxe;
 	}
-	
+
 	public void setActionbarMessage(String actionbarMessage) {
 		this.actionbarMessage = actionbarMessage;
 	}
-	
+
 	public String getActionbarMessage() {
 		return this.actionbarMessage;
 	}
-	
+
 	public Set<UUID> getPlayers() {
 		return this.players;
 	}
-	
+
 	public void enable(Player p) {
-      players.add(p.getUniqueId());
-      if(!isTaskOn) {
-    	  isTaskOn = true;
-    	  if(isOnlyPickaxe()) {
-    		  startProgressTaskAdvanced();
-    		  return;
-    	  }
-    	  startProgressTask();
-      }
+		players.add(p.getUniqueId());
+		if(!isTaskOn) {
+			isTaskOn = true;
+			if(isOnlyPickaxe()) {
+				startProgressTaskAdvanced();
+				return;
+			}
+			startProgressTask();
+		}
 	}
-	
+
 	public void disable(Player p) {
-	  players.remove(p.getUniqueId());
-	  if(players.size() == 0 && isTaskOn) {
-		  isTaskOn = false;
-		  scheduler.cancel();
-	  }
+		players.remove(p.getUniqueId());
+		if(players.size() == 0 && isTaskOn) {
+			isTaskOn = false;
+			scheduler.cancel();
+		}
 	}
-	
+
 	public void clear() {
 		players.clear();
 	}
-	
+
 	public void clear(boolean completely) {
+		if(players != null)
 		players.clear();
 		if(completely) {
-		  if(isTaskOn) {
-			  isTaskOn = false;
-			  scheduler.cancel();
-		  }
+			if(isTaskOn) {
+				isTaskOn = false;
+				scheduler.cancel();
+			}
 		}
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	public boolean isHoldingDiamondPickaxe(Player player) {
 		Player p = player;
@@ -107,7 +108,7 @@ public class ActionbarProgress {
 		}
 		return p.getItemInHand().getType() == diamondPickaxe;
 	}
-	
+
 	private void startProgressTask() {
 		scheduler = Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
 			for(UUID u : players) {
@@ -120,14 +121,14 @@ public class ActionbarProgress {
 					return;
 				}
 				try {
-				main.getActionbar().sendActionBar(p, main.getString(actionbarMessage, p.getName()));
+					main.getActionbar().sendActionBar(p, main.getString(actionbarMessage, p.getName()));
 				} catch (NullPointerException error) {
 					main.debug("[actionbar] Actionbar message send failed.");
 				}
 			}
 		}, actionbarUpdater, actionbarUpdater);
 	}
-	
+
 	private void startProgressTaskAdvanced() {
 		scheduler = Bukkit.getScheduler().runTaskTimerAsynchronously(main, () -> {
 			for(UUID u : players) {
@@ -136,10 +137,10 @@ public class ActionbarProgress {
 				}
 				Player p = Bukkit.getPlayer(u);
 				if(isHoldingDiamondPickaxe(p)) {
-				main.getActionbar().sendActionBar(p, main.getString(actionbarMessage, p.getName()));
+					main.getActionbar().sendActionBar(p, main.getString(actionbarMessage, p.getName()));
 				}
 			}
 		}, actionbarUpdater, actionbarUpdater);
 	}
-	
+
 }

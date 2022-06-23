@@ -2,7 +2,6 @@ package me.prisonranksx.api;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -39,13 +38,15 @@ import me.prisonranksx.data.RankDataHandler;
 import me.prisonranksx.data.RankPath;
 import me.prisonranksx.data.RebirthDataHandler;
 import me.prisonranksx.permissions.PermissionManager;
+import me.prisonranksx.utils.HolidayUtils.Holiday;
 import me.prisonranksx.utils.MCProgressBar;
 import me.prisonranksx.utils.NumberAPI;
+import me.prisonranksx.utils.TypedAtomicObject;
 import me.prisonranksx.utils.XMaterial;
-import me.prisonranksx.utils.HolidayUtils.Holiday;
 import net.milkbowl.vault.economy.Economy;
 
 public class PRXAPI {
+
 	public NumberAPI numberAPI;
 	private MCProgressBar rankupProgressBar;
 	private MCProgressBar rankupProgressBarExtended;
@@ -55,16 +56,12 @@ public class PRXAPI {
 	private MCProgressBar globalProgressBarExtended_prestige;
 	private MCProgressBar globalProgressBar_rebirth;
 	private MCProgressBar globalProgressBarExtended_rebirth;
-	@SuppressWarnings("unused")
-	private FileConfiguration rankDataConfig, prestigeDataConfig, rebirthDataConfig, customConfig
-	, originalConfig, ranksConfig, prestigesConfig, rebirthsConfig, commandsConfig, messagesConfig;
-	public PrisonRanksX main = null;
-	public final static Set<String> AUTO_RANKUP_PLAYERS = new HashSet<>();
-	public final static Set<String> AUTO_PRESTIGE_PLAYERS = new HashSet<>();
-	public final static Set<String> AUTO_REBIRTH_PLAYERS = new HashSet<>();
-	public final static Set<String> TASKED_PLAYERS = new HashSet<>();
-	public Set<String> allRankAddPermissions, allRankDelPermissions, allPrestigeAddPermissions
-	, allPrestigeDelPermissions, allRebirthAddPermissions, allRebirthDelPermissions;
+	private FileConfiguration rankDataConfig, originalConfig;
+	private PrisonRanksX main = null;
+	public final static Set<String> AUTO_RANKUP_PLAYERS = new HashSet<>(), AUTO_PRESTIGE_PLAYERS = new HashSet<>(), 
+			AUTO_REBIRTH_PLAYERS = new HashSet<>(), TASKED_PLAYERS = new HashSet<>();
+	public Set<String> allRankAddPermissions, allRankDelPermissions, allPrestigeAddPermissions, 
+	allPrestigeDelPermissions, allRebirthAddPermissions, allRebirthDelPermissions;
 	private String increaseType;
 	private String rebirthIncreaseType;
 	private String prestigeIncreaseExpression;
@@ -331,7 +328,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param rebirth
 	 * @return true if the rebirth is registered on the server, false otherwise.
 	 */
@@ -340,7 +336,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param prestige
 	 * @return true if the prestige is registered on the server, false otherwise.
 	 */
@@ -348,6 +343,10 @@ public class PRXAPI {
 		return main.prestigeStorage.getPrestigeData().get(prestige) != null;
 	}
 
+	/**
+	 * @param prestige
+	 * @return true if the prestige is within the range of 1 to (finalprestige), false otherwise.
+	 */
 	public boolean prestigeInfiniteExists(String prestige) {
 		long pre = Long.valueOf(prestige);
 		if(pre > main.infinitePrestigeSettings.getFinalPrestige() || pre < 0) {
@@ -356,6 +355,10 @@ public class PRXAPI {
 		return true;
 	}
 
+	/**
+	 * @param prestige
+	 * @return {@link #prestigeExists(String)} or {@link #prestigeInfiniteExists(String)}
+	 */
 	public boolean prestigeExistsAny(String prestige) {
 		if(!main.isInfinitePrestige) {
 			return main.prestigeStorage.getPrestigeData().get(prestige) != null;
@@ -373,7 +376,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param rank
 	 * @return true if the rank is registered on the server within the default path, false otherwise.
 	 */
@@ -382,20 +384,18 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param rank
 	 * @param path
 	 * @return true if the rank and the path are registered on the server, false otherwise.
 	 */
 	public boolean rankExists(String rank, String path) {
-		return main.rankStorage.getEntireData().get(rank + "#~#" + path) != null;
+		return main.rankStorage.getRanksCollection(path).contains(rank);
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param rank
 	 * @param allPaths
-	 * @return true if the rank is registered on one of the available paths on the server, false otherwise.
+	 * @return true if the rank is registered in one of the available paths on the server, false otherwise.
 	 */
 	public boolean rankExists(String rank, boolean allPaths) {
 		boolean ye = false;
@@ -408,7 +408,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param rankPath
 	 * @return true if the rankPath is registered on the server, false otherwise.
 	 */
@@ -417,7 +416,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param path
 	 * @return true if the path is registered on the server, false otherwise.
 	 */
@@ -426,7 +424,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @return Default path name
 	 */
 	public String getDefaultPath() {
@@ -434,7 +431,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @return Default rank name
 	 */
 	public String getDefaultRank() {
@@ -451,7 +447,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param pathName
 	 * @return last rank that has been detected when the rank data got setup.
 	 */
@@ -460,8 +455,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
-	 * 
 	 *  @param offlinePlayer
 	 *  @return String player rank name
 	 */
@@ -470,7 +463,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid player unique id
 	 * @return player rank from a rank path
 	 */
@@ -479,7 +471,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid player uuid, fake uuid or real uuid are ok.
 	 * @return player name from storage
 	 */
@@ -488,7 +479,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid .toStringed() player uuid, fake uuid or real uuid are ok.
 	 * @return player name from storage
 	 */
@@ -497,7 +487,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param offlinePlayer
 	 * @return RankPath player rank path which gives you access to both the rank name and the path name
 	 */
@@ -506,7 +495,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid player unique id
 	 * @return RankPath which contains: getRankName(), getPathName().
 	 * can return an offline player rankpath.
@@ -516,7 +504,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * 
 	 * @param rankPath
 	 * @return double rank cost
 	 * @deprecated use getRankCost(RankPath rankPath)
@@ -526,7 +513,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param prestigeName
 	 * @return prestige cost from the storage
 	 */
@@ -535,7 +521,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param rebirthName
 	 * @return rebirth cost from the storage
 	 */
@@ -543,8 +528,6 @@ public class PRXAPI {
 		return main.rebirthStorage.getCost(rebirthName);
 	}
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
-	 * 
 	 *  @param offlinePlayer
 	 *  @return String player rank display name/prefix
 	 */
@@ -553,7 +536,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid player unique id
 	 * @return display name of player rank
 	 */
@@ -562,7 +544,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param offlinePlayer
 	 * @return display name of player rebirth
 	 */
@@ -572,7 +553,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid player unique id
 	 * @return display name of player rebirth
 	 */
@@ -582,8 +562,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
-	 * 
 	 *  @param offlinePlayer
 	 *  @return double player current rank's cost
 	 */
@@ -592,7 +570,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid player unique id
 	 * @return rank cost of player rank
 	 */
@@ -601,7 +578,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param offlinePlayer
 	 * @return current player rebirth's cost (not next)
 	 */
@@ -610,7 +586,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * 
 	 * @param uuid player unique id
 	 * @return cost of player current rebirth
 	 */
@@ -618,73 +593,57 @@ public class PRXAPI {
 		return (main.rebirthStorage.getCost(getPlayerRebirth(uuid)));
 	}
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param player
-	 * @return boolean also checks if "Options.autorankup" is true or false so this is one time check
+	 * @return boolean also checks if "Options.autorankup" is true or false, so this is a one time check
 	 */
 	public boolean isAutoRankupEnabled(Player player) {
-		if(main.globalStorage.getBooleanData("Options.autorankup") == false) {
-			return false;
-		}
+		if(!main.globalStorage.getBooleanData("Options.autorankup")) return false;
 		return AUTO_RANKUP_PLAYERS.contains(player.getName());
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param player
 	 * @return if player has autoprestige enabled
 	 */
 	public boolean isAutoPrestigeEnabled(Player player) {
 		return AUTO_PRESTIGE_PLAYERS.contains(player.getName());
 	}
+
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 *  @param offlinePlayer
-	 *  @return String player current rank's cost formatted (1k,10m,1.5b,etc..).
+	 *  @return String player current rank cost formatted (1k,10m,1.5b,etc..).
 	 */
 	public String getPlayerRankCostFormatted(OfflinePlayer offlinePlayer) {
 		return formatBalance(main.rankStorage.getCost(getPlayerRankPath(offlinePlayer)));
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid player unique id
 	 * @return Formatted cost of player current rank
 	 */
 	public String getPlayerRankCostFormatted(UUID uuid) {
 		return formatBalance(main.rankStorage.getCost(getPlayerRankPath(uuid)));
 	}
+
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
-	 * 
 	 *  @param offlinePlayer
-	 *  @return String player rank up name | returns null if the player is at the latest rank
+	 *  @return String player rank up name | returns null if the player is at the latest rank or ranks are disabled
 	 */
 	public String getPlayerNextRank(OfflinePlayer offlinePlayer) {
 		String nextRank = main.rankStorage.getRankupName(getPlayerRankPath(offlinePlayer));
-		if(nextRank.equalsIgnoreCase("lastrank")) {
-			return null;
-		} else {
-			return nextRank;
-		}
+		return nextRank.equalsIgnoreCase("LASTRANK") || !main.isRankEnabled ? null : nextRank;
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param uuid player unique id
 	 * @return player next rank name | returns null if player current rank next rank is set to LASTRANK
 	 */
 	public String getPlayerNextRank(UUID uuid) {
 		String nextRank = main.rankStorage.getRankupName(getPlayerRankPath(uuid));
-		if(nextRank.equalsIgnoreCase("lastrank")) {
-			return null;
-		} else {
-			return nextRank;
-		}
+		return nextRank.equalsIgnoreCase("LASTRANK") || !main.isRankEnabled ? null : nextRank;
 	}
+
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
-	 * 
 	 *  @param offlinePlayer
 	 *  @return String player rank up name | doesn't return null if the player is at the latest rank, will return "LASTRANK" instead
 	 */
@@ -694,8 +653,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
-	 * 
 	 *  @param uuid
 	 *  @return String player rank up name | doesn't return null if the player is at the latest rank, will return "LASTRANK" instead
 	 */
@@ -705,7 +662,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param offlinePlayer
 	 * @return player's current rebirth can be null
 	 */
@@ -715,7 +671,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * 
 	 * @param uuid player unique id
 	 * @return player current rebirth name
 	 */
@@ -747,7 +702,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param rankPath
 	 * @return get access to rank settings
 	 */
@@ -756,7 +710,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
 	 * @param name
 	 * @return get access to prestige settings
 	 */
@@ -765,7 +718,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * 
 	 * @param name
 	 * @return get access to rebirth settings
 	 */
@@ -774,7 +726,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @return PercentageState which contains the level type and the percentage depending on your state (max=100).
 	 */
 	public PercentageState getPlayerNextPercentage(OfflinePlayer offlinePlayer) {
@@ -871,8 +822,7 @@ public class PRXAPI {
 		}
 	}
 	/**
-	 * <p><i>this method is not thread-safe
-	 * @return integer next rank,prestige or rebirth percentage depending on your state (can go beyond 100).
+	 * @return integer next rank, prestige or rebirth percentage depending on your state (can go beyond 100).
 	 */
 	public String getPlayerNextPercentageNoLimit(OfflinePlayer offlinePlayer) {
 		Player p = (Player)offlinePlayer;
@@ -920,9 +870,9 @@ public class PRXAPI {
 			}
 		}
 	}
+
 	/**
-	 * <p><i>this method is not thread-safe
-	 * @return double next rank,prestige or rebirth percentage depending on your state (max=100.0).
+	 * @return double next rank, prestige or rebirth percentage depending on your state (max=100.0).
 	 */
 	public String getPlayerNextPercentageDecimal(OfflinePlayer offlinePlayer) {
 		Player p = (Player)offlinePlayer;
@@ -987,8 +937,8 @@ public class PRXAPI {
 			}
 		}
 	}
+
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @return double next rank,prestige or rebirth percentage depending on your state (can go beyond 100.0).
 	 */
 	public String getPlayerNextPercentageDecimalNoLimit(OfflinePlayer offlinePlayer) {
@@ -1036,8 +986,8 @@ public class PRXAPI {
 			}
 		}
 	}
+
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @param offlinePlayer
 	 * @return next stage progress bar | stage => {rank,prestige,rebirth}
 	 */
@@ -1120,7 +1070,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @param offlinePlayer
 	 * @return next stage progress bar extended to 20 chars
 	 */
@@ -1203,7 +1152,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @param offlinePlayer
 	 * @return player next rank progress bar
 	 */
@@ -1221,7 +1169,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @param offlinePlayer
 	 * @return player certain rank progress bar
 	 */
@@ -1236,7 +1183,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @param uuid player unique id
 	 * @param name player name
 	 * @return player next rank progress bar
@@ -1255,7 +1201,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @param offlinePlayer
 	 * @return player next rank progress bar with more characters
 	 */
@@ -1273,7 +1218,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @param offlinePlayer
 	 * @return player certain rank progress bar with more characters
 	 */
@@ -1288,7 +1232,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is not thread-safe
 	 * @param uuid player unique id
 	 * @param name player name
 	 * @return player next rank progress bar with more characters
@@ -1459,6 +1402,7 @@ public class PRXAPI {
 	public double getPlayerMoneyOnline(Player p) {
 		return main.econ.getBalance(p.getName());
 	}
+
 	/**
 	 * PrisonRanksX API
 	 * 
@@ -1512,9 +1456,8 @@ public class PRXAPI {
 	public String cp(String string, Player player) {
 		return main.getString(string, player.getName());
 	}
+
 	/**
-	 * <p><i>this method is thread-safe (can be called from an Async Task).
-	 * 
 	 *  @param offlinePlayer
 	 *  @return int player rank number in ranks list
 	 */
@@ -1624,6 +1567,7 @@ public class PRXAPI {
 	 *  @return String rank number in ranks list
 	 */
 	public String getRankNumber(String pathName, String rankName) {
+		if(!main.isRankEnabled) return "1";
 		List<String> collection = main.rankStorage.pathRanks.get(pathName);
 		String rankNumber = String.valueOf(collection.indexOf(rankName) + 1);
 		return rankNumber;
@@ -1636,6 +1580,7 @@ public class PRXAPI {
 			return 1;
 		return collection.indexOf(rankName) + 1;
 	}
+
 	/**
 	 * PrisonRanksX API
 	 * 
@@ -2834,15 +2779,15 @@ public class PRXAPI {
 	}
 
 	public boolean isLastRank(OfflinePlayer offlinePlayer) {
-		return main.rankStorage.isLastRank(getPlayerRankPath(offlinePlayer));
+		return !main.isRankEnabled || main.rankStorage.isLastRank(getPlayerRankPath(offlinePlayer));
 	}
 
 	public boolean isLastRank(UUID uuid) {
-		return main.rankStorage.isLastRank(getPlayerRankPath(uuid));
+		return !main.isRankEnabled || main.rankStorage.isLastRank(getPlayerRankPath(uuid));
 	}
 
 	public boolean isLastRank(RankPath rankPath) {
-		return main.rankStorage.isLastRank(rankPath);
+		return !main.isRankEnabled || main.rankStorage.isLastRank(rankPath);
 	}
 
 	/**
@@ -2878,22 +2823,22 @@ public class PRXAPI {
 	 *  @param offlinePlayer
 	 *  @return Double made for placeholderapi | returns 0.0 if getPlayerNextRank is null
 	 */
-	public Double getPlayerRankupCostWithIncreaseDirect(final OfflinePlayer offlinePlayer) {
+	public double getPlayerRankupCostWithIncreaseDirect(final OfflinePlayer offlinePlayer) {
 		if(getPlayerNextRank(offlinePlayer) == null) {
 			return 0.0;
 		}
 		RankPath rp = RankPath.getRankPath(getPlayerNextRank(offlinePlayer), main.playerStorage.getPlayerPath(offlinePlayer));
-		Double nextRankCost = getIncreasedRankupCostX(getPlayerRebirth(offlinePlayer), getPlayerPrestige(offlinePlayer), getRankCost(rp));	
-		return Double.valueOf(nextRankCost);
+		double nextRankCost = getIncreasedRankupCostX(getPlayerRebirth(offlinePlayer), getPlayerPrestige(offlinePlayer), getRankCost(rp));	
+		return nextRankCost;
 	}
 
-	public Double getPlayerRankCostWithIncreaseDirect(final OfflinePlayer offlinePlayer, final RankPath rankPath) {
+	public double getPlayerRankCostWithIncreaseDirect(final OfflinePlayer offlinePlayer, final RankPath rankPath) {
 		if(rankPath == null) {
 			return 0.0;
 		}
 		RankPath rp = rankPath;
-		Double newRankCost = getIncreasedRankupCostX(getPlayerRebirth(offlinePlayer), getPlayerPrestige(offlinePlayer), getRankCost(rp));	
-		return Double.valueOf(newRankCost);
+		double newRankCost = getIncreasedRankupCostX(getPlayerRebirth(offlinePlayer), getPlayerPrestige(offlinePlayer), getRankCost(rp));	
+		return newRankCost;
 	}
 
 	/**
@@ -3193,39 +3138,37 @@ public class PRXAPI {
 	}
 
 	/**
-	 * 
-	 * @param offlinePlayer
-	 * @return 0.0 if something goes wrong
+	 * @param offlinePlayer player to get increased next prestige cost for
+	 * @return 0.0 if player doesn't have next prestige or next prestige name is "LASTPRESTIGE". Otherwise, return the
+	 * increased prestige cost
 	 */
-	@Nonnull
-	public Double getPlayerNextPrestigeCostWithIncreaseDirect(final OfflinePlayer offlinePlayer) {
-		if(getPlayerNextPrestige(offlinePlayer) == null) {
-			return 0.0;
-		}
+	public double getPlayerNextPrestigeCostWithIncreaseDirect(final OfflinePlayer offlinePlayer) {
+		if(getPlayerNextPrestige(offlinePlayer) == null) return 0.0;	
 		String prestigeName = getPlayerNextPrestige(offlinePlayer);
-		if(prestigeName.equalsIgnoreCase("LASTPRESTIGE")) {
-			return 0.0;
-		}
-		Double nextPrestigeCost = getIncreasedPrestigeCost(getPlayerRebirth(offlinePlayer), getPrestigeCost(prestigeName));
-		return Double.valueOf(nextPrestigeCost);
+		if(prestigeName.equalsIgnoreCase("LASTPRESTIGE")) return 0.0;
+		return getIncreasedPrestigeCost(getPlayerRebirth(offlinePlayer), getPrestigeCost(prestigeName));
 	}
 
+	/**
+	 * @param uuid UUID of player to get increased rankup cost for
+	 * @return 0.0 if player doesn't have next rank. Otherwise, return the
+	 * increased rankup cost
+	 */
 	public double getPlayerRankupCostWithIncreaseDirect(final UUID uuid) {
-		if(getPlayerNextRank(uuid) == null) {
-			return 0.0;
-		}
+		if(getPlayerNextRank(uuid) == null) return 0.0;
 		RankPath rp = RankPath.getRankPath(getPlayerNextRank(uuid), main.playerStorage.getPlayerPath(uuid));
-		Double nextRankCost = getIncreasedRankupCost(getPlayerPrestige(uuid), getRankCost(rp));	
-		return Double.valueOf(nextRankCost);
+		return getIncreasedRankupCost(getPlayerPrestige(uuid), getRankCost(rp));
 	}
 
+	/**
+	 * @param uuid UUID of player to get increased next prestige cost for
+	 * @return 0.0 if player doesn't have next prestige. Otherwise, return the
+	 * increased next prestige cost
+	 */
 	public double getPlayerNextPrestigeCostWithIncreaseDirect(final UUID uuid) {
-		if(getPlayerNextPrestige(uuid) == null) {
-			return 0.0;
-		}
+		if(getPlayerNextPrestige(uuid) == null) return 0.0;
 		String prestigeName = getPlayerNextPrestige(uuid);
-		Double nextPrestigeCost = getIncreasedPrestigeCost(getPlayerRebirth(uuid), getPrestigeCost(prestigeName));
-		return Double.valueOf(nextPrestigeCost);
+		return getIncreasedPrestigeCost(getPlayerRebirth(uuid), getPrestigeCost(prestigeName));
 	}
 
 	/**
@@ -3236,13 +3179,9 @@ public class PRXAPI {
 	 */
 	public int getPlayerPrestiges(final OfflinePlayer offlinePlayer) {
 		int rebirthNumber = getPlayerRebirthNumber(offlinePlayer) == 0 ? 0 : getPlayerRebirthNumber(offlinePlayer) * (int)getPrestigeSize();
-		if(!hasPrestiged(offlinePlayer)) {
-			return 0;
-		}
+		if(!hasPrestiged(offlinePlayer)) return 0;
 		if(!hasRebirthed(offlinePlayer)) {
-			if(!hasPrestiged(offlinePlayer)) {
-				return 0;
-			}
+			if(!hasPrestiged(offlinePlayer)) return 0;
 			return getPlayerPrestigeNumber(offlinePlayer) + rebirthNumber;
 		}
 		return getPlayerPrestigeNumber(offlinePlayer) + rebirthNumber;
@@ -3257,13 +3196,9 @@ public class PRXAPI {
 	 */
 	public int getPlayerPrestiges(final UUID uuid) {
 		int rebirthNumber = getPlayerRebirthNumber(uuid) == 0 ? 0 : getPlayerRebirthNumber(uuid) * (int)getPrestigeSize();
-		if(!hasPrestiged(uuid)) {
-			return 0;
-		}
+		if(!hasPrestiged(uuid)) return 0;
 		if(!hasRebirthed(uuid)) {
-			if(!hasPrestiged(uuid)) {
-				return 0;
-			}
+			if(!hasPrestiged(uuid)) return 0;
 			return getPlayerPrestigeNumber(uuid) + rebirthNumber;
 		}
 		return getPlayerPrestigeNumber(uuid) + rebirthNumber;
@@ -3279,10 +3214,10 @@ public class PRXAPI {
 		int rebirthNumber = this.getPlayerRebirthNumber(uuid);
 		int prestigeNumber = this.getPlayerPrestigeNumber(uuid);
 		int firstResult = (int)(lastPrestige*(rebirthNumber+1))+(prestigeNumber);
-		RankPath playerRankPath = this.getPlayerRankPath(uuid);
-		String pathName = playerRankPath.getPathName();
-		int lastRank = this.getRanksCollection(pathName).size();
-		int rankNumber = this.getRankNumberX(pathName, playerRankPath.getRankName());
+		RankPath playerRankPath = main.isRankEnabled ? this.getPlayerRankPath(uuid) : null;
+		String pathName = main.isRankEnabled ? playerRankPath.getPathName() : null;
+		int lastRank = main.isRankEnabled ? this.getRanksCollection(pathName).size() : 2;
+		int rankNumber = main.isRankEnabled ? this.getRankNumberX(pathName, playerRankPath.getRankName()) : 1;
 		int finalResult = (int)(lastRank*(firstResult+(rebirthNumber+1)))+rankNumber;
 		return finalResult;
 	}
@@ -3345,8 +3280,8 @@ public class PRXAPI {
 	public String getPlayerRankupPercentageDirect(final OfflinePlayer offlinePlayer) {
 		if(this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)) == null) {
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer), 1) * 100;
-			String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
-			if(Double.valueOf(convertedValue) > 100) {
+			String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(numberAPI.deleteScientificNotationA(percent)));
+			if(Double.parseDouble(convertedValue) > 100) {
 				return "100";
 			}
 			return String.valueOf(convertedValue);
@@ -3356,7 +3291,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			if(finalPercent >= 100) {
@@ -3369,8 +3304,8 @@ public class PRXAPI {
 	public String getPlayerRankPercentage(final OfflinePlayer offlinePlayer, final RankPath rankPath) {
 		if(this.getRankNumberRequirements(rankPath) == null) {
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankCostWithIncreaseDirect(offlinePlayer, rankPath), 1) * 100;
-			String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
-			if(Double.valueOf(convertedValue) > 100) {
+			String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(numberAPI.deleteScientificNotationA(percent)));
+			if(Double.parseDouble(convertedValue) > 100) {
 				return "100";
 			}
 			return String.valueOf(convertedValue);
@@ -3380,7 +3315,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(rankPath).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			if(finalPercent >= 100) {
@@ -3388,6 +3323,44 @@ public class PRXAPI {
 			}
 			return numberAPI.toFakeInteger(finalPercent);
 		}
+	}
+
+	public String getPlayerRankCombinedPercentage(final OfflinePlayer offlinePlayer, final RankPath rankPath) {
+		if(this.getRankNumberRequirements(rankPath) == null) {
+			TypedAtomicObject<Double> percentage = new TypedAtomicObject<>(0.0);
+			TypedAtomicObject<Integer> amount = new TypedAtomicObject<>(0);
+			for(String rank : this.getRanksCollection(rankPath.getPathName())) {
+				amount.set(amount.get()+1);
+				RankPath loopRankPath = RankPath.getRankPath(rank, rankPath.getPathName());
+				double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankCostWithIncreaseDirect(offlinePlayer, loopRankPath), 1) * 100;
+				double convertedValue = Double.parseDouble(numberAPI.toFakeInteger(Double.parseDouble(numberAPI.deleteScientificNotationA(percent))));
+				percentage.set(percentage.get() + convertedValue);
+				if(loopRankPath.getRankName().equals(rankPath.getRankName())) break;
+			}
+			double combinedPercentage = percentage.get() / amount.get();
+			return String.valueOf(combinedPercentage > 100 ? 100 : combinedPercentage);
+		} else {
+			int splittingNumber = 1;
+			double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankCostWithIncreaseDirect(offlinePlayer, rankPath), 1) * 100;
+			double addPercent = 0D;
+			for(Entry<String, Double> entry : this.getRankNumberRequirements(rankPath).entrySet()) {
+				splittingNumber++;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+			}
+			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
+			if(finalPercent >= 100) {
+				return "100";
+			}
+			return numberAPI.toFakeInteger(finalPercent);
+		}
+	}
+
+	public boolean isUsingPrestigeMax(Player player) {
+		return main.getPrestigeMax().isProcessing(player.getName());
+	}
+
+	public boolean isUsingPrestigeMax(String name) {
+		return main.getPrestigeMax().isProcessing(name);
 	}
 
 	/**
@@ -3571,8 +3544,8 @@ public class PRXAPI {
 				return "100";
 			}
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / numberAPI.limitInverse(getPlayerRankupCostWithIncreaseDirect(offlinePlayer), 1) * 100;
-			String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
-			if(Double.valueOf(convertedValue) > 100) {
+			String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(numberAPI.deleteScientificNotationA(percent)));
+			if(Double.parseDouble(convertedValue) > 100) {
 				return "100";
 			}
 			return String.valueOf(convertedValue);
@@ -3582,7 +3555,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			if(finalPercent >= 100) {
@@ -3595,8 +3568,8 @@ public class PRXAPI {
 	public String getPlayerNextPrestigePercentageDirect(final OfflinePlayer offlinePlayer) {
 		if(this.getPrestigeNumberRequirements(getPlayerPrestige(offlinePlayer)) == null) {
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerNextPrestigeCostWithIncreaseDirect(offlinePlayer) * 100;
-			String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
-			if(Double.valueOf(convertedValue) > 100) {
+			String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(numberAPI.deleteScientificNotationA(percent)));
+			if(Double.parseDouble(convertedValue) > 100) {
 				return "100";
 			}
 			return String.valueOf(convertedValue);
@@ -3606,7 +3579,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getPrestigeNumberRequirements(getPlayerPrestige(offlinePlayer)).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			if(finalPercent >= 100) {
@@ -3619,8 +3592,8 @@ public class PRXAPI {
 	public String getPlayerNextRebirthPercentageDirect(final OfflinePlayer offlinePlayer) {
 		if(this.getRebirthNumberRequirements(getPlayerRebirth(offlinePlayer)) == null) {
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerNextRebirthCost(offlinePlayer) * 100;
-			String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
-			if(Double.valueOf(convertedValue) > 100) {
+			String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(numberAPI.deleteScientificNotationA(percent)));
+			if(Double.parseDouble(convertedValue) > 100) {
 				return "100";
 			}
 			return String.valueOf(convertedValue);
@@ -3630,7 +3603,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRebirthNumberRequirements(getPlayerRebirth(offlinePlayer)).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			if(finalPercent >= 100) {
@@ -3643,8 +3616,8 @@ public class PRXAPI {
 	@SuppressWarnings("deprecation")
 	public String getPlayerRankupPercentageDirectOnline(UUID uuid, String name) {
 		Double percent = getPluginMainClass().econ.getBalance(name) / getPlayerRankupCostWithIncreaseDirect(uuid) * 100;
-		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(numberAPI.deleteScientificNotationA(percent)));
-		if(Double.valueOf(convertedValue) > 100) {
+		String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(numberAPI.deleteScientificNotationA(percent)));
+		if(Double.parseDouble(convertedValue) > 100) {
 			return "100";
 		}
 		return String.valueOf(convertedValue);
@@ -3659,7 +3632,7 @@ public class PRXAPI {
 		if(this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)) == null) {
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100;
 			String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
-			String convertedValue = numberAPI.toFakeInteger(Double.valueOf(percentRemovedSN));
+			String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(percentRemovedSN));
 			return String.valueOf(convertedValue);
 		} else {
 			int splittingNumber = 1;
@@ -3667,7 +3640,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			return numberAPI.toFakeInteger(finalPercent);
@@ -3678,7 +3651,7 @@ public class PRXAPI {
 		if(this.getRankNumberRequirements(rankPath) == null) {
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankCostWithIncreaseDirect(offlinePlayer, rankPath) * 100;
 			String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
-			String convertedValue = numberAPI.toFakeInteger(Double.valueOf(percentRemovedSN));
+			String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(percentRemovedSN));
 			return String.valueOf(convertedValue);
 		} else {
 			int splittingNumber = 1;
@@ -3686,7 +3659,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(rankPath).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			return numberAPI.toFakeInteger(finalPercent);
@@ -3697,7 +3670,7 @@ public class PRXAPI {
 	public String getPlayerRankupPercentageNoLimitDirectOnline(UUID uuid, String name) {
 		Double percent = getPluginMainClass().econ.getBalance(name) / getPlayerRankupCostWithIncreaseDirect(uuid) * 100;
 		String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
-		String convertedValue = numberAPI.toFakeInteger(Double.valueOf(percentRemovedSN));
+		String convertedValue = numberAPI.toFakeInteger(Double.parseDouble(percentRemovedSN));
 		return String.valueOf(convertedValue);
 	}
 
@@ -3710,7 +3683,7 @@ public class PRXAPI {
 		if(this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)) == null) {
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankupCostWithIncreaseDirect(offlinePlayer) * 100;
 			String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
-			Double convertedValue = Double.valueOf(percentRemovedSN);
+			Double convertedValue = Double.parseDouble(percentRemovedSN);
 			if(convertedValue > 100) {
 				return "100.0";
 			}
@@ -3721,7 +3694,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			if(finalPercent >= 100) {
@@ -3735,7 +3708,7 @@ public class PRXAPI {
 		if(this.getRankNumberRequirements(rankPath) == null) {
 			Double percent = getPluginMainClass().econ.getBalance(offlinePlayer) / getPlayerRankCostWithIncreaseDirect(offlinePlayer, rankPath) * 100;
 			String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
-			Double convertedValue = Double.valueOf(percentRemovedSN);
+			Double convertedValue = Double.parseDouble(percentRemovedSN);
 			if(convertedValue > 100) {
 				return "100.0";
 			}
@@ -3746,7 +3719,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(rankPath).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			if(finalPercent >= 100) {
@@ -3764,7 +3737,7 @@ public class PRXAPI {
 	public String getPlayerRankupPercentageDecimalDirectOnline(UUID uuid, String name) {
 		Double percent = getPluginMainClass().econ.getBalance(name) / getPlayerRankupCostWithIncreaseDirect(uuid) * 100;
 		String percentRemovedSN = numberAPI.decimalize(numberAPI.deleteScientificNotationA(percent), 2);
-		Double convertedValue = Double.valueOf(percentRemovedSN);
+		Double convertedValue = Double.parseDouble(percentRemovedSN);
 		if(convertedValue > 100) {
 			return "100.0";
 		}
@@ -3788,7 +3761,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(getPlayerRankPath(offlinePlayer)).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			return dec(finalPercent);
@@ -3806,7 +3779,7 @@ public class PRXAPI {
 			double addPercent = 0D;
 			for(Entry<String, Double> entry : this.getRankNumberRequirements(rankPath).entrySet()) {
 				splittingNumber++;
-				addPercent += (Double.valueOf(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
+				addPercent += (Double.parseDouble(PlaceholderAPI.setPlaceholders(offlinePlayer, entry.getKey())) / entry.getValue()) * 100;
 			}
 			double finalPercent = (numberAPI.limit(percent, 100) + numberAPI.limit(addPercent, 100)) / splittingNumber;
 			return dec(finalPercent);
@@ -4033,8 +4006,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe and multi-threaded (can be called from an Async Task).
-	 * <p><b>NOTE: the entire leaderboard system is MULTI-THREADED</b>
 	 * @param player
 	 * @return leaderboard position starting from 1
 	 */
@@ -4043,8 +4014,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe and multi-threaded (can be called from an Async Task).
-	 * <p><b>NOTE: the entire leaderboard system is MULTI-THREADED</b>
 	 * @param uuid
 	 * @return player leaderboard position
 	 */
@@ -4053,8 +4022,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe and multi-threaded (can be called from an Async Task).
-	 * <p><b>NOTE: the entire leaderboard system is MULTI-THREADED</b>
 	 * @param intValue
 	 * @return player from leaderboard position
 	 */
@@ -4063,8 +4030,6 @@ public class PRXAPI {
 	}
 
 	/**
-	 * <p><i>this method is thread-safe and multi-threaded (can be called from an Async Task).
-	 * <p><b>NOTE: the entire leaderboard system is MULTI-THREADED</b>
 	 * @param intValue
 	 * @return player uuid from leaderboard position
 	 */

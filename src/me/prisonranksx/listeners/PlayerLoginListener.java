@@ -48,14 +48,11 @@ public class PlayerLoginListener implements IPlayerLoginListener {
 			return;
 		plugin.scheduler.runTaskLater(plugin, () -> {
 			plugin.abprogress.enable(p);
-		}, 120);
+		}, 20);
 	}
 
 	@Override
 	public void registerUserData(UUID uuid, String name) {
-		if(!plugin.isRankEnabled) {
-			return;
-		}
 		XUser user;
 		user = new XUser(uuid);
 		UUID playerUUID = user.getUUID();
@@ -67,7 +64,7 @@ public class PlayerLoginListener implements IPlayerLoginListener {
 				return;
 			}
 			plugin.getPlayerStorage().register(playerUUID, name, true);
-			plugin.prxAPI.setPlayerRankPath(playerUUID, defaultRankPath);
+			plugin.prxAPI.setPlayerRankPath(playerUUID, plugin.isRankEnabled ? defaultRankPath : null);
 			if(plugin.isMySql()) plugin.updateMySqlData(playerUUID, name);
 		} else {
 			plugin.getPlayerStorage().loadPlayerData(playerUUID, name);

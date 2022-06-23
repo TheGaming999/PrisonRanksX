@@ -26,7 +26,6 @@ package co.aikar.taskchain;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-@SuppressWarnings("WeakerAccess")
 public class TaskChainTasks {
     /**
      * Generic task with synchronous return (but may execute on any thread)

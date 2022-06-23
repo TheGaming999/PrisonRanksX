@@ -8,14 +8,14 @@ import me.prisonranksx.PrisonRanksX;
 
 public interface IHologram {
 
-	public abstract IHologram create(PrisonRanksX plugin, String hologramName, Location location, boolean threadSafe);
+	public IHologram create(PrisonRanksX plugin, String hologramName, Location location, boolean threadSafe);
 	
-	public abstract void addLine(String line, boolean threadSafe);
+	public void addLine(String line, boolean threadSafe);
 	
-	public abstract void addLine(List<String> lines, boolean threadSafe);
+	public void addLine(List<String> lines, boolean threadSafe);
 	
-	public abstract void delete();
+	public void delete();
 	
-	public abstract void delete(int removeTime);
+	public void delete(int removeTime);
 	
 }

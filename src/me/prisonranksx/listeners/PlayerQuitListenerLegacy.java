@@ -8,7 +8,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import me.prisonranksx.PrisonRanksX;
 import me.prisonranksx.api.PRXAPI;
-import me.prisonranksx.utils.AtomicObject;
 import me.prisonranksx.utils.OnlinePlayers;
 import me.prisonranksx.utils.XUUID;
 
@@ -32,9 +31,10 @@ public class PlayerQuitListenerLegacy implements IPlayerQuitListener {
 		if(plugin.getPrestigeMax().isProcessing(name)) plugin.getPrestigeMax().sendStopSignal(name);		
 		plugin.rankupMaxLegacy.rankupMaxProcess.remove(p);
 		if(plugin.isSaveOnLeave) {
-			AtomicObject atomicUUID = new AtomicObject(XUUID.tryNameConvert(name));
+			XUUID atomicUUID = new XUUID();
+			atomicUUID.parseUUID(name);
 			plugin.getTaskChainFactory().newSharedChain("dataSave").async(() -> {
-				UUID uuidNew = (UUID)atomicUUID.get();
+				UUID uuidNew = atomicUUID.uuid();
 				if(plugin.isMySql()) {
 					plugin.updateMySqlData(uuidNew, name);
 				} else {	
@@ -47,7 +47,6 @@ public class PlayerQuitListenerLegacy implements IPlayerQuitListener {
 			}).execute();
 		}
 		if(plugin.isEBProgress) plugin.ebprogress.disable(p);
-		if(plugin.isABProgress) plugin.abprogress.disable(p);
 	}
 
 }

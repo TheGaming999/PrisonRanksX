@@ -29,15 +29,14 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class TaskChainFactory {
     private final GameInterface impl;
     private final AsyncQueue asyncQueue;
-    private final Map<String, Queue<SharedTaskChain>> sharedChains = new HashMap<>();
+    @SuppressWarnings("rawtypes")
+	private final Map<String, Queue<SharedTaskChain>> sharedChains = new HashMap<>();
     volatile private BiConsumer<Exception, TaskChainTasks.Task<?, ?>> defaultErrorHandler;
     volatile boolean shutdown = false;
 
-    @SuppressWarnings("WeakerAccess")
     public TaskChainFactory(GameInterface impl) {
         this.impl = impl;
         this.asyncQueue = impl.getAsyncQueue();
@@ -48,7 +47,8 @@ public class TaskChainFactory {
         return impl;
     }
 
-    public Map<String, Queue<SharedTaskChain>> getSharedChains() {
+    @SuppressWarnings("rawtypes")
+	public Map<String, Queue<SharedTaskChain>> getSharedChains() {
         return sharedChains;
     }
 

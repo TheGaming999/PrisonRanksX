@@ -25,7 +25,6 @@ package co.aikar.taskchain;
 
 import java.util.concurrent.TimeUnit;
 
-@SuppressWarnings("WeakerAccess")
 public interface AsyncQueue {
     /**
      * Task to post async of main thread

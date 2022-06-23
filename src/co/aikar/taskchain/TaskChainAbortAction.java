@@ -30,7 +30,6 @@ package co.aikar.taskchain;
  * @param <A2>
  * @param <A3>
  */
-@SuppressWarnings("WeakerAccess")
 public interface TaskChainAbortAction <A1, A2, A3> {
     default void onAbort(TaskChain<?> chain, A1 arg1) {}
     default void onAbort(TaskChain<?> chain, A1 arg1, A2 arg2) {

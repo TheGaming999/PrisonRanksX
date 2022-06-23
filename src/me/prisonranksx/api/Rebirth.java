@@ -278,7 +278,7 @@ public class Rebirth {
 					return;
 				}
 			});
-			main.playerStorage.setPlayerPrestige(p, prxAPI.getFirstPrestige());
+			main.playerStorage.setPlayerPrestige(p, null);
 		}
 		List<String> rebirthCommands = main.globalStorage.getStringListData("RebirthOptions.rebirth-cmds");
 		if(!rebirthCommands.isEmpty()) {
@@ -303,7 +303,6 @@ public class Rebirth {
 		Bukkit.getScheduler().runTaskLater(main, () -> {
 			main.playerStorage.setPlayerRebirth(p, rebirth);
 			PRXAPI.TASKED_PLAYERS.remove(name);
-
 		}, 1);
 	}
 

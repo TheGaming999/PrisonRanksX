@@ -56,7 +56,7 @@ public class RankupMaxLegacy {
 	public void rankupMax(final Player player) {
         Player p = player;
         String name = p.getName();
-        UUID u = XUUID.tryNameConvert(name);
+        UUID u = XUUID.getUUID(name);
         String rankupFrom = null;
         if(rankupMaxProcess.contains(p)) {
         	p.sendMessage(prxAPI.g("rankupmax-is-on"));
@@ -330,7 +330,7 @@ public class RankupMaxLegacy {
 	public void rankupMax(final Player player, final String rankLimit) {
         Player p = player;
         String name = p.getName();
-        UUID u = XUUID.tryNameConvert(name);
+        UUID u = XUUID.getUUID(name);
         String rankupFrom = null;
         RankPath rp1 = prxAPI.getPlayerRankPath(u);
         String limit = main.manager.matchRank(rankLimit, rp1.getPathName());

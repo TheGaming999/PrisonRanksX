@@ -34,7 +34,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({"unused"})
 public class BukkitTaskChainFactory extends TaskChainFactory {
     private BukkitTaskChainFactory(Plugin plugin, AsyncQueue asyncQueue) {
         super(new BukkitGameInterface(plugin, asyncQueue));
@@ -52,7 +52,6 @@ public class BukkitTaskChainFactory extends TaskChainFactory {
         return new BukkitTaskChainFactory(plugin, asyncQueue);
     }*/
 
-    @SuppressWarnings("PublicInnerClass")
     private static class BukkitGameInterface implements GameInterface {
         private final Plugin plugin;
         private final AsyncQueue asyncQueue;

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Crypto Morin
+ * Copyright (c) 2022 Crypto Morin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,22 +21,31 @@
  */
 package me.prisonranksx.reflections;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+import static me.prisonranksx.reflections.ReflectionUtils.NMS;
+import static me.prisonranksx.reflections.ReflectionUtils.getNMSClass;
+import static me.prisonranksx.reflections.ReflectionUtils.sendPacket;
+import static me.prisonranksx.reflections.ReflectionUtils.v;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.Callable;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang.math.NumberUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import com.google.common.base.Strings;
+
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * A reflection API for action bars in Minecraft.
@@ -45,8 +54,10 @@ import java.util.concurrent.Callable;
  * Messages are not colorized by default.
  * <p>
  * Action bars are text messages that appear above
- * the player's <a href="https://minecraft.gamepedia.com/Heads-up_display">hotbar</a>
- * Note that this is different than the text appeared when switching between items.
+ * the player's
+ * <a href="https://minecraft.gamepedia.com/Heads-up_display">hotbar</a>
+ * Note that this is different than the text appeared when switching between
+ * items.
  * Those messages show the item's name and are different from action bars.
  * The only natural way of displaying action bars is when mounting.
  * <p>
@@ -57,211 +68,291 @@ import java.util.concurrent.Callable;
  * PacketPlayOutTitle: https://wiki.vg/Protocol#Title
  *
  * @author Crypto Morin
- * @version 2.0.0
+ * @version 3.2.0
  * @see ReflectionUtils
  */
-public class Actionbar1_16 implements Actionbar {
-    private static final boolean sixteen = Material.getMaterial("LODESTONE") != null;
-    private static final boolean spigot;
-    /**
-     * ChatComponentText JSON message builder.
-     */
-    private static final MethodHandle chatComponentText;
-    /**
-     * PacketPlayOutChat
-     */
-    private static final MethodHandle packetPlayOutChat;
-    /**
-     * GAME_INFO enum constant.
-     */
-    private static final Object chatMessageType;
+public final class Actionbar1_16 {
+	/**
+	 * If the server is running Spigot which has an official ActionBar API.
+	 * This should technically be available from 1.9
+	 */
+	private static final boolean SPIGOT;
+	/**
+	 * ChatComponentText JSON message builder.
+	 */
+	private static final MethodHandle CHAT_COMPONENT_TEXT;
+	/**
+	 * PacketPlayOutChat
+	 */
+	private static final MethodHandle PACKET_PLAY_OUT_CHAT;
+	/**
+	 * GAME_INFO enum constant.
+	 */
+	private static final Object CHAT_MESSAGE_TYPE;
 
-    static {
-        boolean exists = false;
-        if (Material.getMaterial("KNOWLEDGE_BOOK") != null) {
-            try {
-                Class.forName("org.spigotmc.SpigotConfig");
-                exists = true;
-            } catch (ClassNotFoundException ignored) {
-            }
-        }
-        spigot = exists;
-    }
+	private static final char TIME_SPECIFIER_START = '^', TIME_SPECIFIER_END = '|';
 
-    static {
-        MethodHandle packet = null;
-        MethodHandle chatComp = null;
-        Object chatMsgType = null;
+	static {
+		boolean exists = false;
+		try {
+			Player.Spigot.class.getDeclaredMethod("sendMessage", ChatMessageType.class, BaseComponent.class);
+			exists = true;
+		} catch (NoClassDefFoundError | NoSuchMethodException ignored) {
+		}
+		SPIGOT = exists;
+	}
 
-        if (!spigot) {
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
-            Class<?> packetPlayOutChatClass = ReflectionUtils.getNMSClass("PacketPlayOutChat");
-            Class<?> iChatBaseComponentClass = ReflectionUtils.getNMSClass("IChatBaseComponent");
+	static {
+		MethodHandle packet = null;
+		MethodHandle chatComp = null;
+		Object chatMsgType = null;
 
-            try {
-                // Game Info Message Type
-                Class<?> chatMessageTypeClass = Class.forName(ReflectionUtils.NMS + "ChatMessageType");
+		if (!SPIGOT) {
+			// Supporting 1.17 is not necessary, the package guards are just for
+			// readability.
+			MethodHandles.Lookup lookup = MethodHandles.lookup();
+			Class<?> packetPlayOutChatClass = getNMSClass("network.protocol.game", "PacketPlayOutChat");
+			Class<?> iChatBaseComponentClass = getNMSClass("network.chat", "IChatBaseComponent");
 
-                // Packet Constructor
-                MethodType type;
-                if (sixteen) type = MethodType.methodType(void.class, iChatBaseComponentClass, chatMessageTypeClass, UUID.class);
-                else type = MethodType.methodType(void.class, iChatBaseComponentClass, chatMessageTypeClass);
+			try {
+				// Game Info Message Type
+				Class<?> chatMessageTypeClass = Class
+						.forName(NMS + v(17, "network.chat").orElse("") + "ChatMessageType");
 
-                for (Object obj : chatMessageTypeClass.getEnumConstants()) {
-                    String name = obj.toString();
-                    if (name.equals("GAME_INFO") || name.equalsIgnoreCase("ACTION_BAR")) {
-                        chatMsgType = obj;
-                        break;
-                    }
-                }
+				// Packet Constructor
+				MethodType type = MethodType.methodType(void.class, iChatBaseComponentClass, chatMessageTypeClass);
 
-                // JSON Message Builder
-                Class<?> chatComponentTextClass = ReflectionUtils.getNMSClass("ChatComponentText");
-                chatComp = lookup.findConstructor(chatComponentTextClass, MethodType.methodType(void.class, String.class));
+				for (Object obj : chatMessageTypeClass.getEnumConstants()) {
+					String name = obj.toString();
+					if (name.equals("GAME_INFO") || name.equalsIgnoreCase("ACTION_BAR")) {
+						chatMsgType = obj;
+						break;
+					}
+				}
 
-                packet = lookup.findConstructor(packetPlayOutChatClass, type);
-            } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException ignored) {
-                try {
-                    // Game Info Message Type
-                    chatMsgType = (byte) 2;
+				// JSON Message Builder
+				Class<?> chatComponentTextClass = getNMSClass("network.chat", "ChatComponentText");
+				chatComp = lookup.findConstructor(chatComponentTextClass,
+						MethodType.methodType(void.class, String.class));
 
-                    // JSON Message Builder
-                    Class<?> chatComponentTextClass = ReflectionUtils.getNMSClass("ChatComponentText");
-                    chatComp = lookup.findConstructor(chatComponentTextClass, MethodType.methodType(void.class, String.class));
+				packet = lookup.findConstructor(packetPlayOutChatClass, type);
+			} catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException ignored) {
+				try {
+					// Game Info Message Type
+					chatMsgType = (byte) 2;
 
-                    // Packet Constructor
-                    packet = lookup.findConstructor(packetPlayOutChatClass, MethodType.methodType(void.class, iChatBaseComponentClass, byte.class));
-                } catch (NoSuchMethodException | IllegalAccessException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
+					// JSON Message Builder
+					Class<?> chatComponentTextClass = getNMSClass("ChatComponentText");
+					chatComp = lookup.findConstructor(chatComponentTextClass,
+							MethodType.methodType(void.class, String.class));
 
-        chatMessageType = chatMsgType;
-        chatComponentText = chatComp;
-        packetPlayOutChat = packet;
-    }
+					// Packet Constructor
+					packet = lookup.findConstructor(packetPlayOutChatClass,
+							MethodType.methodType(void.class, iChatBaseComponentClass, byte.class));
+				} catch (NoSuchMethodException | IllegalAccessException ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
 
-    /**
-     * Sends an action bar to a player.
-     *
-     * @param player  the player to send the action bar to.
-     * @param message the message to send.
-     * @see #sendActionBar(JavaPlugin, Player, String, long)
-     * @since 1.0.0
-     */
-    public void sendActionBar(@Nonnull Player player, @Nullable String message) {
-        Objects.requireNonNull(player, "Cannot send action bar to null player");
-        if (spigot) {
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
-            return;
-        }
+		CHAT_MESSAGE_TYPE = chatMsgType;
+		CHAT_COMPONENT_TEXT = chatComp;
+		PACKET_PLAY_OUT_CHAT = packet;
+	}
 
-        try {
-            Object component = chatComponentText.invoke(message);
-            Object packet;
-            if (sixteen) packet = packetPlayOutChat.invoke(component, chatMessageType, player.getUniqueId());
-            else packet = packetPlayOutChat.invoke(component, chatMessageType);
+	private Actionbar1_16() {}
 
-            ReflectionUtils.sendPacket(player, packet);
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
-    }
+	/**
+	 * Sends an action bar to a player.
+	 * This particular method supports a special prefix for
+	 * configuring the time of the actionbar.
+	 * <p>
+	 * <b>Format: {@code ^number|}</b>
+	 * <br>
+	 * where {@code number} is in seconds.
+	 * <br>
+	 * E.g. {@code ^7|&2Hello &4World!}
+	 * will keep the actionbar active for 7 seconds.
+	 *
+	 * @param player  the player to send the action bar to.
+	 * @param message the message to send.
+	 *
+	 * @see #sendActionBar(JavaPlugin, Player, String, long)
+	 * @since 3.2.0
+	 */
+	public static void sendActionBar(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable String message) {
+		if (!Strings.isNullOrEmpty(message)) {
+			if (message.charAt(0) == TIME_SPECIFIER_START) {
+				int end = message.indexOf(TIME_SPECIFIER_END);
+				if (end != -1) {
+					int time = NumberUtils.toInt(message.substring(1, end), 0) * 20;
+					if (time >= 0) sendActionBar(plugin, player, message.substring(end + 1), time);
+				}
+			}
+		}
 
-    /**
-     * Sends an action bar all the online players.
-     *
-     * @param message the message to send.
-     * @see #sendActionBar(Player, String)
-     * @since 1.0.0
-     */
-    public void sendPlayersActionBar(@Nullable String message) {
-        for (Player player : Bukkit.getOnlinePlayers()) sendActionBar(player, message);
-    }
+		sendActionBar(player, message);
+	}
 
-    /**
-     * Sends an action bar to a player for a specific amount of ticks.
-     * Plugin instance should be changed in this method for the schedulers.
-     * <p>
-     * If the caller returns true, the action bar will continue.
-     * If the caller returns false, action bar will not be sent anymore.
-     *
-     * @param player   the player to send the action bar to.
-     * @param message  the message to send. The message will not be updated.
-     * @param callable the condition for the action bar to continue.
-     * @see #sendActionBar(JavaPlugin, Player, String, long)
-     * @since 1.0.0
-     */
-    public void sendActionBarWhile(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable String message, @Nonnull Callable<Boolean> callable) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!callable.call()) {
-                        cancel();
-                        return;
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                sendActionBar(player, message);
-            }
-            // Re-sends the messages every 2 seconds so it doesn't go away from the player's screen.
-        }.runTaskTimerAsynchronously(plugin, 0L, 40L);
-    }
+	/**
+	 * Sends an action bar to a player.
+	 *
+	 * @param player  the player to send the action bar to.
+	 * @param message the message to send.
+	 *
+	 * @see #sendActionBar(JavaPlugin, Player, String, long)
+	 * @since 1.0.0
+	 */
+	public static void sendActionBar(@Nonnull Player player, @Nullable String message) {
+		Objects.requireNonNull(player, "Cannot send action bar to null player");
+		Objects.requireNonNull(message, "Cannot send null actionbar message");
 
-    /**
-     * Sends an action bar to a player for a specific amount of ticks.
-     * <p>
-     * If the caller returns true, the action bar will continue.
-     * If the caller returns false, action bar will not be sent anymore.
-     *
-     * @param player   the player to send the action bar to.
-     * @param message  the message to send. The message will be updated.
-     * @param callable the condition for the action bar to continue.
-     * @see #sendActionBarWhile(JavaPlugin, Player, String, Callable)
-     * @since 1.0.0
-     */
-    public void sendActionBarWhile(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable Callable<String> message, @Nonnull Callable<Boolean> callable) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!callable.call()) {
-                        cancel();
-                        return;
-                    }
-                    sendActionBar(player, message.call());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-            // Re-sends the messages every 2 seconds so it doesn't go away from the player's screen.
-        }.runTaskTimerAsynchronously(plugin, 0L, 40L);
-    }
+		if (SPIGOT) {
+			player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+			return;
+		}
 
-    /**
-     * Sends an action bar to a player for a specific amount of ticks.
-     *
-     * @param player   the player to send the action bar to.
-     * @param message  the message to send.
-     * @param duration the duration to keep the action bar in ticks.
-     * @see #sendActionBarWhile(JavaPlugin, Player, String, Callable)
-     * @since 1.0.0
-     */
-    public void sendActionBar(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable String message, long duration) {
-        if (duration < 1) return;
+		try {
+			Object component = CHAT_COMPONENT_TEXT.invoke(message);
+			Object packet = PACKET_PLAY_OUT_CHAT.invoke(component, CHAT_MESSAGE_TYPE);
+			sendPacket(player, packet);
+		} catch (Throwable throwable) {
+			throwable.printStackTrace();
+		}
+	}
 
-        new BukkitRunnable() {
-            long repeater = duration;
+	/**
+	 * Sends an action bar all the online players.
+	 *
+	 * @param message the message to send.
+	 *
+	 * @see #sendActionBar(Player, String)
+	 * @since 1.0.0
+	 */
+	public static void sendPlayersActionBar(@Nullable String message) {
+		for (Player player : Bukkit.getOnlinePlayers())
+			sendActionBar(player, message);
+	}
 
-            @Override
-            public void run() {
-                sendActionBar(player, message);
-                repeater -= 40L;
-                if (repeater - 40L < -20L) cancel();
-            }
-        }.runTaskTimerAsynchronously(plugin, 0L, 40L);
-    }
+	/**
+	 * Clear the action bar by sending an empty message.
+	 *
+	 * @param player the player to send the action bar to.
+	 *
+	 * @see #sendActionBar(Player, String)
+	 * @since 2.1.1
+	 */
+	public static void clearActionBar(@Nonnull Player player) {
+		sendActionBar(player, " ");
+	}
+
+	/**
+	 * Clear the action bar by sending an empty message to all the online players.
+	 *
+	 * @see #clearActionBar(Player player)
+	 * @since 2.1.1
+	 */
+	public static void clearPlayersActionBar() {
+		for (Player player : Bukkit.getOnlinePlayers())
+			clearActionBar(player);
+	}
+
+	/**
+	 * Sends an action bar to a player for a specific amount of ticks.
+	 * Plugin instance should be changed in this method for the schedulers.
+	 * <p>
+	 * If the caller returns true, the action bar will continue.
+	 * If the caller returns false, action bar will not be sent anymore.
+	 *
+	 * @param plugin   the plugin handling the message scheduler.
+	 * @param player   the player to send the action bar to.
+	 * @param message  the message to send. The message will not be updated.
+	 * @param callable the condition for the action bar to continue.
+	 *
+	 * @see #sendActionBar(JavaPlugin, Player, String, long)
+	 * @since 1.0.0
+	 */
+	public static void sendActionBarWhile(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable String message,
+			@Nonnull Callable<Boolean> callable) {
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				try {
+					if (!callable.call()) {
+						cancel();
+						return;
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				sendActionBar(player, message);
+			}
+			// Re-sends the messages every 2 seconds so it doesn't go away from the player's
+			// screen.
+		}.runTaskTimerAsynchronously(plugin, 0L, 40L);
+	}
+
+	/**
+	 * Sends an action bar to a player for a specific amount of ticks.
+	 * <p>
+	 * If the caller returns true, the action bar will continue.
+	 * If the caller returns false, action bar will not be sent anymore.
+	 *
+	 * @param plugin   the plugin handling the message scheduler.
+	 * @param player   the player to send the action bar to.
+	 * @param message  the message to send. The message will be updated.
+	 * @param callable the condition for the action bar to continue.
+	 *
+	 * @see #sendActionBarWhile(JavaPlugin, Player, String, Callable)
+	 * @since 1.0.0
+	 */
+	public static void sendActionBarWhile(@Nonnull JavaPlugin plugin, @Nonnull Player player,
+			@Nullable Callable<String> message, @Nonnull Callable<Boolean> callable) {
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				try {
+					if (!callable.call()) {
+						cancel();
+						return;
+					}
+					sendActionBar(player, message.call());
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			// Re-sends the messages every 2 seconds so it doesn't go away from the player's
+			// screen.
+		}.runTaskTimerAsynchronously(plugin, 0L, 40L);
+	}
+
+	/**
+	 * Sends an action bar to a player for a specific amount of ticks.
+	 *
+	 * @param plugin   the plugin handling the message scheduler.
+	 * @param player   the player to send the action bar to.
+	 * @param message  the message to send.
+	 * @param duration the duration to keep the action bar in ticks.
+	 *
+	 * @see #sendActionBarWhile(JavaPlugin, Player, String, Callable)
+	 * @since 1.0.0
+	 */
+	public static void sendActionBar(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable String message,
+			long duration) {
+		if (duration < 1) return;
+		Objects.requireNonNull(plugin, "Cannot send consistent actionbar with null plugin");
+		Objects.requireNonNull(player, "Cannot send actionbar to null player");
+		Objects.requireNonNull(message, "Cannot send null actionbar message");
+
+		new BukkitRunnable() {
+			long repeater = duration;
+
+			@Override
+			public void run() {
+				sendActionBar(player, message);
+				repeater -= 40L;
+				if (repeater - 40L < -20L) cancel();
+			}
+		}.runTaskTimerAsynchronously(plugin, 0L, 40L);
+	}
 }

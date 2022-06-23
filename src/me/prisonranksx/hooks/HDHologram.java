@@ -69,7 +69,6 @@ public class HDHologram implements IHologram {
 		plugin.scheduler.runTaskLater(plugin, () -> this.hologramHD.delete(), 20L * removeTime);
 	}
 
-	@SuppressWarnings("unused")
 	private void createNonSafe() {
 		this.hologramHD = HologramsAPI.createHologram(plugin, location);
 		this.hologramHD.setAllowPlaceholders(true);

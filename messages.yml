@@ -1,5 +1,5 @@
-# You can disable any message by making it empty or removing it from the config
-# use "\n" if you want multi lines in single-lined messages {the message must be between double quotes => "&fHi \n&6test"}, look at the prestige message for example
+# You can disable any message by making it empty { "" }
+# use "\n" if you want multi lines in single-lined messages => { "firstline\nsecondline" }
 Messages:
   # placeholders: %rankup% %rankup_display% %rankup_cost% %rankup_cost_formatted%
   notenoughmoney:
@@ -28,9 +28,9 @@ Messages:
   # no longer used.
   delplayerrank: "&cDeleted &e%player%'s &crank."
   # no longer used.
-  addrankcmd: "&c%args1% &eupdated with: &7%args2%&c."
+  addrankcmd: "&c%args1% &egot updated with the command: &7%args2%&c."
   # no longer used.
-  addrankbroadcast: "&c%args1% &eupdated with: &7%args2%&c."
+  addrankbroadcast: "&c%args1% &egot updated with the broadcast message: &7%args2%&c."
   # no longer used.
   addrankmsg: "&c%args1% &eupdated with: &7%args2%&c."
   setdefaultrank: "&cDefault rank changed to &e%args1%&c."
@@ -73,7 +73,7 @@ Messages:
   # placeholders: %nextprestige% %nextprestige_display%
   prestige: "&aYou have prestiged to &r%nextprestige_display%"
   # not yet
-  forceprestige: "&aYou forced a prestige promotion to &f%target%"
+  forceprestige: "&aYou forced a prestige promotion for &f%target%"
   noprestige: "&a&l&nYou can't prestige at this rank."
   norebirth: "&c&l&nYou can't rebirth at this rank."
   # placeholders: %player%
@@ -117,9 +117,9 @@ Messages:
   autorankup-disabled: "&eAuto rankup &cdisabled&e."
   autorankup-enabled-other: "&eAuto rankup &aenabled &efor &7%player%&e."
   autorankup-disabled-other: "&eAuto rankup &cdisabled &efor &7%player%&e."
-  # ignore
+  # ignore, message in commands.yml is used instead
   autorankup-nopermission: "&cYou don't have permission to use auto rankup."
-  # ignore
+  # no longer used, autorankup will stay enabled even if you are at last rank
   autorankup-lastrank: "&eAuto rankup &7has been automatically &cdisabled &7because you are at the latest rank."
   autoprestige-enabled: "&3Auto prestige &aenabled&3."
   autoprestige-disabled: "&3Auto prestige &cdisabled&3."
@@ -157,32 +157,36 @@ Messages:
   # tags: [header], [footer]
   # both tags can be used multiple times, which means you can have more than one line of header and footer.
   top-prestiges:
-  - "[header]&7- &e&oTop &6&oPrestiges &7-"
-  - "&81: &e%name1% &8- &3%value1%"
-  - "&82: &e%name2% &8- &3%value2%"
-  - "&83: &e%name3% &8- &3%value3%"
-  - "&84: &e%name4% &8- &3%value4%"
-  - "&85: &e%name5% &8- &3%value5%"
-  - "&86: &e%name6% &8- &3%value6%"
-  - "&87: &e%name7% &8- &3%value7%"
-  - "&88: &e%name8% &8- &3%value8%"
-  - "&89: &e%name9% &8- &3%value9%"
-  - "&810: &e%name10% &8- &3%value10%"
+  - "[header]&7- &e&l&oPRESTIGE &6&l&oLEADERBOARD &7-"
+  - "[header]&7&m                          &7"
+  - "&81 &f> &e%name1% &8- &6%value1%"
+  - "&82 &f> &e%name2% &8- &6%value2%"
+  - "&83 &f> &e%name3% &8- &6%value3%"
+  - "&84 &f> &e%name4% &8- &6%value4%"
+  - "&85 &f> &e%name5% &8- &6%value5%"
+  - "&86 &f> &e%name6% &8- &6%value6%"
+  - "&87 &f> &e%name7% &8- &6%value7%"
+  - "&88 &f> &e%name8% &8- &6%value8%"
+  - "&89 &f> &e%name9% &8- &6%value9%"
+  - "&810 &f> &e%name10% &8- &6%value10%"
   - "[footer]&7&m                          &7"
   top-prestiges-last-page-reached: "&e&oThere are only &6&o%page% &e&opage(s)."
   top-rebirths:
-  - "[header]&7- &c&oTop &4&oRebirths &7-"
-  - "&81: &c%name1% &8- &3%value1%"
-  - "&82: &c%name2% &8- &3%value2%"
-  - "&83: &c%name3% &8- &3%value3%"
-  - "&84: &c%name4% &8- &3%value4%"
-  - "&85: &c%name5% &8- &3%value5%"
-  - "&86: &c%name6% &8- &3%value6%"
-  - "&87: &c%name7% &8- &3%value7%"
-  - "&88: &c%name8% &8- &3%value8%"
-  - "&89: &c%name9% &8- &3%value9%"
-  - "&810: &c%name10% &8- &3%value10%"
+  - "[header]&7- &c&l&oREBIRTH &4&l&oLEADERBOARD &7-"
+  - "[header]&7&m                          &7"
+  - "&81 &f> &c%name1% &8- &4%value1%"
+  - "&82 &f> &c%name2% &8- &4%value2%"
+  - "&83 &f> &c%name3% &8- &4%value3%"
+  - "&84 &f> &c%name4% &8- &4%value4%"
+  - "&85 &f> &c%name5% &8- &4%value5%"
+  - "&86 &f> &c%name6% &8- &4%value6%"
+  - "&87 &f> &c%name7% &8- &4%value7%"
+  - "&88 &f> &c%name8% &8- &4%value8%"
+  - "&89 &f> &c%name9% &8- &4%value9%"
+  - "&810 &f> &c%name10% &8- &4%value10%"
+  - "[footer]&7&m                          &7"
   top-rebirths-last-page-reached: "&c&oThere are only &4&o%page% &c&opage(s)."
   rebirth-failed: "&cYou need &4&n%prestiges_amount_left%&c prestiges more to rebirth."
   # placeholders: %rank% %rank_display% %rankup% %rankup_display% %cost%
   rankupmax: "&a&oYou have successfully ranked up from &6&o%rank% &a&oto &6&o%rankup%&a&o."
+  prestigemax: "&7&oYou have successfully prestiged from &c&o%prestige% &7&oto &c&o%nextprestige%&7&o."

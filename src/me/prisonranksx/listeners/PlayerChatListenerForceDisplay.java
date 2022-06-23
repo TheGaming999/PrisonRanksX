@@ -35,16 +35,17 @@ public class PlayerChatListenerForceDisplay implements IPlayerChatListener {
 		String playerRebirth = plugin.playerStorage.getPlayerRebirth(p) != null && plugin.isRebirthEnabled ? 
 				plugin.getString(plugin.rebirthStorage.getDisplayName(plugin.playerStorage.getPlayerRebirth(p)) + rc) + space: plugin.getString(plugin.globalStorage.getStringData("Options.no-rebirth-display"));
 		String rankName;
-		rankName = plugin.rankForceDisplay ? playerRank : "";
+		rankName = plugin.rankForceDisplay ? playerRank : empty;
 		String prestigeName;
-		prestigeName = plugin.prestigeForceDisplay ? playerPrestige : "";
+		prestigeName = plugin.prestigeForceDisplay ? playerPrestige : empty;
 		String rebirthName;
-		rebirthName = plugin.rebirthForceDisplay ? playerRebirth : "";
+		rebirthName = plugin.rebirthForceDisplay ? playerRebirth : empty;
 		String formatUEdit = plugin.globalStorage.getStringData("Options.force-display-order").replace("#", empty);
 		formatUEdit = formatUEdit.replace("{rank}", rankName)
 				.replace("{prestige}", prestigeName)
 				.replace("{rebirth}", rebirthName);
-		e.setFormat(formatUEdit + " " + eventFormat);
+		String spacer = playerRankPath == null ? "" : " ";
+		e.setFormat(formatUEdit + spacer + eventFormat);
 	}
 
 }

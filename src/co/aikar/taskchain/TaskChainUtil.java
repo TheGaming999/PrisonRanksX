@@ -61,7 +61,8 @@ final class TaskChainUtil {
      * @return
      * @throws T
      */
-    private static <T extends Throwable> T superSneaky(Throwable t) throws T {
+    @SuppressWarnings("unchecked")
+	private static <T extends Throwable> T superSneaky(Throwable t) throws T {
         throw (T) t;
     }
 }

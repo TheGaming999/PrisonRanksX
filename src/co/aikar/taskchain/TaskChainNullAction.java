@@ -32,7 +32,6 @@ package co.aikar.taskchain;
  * @param <A2>
  * @param <A3>
  */
-@SuppressWarnings("WeakerAccess")
 @Deprecated
 public interface TaskChainNullAction <A1, A2, A3> extends TaskChainAbortAction<A1, A2, A3> {
     default void onNull(TaskChain<?> chain, A1 arg1) {}

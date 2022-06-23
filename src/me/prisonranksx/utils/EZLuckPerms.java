@@ -73,6 +73,16 @@ public class EZLuckPerms {
 	public static User getUser(String name) {
 		return userManager.getUser(name);
 	}
+	
+	public static User getUserAlways(UUID uniqueId) {
+		User user = userManager.getUser(uniqueId);
+		return user == null ? userManager.loadUser(uniqueId).join() : user;
+	}
+	
+	public static CompletableFuture<User> loadUser(UUID uniqueId) {
+		User user = userManager.getUser(uniqueId);
+		return user != null ? CompletableFuture.completedFuture(user) : userManager.loadUser(uniqueId);
+	}
 
 	public static Track getTrack(String trackName) {
 		return trackManager.getTrack(trackName);
